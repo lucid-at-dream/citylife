@@ -1,0 +1,26 @@
+syntax: glob
+
+bin/*
+obj/*
+obj/*/*
+obj/*/*/*
+obj/*/*/*/*
+obj/*/*/*/*/*
+obj/*/*/*/*/*/*
+obj/*/*/*/*/*/*/*
+
+backups/*
+backups/*/*
+backups/*/*/*
+backups/*/*/*/*
+backups/*/*/*/*/*
+backups/*/*/*/*/*/*
+backups/*/*/*/*/*/*/*
+
+src/*~
+src/*/*~
+src/*/*/*~
+src/*/*/*/*~
+src/*/*/*/*/*~
+src/*/*/*/*/*/*~
+src/*/*/*/*/*/*/*~

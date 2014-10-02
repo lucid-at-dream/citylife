@@ -1,0 +1,93 @@
+#One indentation block is 4 white spaces
+indent=spaces=4
+
+
+#Indent 'class' and 'struct' blocks so that the entire block is indented. The
+#struct blocks are indented only if an access modifier, 'public:', 'protected:'
+#or 'private:', is declared somewhere in the struct. This option is effective 
+#for C++ files only.
+indent-classes
+
+
+#Indent 'switch' blocks so that the 'case X:' statements are indented in the
+#switch block. The entire case block is indented.
+indent-switches
+
+
+#Indent 'case X:' blocks from the 'case X:' headers. Case statements not 
+#enclosed in blocks are NOT indented.
+indent-cases
+
+
+#Add extra indentation to namespace blocks. This option has no effect on
+#Java files.
+indent-namespaces
+
+
+#Add extra indentation to labels so they appear 1 indent less than the current
+#indentation, rather than being flushed to the left (the default).
+indent-labels
+
+
+#Pad empty lines around header blocks (e.g. 'if', 'for', 'while'...). Treat
+#closing header blocks (e.g. 'else', 'catch') as stand-alone blocks.
+break-blocks=all
+
+
+#Insert space padding around operators. Any end of line comments will remain in
+#the original column, if possible. Note that there is no option to unpad. Once
+#padded, they stay padded.
+pad-oper
+
+
+#Insert space padding around parenthesis on the outside only. Parentheses that 
+#are empty will not be padded. Any end of line comments will remain in the
+#original column, if possible. This can be used with unpad-paren below to
+#remove unwanted spaces.
+pad-paren-out
+
+
+#Insert space padding after paren headers only (e.g. 'if', 'for', 'while'...).
+#Any end of line comments will remain in the original column, if possible. This
+#can be used with unpad-paren to remove unwanted spaces.
+pad-header
+
+
+#Fill empty lines with the white space of the previous line.
+fill-empty-lines
+
+
+#Attach a pointer or reference operator to the variable name
+align-pointer=name
+
+
+#Add brackets to unbracketed one line conditional statements (e.g. 'if', 'for',
+#'while'...). The statement must be on a single line. The brackets will be added
+#according to the currently requested predefined style or bracket type. If no
+#style or bracket type is requested the brackets will be attached. If 
+#--add-one-line-brackets is also used the result will be one line brackets.
+add-brackets
+
+
+#Don't break complex statements and multiple statements residing on a single
+#line.
+keep-one-line-statements
+
+
+#Closes whitespace in the angle brackets of template definitions. Closing the
+#ending angle brackets is now allowed by the C++11 standard. Be sure your
+#compiler supports this before making the changes.
+close-templates
+
+
+#The option max‑code‑length will break a line if the code exceeds # characters.
+#The valid values are 50 thru 200. Lines without logical conditionals will
+#break on a logical conditional (||, &&, ...), comma, paren, semicolon, or 
+#space.
+max-code-length=80
+
+
+#Preserve the original file's date and time modified. The time modified will be
+#changed a few micro seconds to force the changed files to compile. This option
+#is not effective if redirection is used to rename the input file.
+preserve-date
