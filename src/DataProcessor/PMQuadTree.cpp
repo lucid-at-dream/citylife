@@ -7,6 +7,7 @@ char quadrantLabels[][3] = {"NW", "NE", "SE", "SW"};
 double xmultiplier[] = {0.0, 0.5, 0.5, 0.0};
 double ymultiplier[] = {0.0, 0.0, -0.5, -0.5};
 
+int tree_depth = 0;
 
 /***
  *    ##.....##.########.########..########...#######...######..########.

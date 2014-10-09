@@ -33,9 +33,12 @@ int main (void) {
         exit (-1);
     }
     
+    double lenx = envelope->MaxX - envelope->MinX,
+           leny = envelope->MaxY - envelope->MinY,
+           len  = lenx > leny ? lenx : leny;
+           
     point *leftupper = createPoint (envelope->MinX, envelope->MaxY);
-    node *root = createLeafNode ( createSquare (leftupper,
-                                  envelope->MaxX - envelope->MinX) );
+    node *root = createLeafNode ( createSquare (leftupper, len) );
     delete envelope;
     
     OGRFeature *feature;
