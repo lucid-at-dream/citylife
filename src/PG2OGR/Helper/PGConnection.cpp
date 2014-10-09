@@ -22,8 +22,7 @@ namespace Helper {
     
         Connection = PQconnectdb (connectionString);
         
-        if (PQstatus (Connection) != CONNECTION_OK)
-        {
+        if (PQstatus (Connection) != CONNECTION_OK) {
             exit_nicely (Connection);
             
             return false;
@@ -36,8 +35,7 @@ namespace Helper {
     
         res = PQexec (Connection, queryString);
         
-        if (PQresultStatus (res) != PGRES_TUPLES_OK)
-        {
+        if (PQresultStatus (res) != PGRES_TUPLES_OK) {
             PQclear (res);
             exit_nicely (Connection);
             
@@ -57,8 +55,7 @@ namespace Helper {
     
     
     
-    void PGConnection::exit_nicely (PGconn *conn)
-    {
+    void PGConnection::exit_nicely (PGconn *conn) {
         PQfinish (conn);
         //exit(1);
     }

@@ -48,8 +48,7 @@ namespace Geometry {
         
         int countFeatures = 0;
         
-        if (layer != NULL)
-        {
+        if (layer != NULL) {
             size = layer->GetFeatureCount (1);
             lineStringArray = new OGRLineString*[size];
             
@@ -58,8 +57,7 @@ namespace Geometry {
             
             OGRFeature *feature;
             
-            while ( (feature = layer->GetNextFeature() ) != NULL)
-            {
+            while ( (feature = layer->GetNextFeature() ) != NULL) {
                 lineStringArray[countFeatures++] = (OGRLineString *)
                                                    feature->GetGeometryRef()->clone();
                 OGRFeature::DestroyFeature (feature);
@@ -70,8 +68,7 @@ namespace Geometry {
         return lineStringArray;
     }
     
-    void Connect2Postgis::DumpPolygons()
-    {
+    void Connect2Postgis::DumpPolygons() {
         OGRDataSource *dataSource = OGRSFDriverRegistrar::Open (pgDriverConn, FALSE);
         
         OGRLayer *layer = dataSource->GetLayerByName ("planet_osm_polygon");
@@ -80,8 +77,7 @@ namespace Geometry {
         
         std::cout << "[";
         
-        while ( (feature = layer->GetNextFeature() ) != NULL)
-        {
+        while ( (feature = layer->GetNextFeature() ) != NULL) {
         
             OGRGeometry *geom = feature->GetGeometryRef()->clone();
             
@@ -96,8 +92,7 @@ namespace Geometry {
             
             std::cout << "[";
             
-            for ( int i = 0; i < nPoints; i++ )
-            {
+            for ( int i = 0; i < nPoints; i++ ) {
                 std::cout << "[" << extRingPoints[i].x << "," << extRingPoints[i].y << "],";
             }
             
@@ -109,8 +104,7 @@ namespace Geometry {
         std::cout << "]" << std::endl;
     }
     
-    int Connect2Postgis::CountIntersect()
-    {
+    int Connect2Postgis::CountIntersect() {
         int size = 0;
         
         OGRDataSource *dataSource = OGRSFDriverRegistrar::Open (pgDriverConn, FALSE);
@@ -126,8 +120,7 @@ namespace Geometry {
         return size;
     }
     
-    int Connect2Postgis::CountOverlaps()
-    {
+    int Connect2Postgis::CountOverlaps() {
         int size = 0;
         
         OGRDataSource *dataSource = OGRSFDriverRegistrar::Open (pgDriverConn, FALSE);
@@ -157,12 +150,10 @@ namespace Geometry {
         
         int filtersize = layer->GetFeatureCount (1);
         
-        while ( (feature = layer->GetNextFeature() ) != NULL)
-        {
+        while ( (feature = layer->GetNextFeature() ) != NULL) {
 //		std::cout << feature->GetFID() << std::endl;
 
-            if (feature->GetGeometryRef()->Touches (geom) )
-            {
+            if (feature->GetGeometryRef()->Touches (geom) ) {
                 size++;
             }
             
@@ -185,8 +176,7 @@ namespace Geometry {
         
         Helper::PGConnection *pgConnection = new Helper::PGConnection (conn);
         
-        if (pgConnection->Connect() )
-        {
+        if (pgConnection->Connect() ) {
             result = pgConnection->Query (query);
             
             long int numberRows = PQntuples (result);
@@ -200,8 +190,7 @@ namespace Geometry {
             OGRSpatialReference *spatialReference = new OGRSpatialReference();
             spatialReference->importFromEPSG (900913);
             
-            for (int i = 0; i < numberRows; i++)
-            {
+            for (int i = 0; i < numberRows; i++) {
                 char *geomValue = PQgetvalue (result, i, 0);
                 OGRGeometryFactory::createFromWkt (&geomValue, osr, &geom);
                 geom->assignSpatialReference (spatialReference);
