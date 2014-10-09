@@ -361,6 +361,7 @@ void insert (std::list<edgelistNode *> *edges, node *R) {
         /*merge the two lists*/
         if (R->dictionary != NULL) {
             L->insert (L->end(), R->dictionary->begin(), R->dictionary->end() );
+            delete R->dictionary;
         }
         
         if ( validateSquare (L, R->s) ) {
@@ -378,11 +379,6 @@ void insert (std::list<edgelistNode *> *edges, node *R) {
 #endif
             
             R->type = BLACK;
-            
-            if (R->dictionary != NULL) {
-                delete R->dictionary;
-            }
-            
             R->dictionary = L;
             return;
             

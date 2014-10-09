@@ -52,7 +52,7 @@ namespace Helper {
         PQclear (res);
         exit_nicely (Connection);
         
-        true;
+        return true;
     }
     
     

@@ -111,7 +111,6 @@ namespace Geometry {
     
     int Connect2Postgis::CountIntersect()
     {
-        int vectorsize = 0;
         int size = 0;
         
         OGRDataSource *dataSource = OGRSFDriverRegistrar::Open (pgDriverConn, FALSE);

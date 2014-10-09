@@ -5,129 +5,139 @@
 // Copyright   :
 // Description : Hello World in C, Ansi-style
 //============================================================================
-/*
-#include <stdio.h>
-#include <stdlib.h>
-#include <iostream>
-#include "Helper/PGConnection.h"
-#include "Geometry/Connect2Postgis.h"
 
-int main (void) {
-
-
-    Geometry::Connect2Postgis getGeom;
-
-    int size;
-
-
-    //int count = getGeom.TestConnection();
-
-    //std::cout << count << std::endl;
-
-
-    //size = getGeom.CountIntersect();
-    //size = getGeom.CountOverlaps();
-
-    //std::cout << size << std::endl;
-
-    getGeom.DumpPolygons();
-
-    //OGRLineString** lineArray = getGeom.GeometryArray(size);
-    //OGRLineString** lineArray = getGeom.GeometryArrayByDriver(size);
-
-//      for (int i = 0; i < 100; i++)
-//      {
-//              std::cout << (*(lineArray[i])).exportToJson() << std::endl;
-//      }
-
-    //delete lineArray;
-
-    return EXIT_SUCCESS;
-}
-*/
-
-#include "PMQuadTree.hpp"
 #include <cstdio>
+#include <cstdlib>
+#include <iostream>
 #include <list>
+#include "PGConnection.h"
+#include "Connect2Postgis.h"
+#include "PMQuadTree.hpp"
 #define INTERSECTION_COLOR "#D49"
-
-/*
-INPUT FORMAT:
-upper limit (maxy), left limit (minx), right limit (maxx)
-number of points
-points (read in has a linestring)
-*/
 
 char colors [6][5] = {"#F00", "#0F0", "#00F", "#FF0", "#F0F", "#0FF"};
 
-int main() {
+std::list<edgelistNode *> *retrieveFeature ( OGRFeature *feature );
+void dumpList (std::list<edgelistNode *> *list);
 
-    int M, N;
-    double ls, ll, lr;
+int main (void) {
+
+    Geometry::Connect2Postgis getGeom;
     
-    scanf ("%lf %lf %lf", &ls, &ll, &lr);
+    OGRLayer *layer = getGeom.GetLayerByName ("planet_osm_line");
     
-    point *leftupper = createPoint (ll, ls);
-    node *root = createLeafNode ( createSquare (leftupper, lr - ll) );
-    std::list<edgelistNode *> *query;
+    OGREnvelope *envelope = new OGREnvelope;
     
-    scanf ("%d", &M);
-    
-    for (int k = 0; k < M; k++) {
-    
-        std::list<edgelistNode *> *edges = new std::list<edgelistNode *>;
-        scanf ("%d", &N);
-        point *prev = NULL;
-        point *curr = NULL;
-        point *first = NULL;
-        double x, y;
-        
-        for (int i = 0; i < N; i++) {
-            scanf ("%lf %lf", &x, &y);
-            curr = createPoint (x, y);
-            
-            if ( prev != NULL ) {
-                edgelistNode *n = (edgelistNode *) calloc (1, sizeof (edgelistNode) );
-                edgelistData *d = (edgelistData *) calloc (1, sizeof (edgelistData) );
-                n->data = d;
-                n->color = (char *) calloc (5, sizeof (char) );
-                memcpy ( n->color, colors[k % 6], 5);
-                n->datatype = EDGE;
-                d->e = createEdge (prev, curr);
-                
-                edges->push_back (n);
-                
-            } else {
-                first = curr;
-            }
-            
-            prev = curr;
-        }
-        
-        edgelistNode *n = (edgelistNode *) calloc (1, sizeof (edgelistNode) );
-        edgelistData *d = (edgelistData *) calloc (1, sizeof (edgelistData) );
-        n->data = d;
-        n->color = (char *) calloc (5, sizeof (char) );
-        memcpy ( n->color, colors[k % 6], 5);
-        n->datatype = EDGE;
-        d->e = createEdge (prev, first);
-        edges->push_back (n);
-        
-        printf ("%d\n", k);
-        
-        if ( k > 0 ) {
-            insert (edges, root);
-            delete edges;
-            
-        } else {
-            query = edges;
-        }
+    if ( layer->GetExtent ( envelope, FALSE ) != OGRERR_NONE ) {
+        perror ("could not retrieve layer envelope");
+        exit (-1);
     }
     
-    //dumpTreeJSON (root);
+    point *leftupper = createPoint (envelope->MinX, envelope->MaxY);
+    node *root = createLeafNode ( createSquare (leftupper,
+                                  envelope->MaxX - envelope->MinX) );
+    delete envelope;
     
-    //intersects(root, query);
+    OGRFeature *feature;
+    std::list<edgelistNode *> *list;
     
-    return 0;
+    while ( (feature = layer->GetNextFeature() ) != NULL) {
+    
+        if ( strcmp (feature->GetFieldAsString (feature->GetFieldIndex ("highway") ),
+                     "cycleway") != 0 ) {
+            delete feature;
+            continue;
+        }
+        
+        list = retrieveFeature (feature);
+        insert (list, root);
+        delete feature;
+        delete list;
+    }
+    
+    delete layer;
+    
+    dumpTreeJSON (root);
+    
+    return EXIT_SUCCESS;
 }
 
+void dumpList (std::list<edgelistNode *> *list) {
+    std::list<edgelistNode *>::iterator it = list->begin();
+    
+    for (; it != list->end(); it++) {
+        printf ("(%lf, %lf) -> (%lf, %lf)\n", (*it)->data->e->p1->x,
+                (*it)->data->e->p1->y,
+                (*it)->data->e->p2->x, (*it)->data->e->p2->y);
+    }
+    
+}
+
+std::list<edgelistNode *> *retrieveFeature ( OGRFeature *feature ) {
+
+    std::list<edgelistNode *> *list = new std::list<edgelistNode *>();
+    OGRGeometry *geometry = feature->GetGeometryRef();
+    int color = rand() % 6;
+    
+    if ( geometry->getGeometryType() == wkbPoint ||
+            geometry->getGeometryType() == wkbMultiPoint ) {
+            
+    } else if ( geometry->getGeometryType() == wkbLineString ||
+                geometry->getGeometryType() == wkbMultiLineString ) {
+                
+        OGRLineString *lineString = ( (OGRLineString *) geometry);
+        int N = lineString->getNumPoints();
+        
+        point *prev = NULL,
+               *curr = (point *) calloc (1, sizeof (point) );
+        OGRPoint *tmp = new OGRPoint;
+        lineString->getPoint (0, tmp);
+        curr->x = tmp->getX(); curr->y = tmp->getY();
+        
+        for (int i = 1; i < N; i++) {
+            edgelistNode *n = (edgelistNode *) calloc (1, sizeof (edgelistNode) );
+            edgelistData *d = (edgelistData *) calloc (1, sizeof (edgelistData) );
+            n->data = d;
+            n->color = (char *) calloc (5, sizeof (char) );
+            memcpy ( n->color, colors[color], 5);
+            n->datatype = EDGE;
+            
+            prev = curr;
+            lineString->getPoint (i, tmp);
+            curr = (point *) calloc (1, sizeof (point) );
+            curr->x = tmp->getX(); curr->y = tmp->getY();
+            
+            if ( curr->x != prev->x || curr->y != prev->y ) {
+                d->e = createEdge (prev, curr);
+                list->push_back (n);
+            }
+        }
+        
+        delete tmp;
+        
+    } else if ( geometry->getGeometryType() == wkbPolygon ||
+                geometry->getGeometryType() == wkbMultiPolygon ) {
+                
+        // OGRLinearRing *extRing = ( (OGRPolygon *) geometry)->getExteriorRing();
+        // int N = extRing->getNumPoints();
+        // std::list<edgelistNode *> *t_extRing = new std::list<edgelistNode *>();
+        
+        // for ( int i = 0; i < N; i++ ) {
+        //     edgelistNode *n = (edgelistNode *) calloc (1, sizeof (edgelistNode) );
+        //     n->datatype = EXT_RING;
+        //     n->data = (edgelistData *) calloc (1, sizeof (edgelistData) );
+        //     n->data->ls = createLineSeg ( extRing, i );
+        //     n->feature = feature;
+        //     t_extRing->push_back ( n );
+        // }
+        
+        // insert (t_extRing, R);
+        // delete t_extRing;
+        
+    } else {
+        perror ("unsupported type of geometry detected.");
+        exit (-1);
+    }
+    
+    return list;
+}
