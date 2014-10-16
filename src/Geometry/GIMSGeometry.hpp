@@ -60,15 +60,24 @@ namespace GIMSGeometry {
     };
     
     class GIMSEdgeList  : public GIMSGeometry {
-        std::list<GIMSEdge *> list;
+      public:
+        std::list<GIMSEdge *> *list;
+        GIMSEdgeList();
+        ~GIMSEdgeList();
     };
     
     class GIMSPointList  : public GIMSGeometry {
-        std::list<GIMSPoint *> list;
+      public:
+        std::list<GIMSPoint *> *list;
+        GIMSPointList();
+        ~GIMSPointList();
     };
     
     class GIMSGeometryList  : public GIMSGeometry {
-        std::list<GIMSGeometry *> list;
+      public:
+        std::list<GIMSGeometry *> *list;
+        GIMSGeometryList();
+        ~GIMSGeometryList();
     };
     
 };

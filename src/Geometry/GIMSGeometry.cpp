@@ -2,6 +2,8 @@
 
 using namespace GIMSGeometry;
 
+
+
 /*
 -->GIMSPoint
 */
@@ -30,7 +32,7 @@ GIMSSide GIMSPoint::sideOf ( GIMSEdge *edge) {
     double s = (edge->p2->x - edge->p1->x) * (this->y - edge->p1->y) -
                (edge->p2->y - edge->p1->y) * (this->x - edge->p1->x);
 
-    TODO (ERR_MARGIN might not be the most suited error margin for this operation)
+    TODO (raw ERR_MARGIN might not be the most suited error margin for this operation)
     return s < -ERR_MARGIN ? RIGHT : s > ERR_MARGIN ? LEFT : ALIGNED;
 }
 
@@ -63,34 +65,86 @@ GIMSPoint<--
 */
 
 
+
 /*
-class GIMSBoundingBox : public GIMSGeometry {
-  public:
-    GIMSPoint *lowerLeft ,
-              *upperRight;
-              
-    GIMSBoundingBox ( GIMSPoint *lowerLeft, GIMSPoint *upperRight );
-    ~GIMSBoundingBox();
-};
+-->GIMSBoundingBox
+*/
+GIMSBoundingBox::GIMSBoundingBox ( GIMSPoint *lowerLeft, GIMSPoint *upperRight ) {
+    this->lowerLeft = lowerLeft;
+    this->upperRight = upperRight;
+    this->type = BOUNDINGBOX;
+}
 
-class GIMSEdge : public GIMSGeometry {
-  public:
-    GIMSPoint *p1,
-              *p2;
-    GIMSEdge ( GIMSPoint *p1, GIMSPoint *p2 );
-    ~GIMSEdge();
-};
-
-class GIMSEdgeList  : public GIMSGeometry {
-    std::list<GIMSEdge *> list;
-};
-
-class GIMSPointList  : public GIMSGeometry {
-    std::list<GIMSPoint *> list;
-};
-
-class GIMSGeometryList  : public GIMSGeometry {
-    std::list<GIMSGeometry *> list;
-};
+GIMSBoundingBox::~GIMSBoundingBox(){
+    delete this->lowerLeft;
+    delete this->upperRight;
+}
+/*
+GIMSBoundingBox<--
 */
 
+
+
+/*
+-->GIMSEdge
+*/
+GIMSEdge::GIMSEdge ( GIMSPoint *p1, GIMSPoint *p2 ){
+    this->p1 = p1;
+    this->p2 = p2;
+}
+
+GIMSEdge::~GIMSEdge() {
+    delete this->p1;
+    delete this->p2;
+}
+/*
+GIMSEdge<--
+*/
+
+
+
+/*
+-->GIMSEdgeList
+*/
+GIMSEdgeList::GIMSEdgeList(){
+    this->list = new std::list<GIMSEdge *>();
+}
+
+GIMSEdgeList::~GIMSEdgeList(){
+    delete this->list;
+}
+/*
+GIMSEdgeList<--
+*/
+
+
+
+/*
+-->GIMSPointList
+*/
+GIMSPointList::GIMSPointList(){
+    this->list = new std::list<GIMSPoint *>();
+}
+
+GIMSPointList::~GIMSPointList(){
+    delete this->list;
+}
+/*
+GIMSPointList<--
+*/
+
+
+
+/*
+-->GIMSGeometryList
+*/
+GIMSGeometryList::GIMSGeometryList(){
+    this->list = new std::list<GIMSGeometry *>();
+}
+
+GIMSGeometryList::~GIMSGeometryList(){
+    delete this->list;
+}
+/*
+GIMSGeometryList<--
+*/
