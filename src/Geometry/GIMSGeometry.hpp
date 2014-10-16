@@ -14,19 +14,31 @@ namespace GIMSGeometry {
         EDGE,
         POINT
     };
+
+    enum GIMSSide {
+        RIGHT,
+        LEFT,
+        ALIGNED
+    };
     
     class GIMSGeometry {
+      public:
         GeometryType type;
         TODO ( add the label )
         //OGRFeature *label;
     };
-    
+
+    class GIMSBoundingBox;
+    class GIMSEdge;
+
     class GIMSPoint : public GIMSGeometry {
       public:
         double x, y;
-        
-        GIMSPoint (double x, double y);
-        ~GIMSPoint();
+
+        bool      isInsideBox ( GIMSBoundingBox *box );
+        GIMSSide  sideOf      ( GIMSEdge *edge);
+                  GIMSPoint   (double x, double y);
+                 ~GIMSPoint   ();
     };
     
     class GIMSBoundingBox : public GIMSGeometry {
@@ -57,7 +69,6 @@ namespace GIMSGeometry {
     class GIMSGeometryList  : public GIMSGeometry {
         std::list<GIMSGeometry *> list;
     };
-    
     
 };
 

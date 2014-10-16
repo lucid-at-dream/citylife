@@ -23,7 +23,7 @@ OBJFILES = $(addprefix ${OBJ_DIR}/./, $(addsuffix .o, $(shell find ${SRC_DIR} | 
 
 INC_DIR += $(addprefix -I, $(shell dirname $$(find ${SRC_DIR} | grep "\\.hpp$$\\|\\.h$$") | sort | uniq) )
 
-all: cleanformat ${BIN_DIR}/${OFILE}
+all: ${BIN_DIR}/${OFILE}
 
 .IGNORE: format
 

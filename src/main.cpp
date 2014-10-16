@@ -1,11 +1,3 @@
-//============================================================================
-// Name        : PG2OGR.cpp
-// Author      : Carlos Cacador
-// Version     :
-// Copyright   :
-// Description : Hello World in C, Ansi-style
-//============================================================================
-
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
