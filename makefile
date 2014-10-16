@@ -52,9 +52,13 @@ cleanformat: format softclean
 format:
 	astyle --recursive "${SRC_DIR}/*.cpp" "${SRC_DIR}/*.hpp" --quiet -X
 
+#compiles with SUPRESS_NOTES flag defined
+quiet: setquiet ${BIN_DIR}/${OFILE}
+setquiet:
+	$(eval CFLAGS += -DSUPRESS_NOTES)
+
 #compiles with DEBUG flag defined
 debug: setdebug ${BIN_DIR}/${OFILE}
-
 #sets a DEBUG flag (as if defined to 1 in the source code) for every source file.
 setdebug:
 	$(eval CFLAGS += -DDEBUG)

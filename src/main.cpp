@@ -36,7 +36,7 @@ int main (void) {
     double lenx = envelope->MaxX - envelope->MinX,
            leny = envelope->MaxY - envelope->MinY,
            len  = lenx > leny ? lenx : leny;
-           
+    
     point *leftupper = createPoint (envelope->MinX, envelope->MaxY);
     node *root = createLeafNode ( createSquare (leftupper, len) );
     delete envelope;
@@ -51,7 +51,7 @@ int main (void) {
             delete feature;
             continue;
         }
-        
+    
         list = retrieveFeature (feature);
         insert (list, root);
         delete feature;
@@ -62,7 +62,7 @@ int main (void) {
     
     dumpTreeJSON (root);
     
-    return EXIT_SUCCESS;
+    return 0;
 }
 
 void dumpList (std::list<edgelistNode *> *list) {

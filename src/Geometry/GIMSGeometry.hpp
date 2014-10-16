@@ -1,36 +1,64 @@
 #ifndef GIMSGEOMETRY_HPP
 #define GIMSGEOMETRY_HPP
 
-enum GeometryType {
-    BOUNDINGBOX,
-    EDGE,
-    POINT
+#include <list>
+#include "SystemBase.hpp"
+
+namespace GIMSGeometry {
+
+    enum GeometryType {
+        BOUNDINGBOX,
+        EDGELIST,
+        POINTLIST,
+        MIXEDLIST,
+        EDGE,
+        POINT
+    };
+    
+    class GIMSGeometry {
+        GeometryType type;
+        TODO ( add the label )
+        //OGRFeature *label;
+    };
+    
+    class GIMSPoint : public GIMSGeometry {
+      public:
+        double x, y;
+        
+        GIMSPoint (double x, double y);
+        ~GIMSPoint();
+    };
+    
+    class GIMSBoundingBox : public GIMSGeometry {
+      public:
+        GIMSPoint *lowerLeft ,
+                  *upperRight;
+                  
+        GIMSBoundingBox ( GIMSPoint *lowerLeft, GIMSPoint *upperRight );
+        ~GIMSBoundingBox();
+    };
+    
+    class GIMSEdge : public GIMSGeometry {
+      public:
+        GIMSPoint *p1,
+                  *p2;
+        GIMSEdge ( GIMSPoint *p1, GIMSPoint *p2 );
+        ~GIMSEdge();
+    };
+    
+    class GIMSEdgeList  : public GIMSGeometry {
+        std::list<GIMSEdge *> list;
+    };
+    
+    class GIMSPointList  : public GIMSGeometry {
+        std::list<GIMSPoint *> list;
+    };
+    
+    class GIMSGeometryList  : public GIMSGeometry {
+        std::list<GIMSGeometry *> list;
+    };
+    
+    
 };
-
-
-typedef struct _GIMSBoundingBox {
-    GIMSPoint *lowerLeftPt ,
-              *upperRightPt;
-} GIMSBoundingBox;
-
-typedef struct _GIMSEdge {
-    GIMSPoint *p1, *p2;
-} GIMSEdge;
-
-typedef struct _GIMSPoint {
-    double x, y;
-} GIMSPoint;
-
-
-typedef union _GIMSGeometryData {
-    GIMSPoint       *point;
-    GIMSEdge        *edge ;
-    GIMSBoundingBox *bbox ;
-} GIMSGeometryData;
-
-typedef struct _GIMSGeometry {
-    GeometryType type;
-    GIMSGeometryData *data;
-} GIMSGeometry;
 
 #endif
