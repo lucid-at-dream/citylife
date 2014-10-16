@@ -35,10 +35,11 @@ namespace GIMSGeometry {
       public:
         double x, y;
 
-        bool      isInsideBox ( GIMSBoundingBox *box );
-        GIMSSide  sideOf      ( GIMSEdge *edge);
-                  GIMSPoint   (double x, double y);
-                 ~GIMSPoint   ();
+        bool      isInsideBox            ( GIMSBoundingBox *box );
+        GIMSSide  sideOf                 ( GIMSEdge *edge);
+        bool      isInsideEdgeOfSameLine ( GIMSEdge *edge );
+                  GIMSPoint              ( double x, double y );
+                 ~GIMSPoint              ();
     };
     
     class GIMSBoundingBox : public GIMSGeometry {
