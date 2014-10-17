@@ -3,8 +3,9 @@
 
 #include <list>
 #include "SystemBase.hpp"
+#include <cmath>
 
-namespace GIMSGeometry {
+namespace GIMSGEOMETRY {
 
     enum GeometryType {
         BOUNDINGBOX,
@@ -29,7 +30,9 @@ namespace GIMSGeometry {
     };
 
     class GIMSBoundingBox;
+    class GIMSPoint;
     class GIMSEdge;
+    class GIMSGeometryList;
 
     class GIMSPoint : public GIMSGeometry {
       public:
@@ -40,13 +43,29 @@ namespace GIMSGeometry {
         bool      isInsideEdgeOfSameLine ( GIMSEdge *edge );
                   GIMSPoint              ( double x, double y );
                  ~GIMSPoint              ();
+
+        inline bool operator == ( const GIMSPoint& cmp ) {
+            if ( this->x <= cmp.x + ERR_MARGIN && this->x >= cmp.x - ERR_MARGIN &&
+                 this->y <= cmp.y + ERR_MARGIN && this->y >= cmp.y - ERR_MARGIN )
+                return true;
+            return false;
+        }
+        
+        inline bool operator != ( const GIMSPoint& cmp ) {
+            return !operator == ( cmp );
+        }
     };
     
     class GIMSBoundingBox : public GIMSGeometry {
       public:
         GIMSPoint *lowerLeft ,
                   *upperRight;
-                  
+        double xlength();
+        double ylength();
+        double minx();
+        double maxx();
+        double miny();
+        double maxy();
         GIMSBoundingBox ( GIMSPoint *lowerLeft, GIMSPoint *upperRight );
         ~GIMSBoundingBox();
     };
@@ -59,19 +78,19 @@ namespace GIMSGeometry {
         ~GIMSEdge();
     };
     
-    class GIMSEdgeList  : public GIMSGeometry {
-      public:
-        std::list<GIMSEdge *> *list;
-        GIMSEdgeList();
-        ~GIMSEdgeList();
-    };
+    // class GIMSEdgeList  : public GIMSGeometry {
+    //   public:
+    //     std::list<GIMSEdge *> *list;
+    //     GIMSEdgeList();
+    //     ~GIMSEdgeList();
+    // };
     
-    class GIMSPointList  : public GIMSGeometry {
-      public:
-        std::list<GIMSPoint *> *list;
-        GIMSPointList();
-        ~GIMSPointList();
-    };
+    // class GIMSPointList  : public GIMSGeometry {
+    //   public:
+    //     std::list<GIMSPoint *> *list;
+    //     GIMSPointList();
+    //     ~GIMSPointList();
+    // };
     
     class GIMSGeometryList  : public GIMSGeometry {
       public:
@@ -80,6 +99,6 @@ namespace GIMSGeometry {
         ~GIMSGeometryList();
     };
     
-};
+}
 
 #endif

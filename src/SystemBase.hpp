@@ -1,3 +1,7 @@
+#ifndef SYSTEMBASE_HPP
+#define SYSTEMBASE_HPP
+
+#include <cstddef>
 
 /*define a debug macro that can be easily deactivated*/
 #ifdef SUPRESS_NOTES
@@ -9,3 +13,5 @@
 
 /*define the error margin (comparations will use this value)*/
 #define ERR_MARGIN 0.000001
+
+#endif

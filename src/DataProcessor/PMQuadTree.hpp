@@ -1,83 +1,61 @@
-/* An implementation of the PM3 Quadtree.
- *
- * A PM3 Quadtree is a quadtree structure to store polygonal data (including
- * isolated vertexes and line segments) where the building criterion is as
- * follows: "At most one vertex can lie in a region represented by a quadtree
- * leaf".
- *
- * The structures highest dept is inversely proportional to the distance between
- * the two closest vertexes.
- */
+#ifndef PMQUADTREE_HPP
+#define PMQUADTREE_HPP
 
-#ifndef _PMQUADTREE_HPP_
-#define _PMQUADTREE_HPP_
-
-#include "ogr_geometry.h"
+#include "DataStructs.hpp"
+#include <list>
 #include <cstdio>
 #include <cstdlib>
-#include <list>
 
-#define ERR_MARGIN 0.0001
+namespace PMQUADTREE {
 
-enum data_t {EDGE, POINT};
-enum node_t {WHITE, GRAY, BLACK};
-enum side {LEFT, ALIGNED, RIGHT};
+    enum NodeType {WHITE, GRAY, BLACK};
+    enum Quadrant {NW = 0, NE = 1, SE = 2, SW = 3};
 
-enum quadrant {NW = 0, NE = 1, SE = 2, SW = 3};
+    class Node {
+        NodeType type;
+        GIMSBoundingBox *square;
+        std::list<GIMSGeometry *> *dictionary;
+        Node *sons[4];
 
-typedef struct _point {
-    double x;
-    double y;
-} point;
+        bool validateGeometry (GIMSGeometry *g);
+        bool validateVertexSharing ( GIMSPoint *pt, 
+                                     std::list<GIMSGeometry *> *geom, 
+                                     std::list<GIMSGeometry *>::iterator it );
+        void split();
+        Node();
+        Node( GIMSBoundingBox *square );
+        ~Node();
+    };
 
-typedef struct _square {
-    point *leftUpperCorner;
-    double len;
-} square;
+    class PMQuadTree : public GIMSDataStruct {
+      public:
+        Node *root;
 
-typedef struct _edge {
-    point *p1;
-    point *p2;
-    //OGRFeature *feature;
-} edge;
+        /*Allocation & Deallocation*/
+         PMQuadTree (GIMSBoundingBox *domain);
+        ~PMQuadTree (void);
 
-typedef union _edgelistData {
-    point *pt;
-    edge *e;
-} edgelistData;
-
-typedef struct _edgelistNode {
-    data_t datatype;
-    edgelistData *data;
-    char *color;
-} edgelistNode;
-
-typedef struct _node {
-    square *s;
-    struct _node *son[4];
-    node_t type;
-    std::list<edgelistNode *> *dictionary;
-} node;
+        /*Inherited Functions*/
+        /*Functions that take care of the construction and maintenance of the structure*/
+        virtual void  build  (GIMSGeometry *);
+        virtual void  insert (GIMSGeometry *);
+        virtual void  remove (GIMSGeometry *);
+        virtual void *search (GIMSGeometry *);
+        
+        /*Follow the operations between the data structure and a given geometry*/
+        virtual RelStatus intersects_g  ( GIMSGeometry *result, GIMSGeometry *);
+        virtual RelStatus meets_g       ( GIMSGeometry *result, GIMSGeometry *);
+        virtual RelStatus contains_g    ( GIMSGeometry *result, GIMSGeometry *);
+        virtual RelStatus isContained_g ( GIMSGeometry *result, GIMSGeometry *);
+        
+        /*Retrieve all geometry elements that are partially or totally contained
+          in a given bounding box*/
+        virtual RelStatus isBoundedBy ( GIMSGeometry *result, GIMSBoundingBox *);
 
 
-void dumpTreeJSON (node *R);
-void dumpLeafJSON (node *R);
-edge *trimEdge (edge *e, square *s);
-void splitNode (node *R);
-square *createSquare ( point *leftUpperCorner, double length );
-point *createPoint (double x, double y);
-node *createLeafNode (square *s);
-bool validateSquare (std::list<edgelistNode *> *edges, square *S);
-bool validateVertexSharing ( point *pt, std::list<edgelistNode *> *edges,
-                             std::list<edgelistNode *>::iterator e, square *S );
-void insert (std::list<edgelistNode *> *edges, node *R);
-std::list<edgelistNode *> *clipLines (std::list<edgelistNode *> *L, square *S);
-bool clipSquare (edgelistNode *e, square *S);
-bool ptInsideSquare (point *pt, square *S);
-edge *createEdge (point *p1, point *p2);
-bool edgeInsideSquare ( edge *e, square *S );
-bool lineptInsideLineSeg (point *pt, edge *e);
-point *clonePoint ( point *p );
-double ptEdgeSide (point *p, edge *e);
+
+    };
+
+}
 
 #endif

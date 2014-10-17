@@ -1,8 +1,6 @@
 #include "GIMSGeometry.hpp"
 
-using namespace GIMSGeometry;
-
-
+using namespace GIMSGEOMETRY;
 
 /*
 -->GIMSPoint
@@ -69,6 +67,30 @@ GIMSPoint<--
 /*
 -->GIMSBoundingBox
 */
+double GIMSBoundingBox::xlength(){
+    return fabs( this->upperRight->x - this->lowerLeft->x );
+}
+
+double GIMSBoundingBox::ylength(){
+    return fabs( this->upperRight->y - this->lowerLeft->y );
+}
+
+double GIMSBoundingBox::minx(){
+    return this->lowerLeft->x;
+}
+
+double GIMSBoundingBox::maxx(){
+    return this->upperRight->y;
+}
+
+double GIMSBoundingBox::miny(){
+    return this->lowerLeft->y;
+}
+
+double GIMSBoundingBox::maxy(){
+    return this->upperRight->y;
+}
+
 GIMSBoundingBox::GIMSBoundingBox ( GIMSPoint *lowerLeft, GIMSPoint *upperRight ) {
     this->lowerLeft = lowerLeft;
     this->upperRight = upperRight;
@@ -106,13 +128,13 @@ GIMSEdge<--
 /*
 -->GIMSEdgeList
 */
-GIMSEdgeList::GIMSEdgeList(){
-    this->list = new std::list<GIMSEdge *>();
-}
+// GIMSEdgeList::GIMSEdgeList(){
+//     this->list = new std::list<GIMSEdge *>();
+// }
 
-GIMSEdgeList::~GIMSEdgeList(){
-    delete this->list;
-}
+// GIMSEdgeList::~GIMSEdgeList(){
+//     delete this->list;
+// }
 /*
 GIMSEdgeList<--
 */
@@ -122,13 +144,13 @@ GIMSEdgeList<--
 /*
 -->GIMSPointList
 */
-GIMSPointList::GIMSPointList(){
-    this->list = new std::list<GIMSPoint *>();
-}
+// GIMSPointList::GIMSPointList(){
+//     this->list = new std::list<GIMSPoint *>();
+// }
 
-GIMSPointList::~GIMSPointList(){
-    delete this->list;
-}
+// GIMSPointList::~GIMSPointList(){
+//     delete this->list;
+// }
 /*
 GIMSPointList<--
 */

@@ -8,12 +8,12 @@
 #define INTERSECTION_COLOR "#D49"
 
 char colors [6][5] = {"#F00", "#0F0", "#00F", "#FF0", "#F0F", "#0FF"};
-
+/*
 std::list<edgelistNode *> *retrieveFeature ( OGRFeature *feature );
 void dumpList (std::list<edgelistNode *> *list);
-
+*/
 int main (void) {
-
+/*
     Geometry::Connect2Postgis getGeom;
     
     OGRLayer *layer = getGeom.GetLayerByName ("planet_osm_line");
@@ -53,10 +53,10 @@ int main (void) {
     delete layer;
     
     dumpTreeJSON (root);
-    
+    */
     return 0;
 }
-
+/*
 void dumpList (std::list<edgelistNode *> *list) {
     std::list<edgelistNode *>::iterator it = list->begin();
     
@@ -136,3 +136,4 @@ std::list<edgelistNode *> *retrieveFeature ( OGRFeature *feature ) {
     
     return list;
 }
+*/
