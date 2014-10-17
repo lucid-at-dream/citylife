@@ -10,19 +10,21 @@ namespace PMQUADTREE {
     enum Quadrant {NW = 0, NE = 1, SE = 2, SW = 3};
 
     class Node {
+      public:
         NodeType type;
         GIMSBoundingBox *square;
         std::list<GIMSGeometry *> *dictionary;
         Node *sons[4];
 
-        bool validateGeometry (GIMSGeometry *g);
-        bool validateVertexSharing ( GIMSPoint *pt, 
-                                     std::list<GIMSGeometry *> *geom, 
-                                     std::list<GIMSGeometry *>::iterator it );
-        void split();
-        Node();
-        Node( GIMSBoundingBox *square );
-        ~Node();
+        void  insert                ( GIMSGeometry * );
+        bool  validateGeometry      ( GIMSGeometry * );
+        bool  validateVertexSharing ( GIMSPoint *pt, 
+                                      std::list<GIMSGeometry *> *, 
+                                      std::list<GIMSGeometry *>::iterator );
+        void  split                 ();
+              Node                  ();
+              Node                  ( GIMSBoundingBox *square );
+             ~Node                  ();
     };
 
     class PMQuadTree : public GIMSDataStruct {

@@ -12,6 +12,38 @@ double ymultiplier[] = {0.0, 0.0, -0.5, -0.5};
 /*
 -->Polygonal Map QuadTree Node
 */
+void Node::insert ( GIMSGeometry *geom ) {
+    GIMSGeometryList *clipped = (GIMSGeometryList *)(geom->clipToBox ( this->square ));
+    
+    if (clipped == NULL) {
+        return;
+    }
+    
+    if ( this->type != GRAY ) {
+        /*node type is only gray when it's not a leaf*/
+        
+        /*merge the two lists*/
+        if (this->dictionary != NULL) {
+            clipped->list->insert (clipped->list->end(), this->dictionary->begin(), this->dictionary->end() );
+            delete this->dictionary;
+        }
+        
+        if ( this->validateGeometry ( clipped ) ) {
+            this->type = BLACK;
+            this->dictionary = clipped->list;
+            return;
+        } else {
+            this->split();
+        }
+    }
+    
+    for (Quadrant q : quadrantList) {
+        this->sons[q]->insert ( clipped );
+    }
+    
+    delete clipped;
+}
+
 /* Returns true if the given geometry is a valid one for the calling node
    !Note! The bounding box geometry is not supported !Note!
    The behaviour is undefined in such a situation. */
@@ -138,7 +170,7 @@ Polygonal Map QuadTree Node<--
 
 
 PMQuadTree::PMQuadTree (GIMSBoundingBox *domain) {
-
+    this->root = new Node( domain );
 }
 
 PMQuadTree::~PMQuadTree () {
@@ -152,10 +184,8 @@ void PMQuadTree::build  (GIMSGeometry *geom){
 
 }
 
-
-
-void PMQuadTree::insert (GIMSGeometry *geom){
-
+void PMQuadTree::insert ( GIMSGeometry *geom ) {
+    this->root->insert(geom);
 }
 
 void PMQuadTree::remove (GIMSGeometry *geom){
