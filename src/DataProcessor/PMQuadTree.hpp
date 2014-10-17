@@ -16,6 +16,7 @@ namespace PMQUADTREE {
         std::list<GIMSGeometry *> *dictionary;
         Node *sons[4];
 
+        void *search                ( GIMSGeometry *geom );
         void  insert                ( GIMSGeometry * );
         bool  validateGeometry      ( GIMSGeometry * );
         bool  validateVertexSharing ( GIMSPoint *pt, 

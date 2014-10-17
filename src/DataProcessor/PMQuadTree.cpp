@@ -12,6 +12,31 @@ double ymultiplier[] = {0.0, 0.0, -0.5, -0.5};
 /*
 -->Polygonal Map QuadTree Node
 */
+void *Node::search (GIMSGeometry *geom){
+
+    GIMSGeometry *clipped = geom->clipToBox(this->square);
+    if( clipped == NULL )
+        return NULL;
+
+    if ( this->type != GRAY ) {
+        list<Node *> *l = new list<Node *>;
+        l->push_back(this);
+        delete clipped;
+        return l;
+    }else{
+        list<Node *> *retlist = new list<Node *>;
+        for( Quadrant q : quadrantList ) {
+            list<Node *> *l = (list<Node *> *)sons[q]->search(clipped);
+            if( l != NULL ){
+                retlist->insert( retlist->end(), l->begin(), l->end() );
+                delete l;
+            }
+        }
+        delete clipped;
+        return retlist;
+    }
+}
+
 void Node::insert ( GIMSGeometry *geom ) {
     GIMSGeometryList *clipped = (GIMSGeometryList *)(geom->clipToBox ( this->square ));
     
@@ -192,8 +217,9 @@ void PMQuadTree::remove (GIMSGeometry *geom){
 
 }
 
+/*return all leaf nodes that intersect geom*/
 void *PMQuadTree::search (GIMSGeometry *geom){
-    return NULL;
+    return this->root->search(geom);
 }
 
 

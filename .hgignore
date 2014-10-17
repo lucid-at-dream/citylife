@@ -28,3 +28,4 @@ src/*/*/*/*/*/*/*~
 cycleways
 linedump
 out
+callgrind*
