@@ -66,6 +66,10 @@ GIMSGeometry *GIMSPoint::clipToBox ( GIMSBoundingBox *box ){
         return NULL;
 }
 
+GIMSPoint::GIMSPoint() {
+    this->type = POINT;
+}
+
 GIMSPoint::GIMSPoint (double x, double y) {
     this->x = x;
     this->y = y;
@@ -136,6 +140,7 @@ GIMSBoundingBox<--
 GIMSEdge::GIMSEdge ( GIMSPoint *p1, GIMSPoint *p2 ){
     this->p1 = p1;
     this->p2 = p2;
+    this->type = EDGE;
 }
 
 GIMSEdge::~GIMSEdge() {
@@ -255,6 +260,7 @@ GIMSGeometry *GIMSGeometryList::clipToBox ( GIMSBoundingBox *box ){
 }
 
 GIMSGeometryList::GIMSGeometryList(){
+    this->type = MIXEDLIST;
     this->list = new std::list<GIMSGeometry *>();
 }
 
