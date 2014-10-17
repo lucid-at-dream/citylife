@@ -21,28 +21,32 @@ namespace GIMSGEOMETRY {
         LEFT,
         ALIGNED
     };
-    
-    class GIMSGeometry {
-      public:
-        GeometryType type;
-        TODO ( add the label )
-        //OGRFeature *label;
-    };
 
     class GIMSBoundingBox;
     class GIMSPoint;
     class GIMSEdge;
     class GIMSGeometryList;
 
+    class GIMSGeometry {
+      public:
+        GeometryType type;
+        TODO ( add the label )
+        //OGRFeature *label;
+
+        virtual GIMSGeometry *clipToBox    ( GIMSBoundingBox * ) = 0;
+        virtual              ~GIMSGeometry ();
+    };
+
     class GIMSPoint : public GIMSGeometry {
       public:
         double x, y;
 
-        bool      isInsideBox            ( GIMSBoundingBox *box );
-        GIMSSide  sideOf                 ( GIMSEdge *edge);
-        bool      isInsideEdgeOfSameLine ( GIMSEdge *edge );
-                  GIMSPoint              ( double x, double y );
-                 ~GIMSPoint              ();
+        GIMSGeometry *clipToBox              ( GIMSBoundingBox * );
+        bool          isInsideBox            ( GIMSBoundingBox *box );
+        GIMSSide      sideOf                 ( GIMSEdge *edge);
+        bool          isInsideEdgeOfSameLine ( GIMSEdge *edge );
+                      GIMSPoint              ( double x, double y );
+                     ~GIMSPoint              ();
 
         inline bool operator == ( const GIMSPoint& cmp ) {
             if ( this->x <= cmp.x + ERR_MARGIN && this->x >= cmp.x - ERR_MARGIN &&
@@ -60,22 +64,26 @@ namespace GIMSGEOMETRY {
       public:
         GIMSPoint *lowerLeft ,
                   *upperRight;
-        double xlength();
-        double ylength();
-        double minx();
-        double maxx();
-        double miny();
-        double maxy();
-        GIMSBoundingBox ( GIMSPoint *lowerLeft, GIMSPoint *upperRight );
-        ~GIMSBoundingBox();
+
+        double        xlength         ();
+        double        ylength         ();
+        double        minx            ();
+        double        maxx            ();
+        double        miny            ();
+        double        maxy            ();
+        GIMSGeometry *clipToBox       ( GIMSBoundingBox * );
+                      GIMSBoundingBox ( GIMSPoint *lowerLeft, GIMSPoint *upperRight );
+                     ~GIMSBoundingBox ();
     };
     
     class GIMSEdge : public GIMSGeometry {
       public:
         GIMSPoint *p1,
                   *p2;
-        GIMSEdge ( GIMSPoint *p1, GIMSPoint *p2 );
-        ~GIMSEdge();
+        
+        GIMSGeometry *clipToBox ( GIMSBoundingBox * );
+                      GIMSEdge  ( GIMSPoint *p1, GIMSPoint *p2 );
+                     ~GIMSEdge  ();
     };
     
     // class GIMSEdgeList  : public GIMSGeometry {
@@ -95,8 +103,10 @@ namespace GIMSGEOMETRY {
     class GIMSGeometryList  : public GIMSGeometry {
       public:
         std::list<GIMSGeometry *> *list;
-        GIMSGeometryList();
-        ~GIMSGeometryList();
+
+        GIMSGeometry *clipToBox        ( GIMSBoundingBox * );
+                      GIMSGeometryList ();
+                     ~GIMSGeometryList ();
     };
     
 }

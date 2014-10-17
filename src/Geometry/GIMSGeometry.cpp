@@ -3,6 +3,16 @@
 using namespace GIMSGEOMETRY;
 
 /*
+-->GIMSGeometry
+*/
+GIMSGeometry::~GIMSGeometry (){}
+/*
+GIMSGeometry<--
+*/
+
+
+
+/*
 -->GIMSPoint
 */
 /* Returns true if the point lies inside the given bounding box */
@@ -49,6 +59,13 @@ bool GIMSPoint::isInsideEdgeOfSameLine( GIMSEdge *edge ){
     return this->x <= maxx + ERR_MARGIN && this->x >= minx - ERR_MARGIN;
 }
 
+GIMSGeometry *GIMSPoint::clipToBox ( GIMSBoundingBox *box ){
+    if( this->isInsideBox(box) )
+        return this;
+    else
+        return NULL;
+}
+
 GIMSPoint::GIMSPoint (double x, double y) {
     this->x = x;
     this->y = y;
@@ -91,6 +108,12 @@ double GIMSBoundingBox::maxy(){
     return this->upperRight->y;
 }
 
+/*Unsupported*/
+GIMSGeometry *GIMSBoundingBox::clipToBox ( GIMSBoundingBox * ){
+    fprintf(stderr, "Called clipToBox on a bounding box, which is not supported.");
+    exit(1);
+}
+
 GIMSBoundingBox::GIMSBoundingBox ( GIMSPoint *lowerLeft, GIMSPoint *upperRight ) {
     this->lowerLeft = lowerLeft;
     this->upperRight = upperRight;
@@ -118,6 +141,60 @@ GIMSEdge::GIMSEdge ( GIMSPoint *p1, GIMSPoint *p2 ){
 GIMSEdge::~GIMSEdge() {
     delete this->p1;
     delete this->p2;
+}
+
+GIMSGeometry *GIMSEdge::clipToBox ( GIMSBoundingBox *box ){
+    
+    //lowerLeft  = box->lowerLeft
+    //upperRight = box->upperRight
+
+    GIMSPoint upperLeft  = { box->lowerLeft->x , box->upperRight->y },
+              lowerRight = { box->upperRight->x, box->lowerLeft->y  };
+
+    GIMSPoint *squarePoints[] = {&upperLeft, box->upperRight, &lowerRight, box->lowerLeft};
+    
+    /*If all square's points lie on the same side of the line defined by the
+      edge's two endpoints, then there's no intersection*/
+    bool allOnSameSide = true;
+    double prev = squarePoints[0]->sideOf(this);
+    for ( int i = 1; i < 4; i++ ) {
+        if( squarePoints[i]->sideOf(this) != prev ){
+            allOnSameSide = false;
+            break;
+        }
+    }
+    if (allOnSameSide) {
+        return NULL;
+    }
+    
+    /*this part is reached only if the line defined by the two edge's endpoints
+      intersects the square. Therefore, we do a projection on both the x and y
+      axis of both the edge and the square and check for overlapings*/
+    if ( this->p1->x > lowerRight.x &&
+         this->p2->x > lowerRight.x    ) {
+        /*edge is to the right of the rectangle*/
+        return NULL;
+    }
+    
+    if ( this->p1->x < upperLeft.x &&
+         this->p2->x < upperLeft.x     ) {
+        /*edge is to the left of the rectangle*/
+        return NULL;
+    }
+    
+    if ( this->p1->y > upperLeft.y && 
+         this->p2->y > upperLeft.y    ) {
+        /*edge is above of the rectangle*/
+        return NULL;
+    }
+    
+    if ( this->p1->y < lowerRight.y && 
+         this->p2->y < lowerRight.y    ) {
+        /*edge is above of the rectangle*/
+        return NULL;
+    }
+    
+    return this;
 }
 /*
 GIMSEdge<--
@@ -160,6 +237,23 @@ GIMSPointList<--
 /*
 -->GIMSGeometryList
 */
+GIMSGeometry *GIMSGeometryList::clipToBox ( GIMSBoundingBox *box ){
+    GIMSGeometryList *clipped = NULL;
+
+    for( std::list<GIMSGeometry *>::iterator it = this->list->begin();
+         it != this->list->end(); it++                                 ) {
+        GIMSGeometry *g = (*it)->clipToBox(box);
+
+        if( g != NULL ){
+            if( clipped == NULL ){
+                clipped = new GIMSGeometryList;
+            }
+            clipped->list->push_back(g);
+        }
+    }
+    return clipped;
+}
+
 GIMSGeometryList::GIMSGeometryList(){
     this->list = new std::list<GIMSGeometry *>();
 }

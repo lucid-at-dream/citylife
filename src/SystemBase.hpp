@@ -2,6 +2,8 @@
 #define SYSTEMBASE_HPP
 
 #include <cstddef>
+#include <cstdio>
+#include <cstdlib>
 
 /*define a debug macro that can be easily deactivated*/
 #ifdef SUPRESS_NOTES

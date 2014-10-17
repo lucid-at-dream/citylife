@@ -3,8 +3,6 @@
 
 #include "DataStructs.hpp"
 #include <list>
-#include <cstdio>
-#include <cstdlib>
 
 namespace PMQUADTREE {
 
