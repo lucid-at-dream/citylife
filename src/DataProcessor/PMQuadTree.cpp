@@ -248,3 +248,46 @@ RelStatus PMQuadTree::isContained_g ( GIMSGeometry *result, GIMSGeometry *geom){
 RelStatus PMQuadTree::isBoundedBy ( GIMSGeometry *result, GIMSBoundingBox *box){
     return UNDECIDED_RELATIONSHIP;
 }
+
+
+
+
+
+
+
+
+
+
+/* Functions for debug renderization module */
+void PMQuadTree::debugRender(cairo_t* cr){
+    this->renderTree(cr, this->root);
+}
+
+void PMQuadTree::renderTree (cairo_t* cr, Node *n) {
+    /*if it is a leaf node*/
+    if (n->type != GRAY) {
+        this->renderLeafNode (cr, n);
+    } else {
+        for (Quadrant q : quadrantList) {
+            this->renderTree (cr, n->sons[q]);
+        }
+    }
+}
+
+void PMQuadTree::renderLeafNode (cairo_t *cr, Node *n) {
+
+    renderer->renderGeometry(cr, n->square);
+
+    if (n->type == BLACK) { //the WHITE type stands for empty node, thus we ignore it.
+        for ( list<GIMSGeometry *>::iterator it = n->dictionary->begin();
+              it != n->dictionary->end(); it++ ) {
+            if ( (*it)->type == EDGE ) {
+                GIMSEdge *trimmed =  ((GIMSEdge*)(*it))->trimToBBox(n->square);
+                renderer->renderGeometry( cr, trimmed );
+                delete trimmed;
+            }else if( (*it)->type == POINT ) {
+                renderer->renderGeometry( cr, (GIMSPoint*)(*it) );
+            }
+        }
+    }
+}

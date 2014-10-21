@@ -5,6 +5,7 @@
 #include "PGConnection.h"
 #include "Connect2Postgis.h"
 #include "PMQuadTree.hpp"
+#include "DebRender.hpp"
 #define INTERSECTION_COLOR "#D49"
 
 using namespace PMQUADTREE;

@@ -34,6 +34,7 @@ namespace GIMSGEOMETRY {
         //OGRFeature *label;
 
         virtual GIMSGeometry *clipToBox    ( GIMSBoundingBox * ) = 0;
+        virtual GIMSGeometry *clone        () = 0;
         virtual              ~GIMSGeometry ();
     };
 
@@ -41,6 +42,7 @@ namespace GIMSGEOMETRY {
       public:
         double x, y;
 
+        GIMSPoint    *clone                  ();
         GIMSGeometry *clipToBox              ( GIMSBoundingBox * );
         bool          isInsideBox            ( GIMSBoundingBox *box );
         GIMSSide      sideOf                 ( GIMSEdge *edge);
@@ -66,6 +68,7 @@ namespace GIMSGEOMETRY {
         GIMSPoint *lowerLeft ,
                   *upperRight;
 
+        GIMSBoundingBox *clone           ();
         double        xlength         ();
         double        ylength         ();
         double        minx            ();
@@ -81,8 +84,10 @@ namespace GIMSGEOMETRY {
       public:
         GIMSPoint *p1,
                   *p2;
-        
+
+        GIMSEdge *clone     ();
         GIMSGeometry *clipToBox ( GIMSBoundingBox * );
+        GIMSEdge     *trimToBBox( GIMSBoundingBox * );
                       GIMSEdge  ( GIMSPoint *p1, GIMSPoint *p2 );
                      ~GIMSEdge  ();
     };
@@ -105,6 +110,7 @@ namespace GIMSGEOMETRY {
       public:
         std::list<GIMSGeometry *> *list;
 
+        GIMSGeometryList *clone            ();
         GIMSGeometry *clipToBox        ( GIMSBoundingBox * );
                       GIMSGeometryList ();
                      ~GIMSGeometryList ();

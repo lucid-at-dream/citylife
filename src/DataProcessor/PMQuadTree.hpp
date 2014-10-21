@@ -2,6 +2,7 @@
 #define PMQUADTREE_HPP
 
 #include "DataStructs.hpp"
+#include "DebRender.hpp"
 #include <list>
 
 namespace PMQUADTREE {
@@ -53,7 +54,9 @@ namespace PMQUADTREE {
           in a given bounding box*/
         virtual RelStatus isBoundedBy ( GIMSGeometry *result, GIMSBoundingBox *);
 
-
+        void debugRender    (cairo_t* cr);
+        void renderTree     (cairo_t *cr, Node *n);
+        void renderLeafNode (cairo_t *cr, Node *n);
 
     };
 

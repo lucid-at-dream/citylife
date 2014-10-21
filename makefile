@@ -4,14 +4,16 @@ LDLIBS = -lm -lpq -lgdal
 COPT = -O2 -march=native -mtune=native
 CFLAGS = -g -Wall -std=c++11 -pedantic ${LDLIBS} ${COPT}
 
-#directories with source code to include
-INC_DIR = -I ${SRC_DIR} -I ${LIB_DIR} -I /usr/include/postgresql
-
 #directory structure
 SRC_DIR = src
 OBJ_DIR = obj
 LIB_DIR = lib
 BIN_DIR = bin
+
+#directories with source code to include
+CAIRO = `pkg-config --cflags --libs cairomm-1.0`
+GTK = `pkg-config --cflags --libs gtk+-3.0`
+INC_DIR = -I${SRC_DIR} -I${LIB_DIR} -I /usr/include/postgresql ${CAIRO} ${GTK}
 
 #resulting executable filename 
 OFILE = gims
@@ -35,7 +37,7 @@ ${OBJ_DIR}/%.o: ${SRC_DIR}/%.cpp | $$(@D)/
 
 #link the executable
 ${BIN_DIR}/${OFILE}: ${OBJFILES} | ${BIN_DIR}
-	${CC} ${CFLAGS} $^ -o $@
+	${CC} ${CFLAGS} $^ -o $@ ${INC_DIR}
 
 #create directories
 ${OBJ_DIR}%/:
