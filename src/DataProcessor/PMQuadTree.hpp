@@ -29,7 +29,7 @@ namespace PMQUADTREE {
              ~Node                  ();
     };
 
-    class PMQuadTree : public GIMSDataStruct {
+    class PMQuadTree : public GIMSDataStruct, public DebugRenderable {
       public:
         Node *root;
 
@@ -54,9 +54,9 @@ namespace PMQUADTREE {
           in a given bounding box*/
         virtual RelStatus isBoundedBy ( GIMSGeometry *result, GIMSBoundingBox *);
 
-        void debugRender    (cairo_t* cr);
-        void renderTree     (cairo_t *cr, Node *n);
-        void renderLeafNode (cairo_t *cr, Node *n);
+        void debugRender    ( Cairo::RefPtr<Cairo::Context> );
+        void renderTree     ( Cairo::RefPtr<Cairo::Context>, Node *n );
+        void renderLeafNode ( Cairo::RefPtr<Cairo::Context>, Node *n );
 
     };
 

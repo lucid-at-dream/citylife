@@ -44,8 +44,8 @@ GIMSSide GIMSPoint::sideOf ( GIMSEdge *edge) {
     double s = (edge->p2->x - edge->p1->x) * (this->y - edge->p1->y) -
                (edge->p2->y - edge->p1->y) * (this->x - edge->p1->x);
 
-    TODO (raw ERR_MARGIN might not be the most suited error margin for this operation)
-    return s < -ERR_MARGIN ? RIGHT : s > ERR_MARGIN ? LEFT : ALIGNED;
+    TODO (add some sort of ERR_MARGIN)
+    return s < 0 ? RIGHT : (s > 0 ? LEFT : ALIGNED);
 }
 
 /* Assuming that this point lies on the line defined by the line segment "edge",
@@ -181,9 +181,10 @@ GIMSGeometry *GIMSEdge::clipToBox ( GIMSBoundingBox *box ){
         }
     }
     if (allOnSameSide) {
+        printf("all on the same side\n");
         return NULL;
     }
-    
+
     /*this part is reached only if the line defined by the two edge's endpoints
       intersects the square. Therefore, we do a projection on both the x and y
       axis of both the edge and the square and check for overlapings*/

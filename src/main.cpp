@@ -16,7 +16,7 @@ int total = 0;
 GIMSGeometry *retrieveFeature ( OGRFeature *feature );
 void dumpList (std::list<GIMSGeometry *> *list);
 
-int main () {
+int main (int argc, char *argv[]) {
 
     Geometry::Connect2Postgis getGeom;
     
@@ -52,6 +52,10 @@ int main () {
 
     printf("inserted %d edges.\n", total);
     
+    renderer = new DebRenderer();
+    renderer->renderCallback = tree;
+    renderer->mainloop(argc, argv);
+
     delete layer;
     
     return 0;

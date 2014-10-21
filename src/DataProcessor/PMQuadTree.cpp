@@ -41,6 +41,7 @@ void Node::insert ( GIMSGeometry *geom ) {
     GIMSGeometryList *clipped = (GIMSGeometryList *)(geom->clipToBox ( this->square ));
     
     if (clipped == NULL) {
+        printf("node not intersected\n");
         return;
     }
     
@@ -51,9 +52,11 @@ void Node::insert ( GIMSGeometry *geom ) {
         if (this->dictionary != NULL) {
             clipped->list->insert (clipped->list->end(), this->dictionary->begin(), this->dictionary->end() );
             delete this->dictionary;
+            this->dictionary = NULL;
         }
         
         if ( this->validateGeometry ( clipped ) ) {
+            printf("inserting geometry in node\n");
             this->type = BLACK;
             this->dictionary = clipped->list;
             return;
@@ -74,18 +77,21 @@ void Node::insert ( GIMSGeometry *geom ) {
    The behaviour is undefined in such a situation. */
 bool Node::validateGeometry (GIMSGeometry *g) {
 
-    if( g->type != MIXEDLIST )
+    printf("datatype: %d\n", g->type);
+    if( g->type != MIXEDLIST ){
         return true;
+    }
+
 
     GIMSGeometryList *geom = (GIMSGeometryList *)g;
-
+    printf("inserting geometry list of size: %lu\n", geom->list->size());
     for ( list<GIMSGeometry *>::iterator it = geom->list->begin();
           it != geom->list->end();
           it++                                                          ) {
 
         if ( (*it)->type == POINT ) {
             return this->validateVertexSharing ( (GIMSPoint *)(*it), geom->list, it);
-            
+
         }else if ( (*it)->type == EDGE ) {
 
             bool p1Inside = ((GIMSEdge *)(*it))->p1->isInsideBox( this->square ),
@@ -93,13 +99,25 @@ bool Node::validateGeometry (GIMSGeometry *g) {
             
             if ( p1Inside && p2Inside ){
                 /*if the square has both edge endpoints contained*/
+                printf("both endpoints contained\n");
                 return false;
                 
             } else if ( p1Inside ) {
-                return validateVertexSharing ( ((GIMSEdge *)(*it))->p1, geom->list, it);
+                if( validateVertexSharing ( ((GIMSEdge *)(*it))->p1, geom->list, it) ){
+                    return true;
+                }else{
+                    printf("invalid vertex sharing - 1\n");
+                    return false;
+                }
+
                 
             } else if ( p2Inside ) {
-                return validateVertexSharing ( ((GIMSEdge *)(*it))->p2, geom->list, it);
+                if( validateVertexSharing ( ((GIMSEdge *)(*it))->p2, geom->list, it) ){
+                    return true;
+                }else{
+                    printf("invalid vertex sharing - 2\n");
+                    return false;
+                }
             }
         }else{
             fprintf(stderr, "unsupported geometry was passed on to the node validation function." );
@@ -259,11 +277,29 @@ RelStatus PMQuadTree::isBoundedBy ( GIMSGeometry *result, GIMSBoundingBox *box){
 
 
 /* Functions for debug renderization module */
-void PMQuadTree::debugRender(cairo_t* cr){
-    this->renderTree(cr, this->root);
+void PMQuadTree::debugRender(Cairo::RefPtr<Cairo::Context> cr){
+    // cr->move_to( -100,-100);
+    // cr->line_to( 600, 500);
+    // cr->stroke();
+
+    renderer->setScale( 400.0/this->root->square->xlength(),
+                        400.0/this->root->square->ylength() );
+
+    printf("applying scale: %lf, %lf\n", 400.0/this->root->square->xlength()
+                                       , 400.0/this->root->square->ylength());
+
+    renderer->setTranslation( -this->root->square->lowerLeft->x,
+                              -this->root->square->lowerLeft->y );
+
+    printf("applying translate: %.3lf, %.3lf\n", -this->root->square->lowerLeft->x,
+                                                 -this->root->square->lowerLeft->y );
+
+    printf("about to render the pmtree\n");
+
+    this->renderTree ( cr, this->root );
 }
 
-void PMQuadTree::renderTree (cairo_t* cr, Node *n) {
+void PMQuadTree::renderTree (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
     /*if it is a leaf node*/
     if (n->type != GRAY) {
         this->renderLeafNode (cr, n);
@@ -274,11 +310,12 @@ void PMQuadTree::renderTree (cairo_t* cr, Node *n) {
     }
 }
 
-void PMQuadTree::renderLeafNode (cairo_t *cr, Node *n) {
+void PMQuadTree::renderLeafNode (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
 
     renderer->renderGeometry(cr, n->square);
 
     if (n->type == BLACK) { //the WHITE type stands for empty node, thus we ignore it.
+        printf("black node reached!\n");
         for ( list<GIMSGeometry *>::iterator it = n->dictionary->begin();
               it != n->dictionary->end(); it++ ) {
             if ( (*it)->type == EDGE ) {

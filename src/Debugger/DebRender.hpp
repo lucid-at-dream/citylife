@@ -4,35 +4,49 @@
 #include "SystemBase.hpp"
 #include "GIMSGeometry.hpp"
 #include <cairomm/cairomm.h>
-#include <gtk/gtk.h>
+#include <cairo.h>
+#include <gtkmm.h>
 #include <cmath>
 #include <functional>
 
 using namespace GIMSGEOMETRY;
 
+class DebugRenderable {
+  public:
+    virtual void debugRender( Cairo::RefPtr<Cairo::Context> ) = 0;
+};
+
 class DebRenderer {
 
   private:
-    GtkWidget *window;
-    GtkWidget *darea;
+    Gtk::Window *window;
+    Gtk::DrawingArea *darea;
+
+    double scalex,
+           scaley,
+           translatex,
+           translatey;
 
     void init ( int argc, char *argv[] );
 
   public:
-    std::function<void(cairo_t *)> renderCallback;
+    DebugRenderable *renderCallback;
 
+    void  setScale       (double x, double y);
+    void  setTranslation (double x, double y);
     void  mainloop       ();
-    void  render         ( cairo_t *, GtkWidget *);
-    void  renderGeometry ( cairo_t *cr, GIMSGeometry *g );
-    void  renderPoint    ( cairo_t *cr, GIMSPoint * );
-    void  renderEdge     ( cairo_t *cr, GIMSEdge *  );
-    void  renderBBox     ( cairo_t *cr, GIMSBoundingBox *box );
+    void  render         ( Cairo::RefPtr<Cairo::Context>  );
+    void  renderGeometry ( Cairo::RefPtr<Cairo::Context>, GIMSGeometry * );
+    void  renderPoint    ( Cairo::RefPtr<Cairo::Context>, GIMSPoint * );
+    void  renderEdge     ( Cairo::RefPtr<Cairo::Context>, GIMSEdge *  );
+    void  renderBBox     ( Cairo::RefPtr<Cairo::Context>, GIMSBoundingBox * );
     int   mainloop       ( int argc, char *argv[] );
-          DebRenderer    (std::function<void(cairo_t *)>);
+          DebRenderer    ();
+          DebRenderer    (DebugRenderable *);
          ~DebRenderer    ();
 };
 
 extern DebRenderer *renderer;
-gboolean on_draw_event(GtkWidget *, cairo_t *, gpointer);
+bool on_draw_event(const ::Cairo::RefPtr< ::Cairo::Context> &);
 
 #endif

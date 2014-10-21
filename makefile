@@ -11,9 +11,9 @@ LIB_DIR = lib
 BIN_DIR = bin
 
 #directories with source code to include
-CAIRO = `pkg-config --cflags --libs cairomm-1.0`
-GTK = `pkg-config --cflags --libs gtk+-3.0`
-INC_DIR = -I${SRC_DIR} -I${LIB_DIR} -I /usr/include/postgresql ${CAIRO} ${GTK}
+CAIROMM = `pkg-config --cflags --libs cairomm-1.0`
+GTKMM = `pkg-config --cflags --libs gtkmm-3.0`
+INC_DIR = -I${LIB_DIR} -I /usr/include/postgresql ${CAIROMM} ${GTKMM}
 
 #resulting executable filename 
 OFILE = gims
