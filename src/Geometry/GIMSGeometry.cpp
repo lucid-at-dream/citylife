@@ -70,6 +70,13 @@ GIMSGeometry *GIMSPoint::clipToBox ( GIMSBoundingBox *box ){
         return NULL;
 }
 
+bool GIMSPoint::equals ( GIMSPoint *cmp ) {
+    if( this->x == cmp->x && this->y == cmp->y ){
+        return true;
+    }
+    return false;
+}
+
 GIMSPoint::GIMSPoint() {
     this->type = POINT;
 }
@@ -181,9 +188,11 @@ GIMSGeometry *GIMSEdge::clipToBox ( GIMSBoundingBox *box ){
         }
     }
     if (allOnSameSide) {
-        printf("all on the same side\n");
+        //printf("all on the same side [(%.3lf, %.3lf), (%.3lf, %.3lf)]\n", this->p1->x, this->p1->y, this->p2->x, this->p2->y);
         return NULL;
     }
+
+
 
     /*this part is reached only if the line defined by the two edge's endpoints
       intersects the square. Therefore, we do a projection on both the x and y
@@ -191,27 +200,32 @@ GIMSGeometry *GIMSEdge::clipToBox ( GIMSBoundingBox *box ){
     if ( this->p1->x > lowerRight.x &&
          this->p2->x > lowerRight.x    ) {
         /*edge is to the right of the rectangle*/
+        //printf("edge is to the right of the rectangle [(%.3lf, %.3lf), (%.3lf, %.3lf)]\n", this->p1->x, this->p1->y, this->p2->x, this->p2->y);
         return NULL;
     }
     
     if ( this->p1->x < upperLeft.x &&
          this->p2->x < upperLeft.x     ) {
         /*edge is to the left of the rectangle*/
+        //printf("edge is to the left of the rectangle [(%.3lf, %.3lf), (%.3lf, %.3lf)]\n", this->p1->x, this->p1->y, this->p2->x, this->p2->y);
         return NULL;
     }
     
     if ( this->p1->y > upperLeft.y && 
          this->p2->y > upperLeft.y    ) {
         /*edge is above of the rectangle*/
+        //printf("edge is above of the rectangle [(%.3lf, %.3lf), (%.3lf, %.3lf)]\n", this->p1->x, this->p1->y, this->p2->x, this->p2->y);
         return NULL;
     }
     
     if ( this->p1->y < lowerRight.y && 
          this->p2->y < lowerRight.y    ) {
         /*edge is above of the rectangle*/
+        //printf("edge is above of the rectangle [(%.3lf, %.3lf), (%.3lf, %.3lf)]\n", this->p1->x, this->p1->y, this->p2->x, this->p2->y);
         return NULL;
     }
     
+    //printf("EDGE INTERSECTS RECTANGLE [(%.3lf, %.3lf), (%.3lf, %.3lf)]\n", this->p1->x, this->p1->y, this->p2->x, this->p2->y);
     return this;
 }
 
@@ -366,8 +380,11 @@ GIMSGeometryList *GIMSGeometryList::clone () {
 GIMSGeometry *GIMSGeometryList::clipToBox ( GIMSBoundingBox *box ){
     GIMSGeometryList *clipped = NULL;
 
+    int count = 0,
+        size = this->list->size();
     for( std::list<GIMSGeometry *>::iterator it = this->list->begin();
          it != this->list->end(); it++                                 ) {
+        //printf("%d/%d -- ", ++count, size);
         GIMSGeometry *g = (*it)->clipToBox(box);
 
         if( g != NULL ){

@@ -42,6 +42,7 @@ namespace GIMSGEOMETRY {
       public:
         double x, y;
 
+        bool          equals                 ( GIMSPoint *cmp );
         GIMSPoint    *clone                  ();
         GIMSGeometry *clipToBox              ( GIMSBoundingBox * );
         bool          isInsideBox            ( GIMSBoundingBox *box );
@@ -53,8 +54,9 @@ namespace GIMSGEOMETRY {
 
         inline bool operator == ( const GIMSPoint& cmp ) {
             if ( this->x <= cmp.x + ERR_MARGIN && this->x >= cmp.x - ERR_MARGIN &&
-                 this->y <= cmp.y + ERR_MARGIN && this->y >= cmp.y - ERR_MARGIN )
+                 this->y <= cmp.y + ERR_MARGIN && this->y >= cmp.y - ERR_MARGIN ){
                 return true;
+            }
             return false;
         }
         

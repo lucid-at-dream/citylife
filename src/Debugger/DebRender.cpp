@@ -9,7 +9,6 @@ void DebRenderer::render(Cairo::RefPtr<Cairo::Context> cr) {
     cr->set_source_rgb(0, 0, 0);
     cr->set_line_width(1.0);
 
-    printf("rendering debug info\n");
     this->renderCallback->debugRender(cr);
 
     cr->stroke();
@@ -40,22 +39,20 @@ void DebRenderer::renderGeometry( Cairo::RefPtr<Cairo::Context> cr, GIMSGeometry
 }
 
 void DebRenderer::renderPoint ( Cairo::RefPtr<Cairo::Context> cr, GIMSPoint *p ) {
-    //cr->set_source_rgb(cr, 0.69, 0.19, 0);
-    printf("rendering point\n");
     cr->move_to((p->x+translatex)*scalex, (p->y+translatey)*scaley);
     cr->line_to((p->x+translatex)*scalex, (p->y+translatey)*scaley);
     cr->stroke();
 }
 
 void DebRenderer::renderEdge ( Cairo::RefPtr<Cairo::Context> cr, GIMSEdge *e ) {
-    printf("rendering edge\n");
+    cr->set_source_rgb(0.69, 0.19, 0);
     cr->move_to((e->p1->x + translatex)*scalex, (e->p1->y + translatey)*scaley);
     cr->line_to((e->p2->x + translatex)*scalex, (e->p2->y + translatey)*scaley);
     cr->stroke();
 }
 
 void DebRenderer::renderBBox ( Cairo::RefPtr<Cairo::Context> cr, GIMSBoundingBox *box ) {
-    printf("rendering box\n");
+    //printf("rendering box\n");
     cr->move_to((box->lowerLeft->x + translatex)*scalex,  (box->lowerLeft->y + translatey)*scaley );
     cr->line_to((box->lowerLeft->x + translatex)*scalex,  (box->upperRight->y + translatey)*scaley);
     cr->line_to((box->upperRight->x + translatex)*scalex, (box->upperRight->y + translatey)*scaley);

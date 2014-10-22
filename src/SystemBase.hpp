@@ -14,6 +14,6 @@
 #endif
 
 /*define the error margin (comparations will use this value)*/
-#define ERR_MARGIN 0.000001
+#define ERR_MARGIN 0.001
 
 #endif
