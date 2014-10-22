@@ -1,36 +1,69 @@
 #include "DebRender.hpp"
 
-bool on_scroll_event(GdkEventScroll* event) {
+bool on_drag_begin(GdkEventButton* event) {
+    printf("began drag\n");
+    renderer->dragBegin ( );
+    return false;
+}
 
-    if( event->direction == GDK_SCROLL_UP )
-        renderer->zoom += 0.1;
-    else if( event->direction == GDK_SCROLL_DOWN )
-        renderer->zoom -= 0.1;
-
+bool on_drag_end(GdkEventButton *event) {
+    printf("end drag\n");
+    renderer->dragEnd( );
     renderer->scheduleRedraw();
+    return false;
+}
 
+bool on_scroll_event(GdkEventScroll* event) {
+    double zinc = 0.1;
+    if( event->direction == GDK_SCROLL_UP ) {
+        renderer->zoom += zinc;
+        renderer->panx -= 200 * zinc;
+        renderer->pany -= 200 * zinc;
+    } else if ( event->direction == GDK_SCROLL_DOWN ) {
+        renderer->zoom -= zinc;
+        renderer->panx += 200 * zinc;
+        renderer->pany += 200 * zinc;
+    }
+    renderer->scheduleRedraw();
     return false;
 }
 
 bool on_draw_event(const ::Cairo::RefPtr< ::Cairo::Context> &cr) {
+    cr->translate( renderer->panx, renderer->pany );
     cr->scale( renderer->zoom, renderer->zoom );
 
     renderer->render(cr);
     return false;
 }
 
+void DebRenderer::dragBegin (){
+    int x, y;
+    darea->get_pointer ( x, y );
+    dragx = x;
+    dragy = y;
+}
+void DebRenderer::dragEnd (){
+    int x, y;
+    darea->get_pointer ( x, y );
+    int relx = x - dragx,
+        rely = y - dragy;
+    panx += relx;
+    pany += rely;
+}
+
+void DebRenderer::scheduleRedraw () {
+    this->darea->queue_draw_area (0, 0, 400, 400);
+}
+
 void DebRenderer::render(Cairo::RefPtr<Cairo::Context> cr) {
     cr->set_source_rgb(0, 0, 0);
-    cr->set_line_width(1.0);
+    cr->set_line_width(1.0/zoom);
 
     this->renderCallback->debugRender(cr);
 
     cr->stroke();
 }
 
-void DebRenderer::scheduleRedraw () {
-    this->darea->queue_draw_area (0, 0, 400, 400);
-}
 
 void DebRenderer::renderGeometry( Cairo::RefPtr<Cairo::Context> cr, GIMSGeometry *g ){
     if ( g->type == POINT ) {
@@ -96,11 +129,15 @@ void DebRenderer::init( int argc, char *argv[] ){
     darea = new Gtk::DrawingArea();
     window->add( *((Gtk::Widget *)darea) );
 
-    //gtk_widget_add_events(window, GDK_BUTTON_PRESS_MASK);
     darea->signal_draw().connect( sigc::ptr_fun( &on_draw_event ) );
 
     darea->add_events(Gdk::SCROLL_MASK);
+    darea->add_events(Gdk::BUTTON_PRESS_MASK);
+    darea->add_events(Gdk::BUTTON_RELEASE_MASK);
     darea->signal_scroll_event().connect( sigc::ptr_fun( &on_scroll_event ) );
+
+    darea->signal_button_press_event().connect( sigc::ptr_fun( &on_drag_begin ) );
+    darea->signal_button_release_event().connect( sigc::ptr_fun( &on_drag_end ) );
 
     window->set_position( Gtk::WindowPosition::WIN_POS_CENTER );
     window->set_default_size(400, 400);
@@ -123,9 +160,11 @@ int DebRenderer::mainloop ( int argc, char *argv[] ) {
 DebRenderer::DebRenderer (DebugRenderable *renderCallback) {
     this->renderCallback = renderCallback;
     this->zoom = 1.0;
+    this->panx = this->pany = 0;
 }
 DebRenderer::DebRenderer(){
     this->zoom = 1.0;
+    this->panx = this->pany = 0;
 }
 DebRenderer::~DebRenderer(){
 }

@@ -26,13 +26,19 @@ class DebRenderer {
            scaley,
            translatex,
            translatey;
+    
+    int dragx,
+        dragy;
 
     void init ( int argc, char *argv[] );
 
   public:
     DebugRenderable *renderCallback;
     double zoom;
+    double panx, pany;
 
+    void  dragBegin      ();
+    void  dragEnd        ();
     void  scheduleRedraw ();
     void  setScale       (double x, double y);
     void  setTranslation (double x, double y);
