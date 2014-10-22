@@ -14,23 +14,20 @@ bool on_drag_end(GdkEventButton *event) {
 }
 
 bool on_scroll_event(GdkEventScroll* event) {
-    double zinc = 0.1;
+    double zinc = fabs( 0.1 * renderer->zoom );
     if( event->direction == GDK_SCROLL_UP ) {
         renderer->zoom += zinc;
-        renderer->panx -= 200 * zinc;
-        renderer->pany -= 200 * zinc;
     } else if ( event->direction == GDK_SCROLL_DOWN ) {
         renderer->zoom -= zinc;
-        renderer->panx += 200 * zinc;
-        renderer->pany += 200 * zinc;
     }
     renderer->scheduleRedraw();
     return false;
 }
 
 bool on_draw_event(const ::Cairo::RefPtr< ::Cairo::Context> &cr) {
-    cr->translate( renderer->panx, renderer->pany );
+    cr->translate( -200 * (renderer->zoom-1), -200 * (renderer->zoom-1) );
     cr->scale( renderer->zoom, renderer->zoom );
+    cr->translate( renderer->panx, renderer->pany );
 
     renderer->render(cr);
     return false;
@@ -47,8 +44,8 @@ void DebRenderer::dragEnd (){
     darea->get_pointer ( x, y );
     int relx = x - dragx,
         rely = y - dragy;
-    panx += relx;
-    pany += rely;
+    panx += relx / renderer->zoom;
+    pany += rely / renderer->zoom;
 }
 
 void DebRenderer::scheduleRedraw () {
