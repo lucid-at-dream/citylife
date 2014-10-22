@@ -1,6 +1,20 @@
 #include "DebRender.hpp"
 
+bool on_scroll_event(GdkEventScroll* event) {
+
+    if( event->direction == GDK_SCROLL_UP )
+        renderer->zoom += 0.1;
+    else if( event->direction == GDK_SCROLL_DOWN )
+        renderer->zoom -= 0.1;
+
+    renderer->scheduleRedraw();
+
+    return false;
+}
+
 bool on_draw_event(const ::Cairo::RefPtr< ::Cairo::Context> &cr) {
+    cr->scale( renderer->zoom, renderer->zoom );
+
     renderer->render(cr);
     return false;
 }
@@ -12,6 +26,10 @@ void DebRenderer::render(Cairo::RefPtr<Cairo::Context> cr) {
     this->renderCallback->debugRender(cr);
 
     cr->stroke();
+}
+
+void DebRenderer::scheduleRedraw () {
+    this->darea->queue_draw_area (0, 0, 400, 400);
 }
 
 void DebRenderer::renderGeometry( Cairo::RefPtr<Cairo::Context> cr, GIMSGeometry *g ){
@@ -45,7 +63,7 @@ void DebRenderer::renderPoint ( Cairo::RefPtr<Cairo::Context> cr, GIMSPoint *p )
 }
 
 void DebRenderer::renderEdge ( Cairo::RefPtr<Cairo::Context> cr, GIMSEdge *e ) {
-    cr->set_source_rgb(0.69, 0.19, 0);
+    //cr->set_source_rgb(0.69, 0.19, 0);
     cr->move_to((e->p1->x + translatex)*scalex, (e->p1->y + translatey)*scaley);
     cr->line_to((e->p2->x + translatex)*scalex, (e->p2->y + translatey)*scaley);
     cr->stroke();
@@ -79,9 +97,10 @@ void DebRenderer::init( int argc, char *argv[] ){
     window->add( *((Gtk::Widget *)darea) );
 
     //gtk_widget_add_events(window, GDK_BUTTON_PRESS_MASK);
-    darea->signal_draw().connect(
-        sigc::ptr_fun(&on_draw_event )
-    );
+    darea->signal_draw().connect( sigc::ptr_fun( &on_draw_event ) );
+
+    darea->add_events(Gdk::SCROLL_MASK);
+    darea->signal_scroll_event().connect( sigc::ptr_fun( &on_scroll_event ) );
 
     window->set_position( Gtk::WindowPosition::WIN_POS_CENTER );
     window->set_default_size(400, 400);
@@ -103,8 +122,10 @@ int DebRenderer::mainloop ( int argc, char *argv[] ) {
 
 DebRenderer::DebRenderer (DebugRenderable *renderCallback) {
     this->renderCallback = renderCallback;
+    this->zoom = 1.0;
 }
 DebRenderer::DebRenderer(){
+    this->zoom = 1.0;
 }
 DebRenderer::~DebRenderer(){
 }

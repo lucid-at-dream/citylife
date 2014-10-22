@@ -31,7 +31,9 @@ class DebRenderer {
 
   public:
     DebugRenderable *renderCallback;
+    double zoom;
 
+    void  scheduleRedraw ();
     void  setScale       (double x, double y);
     void  setTranslation (double x, double y);
     void  mainloop       ();
@@ -48,5 +50,6 @@ class DebRenderer {
 
 extern DebRenderer *renderer;
 bool on_draw_event(const ::Cairo::RefPtr< ::Cairo::Context> &);
+bool on_scroll_event(GdkEventScroll* event);
 
 #endif
