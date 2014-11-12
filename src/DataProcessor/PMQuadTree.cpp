@@ -93,55 +93,75 @@ bool Node::validateGeometry (GIMSGeometry *g) {
         return true;
     }
 
+    GIMSPoint *contained = NULL;
 
     GIMSGeometryList *geom = (GIMSGeometryList *)g;
-    //printf("inserting geometry list of size: %lu\n", geom->list->size());
-    for ( list<GIMSGeometry *>::iterator it = geom->list->begin();
-          it != geom->list->end();
-          it++                                                          ) {
+    for ( list<GIMSGeometry *>::iterator it = geom->list->begin(); it != geom->list->end(); it++ ) {
 
         if ( (*it)->type == POINT ) {
-            return this->validateVertexSharing ( (GIMSPoint *)(*it), geom->list, it);
+            if(contained == NULL)
+                contained = (GIMSPoint *)(*it);
+            else{
+                if( !((GIMSPoint *)(*it))->equals(contained) )
+                    return false;
+            }
 
         }else if ( (*it)->type == EDGE ) {
 
             bool p1Inside = ((GIMSEdge *)(*it))->p1->isInsideBox( this->square ),
                  p2Inside = ((GIMSEdge *)(*it))->p2->isInsideBox( this->square );
-            
-            if ( p1Inside && p2Inside ){
-                /*if the square has both edge endpoints contained*/
-                //printf("both endpoints contained\n");
-                return false;
-                
-            } else if ( p1Inside ) {
-                if( validateVertexSharing ( ((GIMSEdge *)(*it))->p1, geom->list, it) ){
-                    return true;
-                }else{
-                    //printf("invalid vertex sharing - 1\n");
+
+                if( p1Inside && contained != NULL && !((GIMSEdge *)(*it))->p1->equals(contained) )
                     return false;
+                if( p2Inside && contained != NULL && !((GIMSEdge *)(*it))->p2->equals(contained) )
+                    return false;
+                if ( p1Inside && p2Inside )
+                    return false;
+
+                if( contained == NULL ){
+                    if(p1Inside)
+                        contained = ((GIMSEdge *)(*it))->p1;
+                    else if(p2Inside)
+                        contained = ((GIMSEdge *)(*it))->p2;
                 }
 
-                
-            } else if ( p2Inside ) {
-                if( validateVertexSharing ( ((GIMSEdge *)(*it))->p2, geom->list, it) ){
-                    return true;
-                }else{
-                    //printf("invalid vertex sharing - 2\n");
-                    return false;
-                }
-            }
         }else if( (*it)->type == POLYGON ){
             GIMSPolygon *p = (GIMSPolygon *)(*it);
 
-            GIMSGeometryList *rings = new GIMSGeometryList();
-            rings->list->insert (rings->list->end(), p->externalRing->list->begin(), p->externalRing->list->end() );
-            for ( list<GIMSGeometry *>::iterator ir = p->internalRings->list->begin();
-                  ir != p->internalRings->list->end(); ir++ ){
-                rings->list->insert (rings->list->end(), ((GIMSGeometryList *)(*ir))->list->begin(), ((GIMSGeometryList *)(*ir))->list->end() );
+            //validate the external ring
+            for ( list<GIMSGeometry *>::iterator ext = p->externalRing->list->begin(); ext != p->externalRing->list->end(); ext++ ){
+                bool p1Inside = ((GIMSEdge *)(*ext))->p1->isInsideBox( this->square ),
+                     p2Inside = ((GIMSEdge *)(*ext))->p2->isInsideBox( this->square );
+                if( (contained != NULL && p1Inside && !((GIMSEdge *)(*ext))->p1->equals(contained)) ||
+                    (contained != NULL && p2Inside && !((GIMSEdge *)(*ext))->p2->equals(contained)) ||
+                    (p1Inside && p2Inside) ){
+                    return false;
+                }else if(contained == NULL){
+                    if(p1Inside)
+                        contained = ((GIMSEdge *)(*ext))->p1;
+                    if(p2Inside)
+                        contained = ((GIMSEdge *)(*ext))->p2;
+                }
             }
-            bool result = this->validateGeometry(rings);
-            delete rings;
-            return result;
+
+            //iterate over the internal rings
+            for ( list<GIMSGeometry *>::iterator ir = p->internalRings->list->begin(); ir != p->internalRings->list->end(); ir++ ){
+                //and validate each of those internal rings
+                for( list<GIMSGeometry *>::iterator edge = ((GIMSGeometryList *)(*ir))->list->begin(); edge != ((GIMSGeometryList *)(*ir))->list->end(); edge++ ){
+                    bool p1Inside = ((GIMSEdge *)(*edge))->p1->isInsideBox( this->square ),
+                         p2Inside = ((GIMSEdge *)(*edge))->p2->isInsideBox( this->square );
+                    if( (contained != NULL && p1Inside && !((GIMSEdge *)(*edge))->p1->equals(contained)) ||
+                        (contained != NULL && p2Inside && !((GIMSEdge *)(*edge))->p2->equals(contained)) ||
+                        (p1Inside && p2Inside) )
+                        return false;
+                    else if(contained == NULL){
+                        if(p1Inside)
+                            contained = ((GIMSEdge *)(*edge))->p1;
+                        if(p2Inside)
+                            contained = ((GIMSEdge *)(*edge))->p2;
+                    }
+                }
+            }
         }else{
             fprintf(stderr, "unsupported geometry was passed on to the node validation function." );
             exit(-1);
@@ -187,6 +207,16 @@ bool Node::validateVertexSharing ( GIMSPoint *pt,
             if ( !( ((GIMSPoint *)(*it))->equals(pt) ) &&
                  ((GIMSPoint *)(*it))->isInsideBox(this->square) ) {
                 return false;
+            }
+        } else if ( (*it)->type == POLYGON ) {
+            bool val = validateVertexSharing(pt, ((GIMSPolygon *)geom)->externalRing->list, ((GIMSPolygon *)geom)->externalRing->list->begin() );
+            if( !val )
+                return false;
+            for( list<GIMSGeometry *>::iterator k = ((GIMSPolygon *)geom)->internalRings->list->begin();
+                 k != ((GIMSPolygon *)geom)->internalRings->list->end(); k++ ) {
+                val = validateVertexSharing(pt, ((GIMSGeometryList *)(*k))->list, ((GIMSGeometryList *)(*k))->list->begin());
+                if( !val )
+                    return false;
             }
         }
     }
@@ -319,13 +349,12 @@ void PMQuadTree::debugRender(Cairo::RefPtr<Cairo::Context> cr){
     this->renderTree ( cr, this->root );
     printf("rendered the tree\n");
 
-    /*
     list<Node *> *results = (list<Node *> *)(this->root->search(this->query));
     cr->set_source_rgba(0.0, 0.19, 0.69, 0.2);
     for( list<Node *>::iterator i = results->begin(); i!= results->end(); i++ ){
         renderer->renderFilledBBox( cr, (*i)->square );
         cr->fill();
-    }*/
+    }
 }
 
 void PMQuadTree::renderTree (Cairo::RefPtr<Cairo::Context> cr, Node *n) {

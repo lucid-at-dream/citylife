@@ -56,7 +56,7 @@ int main (int argc, char *argv[]) {
             tree->insert ( retrieveFeature (feature) );
         count++;
         delete feature;
-        if(count > 250)
+        if(count > 50)
             break;
     }
     tree->query = query;

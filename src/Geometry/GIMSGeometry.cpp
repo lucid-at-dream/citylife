@@ -419,8 +419,13 @@ GIMSPolygon *GIMSPolygon::clone(){
 }
 
 GIMSGeometry *GIMSPolygon::clipToBox(GIMSBoundingBox *box){
-    return new GIMSPolygon( (GIMSGeometryList *)(this->externalRing->clipToBox(box)),
-                            (GIMSGeometryList *)(this->internalRings->clipToBox(box)) );
+    GIMSGeometryList *exterior = (GIMSGeometryList *)(this->externalRing->clipToBox(box));
+    GIMSGeometryList *interior = (GIMSGeometryList *)(this->internalRings->clipToBox(box));
+
+    if(exterior != NULL || interior != NULL )
+        return new GIMSPolygon( exterior, interior );
+    else
+        return NULL;
 }
 
 GIMSPolygon::GIMSPolygon( GIMSGeometryList *externalRing, GIMSGeometryList *internalRings ){
