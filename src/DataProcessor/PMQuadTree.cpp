@@ -130,6 +130,18 @@ bool Node::validateGeometry (GIMSGeometry *g) {
                     return false;
                 }
             }
+        }else if( (*it)->type == POLYGON ){
+            GIMSPolygon *p = (GIMSPolygon *)(*it);
+
+            GIMSGeometryList *rings = new GIMSGeometryList();
+            rings->list->insert (rings->list->end(), p->externalRing->list->begin(), p->externalRing->list->end() );
+            for ( list<GIMSGeometry *>::iterator ir = p->internalRings->list->begin();
+                  ir != p->internalRings->list->end(); ir++ ){
+                rings->list->insert (rings->list->end(), ((GIMSGeometryList *)(*ir))->list->begin(), ((GIMSGeometryList *)(*ir))->list->end() );
+            }
+            bool result = this->validateGeometry(rings);
+            delete rings;
+            return result;
         }else{
             fprintf(stderr, "unsupported geometry was passed on to the node validation function." );
             exit(-1);
@@ -304,9 +316,16 @@ void PMQuadTree::debugRender(Cairo::RefPtr<Cairo::Context> cr){
                         400.0/this->root->square->ylength() );
     renderer->setTranslation( -this->root->square->lowerLeft->x,
                               -this->root->square->lowerLeft->y );
-
     this->renderTree ( cr, this->root );
     printf("rendered the tree\n");
+
+    /*
+    list<Node *> *results = (list<Node *> *)(this->root->search(this->query));
+    cr->set_source_rgba(0.0, 0.19, 0.69, 0.2);
+    for( list<Node *>::iterator i = results->begin(); i!= results->end(); i++ ){
+        renderer->renderFilledBBox( cr, (*i)->square );
+        cr->fill();
+    }*/
 }
 
 void PMQuadTree::renderTree (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
@@ -333,6 +352,11 @@ void PMQuadTree::renderLeafNode (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
                 delete trimmed;
             }else if( (*it)->type == POINT ) {
                 renderer->renderGeometry( cr, (GIMSPoint*)(*it) );
+            }else if( (*it)->type == POLYGON ) {
+                renderer->renderGeometry( cr, ((GIMSPolygon *)(*it))->externalRing );
+                cr->set_source_rgb(0.69, 0.19, 0.0);
+                renderer->renderGeometry( cr, ((GIMSPolygon *)(*it))->internalRings );
+                cr->set_source_rgb(0.0, 0.0, 0.0);
             }
         }
     }

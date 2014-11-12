@@ -13,7 +13,8 @@ namespace GIMSGEOMETRY {
         //POINTLIST,
         MIXEDLIST,
         EDGE,
-        POINT
+        POINT,
+        POLYGON,
     };
 
     enum GIMSSide {
@@ -25,6 +26,7 @@ namespace GIMSGEOMETRY {
     class GIMSBoundingBox;
     class GIMSPoint;
     class GIMSEdge;
+    class GIMSPolygon;
     class GIMSGeometryList;
 
     class GIMSGeometry {
@@ -94,6 +96,17 @@ namespace GIMSGEOMETRY {
                      ~GIMSEdge  ();
     };
     
+    class GIMSPolygon : public GIMSGeometry {
+      public:
+        GIMSGeometryList *externalRing,
+                         *internalRings;
+
+        GIMSPolygon  *clone     ();
+        GIMSGeometry *clipToBox ( GIMSBoundingBox * );
+                      GIMSPolygon  ( GIMSGeometryList *, GIMSGeometryList * );
+                     ~GIMSPolygon  ();
+    };
+
     // class GIMSEdgeList  : public GIMSGeometry {
     //   public:
     //     std::list<GIMSEdge *> *list;

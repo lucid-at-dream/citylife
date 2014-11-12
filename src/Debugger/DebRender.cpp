@@ -39,6 +39,7 @@ void DebRenderer::dragBegin (){
     dragx = x;
     dragy = y;
 }
+
 void DebRenderer::dragEnd (){
     int x, y;
     darea->get_pointer ( x, y );
@@ -52,7 +53,19 @@ void DebRenderer::scheduleRedraw () {
     this->darea->queue_draw_area (0, 0, 400, 400);
 }
 
-void DebRenderer::render(Cairo::RefPtr<Cairo::Context> cr) {
+
+void DebRenderer::renderSvg (const char *filename, double width, double height){
+    cairo_surface_t * surface = cairo_svg_surface_create (filename, width, height);
+    //Cairo::RefPtr< Cairo::Surface > surface_ptr = new Cairo::RefPtr( new SvgSurface( surface ) );
+    Cairo::Context *cr = new Cairo::Context(cairo_create(surface));
+    Cairo::RefPtr<Cairo::Context> cc_ptr = Cairo::RefPtr<Cairo::Context>(cr);
+
+    this->render(cc_ptr);
+
+    cc_ptr->show_page();
+}
+
+void DebRenderer::render ( Cairo::RefPtr<Cairo::Context> cr ) {
     cr->set_source_rgb(0, 0, 0);
     cr->set_line_width(1.0/zoom);
 
@@ -65,14 +78,17 @@ void DebRenderer::render(Cairo::RefPtr<Cairo::Context> cr) {
 void DebRenderer::renderGeometry( Cairo::RefPtr<Cairo::Context> cr, GIMSGeometry *g ){
     if ( g->type == POINT ) {
         renderPoint( cr, (GIMSPoint *)g );
+        cr->stroke();
         return;
 
     } else if ( g->type == EDGE ) {
         renderEdge( cr, (GIMSEdge *)g );
+        cr->stroke();
         return;
 
     } else if ( g->type == BOUNDINGBOX ) {
         renderBBox( cr, (GIMSBoundingBox *)g );
+        cr->stroke();
         return;
 
     } else if ( g->type == MIXEDLIST ) {
@@ -89,14 +105,16 @@ void DebRenderer::renderGeometry( Cairo::RefPtr<Cairo::Context> cr, GIMSGeometry
 void DebRenderer::renderPoint ( Cairo::RefPtr<Cairo::Context> cr, GIMSPoint *p ) {
     cr->move_to((p->x+translatex)*scalex, (p->y+translatey)*scaley);
     cr->line_to((p->x+translatex)*scalex, (p->y+translatey)*scaley);
-    cr->stroke();
 }
 
 void DebRenderer::renderEdge ( Cairo::RefPtr<Cairo::Context> cr, GIMSEdge *e ) {
-    //cr->set_source_rgb(0.69, 0.19, 0);
     cr->move_to((e->p1->x + translatex)*scalex, (e->p1->y + translatey)*scaley);
     cr->line_to((e->p2->x + translatex)*scalex, (e->p2->y + translatey)*scaley);
-    cr->stroke();
+}
+
+void DebRenderer::renderFilledBBox ( Cairo::RefPtr<Cairo::Context> cr, GIMSBoundingBox *box ) {
+    renderBBox(cr, box);
+    cr->stroke_preserve();
 }
 
 void DebRenderer::renderBBox ( Cairo::RefPtr<Cairo::Context> cr, GIMSBoundingBox *box ) {
@@ -106,7 +124,6 @@ void DebRenderer::renderBBox ( Cairo::RefPtr<Cairo::Context> cr, GIMSBoundingBox
     cr->line_to((box->upperRight->x + translatex)*scalex, (box->upperRight->y + translatey)*scaley);
     cr->line_to((box->upperRight->x + translatex)*scalex, (box->lowerLeft->y + translatey)*scaley );
     cr->line_to((box->lowerLeft->x + translatex)*scalex,  (box->lowerLeft->y + translatey)*scaley );
-    cr->stroke();
 }
 
 void DebRenderer::setScale (double x, double y) {

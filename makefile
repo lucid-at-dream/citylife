@@ -11,7 +11,7 @@ LIB_DIR = lib
 BIN_DIR = bin
 
 #directories with source code to include
-CAIROMM = `pkg-config --cflags --libs cairomm-1.0`
+CAIROMM = `pkg-config --cflags --libs cairomm-svg-1.0`
 GTKMM = `pkg-config --cflags --libs gtkmm-3.0`
 INC_DIR = -I${LIB_DIR} -I /usr/include/postgresql ${CAIROMM} ${GTKMM}
 

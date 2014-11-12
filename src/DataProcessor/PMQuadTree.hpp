@@ -32,6 +32,7 @@ namespace PMQUADTREE {
     class PMQuadTree : public GIMSDataStruct, public DebugRenderable {
       public:
         Node *root;
+        GIMSGeometry *query;
 
         /*Allocation & Deallocation*/
          PMQuadTree (GIMSBoundingBox *domain);

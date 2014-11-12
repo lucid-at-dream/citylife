@@ -37,6 +37,7 @@ class DebRenderer {
     double zoom;
     double panx, pany;
 
+    void  renderSvg      (const char *filename, double width, double height);
     void  dragBegin      ();
     void  dragEnd        ();
     void  scheduleRedraw ();
@@ -48,6 +49,7 @@ class DebRenderer {
     void  renderPoint    ( Cairo::RefPtr<Cairo::Context>, GIMSPoint * );
     void  renderEdge     ( Cairo::RefPtr<Cairo::Context>, GIMSEdge *  );
     void  renderBBox     ( Cairo::RefPtr<Cairo::Context>, GIMSBoundingBox * );
+    void  renderFilledBBox ( Cairo::RefPtr<Cairo::Context>, GIMSBoundingBox * );
     int   mainloop       ( int argc, char *argv[] );
           DebRenderer    ();
           DebRenderer    (DebugRenderable *);

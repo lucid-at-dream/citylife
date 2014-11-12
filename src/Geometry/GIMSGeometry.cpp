@@ -238,7 +238,7 @@ GIMSEdge *GIMSEdge::trimToBBox (GIMSBoundingBox *box) {
          
     /*if both endpoints lie inside the square*/
     if ( p1inside && p2inside ) {
-        return new GIMSEdge( this->p1->clone(), this->p2->clone() );
+        return this->clone();
     }
     
     /*these are the square limits*/
@@ -302,7 +302,9 @@ GIMSEdge *GIMSEdge::trimToBBox (GIMSBoundingBox *box) {
     GIMSPoint *int_pts[] = {top_pt, bottom_pt, left_pt, right_pt, int_p1, int_p2};
     GIMSPoint *p1 = NULL, *p2 = NULL;
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 6; i++) {
+        if( int_pts[i] == NULL )
+            continue;
         if ( !(int_pts[i]->isInsideBox(box) && int_pts[i]->isInsideEdgeOfSameLine(this)) ) {
             delete ( int_pts[i] );
             int_pts[i] = NULL;
@@ -380,11 +382,8 @@ GIMSGeometryList *GIMSGeometryList::clone () {
 GIMSGeometry *GIMSGeometryList::clipToBox ( GIMSBoundingBox *box ){
     GIMSGeometryList *clipped = NULL;
 
-    int count = 0,
-        size = this->list->size();
     for( std::list<GIMSGeometry *>::iterator it = this->list->begin();
          it != this->list->end(); it++                                 ) {
-        //printf("%d/%d -- ", ++count, size);
         GIMSGeometry *g = (*it)->clipToBox(box);
 
         if( g != NULL ){
@@ -407,4 +406,40 @@ GIMSGeometryList::~GIMSGeometryList(){
 }
 /*
 GIMSGeometryList<--
+*/
+
+
+/*
+-->GIMSPolygon
+*/
+GIMSPolygon *GIMSPolygon::clone(){
+    TODO(Implement clone function for polygons);
+    perror("called an unimplemented function (GIMSPolygon__clone)");
+    exit(-1);
+}
+
+GIMSGeometry *GIMSPolygon::clipToBox(GIMSBoundingBox *box){
+    return new GIMSPolygon( (GIMSGeometryList *)(this->externalRing->clipToBox(box)),
+                            (GIMSGeometryList *)(this->internalRings->clipToBox(box)) );
+}
+
+GIMSPolygon::GIMSPolygon( GIMSGeometryList *externalRing, GIMSGeometryList *internalRings ){
+    this->type = POLYGON;
+    if(externalRing != NULL)
+        this->externalRing = externalRing;
+    else
+        this->externalRing = new GIMSGeometryList();
+    if(internalRings != NULL)
+        this->internalRings = internalRings;
+    else
+        this->internalRings = new GIMSGeometryList();
+}
+
+GIMSPolygon::~GIMSPolygon(){
+    TODO(Implement delete function for polygons);
+    perror("called an unimplemented function (GIMSPolygon__delete)");
+    exit(-1);
+}
+/*
+GIMSPolygon<--
 */
