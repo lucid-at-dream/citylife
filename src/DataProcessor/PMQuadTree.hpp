@@ -4,25 +4,29 @@
 #include "DataStructs.hpp"
 #include "DebRender.hpp"
 #include <list>
+#include <cmath>
 
 namespace PMQUADTREE {
 
     enum NodeType {WHITE, GRAY, BLACK};
     enum Quadrant {NW = 0, NE = 1, SE = 2, SW = 3};
+    enum Direction {NORTH, SOUTH, EAST, WEST};
 
     class Node {
       public:
         NodeType type;
         GIMSBoundingBox *square;
         std::list<GIMSGeometry *> *dictionary;
+        Node *father;
         Node *sons[4];
 
         void *search                ( GIMSGeometry *geom );
+        void *searchInterior        ( GIMSPolygon *pol );
         void  insert                ( GIMSGeometry * );
         bool  validateGeometry      ( GIMSGeometry * );
-        bool  validateVertexSharing ( GIMSPoint *pt, 
-                                      std::list<GIMSGeometry *> *, 
-                                      std::list<GIMSGeometry *>::iterator );
+        bool  polygonContainsPoint  (GIMSPolygon *pol, GIMSPoint *pt);
+        GIMSGeometry *hasReferenceTo( unsigned long int id );
+        Node *goNorth( double x );
         void  split                 ();
               Node                  ();
               Node                  ( GIMSBoundingBox *square );
@@ -44,7 +48,7 @@ namespace PMQUADTREE {
         virtual void  insert (GIMSGeometry *);
         virtual void  remove (GIMSGeometry *);
         virtual void *search (GIMSGeometry *);
-        
+
         /*Follow the operations between the data structure and a given geometry*/
         virtual RelStatus intersects_g  ( GIMSGeometry *result, GIMSGeometry *);
         virtual RelStatus meets_g       ( GIMSGeometry *result, GIMSGeometry *);
@@ -62,5 +66,12 @@ namespace PMQUADTREE {
     };
 
 }
+
+extern PMQUADTREE::Quadrant quadrantList[4];
+extern char quadrantLabels[4][3];
+extern double xmultiplier[4];
+extern double ymultiplier[4];
+
+double distToSegmentSquared(GIMSPoint *p, GIMSEdge *e);
 
 #endif

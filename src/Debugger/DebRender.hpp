@@ -21,7 +21,8 @@ class DebRenderer {
   private:
     Gtk::Window *window;
     Gtk::DrawingArea *darea;
-
+    
+    
     double scalex,
            scaley,
            translatex,
@@ -33,6 +34,7 @@ class DebRenderer {
     void init ( int argc, char *argv[] );
 
   public:
+    unsigned int renderCount;
     DebugRenderable *renderCallback;
     double zoom;
     double panx, pany;

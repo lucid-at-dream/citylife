@@ -2,13 +2,16 @@
 CC = g++
 LDLIBS = -lm -lpq -lgdal
 COPT = -O2 -march=native -mtune=native
+COPT = 
 CFLAGS = -g -Wall -std=c++11 -pedantic ${LDLIBS} ${COPT}
+CTESTFLAGS = -lgtest
 
 #directory structure
 SRC_DIR = src
 OBJ_DIR = obj
 LIB_DIR = lib
 BIN_DIR = bin
+TEST_DIR = tests
 
 #directories with source code to include
 CAIROMM = `pkg-config --cflags --libs cairomm-svg-1.0`
@@ -17,11 +20,16 @@ INC_DIR = -I${LIB_DIR} -I /usr/include/postgresql ${CAIROMM} ${GTKMM}
 
 #resulting executable filename 
 OFILE = gims
+OTESTFILE = test_gims
 
 #src file list
 HDRFILES = $(shell find ${SRC_DIR} | grep "\\.hpp$$\\|\\.h$$")
 SRCFILES = $(shell find ${SRC_DIR} | grep "\\.cpp$$")
 OBJFILES = $(addprefix ${OBJ_DIR}/./, $(addsuffix .o, $(shell find ${SRC_DIR} | grep "\\.cpp$$" | cut -d '.' -f1 | cut -d / -f2-)))
+
+OBJFILESEXCEPTMAIN = $(addprefix ${OBJ_DIR}/./, $(addsuffix .o, $(shell find ${SRC_DIR} | grep "\\.cpp$$" | grep -v "${SRC_DIR}/main\\.cpp$$" | cut -d '.' -f1 | cut -d / -f2-)))
+OBJTESTFILESTMP = $(addprefix ${TEST_DIR}/${OBJ_DIR}/, $(addsuffix .o, $(shell find ${TEST_DIR} | grep "\\.cpp$$" | cut -d '.' -f1 | cut -d / -f2-)))
+OBJTESTFILES = ${OBJTESTFILESTMP} ${OBJFILESEXCEPTMAIN}
 
 INC_DIR += $(addprefix -I, $(shell dirname $$(find ${SRC_DIR} | grep "\\.hpp$$\\|\\.h$$") | sort | uniq) )
 
@@ -34,16 +42,27 @@ all: ${BIN_DIR}/${OFILE}
 ${OBJ_DIR}/%.o: ${SRC_DIR}/%.cpp | $$(@D)/
 	${CC} ${CFLAGS} -c $< -o $@ ${INC_DIR}
 
-
 #link the executable
 ${BIN_DIR}/${OFILE}: ${OBJFILES} | ${BIN_DIR}
 	${CC} ${CFLAGS} $^ -o $@ ${INC_DIR}
+
+
+#make an executable for the unit tests
+test: ${BIN_DIR}/${OTESTFILE} 
+${BIN_DIR}/${OTESTFILE}: ${OBJTESTFILES} | ${BIN_DIR}
+	${CC} ${CFLAGS} $^ -o $@ ${INC_DIR} ${CTESTFLAGS} -lgtest_main
+
+${TEST_DIR}/${OBJ_DIR}/%.o: ${TEST_DIR}/%.cpp | $$(@D)/
+	${CC} ${CFLAGS} -c $< -o $@ ${INC_DIR} ${CTESTFLAGS}
+
 
 #create directories
 ${OBJ_DIR}%/:
 	mkdir -p $@
 
-#create directories
+${TEST_DIR}%/:
+	mkdir -p $@
+
 ${BIN_DIR}:
 	mkdir -p ${BIN_DIR}$*
 
@@ -71,6 +90,7 @@ softclean:
 
 #remove garbage
 clean: softclean
+	rm -rf ${TEST_DIR}/${OBJ_DIR}
 	rm -rf ${OBJ_DIR}
 	rm -f ${BIN_DIR}/${OFILE}
 

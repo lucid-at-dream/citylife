@@ -5,6 +5,7 @@
 #include "SystemBase.hpp"
 #include <cmath>
 
+
 namespace GIMSGEOMETRY {
 
     enum GeometryType {
@@ -32,8 +33,9 @@ namespace GIMSGEOMETRY {
     class GIMSGeometry {
       public:
         GeometryType type;
-        TODO ( add the label )
-        //OGRFeature *label;
+        unsigned int renderCount;
+        TODO ( add the label or id )
+        unsigned long int id;
 
         virtual GIMSGeometry *clipToBox    ( GIMSBoundingBox * ) = 0;
         virtual GIMSGeometry *clone        () = 0;
@@ -130,7 +132,13 @@ namespace GIMSGEOMETRY {
                       GIMSGeometryList ();
                      ~GIMSGeometryList ();
     };
-    
+
 }
+
+using namespace GIMSGEOMETRY;
+
+double distanceSquared2p(GIMSPoint *p1, GIMSPoint *p2);
+double angle3p(GIMSPoint *p1, GIMSPoint *p2, GIMSPoint *p3);
+double cosine3p(GIMSPoint *p1, GIMSPoint *p2, GIMSPoint *p3);
 
 #endif

@@ -12,6 +12,7 @@ using namespace PMQUADTREE;
 using namespace GIMSGEOMETRY;
 
 int total = 0;
+unsigned long int incId = 1;
 
 GIMSGeometry *retrieveFeature ( OGRFeature *feature );
 void dumpList (std::list<GIMSGeometry *> *list);
@@ -39,6 +40,7 @@ int main (int argc, char *argv[]) {
     
     OGRFeature *feature;
     GIMSGeometry* query;
+    GIMSGeometry* aux;
     int count = 0;
     while ( (feature = layer->GetNextFeature() ) != NULL) {
     
@@ -48,20 +50,27 @@ int main (int argc, char *argv[]) {
             continue;
         }*/
         
-        printf("%d\n", count);
-
-        if(count == 0)
-            tree->insert ( query = retrieveFeature (feature) );
-        else
-            tree->insert ( retrieveFeature (feature) );
-        count++;
+        //printf("%d\n", count);
+        aux = retrieveFeature (feature);
+        
+        aux->id = incId++;
+        if(aux != NULL){
+            if(count == 0)
+                tree->insert ( query = aux );
+            else {
+                tree->insert ( aux );
+            }
+            count++;
+        }
         delete feature;
-        if(count > 50)
+
+        if(count >= 50)
             break;
+
     }
-    tree->query = query;
     printf("inserted %d edges.\n", total);
     
+    tree->query = query;
     renderer = new DebRenderer();
     renderer->renderCallback = tree;
     //renderer->renderSvg("outtree.svg", 400, 400);
@@ -175,12 +184,13 @@ GIMSGeometry *retrieveFeature ( OGRFeature *feature ) {
         delete tmp;
 
         GIMSPolygon *polygon = new GIMSPolygon(exteriorRing, interiorRings);
+        polygon->id = incId++;
         geomlist->list->push_back( polygon );
         return geomlist;
 
     } else {
         perror ("unsupported type of geometry detected.");
-        exit (-1);
+        return NULL;
     }
 
 }

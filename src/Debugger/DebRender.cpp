@@ -56,16 +56,20 @@ void DebRenderer::scheduleRedraw () {
 
 void DebRenderer::renderSvg (const char *filename, double width, double height){
     cairo_surface_t * surface = cairo_svg_surface_create (filename, width, height);
-    //Cairo::RefPtr< Cairo::Surface > surface_ptr = new Cairo::RefPtr( new SvgSurface( surface ) );
     Cairo::Context *cr = new Cairo::Context(cairo_create(surface));
     Cairo::RefPtr<Cairo::Context> cc_ptr = Cairo::RefPtr<Cairo::Context>(cr);
 
     this->render(cc_ptr);
 
     cc_ptr->show_page();
+    cairo_surface_flush(surface);
+    cairo_surface_finish(surface);
+    cairo_surface_destroy(surface);
 }
 
 void DebRenderer::render ( Cairo::RefPtr<Cairo::Context> cr ) {
+    this->renderCount += 1;
+
     cr->set_source_rgb(0, 0, 0);
     cr->set_line_width(1.0/zoom);
 
@@ -175,10 +179,12 @@ DebRenderer::DebRenderer (DebugRenderable *renderCallback) {
     this->renderCallback = renderCallback;
     this->zoom = 1.0;
     this->panx = this->pany = 0;
+    this->renderCount = 0;
 }
 DebRenderer::DebRenderer(){
     this->zoom = 1.0;
     this->panx = this->pany = 0;
+    this->renderCount = 0;
 }
 DebRenderer::~DebRenderer(){
 }

@@ -2,6 +2,25 @@
 
 using namespace GIMSGEOMETRY;
 
+double distanceSquared2p(GIMSPoint *p1, GIMSPoint *p2){
+    return (p2->x - p1->x) * (p2->x - p1->x)+
+           (p2->y - p1->y) * (p2->y - p1->y);
+}
+
+/*returns the cosine of the angle between vectors p1-p2 and p2-p3*/
+double cosine3p(GIMSPoint *p1, GIMSPoint *p2, GIMSPoint *p3){
+    double SD12 = distanceSquared2p(p1, p2),
+           SD13 = distanceSquared2p(p1, p3),
+           SD23 = distanceSquared2p(p2, p3);
+
+    return (SD12 + SD23 - SD13)/ (2*sqrt(SD23)*sqrt(SD12));
+}
+
+/*returns angle between vectors p1-p2 and p2-p3*/
+double angle3p(GIMSPoint *p1, GIMSPoint *p2, GIMSPoint *p3){
+    return acos( cosine3p(p1,p2,p3) );
+}
+
 /*
 -->GIMSGeometry
 */
@@ -9,8 +28,6 @@ GIMSGeometry::~GIMSGeometry (){}
 /*
 GIMSGeometry<--
 */
-
-
 
 /*
 -->GIMSPoint
@@ -65,7 +82,7 @@ bool GIMSPoint::isInsideEdgeOfSameLine( GIMSEdge *edge ){
 
 GIMSGeometry *GIMSPoint::clipToBox ( GIMSBoundingBox *box ){
     if( this->isInsideBox(box) )
-        return this;
+        return this->clone();
     else
         return NULL;
 }
@@ -79,12 +96,14 @@ bool GIMSPoint::equals ( GIMSPoint *cmp ) {
 
 GIMSPoint::GIMSPoint() {
     this->type = POINT;
+    this->renderCount = 0;
 }
 
 GIMSPoint::GIMSPoint (double x, double y) {
     this->x = x;
     this->y = y;
     this->type = POINT;
+    this->renderCount = 0;
 }
 
 GIMSPoint::~GIMSPoint() {
@@ -137,6 +156,7 @@ GIMSBoundingBox::GIMSBoundingBox ( GIMSPoint *lowerLeft, GIMSPoint *upperRight )
     this->lowerLeft = lowerLeft;
     this->upperRight = upperRight;
     this->type = BOUNDINGBOX;
+    this->renderCount = 0;
 }
 
 GIMSBoundingBox::~GIMSBoundingBox(){
@@ -160,6 +180,7 @@ GIMSEdge::GIMSEdge ( GIMSPoint *p1, GIMSPoint *p2 ){
     this->p1 = p1;
     this->p2 = p2;
     this->type = EDGE;
+    this->renderCount = 0;
 }
 
 GIMSEdge::~GIMSEdge() {
@@ -393,12 +414,15 @@ GIMSGeometry *GIMSGeometryList::clipToBox ( GIMSBoundingBox *box ){
             clipped->list->push_back(g);
         }
     }
+    if(clipped != NULL)
+        clipped->id = this->id;
     return clipped;
 }
 
 GIMSGeometryList::GIMSGeometryList(){
     this->type = MIXEDLIST;
     this->list = new std::list<GIMSGeometry *>();
+    this->renderCount = 0;
 }
 
 GIMSGeometryList::~GIMSGeometryList(){
@@ -422,14 +446,17 @@ GIMSGeometry *GIMSPolygon::clipToBox(GIMSBoundingBox *box){
     GIMSGeometryList *exterior = (GIMSGeometryList *)(this->externalRing->clipToBox(box));
     GIMSGeometryList *interior = (GIMSGeometryList *)(this->internalRings->clipToBox(box));
 
-    if(exterior != NULL || interior != NULL )
-        return new GIMSPolygon( exterior, interior );
-    else
+    if(exterior != NULL || interior != NULL ){
+        GIMSGeometry *g = new GIMSPolygon( exterior, interior );
+        g->id = this->id;
+        return g;
+    }else
         return NULL;
 }
 
 GIMSPolygon::GIMSPolygon( GIMSGeometryList *externalRing, GIMSGeometryList *internalRings ){
     this->type = POLYGON;
+    this->renderCount = 0;
     if(externalRing != NULL)
         this->externalRing = externalRing;
     else
@@ -441,9 +468,8 @@ GIMSPolygon::GIMSPolygon( GIMSGeometryList *externalRing, GIMSGeometryList *inte
 }
 
 GIMSPolygon::~GIMSPolygon(){
-    TODO(Implement delete function for polygons);
-    perror("called an unimplemented function (GIMSPolygon__delete)");
-    exit(-1);
+    delete this->externalRing;
+    delete this->internalRings;
 }
 /*
 GIMSPolygon<--
