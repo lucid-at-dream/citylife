@@ -29,3 +29,5 @@ cycleways
 linedump
 out
 callgrind*
+linecount.sh
+spellcheck.sh

@@ -21,6 +21,48 @@ double angle3p(GIMSPoint *p1, GIMSPoint *p2, GIMSPoint *p3){
     return acos( cosine3p(p1,p2,p3) );
 }
 
+/*Returns the squared distance between a point "p" and the closest point that
+  lies in the given line segment "e". Note that the distance is squared to avoid
+  possibly unnecessary square roots.*/
+double distToSegmentSquared(GIMSPoint *p, GIMSEdge *e) {
+
+    //Length of the line segment squared
+    double lineSegLenSquared = (e->p1->x - e->p2->x) * (e->p1->x - e->p2->x) + 
+                               (e->p1->y - e->p2->y) * (e->p1->y - e->p2->y);
+
+    if (lineSegLenSquared == 0)
+        //if true then the line segment is actually a point.
+        return (p->x - e->p1->x) * (p->x - e->p1->x) + 
+               (p->y - e->p1->y) * (p->y - e->p1->y);
+
+    //dot product of (p - e->p1, e->p2 - e->p1)
+    double dotProduct = (p->x - e->p1->x) * (e->p2->x - e->p1->x) + 
+                        (p->y - e->p1->y) * (e->p2->y - e->p1->y);
+
+    /*If we define the line that extends edge "e" as l(t) = e->p1 + t * (e->p2 - e->p1)
+      The closest point of "p" that lies in line "l", is a point "cp" such that
+      the line p(t) = p + t *(cp - p) forms a 90º degree angle with line "l".
+      In order to find the value of t in l(t) for point cp, we have 
+      t = [(p - e->p1).(e->p2 - e->p1)] / |e->p2 - e->p1|^2*/
+    double t = dotProduct/ lineSegLenSquared;
+    if (t < 0)
+        //if t < 0 then cp lies beyond e->p1, and therefore e->p1 is the closest point
+        return (p->x - e->p1->x) * (p->x - e->p1->x) +
+               (p->y - e->p1->y) * (p->y - e->p1->y);
+    if (t > 1) 
+        //if t < 0 then cp lies beyond e->p2, and therefore e->p2 is the closest point
+        return (p->x - e->p2->x) * (p->x - e->p2->x) +
+               (p->y - e->p2->y) * (p->y - e->p2->y);
+
+    //if t is in [0,1], then we must calculate point cp (nearest_pt)
+    double nearest_pt_x = e->p1->x + t * (e->p2->x - e->p1->x),
+           nearest_pt_y = e->p1->y + t * (e->p2->y - e->p1->y);
+
+    //we then return the distance between point "p" and point cp
+    return (p->x - nearest_pt_x) * (p->x - nearest_pt_x) + 
+           (p->y - nearest_pt_y) * (p->y - nearest_pt_y);
+}
+
 /*
 -->GIMSGeometry
 */
@@ -114,7 +156,6 @@ GIMSPoint<--
 */
 
 
-
 /*
 -->GIMSBoundingBox
 */
@@ -168,7 +209,6 @@ GIMSBoundingBox<--
 */
 
 
-
 /*
 -->GIMSEdge
 */
@@ -209,11 +249,8 @@ GIMSGeometry *GIMSEdge::clipToBox ( GIMSBoundingBox *box ){
         }
     }
     if (allOnSameSide) {
-        //printf("all on the same side [(%.3lf, %.3lf), (%.3lf, %.3lf)]\n", this->p1->x, this->p1->y, this->p2->x, this->p2->y);
         return NULL;
     }
-
-
 
     /*this part is reached only if the line defined by the two edge's endpoints
       intersects the square. Therefore, we do a projection on both the x and y
@@ -221,32 +258,27 @@ GIMSGeometry *GIMSEdge::clipToBox ( GIMSBoundingBox *box ){
     if ( this->p1->x > lowerRight.x &&
          this->p2->x > lowerRight.x    ) {
         /*edge is to the right of the rectangle*/
-        //printf("edge is to the right of the rectangle [(%.3lf, %.3lf), (%.3lf, %.3lf)]\n", this->p1->x, this->p1->y, this->p2->x, this->p2->y);
         return NULL;
     }
     
     if ( this->p1->x < upperLeft.x &&
          this->p2->x < upperLeft.x     ) {
         /*edge is to the left of the rectangle*/
-        //printf("edge is to the left of the rectangle [(%.3lf, %.3lf), (%.3lf, %.3lf)]\n", this->p1->x, this->p1->y, this->p2->x, this->p2->y);
         return NULL;
     }
     
     if ( this->p1->y > upperLeft.y && 
          this->p2->y > upperLeft.y    ) {
         /*edge is above of the rectangle*/
-        //printf("edge is above of the rectangle [(%.3lf, %.3lf), (%.3lf, %.3lf)]\n", this->p1->x, this->p1->y, this->p2->x, this->p2->y);
         return NULL;
     }
     
     if ( this->p1->y < lowerRight.y && 
          this->p2->y < lowerRight.y    ) {
         /*edge is above of the rectangle*/
-        //printf("edge is above of the rectangle [(%.3lf, %.3lf), (%.3lf, %.3lf)]\n", this->p1->x, this->p1->y, this->p2->x, this->p2->y);
         return NULL;
     }
     
-    //printf("EDGE INTERSECTS RECTANGLE [(%.3lf, %.3lf), (%.3lf, %.3lf)]\n", this->p1->x, this->p1->y, this->p2->x, this->p2->y);
     return this;
 }
 
@@ -351,45 +383,9 @@ GIMSEdge *GIMSEdge::trimToBBox (GIMSBoundingBox *box) {
         exit (1);
     }
 }
-
-
-
 /*
 GIMSEdge<--
 */
-
-
-
-/*
--->GIMSEdgeList
-*/
-// GIMSEdgeList::GIMSEdgeList(){
-//     this->list = new std::list<GIMSEdge *>();
-// }
-
-// GIMSEdgeList::~GIMSEdgeList(){
-//     delete this->list;
-// }
-/*
-GIMSEdgeList<--
-*/
-
-
-
-/*
--->GIMSPointList
-*/
-// GIMSPointList::GIMSPointList(){
-//     this->list = new std::list<GIMSPoint *>();
-// }
-
-// GIMSPointList::~GIMSPointList(){
-//     delete this->list;
-// }
-/*
-GIMSPointList<--
-*/
-
 
 
 /*

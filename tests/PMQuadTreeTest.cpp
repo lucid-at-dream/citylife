@@ -160,6 +160,14 @@ TEST_F(PMQuadTreeTest, searchInterior) {
   }
   EXPECT_TRUE(allout);
 
+  //The following code renders the pmqtree and highlights the reported nodes
+  /*
+  tree->query = newList;
+  renderer = new DebRenderer();
+  renderer->renderCallback = tree;
+  char *argv[] = {"gims"};
+  renderer->mainloop(1, argv);
+  */
 }
 
 

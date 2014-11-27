@@ -72,6 +72,4 @@ extern char quadrantLabels[4][3];
 extern double xmultiplier[4];
 extern double ymultiplier[4];
 
-double distToSegmentSquared(GIMSPoint *p, GIMSEdge *e);
-
 #endif
