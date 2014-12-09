@@ -13,13 +13,14 @@
 namespace GIMSGEOMETRY{
   class GIMSEdgeList : public GIMSGeometry {
     public:
-      GIMSPoint *list;
-      int        size;
-      int        allocatedSize;
+      GIMSPoint **list;
+      int         size;
+      int         allocatedSize;
 
       GIMSEdgeList *clone        ();
       GIMSGeometry *clipToBox    (GIMSBoundingBox *);
       GIMSEdge      getEdge      (int index);
+      void          appendPoint(GIMSPoint *p);
       void          appendPoint  (double, double);
                     GIMSEdgeList (int size);
                     GIMSEdgeList ();

@@ -2,7 +2,7 @@
 
 GIMSEdgeList::GIMSEdgeList (int size){
     this->type = EDGELIST;
-    this->list = (GIMSPoint *)malloc(sizeof(GIMSPoint) * size);
+    this->list = (GIMSPoint **)malloc(sizeof(GIMSPoint *) * size);
     this->allocatedSize = size;
     this->size = 0;
 }
@@ -21,28 +21,49 @@ GIMSEdgeList::~GIMSEdgeList (){
 
 GIMSEdgeList *GIMSEdgeList::clone (){
     GIMSEdgeList *newList = new GIMSEdgeList(this->size);
-    memcpy(newList->list, this->list, this->size*sizeof(GIMSPoint));
+    memcpy(newList->list, this->list, this->size*sizeof(GIMSPoint *));
     return newList;
 }
 
 GIMSGeometry *GIMSEdgeList::clipToBox (GIMSBoundingBox *box){
 
+    GIMSGeometryList *clipped = new GIMSGeometryList();
+
+    GIMSEdgeList *el = new GIMSEdgeList();
     for( int k = 0; k < this->size; k++ ){
         GIMSEdge e = this->getEdge(k);
         if( e.clipToBox(box) != NULL ){
-            //edge clips
+            if(el == NULL){
+                el = new GIMSEdgeList(2);
+                el->appendPoint(e.p1);
+            }
+            el->appendPoint(e.p2);
         }else{
-            //change list to append to
+            if(el != NULL)
+                clipped->list->push_back(el);
+            el = NULL;
         }
     }
 
-    return this;
+    return clipped;
 }
 
 GIMSEdge GIMSEdgeList::getEdge (int index){
-    GIMSEdge edge = GIMSEdge( &(this->list[index%this->size]),
-                              &(this->list[(index+1)%this->size]));
+    GIMSEdge edge = GIMSEdge( this->list[index%this->size],
+                              this->list[(index+1)%this->size]);
     return edge;
+}
+
+void GIMSEdgeList::appendPoint(GIMSPoint *p){
+    this->size += 1;
+
+    if( this->size > this->allocatedSize ){
+        int deficit = this->size - this->allocatedSize;
+        this->list = (GIMSPoint **)realloc(this->list, 
+                                           sizeof(GIMSPoint *) * (this->allocatedSize + deficit));
+    }
+
+    this->list[this->size-1] = p;
 }
 
 void GIMSEdgeList::appendPoint(double x, double y){
@@ -50,10 +71,9 @@ void GIMSEdgeList::appendPoint(double x, double y){
 
     if( this->size > this->allocatedSize ){
         int deficit = this->size - this->allocatedSize;
-        this->list = (GIMSPoint *)realloc(this->list, 
-                                         (this->allocatedSize + deficit) * sizeof(GIMSPoint) );
+        this->list = (GIMSPoint **)realloc(this->list, 
+                                           sizeof(GIMSPoint *) * (this->allocatedSize + deficit));
     }
 
-    this->list[this->size-1].x = x;
-    this->list[this->size-1].y = y;
+    this->list[this->size-1] = new GIMSPoint(x,y);
 }

@@ -119,11 +119,9 @@ TEST_F(PMQuadTreeTest, searchInterior) {
     else
       extRing->list->push_back( new GIMSEdge(points[i], points[0]) );
   }
-  GIMSPolygon *p = new GIMSPolygon(extRing, NULL);
-  GIMSGeometryList *newList = new GIMSGeometryList();
-  newList->list->push_back(p);
 
-  tree->insert(newList);
+  GIMSPolygon *p = new GIMSPolygon(extRing, NULL);
+  tree->insert(p);
   list<Node *> *results = (list<Node *> *)(tree->root->searchInterior(p));
 
   //if everything is ok, every node in the north west quadrant of the root
@@ -161,8 +159,9 @@ TEST_F(PMQuadTreeTest, searchInterior) {
   EXPECT_TRUE(allout);
 
   //The following code renders the pmqtree and highlights the reported nodes
+
   /*
-  tree->query = newList;
+  tree->query = p;
   renderer = new DebRenderer();
   renderer->renderCallback = tree;
   char *argv[] = {"gims"};

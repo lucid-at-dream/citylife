@@ -204,7 +204,9 @@ bool Node::polygonContainsPoint(GIMSPolygon *pol, GIMSPoint *pt){
                 //if this is reached, it means that even though an endpoint of the
                 //closest edge lied inside the node, the edge didn't have adjacent
                 //edges, which means the ring is not closed, which is not possible.
-                printf("@polygonContainsPoint - !Bug Alert! - open ring?\n");
+                fprintf(stderr, "@polygonContainsPoint - !Bug Alert! - open ring?\n");
+                fprintf(stderr, "fatal, cannot proceed with this function.\n");
+                return false;
             }
         }
         GIMSPoint *unshared2 = e2->p1->equals(pt2) ? e2->p2 : e2->p1;
@@ -270,50 +272,57 @@ TODO(buggy behaviour)
                 }
             }
         }
-        delete clipped;
         return retlist;
     }
 }
 
 /*Inserts geometry "geom" in the tree*/
 void Node::insert ( GIMSGeometry *geom ) {
-    depth++;
 
+    depth++;
     if( depth > 100 ){
-        printf("max depth reached (100). Look out for bugs...\n");
-        printf("%lf\n", this->square->upperRight->x - this->square->lowerLeft->x );
+        fprintf(stderr, "max depth reached (100), not inserting. Look out for bugs...\n");
         depth--;
         return;
     }
 
-    GIMSGeometryList *clipped = (GIMSGeometryList *)(geom->clipToBox ( this->square ));
-    
+    GIMSGeometry *clipped = (GIMSGeometry *)(geom->clipToBox ( this->square ));
+
     if (clipped == NULL) {
         depth--;
         return;
     }
-    
-    if ( this->type != GRAY ) {
-        /*node type is only gray when it's not a leaf*/
-        
-        /*merge the two lists*/
+
+    if ( this->type != GRAY ) { //node type is only gray when it's not a leaf
+
+        /*merge clipped with the node's dictionary*/
         if (this->dictionary != NULL) {
-            clipped->list->insert (clipped->list->end(), this->dictionary->begin(), this->dictionary->end() );
-            delete this->dictionary;
-            this->dictionary = NULL;
+            if( clipped->type == MIXEDLIST ){
+                ((GIMSGeometryList *)(clipped))->list->insert (
+                        ((GIMSGeometryList *)(clipped))->list->end(),
+                        this->dictionary->begin(),
+                        this->dictionary->end() );
+                delete this->dictionary;
+                this->dictionary = NULL;
+
+            }else{
+                this->dictionary->push_back(clipped);
+                clipped = new GIMSGeometryList();
+                ((GIMSGeometryList *)(clipped))->list = this->dictionary;
+                this->dictionary = NULL;
+            }
         }
-        
+
         if ( this->validateGeometry ( clipped ) ) {
-            //printf("inserting geometry in node\n");
             this->type = BLACK;
-            this->dictionary = clipped->list;
+            this->dictionary = ((GIMSGeometryList *)(clipped))->list;
             depth--;
             return;
         } else {
             this->split();
         }
     }
-    
+
     for (Quadrant q : quadrantList) {
         this->sons[q]->insert ( clipped );
     }
@@ -536,7 +545,11 @@ void PMQuadTree::debugRender(Cairo::RefPtr<Cairo::Context> cr){
     printf("rendered the tree\n");
 
     if(query != NULL){
-        list<Node *> *results = (list<Node *> *)(this->root->searchInterior((GIMSPolygon *)(((GIMSGeometryList *)(this->query))->list->front())));
+        list<Node *> *results;
+        if( query->type == POLYGON )
+            results = (list<Node *> *)(this->root->searchInterior( (GIMSPolygon *)(this->query) ));
+        else
+            results = (list<Node *> *)(this->root->search( this->query ));
         cr->set_source_rgba(0.0, 0.19, 0.69, 0.2);
         for( list<Node *>::iterator i = results->begin(); i!= results->end(); i++ ){
             renderer->renderFilledBBox( cr, (*i)->square );
