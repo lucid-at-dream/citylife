@@ -8,19 +8,19 @@
 namespace GIMSGEOMETRY {
 
     enum GeometryType {
-        BOUNDINGBOX,
-        EDGE,
-        EDGELIST,
-        MIXEDLIST,
-        POINT,
-        POLYGON,
-        RING,
+        BOUNDINGBOX = 1<<0,
+        EDGE        = 1<<1,
+        EDGELIST    = 1<<2,
+        MIXEDLIST   = 1<<3,
+        POINT       = 1<<4,
+        POLYGON     = 1<<5,
+        RING        = 1<<6,
     };
 
     enum GIMSSide {
-        RIGHT,
-        LEFT,
-        ALIGNED
+        RIGHT   = 1<<0,
+        LEFT    = 1<<1,
+        ALIGNED = 1<<2,
     };
 
     class GIMSBoundingBox;
