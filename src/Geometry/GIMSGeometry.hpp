@@ -10,12 +10,12 @@ namespace GIMSGEOMETRY {
 
     enum GeometryType {
         BOUNDINGBOX,
-        //EDGELIST,
-        //POINTLIST,
-        MIXEDLIST,
         EDGE,
+        EDGELIST,
+        GEOMLIST,
         POINT,
         POLYGON,
+        RING,
     };
 
     enum GIMSSide {
@@ -32,10 +32,10 @@ namespace GIMSGEOMETRY {
 
     class GIMSGeometry {
       public:
+        unsigned int renderCount; //we need a better way of doing this.
+
         GeometryType type;
-        unsigned int renderCount;
-        TODO ( add the label or id )
-        unsigned long int id;
+        unsigned long long int id; //osm_id
 
         virtual GIMSGeometry *clipToBox    ( GIMSBoundingBox * ) = 0;
         virtual GIMSGeometry *clone        () = 0;
