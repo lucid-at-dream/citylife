@@ -8,7 +8,12 @@ bool on_drag_begin(GdkEventButton* event) {
 
 bool on_drag_end(GdkEventButton *event) {
     printf("end drag\n");
+    double prev_panx = renderer->panx,
+           prev_pany = renderer->pany;
     renderer->dragEnd( );
+    if( prev_panx == renderer->panx && prev_pany == renderer->pany )
+        renderer->clickEvent();
+    
     renderer->scheduleRedraw();
     return false;
 }
@@ -47,6 +52,19 @@ void DebRenderer::dragEnd (){
         rely = y - dragy;
     panx += relx / renderer->zoom;
     pany += rely / renderer->zoom;
+}
+
+void DebRenderer::clickEvent(){
+    int p_x, p_y;
+    darea->get_pointer ( p_x, p_y );
+
+    double rootx = (p_x/zoom) + ((200 * (zoom-1)) / zoom) - panx,
+           rooty = (p_y/zoom) + ((200 * (zoom-1)) / zoom) - pany;
+
+    double x = rootx/scalex - translatex,
+           y = rooty/scaley - translatey;
+
+    renderCallback->onClick(x,y);
 }
 
 void DebRenderer::scheduleRedraw () {
@@ -100,15 +118,24 @@ void DebRenderer::renderGeometry( Cairo::RefPtr<Cairo::Context> cr, GIMSGeometry
              it != ((GIMSGeometryList *)g)->list->end(); it++ ) {
             renderGeometry( cr, *it );
         }
-    } else {
+    } else if ( g->type == POLYGON ){
+        GIMSPolygon *p = (GIMSPolygon *)g;
+        renderGeometry(cr, p->externalRing);
+        for(list<GIMSGeometry *>::iterator it = p->internalRings->list->begin();
+            it != p->internalRings->list->end(); it++)
+            renderGeometry(cr, *it);
+    }else{
         fprintf(stderr, "tryed to render unsupported geometry type. Quiting.\n");
-        exit(-1);
     }
 }
 
 void DebRenderer::renderPoint ( Cairo::RefPtr<Cairo::Context> cr, GIMSPoint *p ) {
-    cr->move_to((p->x+translatex)*scalex, (p->y+translatey)*scaley);
-    cr->line_to((p->x+translatex)*scalex, (p->y+translatey)*scaley);
+    double x = (p->x+translatex)*scalex,
+           y = (p->y+translatey)*scaley;
+
+    cr->arc(x, y, 3.0/zoom, 0., 2*M_PI);
+    cr->stroke_preserve();
+    cr->fill();
 }
 
 void DebRenderer::renderEdge ( Cairo::RefPtr<Cairo::Context> cr, GIMSEdge *e ) {

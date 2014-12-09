@@ -8,12 +8,15 @@
 #include <gtkmm.h>
 #include <cmath>
 #include <functional>
+#include <list>
 
+using namespace std;
 using namespace GIMSGEOMETRY;
 
 class DebugRenderable {
   public:
     virtual void debugRender( Cairo::RefPtr<Cairo::Context> ) = 0;
+    virtual void onClick(double x, double y) = 0;
 };
 
 class DebRenderer {
@@ -40,6 +43,7 @@ class DebRenderer {
     double panx, pany;
 
     void  renderSvg      (const char *filename, double width, double height);
+    void  clickEvent     ();
     void  dragBegin      ();
     void  dragEnd        ();
     void  scheduleRedraw ();

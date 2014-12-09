@@ -45,14 +45,15 @@ double distToSegmentSquared(GIMSPoint *p, GIMSEdge *e) {
       In order to find the value of t in l(t) for point cp, we have 
       t = [(p - e->p1).(e->p2 - e->p1)] / |e->p2 - e->p1|^2*/
     double t = dotProduct/ lineSegLenSquared;
-    if (t < 0)
+    if (t < 0){
         //if t < 0 then cp lies beyond e->p1, and therefore e->p1 is the closest point
         return (p->x - e->p1->x) * (p->x - e->p1->x) +
                (p->y - e->p1->y) * (p->y - e->p1->y);
-    if (t > 1) 
+    }if (t > 1){
         //if t < 0 then cp lies beyond e->p2, and therefore e->p2 is the closest point
         return (p->x - e->p2->x) * (p->x - e->p2->x) +
                (p->y - e->p2->y) * (p->y - e->p2->y);
+    }
 
     //if t is in [0,1], then we must calculate point cp (nearest_pt)
     double nearest_pt_x = e->p1->x + t * (e->p2->x - e->p1->x),
@@ -62,6 +63,7 @@ double distToSegmentSquared(GIMSPoint *p, GIMSEdge *e) {
     return (p->x - nearest_pt_x) * (p->x - nearest_pt_x) + 
            (p->y - nearest_pt_y) * (p->y - nearest_pt_y);
 }
+
 
 /*
 -->GIMSGeometry

@@ -59,6 +59,7 @@ namespace PMQUADTREE {
           in a given bounding box*/
         virtual RelStatus isBoundedBy ( GIMSGeometry *result, GIMSBoundingBox *);
 
+        void onClick        ( double, double );
         void debugRender    ( Cairo::RefPtr<Cairo::Context> );
         void renderTree     ( Cairo::RefPtr<Cairo::Context>, Node *n );
         void renderLeafNode ( Cairo::RefPtr<Cairo::Context>, Node *n );

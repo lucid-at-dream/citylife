@@ -10,6 +10,10 @@ double xmultiplier[4] =  {0.0, 0.5, 0.5, 0.0};
 double ymultiplier[4] =  {0.5, 0.5, 0.0, 0.0};
 int depth = 0;
 
+bool renderEdge = false;
+list<GIMSGeometry *> *renderQueue = new list<GIMSGeometry *>();
+list<GIMSGeometry *> *redRenderQueue = new list<GIMSGeometry *>();
+
 /*
 -->Polygonal Map QuadTree Node
 */
@@ -117,6 +121,10 @@ bool Node::polygonContainsPoint(GIMSPolygon *pol, GIMSPoint *pt){
             return false;
     }
 
+    //set up the query point
+    GIMSPoint *qp = n->square->lowerLeft->clone();
+    qp->x = pt->x;
+
     //The first portion of the polygon "pol" that we found going in the north direction
     GIMSPolygon *p = (GIMSPolygon *)first;
 
@@ -127,6 +135,7 @@ bool Node::polygonContainsPoint(GIMSPolygon *pol, GIMSPoint *pt){
     //ring, as it will affect the side the point should be on to be contained.
     bool isEdgeFromExtRing = false;
     double minDist = 1e100;
+    double tmp;
     GIMSEdge *closest = NULL;
     //Keep track of the adjacent edges in order to account for vertex sharing within the node.
     GIMSEdge *closestPrev = NULL,
@@ -136,7 +145,8 @@ bool Node::polygonContainsPoint(GIMSPolygon *pol, GIMSPoint *pt){
     //iterate over the edges from the external ring
     for( list<GIMSGeometry *>::iterator it = p->externalRing->list->begin();
          it != p->externalRing->list->end(); it++ ){
-        if( distToSegmentSquared( pt, (GIMSEdge *)(*it) ) < minDist ){
+        if( (tmp = distToSegmentSquared( qp, (GIMSEdge *)(*it) )) < minDist ){
+            minDist = tmp;
             closest = (GIMSEdge *)(*it);
             closestPrev = prev;
             list<GIMSGeometry *>::iterator aux = it;
@@ -156,7 +166,8 @@ bool Node::polygonContainsPoint(GIMSPolygon *pol, GIMSPoint *pt){
         prev = NULL;
         for( list<GIMSGeometry *>::iterator it = ((GIMSGeometryList *)(*int_ring))->list->begin();
              it != ((GIMSGeometryList *)(*int_ring))->list->end(); it++ ){
-            if( distToSegmentSquared( pt, (GIMSEdge *)(*it) ) < minDist ){
+            if( (tmp = distToSegmentSquared( qp, (GIMSEdge *)(*it) )) < minDist ){
+                minDist = tmp;
                 closest = (GIMSEdge *)(*it);
                 closestPrev = prev;
                 list<GIMSGeometry *>::iterator aux = it;
@@ -199,20 +210,20 @@ bool Node::polygonContainsPoint(GIMSPolygon *pol, GIMSPoint *pt){
         GIMSPoint *unshared2 = e2->p1->equals(pt2) ? e2->p2 : e2->p1;
 
         //compute and compare angles
-        double angle1 = angle3p(unshared1, pt2, pt),
-               angle2 = angle3p(unshared2, pt2, pt);
+        double angle1 = angle3p(unshared1, pt2, qp),
+               angle2 = angle3p(unshared2, pt2, qp);
 
         closest = angle1 < angle2 ? e1 : e2;
     }
 
     /*check which side of closest pt lies in*/
     if( isEdgeFromExtRing ){
-        if( pt->sideOf(closest) == RIGHT )
+        if( qp->sideOf(closest) == RIGHT )
             return true;
         else
             return false;
     }else{
-        if( pt->sideOf(closest) == LEFT )
+        if( qp->sideOf(closest) == LEFT )
             return true;
         else
             return false;
@@ -534,6 +545,17 @@ void PMQuadTree::debugRender(Cairo::RefPtr<Cairo::Context> cr){
     }else{
         printf("null query\n");
     }
+
+    cr->set_source_rgba(0.19, 0.73, 0.12, 0.5);
+    for(list<GIMSGeometry *>::iterator it = renderQueue->begin(); it != renderQueue->end(); it++){
+        renderer->renderGeometry(cr, *it);
+    }
+
+    cr->set_source_rgba(0.73, 0.19, 0.03, 0.5);
+    for(list<GIMSGeometry *>::iterator it = redRenderQueue->begin(); it != redRenderQueue->end(); it++){
+        renderer->renderGeometry(cr, *it);
+    }
+
 }
 
 /*Recursively render the tree nodes*/
@@ -581,4 +603,19 @@ void PMQuadTree::renderLeafNode (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
             }
         }
     }
+}
+
+void PMQuadTree::onClick( double x, double y){
+    printf("begin click event\n");
+
+    /*
+    GIMSPolygon *pol= (GIMSPolygon *)(((GIMSGeometryList *)(this->query))->list->front());
+    GIMSPoint *pt = new GIMSPoint(x,y);
+    renderEdge = true;
+    Node *n = ((list<Node *> *)(this->root->search(pt)))->front();
+    n->polygonContainsPoint(pol, pt);
+    renderEdge = false;
+    */
+
+    printf("finished click event\n");
 }

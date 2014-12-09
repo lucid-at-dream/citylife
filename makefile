@@ -2,7 +2,7 @@
 CC = g++
 LDLIBS = -lm -lpq -lgdal
 COPT = -O2 -march=native -mtune=native
-COPT = 
+COPT = -Og
 CFLAGS = -g -Wall -std=c++11 -pedantic ${LDLIBS} ${COPT}
 CTESTFLAGS = -lgtest
 
@@ -34,6 +34,9 @@ OBJTESTFILES = ${OBJTESTFILESTMP} ${OBJFILESEXCEPTMAIN}
 INC_DIR += $(addprefix -I, $(shell dirname $$(find ${SRC_DIR} | grep "\\.hpp$$\\|\\.h$$") | sort | uniq) )
 
 all: ${BIN_DIR}/${OFILE}
+
+run: ${BIN_DIR}/${OFILE}
+	./${BIN_DIR}/${OFILE}
 
 .IGNORE: format
 
