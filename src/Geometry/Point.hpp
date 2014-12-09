@@ -8,7 +8,6 @@
 #include "BoundingBox.hpp"
 
 namespace GIMSGEOMETRY{
-
   class GIMSPoint : public GIMSGeometry {
     public:
       double x, y;
@@ -23,7 +22,6 @@ namespace GIMSGEOMETRY{
                     GIMSPoint              ( double x, double y );
                    ~GIMSPoint              ();
   };
-
 }
 
 #endif

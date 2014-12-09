@@ -1,8 +1,5 @@
 #include "GeometryList.hpp"
 
-/*
--->GIMSGeometryList
-*/
 GIMSGeometryList *GIMSGeometryList::clone () {
     TODO(Implement clone function on the geometry list)
     return NULL;
@@ -36,6 +33,3 @@ GIMSGeometryList::GIMSGeometryList(){
 GIMSGeometryList::~GIMSGeometryList(){
     delete this->list;
 }
-/*
-GIMSGeometryList<--
-*/

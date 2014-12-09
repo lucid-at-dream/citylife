@@ -2,6 +2,9 @@
 
 using namespace GIMSGEOMETRY;
 
+GIMSGeometry::~GIMSGeometry (){}
+
+/*returns the squared distance between two points*/
 double distanceSquared2p(GIMSPoint *p1, GIMSPoint *p2){
     return (p2->x - p1->x) * (p2->x - p1->x)+
            (p2->y - p1->y) * (p2->y - p1->y);
@@ -63,20 +66,3 @@ double distToSegmentSquared(GIMSPoint *p, GIMSEdge *e) {
     return (p->x - nearest_pt_x) * (p->x - nearest_pt_x) + 
            (p->y - nearest_pt_y) * (p->y - nearest_pt_y);
 }
-
-
-/*
--->GIMSGeometry
-*/
-GIMSGeometry::~GIMSGeometry (){}
-/*
-GIMSGeometry<--
-*/
-
-
-
-
-
-
-
-

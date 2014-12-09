@@ -1,8 +1,5 @@
 #include "Edge.hpp"
 
-/*
--->GIMSEdge
-*/
 GIMSEdge *GIMSEdge::clone () {
     return new GIMSEdge( this->p1->clone(), this->p2->clone() );
 }
@@ -174,6 +171,3 @@ GIMSEdge *GIMSEdge::trimToBBox (GIMSBoundingBox *box) {
         exit (1);
     }
 }
-/*
-GIMSEdge<--
-*/

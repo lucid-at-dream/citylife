@@ -1,8 +1,5 @@
 #include "Polygon.hpp"
 
-/*
--->GIMSPolygon
-*/
 GIMSPolygon *GIMSPolygon::clone(){
     TODO(Implement clone function for polygons);
     perror("called an unimplemented function (GIMSPolygon__clone)");
@@ -38,6 +35,3 @@ GIMSPolygon::~GIMSPolygon(){
     delete this->externalRing;
     delete this->internalRings;
 }
-/*
-GIMSPolygon<--
-*/

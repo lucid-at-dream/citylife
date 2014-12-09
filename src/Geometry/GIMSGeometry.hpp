@@ -50,4 +50,11 @@ double angle3p(GIMSPoint *p1, GIMSPoint *p2, GIMSPoint *p3);
 double cosine3p(GIMSPoint *p1, GIMSPoint *p2, GIMSPoint *p3);
 double distToSegmentSquared(GIMSPoint *p, GIMSEdge *e);
 
+#include "Edge.hpp"
+#include "GeometryList.hpp"
+#include "Polygon.hpp"
+#include "Point.hpp"
+#include "BoundingBox.hpp"
+
 #endif
+

@@ -1,8 +1,5 @@
 #include "Point.hpp"
 
-/*
--->GIMSPoint
-*/
 /* Returns true if the point lies inside the given bounding box */
 GIMSPoint *GIMSPoint::clone () {
     return new GIMSPoint(this->x, this->y);
@@ -80,6 +77,3 @@ GIMSPoint::GIMSPoint (double x, double y) {
 GIMSPoint::~GIMSPoint() {
     //There's nothing nested to deallocate here.
 }
-/*
-GIMSPoint<--
-*/
