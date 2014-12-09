@@ -3,7 +3,7 @@
 GIMSPolygon *GIMSPolygon::clone(){
     TODO(Implement clone function for polygons);
     perror("called an unimplemented function (GIMSPolygon__clone)");
-    exit(-1);
+    return NULL;
 }
 
 GIMSGeometry *GIMSPolygon::clipToBox(GIMSBoundingBox *box){

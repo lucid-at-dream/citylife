@@ -1,8 +1,5 @@
 #include "BoundingBox.hpp"
 
-/*
--->GIMSBoundingBox
-*/
 GIMSBoundingBox *GIMSBoundingBox::clone (){
     return new GIMSBoundingBox( this->lowerLeft->clone(), this->upperRight->clone() );
 }
@@ -34,7 +31,7 @@ double GIMSBoundingBox::maxy(){
 /*Unsupported*/
 GIMSGeometry *GIMSBoundingBox::clipToBox ( GIMSBoundingBox * ){
     fprintf(stderr, "Called clipToBox on a bounding box, which is not supported.");
-    exit(1);
+    return NULL;
 }
 
 GIMSBoundingBox::GIMSBoundingBox ( GIMSPoint *lowerLeft, GIMSPoint *upperRight ) {
@@ -48,6 +45,3 @@ GIMSBoundingBox::~GIMSBoundingBox(){
     delete this->lowerLeft;
     delete this->upperRight;
 }
-/*
-GIMSBoundingBox<--
-*/

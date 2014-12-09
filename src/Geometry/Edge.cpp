@@ -17,9 +17,6 @@ GIMSEdge::~GIMSEdge() {
 }
 
 GIMSGeometry *GIMSEdge::clipToBox ( GIMSBoundingBox *box ){
-    
-    //lowerLeft  = box->lowerLeft
-    //upperRight = box->upperRight
 
     GIMSPoint upperLeft  = { box->lowerLeft->x , box->upperRight->y },
               lowerRight = { box->upperRight->x, box->lowerLeft->y  };
@@ -168,6 +165,6 @@ GIMSEdge *GIMSEdge::trimToBBox (GIMSBoundingBox *box) {
         
     } else {
         perror ("trimEdge called on a edge that did not intersect the square");
-        exit (1);
+        return NULL;
     }
 }
