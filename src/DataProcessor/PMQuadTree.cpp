@@ -55,22 +55,26 @@ Node *Node::goNorth( double x ){
         return NULL;
 
     //we simply create a point out of the node, a little upper and search for it.
-    GIMSPoint *pt = this->square->upperRight->clone();
-    pt->y += ERR_MARGIN * 4;
-    pt->x = x;
+    GIMSPoint pt = GIMSPoint(x, this->square->upperRight->y);
+    pt.y += ERR_MARGIN * 4;
 
     //we first get the first node above this that contains the created point.
     Node *node;
     Node *cNode = this->father;
-    while( !pt->isInsideBox(cNode->square) ){
-        if(cNode->father != NULL)
+    while( !pt.isInsideBox(cNode->square) ){
+        if(cNode->father != NULL){
+            //since the lower node didn't contain pt, we go higher
             cNode = cNode->father;
-        else
+        }else{
+            //we can't go higher, which means that the point is out of the map
             return NULL;
+        }
     }
 
     //we then search for the point in the found node to get the containing leaf node.
-    node = ((list<Node *> *)(cNode->search( pt )))->front();
+    //even tough there's no guarantee that only one node will be returned, there's a guarantee
+    //that all the retrieved nodes intersect the vertical line that goes through x
+    node = ((list<Node *> *)(cNode->search( &pt )))->front();
 
     return node;
 }
@@ -96,7 +100,6 @@ GIMSGeometry *Node::hasReferenceTo( unsigned long int id ){
 
 /*Returns true if a polygon "pol" that intersects the node contains point "pt".*/
 bool Node::polygonContainsPoint(GIMSPolygon *pol, GIMSPoint *pt){
-
     /*Explanation:
       According to the paper where pmqtrees are proposed, the procedure to label
       a point is as follows:
@@ -230,14 +233,13 @@ bool Node::polygonContainsPoint(GIMSPolygon *pol, GIMSPoint *pt){
         else
             return false;
     }
-
 }
 
 /*Returns all nodes that intersect a given poligon "pol", including the 
   polygon's interior. This means that this function returns all tree nodes that
   are strictly contained in the polygon.*/
 void *Node::searchInterior (GIMSPolygon *pol){
-TODO(buggy behaviour)
+    TODO(buggy behaviour)
 
     if ( this->type != GRAY ) {
         list<Node *> *l = new list<Node *>;
@@ -474,16 +476,12 @@ PMQuadTree::PMQuadTree (GIMSBoundingBox *domain) {
     this->query = NULL;
 }
 
-PMQuadTree::~PMQuadTree () {
-
-}
+PMQuadTree::~PMQuadTree () {}
 
 
 
 /*Functions that take care of the construction and maintenance of the structure*/
-void PMQuadTree::build  (GIMSGeometry *geom){
-
-}
+void PMQuadTree::build  (GIMSGeometry *geom){}
 
 void PMQuadTree::insert ( GIMSGeometry *geom ) {
     this->root->insert(geom);
