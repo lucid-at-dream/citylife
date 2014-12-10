@@ -185,8 +185,7 @@ GIMSGeometry *retrieveFeature ( OGRFeature *feature ) {
 
         GIMSPolygon *polygon = new GIMSPolygon(exteriorRing, interiorRings);
         polygon->id = incId++;
-        geomlist->list->push_back( polygon );
-        return geomlist;
+        return polygon;
 
     } else {
         perror ("unsupported type of geometry detected.");

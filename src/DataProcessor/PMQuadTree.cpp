@@ -239,9 +239,8 @@ bool Node::polygonContainsPoint(GIMSPolygon *pol, GIMSPoint *pt){
   polygon's interior. This means that this function returns all tree nodes that
   are strictly contained in the polygon.*/
 void *Node::searchInterior (GIMSPolygon *pol){
-    TODO(buggy behaviour)
 
-    if ( this->type != GRAY ) {
+    if ( this->type != GRAY ) { //if the node is a leaf node
         list<Node *> *l = new list<Node *>;
         l->push_back(this);
         return l;
@@ -257,16 +256,16 @@ void *Node::searchInterior (GIMSPolygon *pol){
             if( clipped == NULL ){
                 //if there are no intersections, then either the node is strictly
                 //contained in the polygon interior or exterior
-                GIMSPoint *p = sons[q]->square->upperRight->clone();
-                p->x -= sons[q]->square->xlength()/2.0 - 2 * ERR_MARGIN;
-                contained = sons[q]->polygonContainsPoint( pol, p );
+                GIMSPoint p = GIMSPoint( sons[q]->square->upperRight->x - 4 * ERR_MARGIN,
+                                         sons[q]->square->upperRight->y                 );
+                contained = sons[q]->polygonContainsPoint( pol, &p );
             }
 
             if( contained ){
-                //if the node is contained, we can report it freely
+                //if the node is contained, we can report it free of charge
                 retlist->push_back(sons[q]);
             }else if( clipped != NULL ){
-                //if the node is intersected we call recursivly to its sons.
+                //if the node is intersected we call recursively to its sons.
                 list<Node *> *l = (list<Node *> *)sons[q]->searchInterior(clipped);
                 if( l != NULL ){
                     retlist->insert( retlist->end(), l->begin(), l->end() );
