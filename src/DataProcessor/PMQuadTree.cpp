@@ -289,15 +289,16 @@ void Node::insert ( GIMSGeometry *geom ) {
 
     GIMSGeometry *clipped = (GIMSGeometry *)(geom->clipToBox ( this->square ));
 
-    if (clipped == NULL) {
+    if (clipped == NULL) { //geometry to insert does not intersect this node
         depth--;
         return;
     }
 
     if ( this->type != GRAY ) { //node type is only gray when it's not a leaf
+                                //we're therefore accessing leaf nodes in this block
 
-        /*merge clipped with the node's dictionary*/
-        if (this->dictionary != NULL) {
+        
+        if (this->dictionary != NULL) { //merge clipped with the node's dictionary
             if( clipped->type == MIXEDLIST ){
                 ((GIMSGeometryList *)(clipped))->list->insert (
                         ((GIMSGeometryList *)(clipped))->list->end(),
@@ -305,7 +306,6 @@ void Node::insert ( GIMSGeometry *geom ) {
                         this->dictionary->end() );
                 delete this->dictionary;
                 this->dictionary = NULL;
-
             }else{
                 this->dictionary->push_back(clipped);
                 clipped = new GIMSGeometryList();
@@ -315,6 +315,7 @@ void Node::insert ( GIMSGeometry *geom ) {
         }
 
         if ( this->validateGeometry ( clipped ) ) {
+            //if the geometry is a valid node geometry we insert it into the node
             this->type = BLACK;
             this->dictionary = ((GIMSGeometryList *)(clipped))->list;
             depth--;
@@ -324,7 +325,7 @@ void Node::insert ( GIMSGeometry *geom ) {
         }
     }
 
-    for (Quadrant q : quadrantList) {
+    for (Quadrant q : quadrantList) { //recurse
         this->sons[q]->insert ( clipped );
     }
     depth--;
