@@ -31,3 +31,6 @@ out
 callgrind*
 linecount.sh
 spellcheck.sh
+commit.sh
+session.vim
+tags
