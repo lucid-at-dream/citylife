@@ -45,11 +45,11 @@ int main (int argc, char *argv[]) {
     while ( (feature = layer->GetNextFeature() ) != NULL) {
     
         /*
-        if ( strcmp (feature->GetFieldAsString (feature->GetFieldIndex ("highway") ), "cycleway") != 0 ) {
+        if ( feature->GetFieldAsDouble(feature->GetFieldIndex("way_area")) < 10000 ) {
             delete feature;
             continue;
-        }*/
-        
+        }
+        */
         //printf("%d\n", count);
         aux = retrieveFeature (feature);
         
