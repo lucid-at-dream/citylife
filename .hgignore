@@ -34,3 +34,4 @@ spellcheck.sh
 commit.sh
 session.vim
 tags
+trimToBBox.cpp

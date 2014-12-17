@@ -7,8 +7,10 @@ using namespace GIMS_GeometryCollection;
 /*append a geometry to the list*/
 void append(GIMSGeometry &g){
     size += 1;
-    if( size > allocatedSize )
-        this->list = (GIMS_GeometryCollection **)realloc(this->list, this->size * sizeof(GIMSGeometry *));
+    if( size > allocatedSize ){
+        this->list = (GIMS_Geometry **)realloc(this->list, this->size * sizeof(GIMS_Geometry *));
+        this->allocatedSize = this->size;
+    }
 
     this->list[size-1] = g;
 }
@@ -40,7 +42,7 @@ GIMS_Geometry *clipToBox ( GIMS_BoundingBox &box ){
 GIMS_GeometryCollection(int size){
     this->type = GEOMETRYCOLLECTION;
     this->size = this->allocatedSize = size;
-    this->list = (GIMS_GeometryCollection **)malloc(size, sizeof(GIMS_Geometry *));
+    this->list = (GIMS_Geometry **)malloc(size, sizeof(GIMS_Geometry *));
 }
 
 GIMS_GeometryCollection(){
