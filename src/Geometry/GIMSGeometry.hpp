@@ -17,12 +17,12 @@ namespace GIMS_GEOMETRY {
         POLYGON     = 1<<4,
         //Multi datatypes
         MULTIPOINT      = 1<<5,
-        MULTILINESTRING = 1<<6
+        MULTILINESTRING = 1<<6,
         MULTIPOLYGON    = 1<<7,
         //collections
         GEOMETRYCOLLECTION = 1<<8,
         //auxiliary type. In fact it is a Linestring with only two points.
-        LINESEGMENT = 1<<9;
+        LINESEGMENT = 1<<9,
     };
 
     enum GIMS_Side {
@@ -45,8 +45,6 @@ namespace GIMS_GEOMETRY {
 
     class GIMS_Geometry {
       public:
-        unsigned int renderCount; //we need a better way of doing this.
-
         GeometryType type;
         unsigned long long int id; //osm_id
 
