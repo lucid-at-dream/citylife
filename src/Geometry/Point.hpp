@@ -2,10 +2,6 @@
 #define POINT_HPP
 
 #include "GIMSGeometry.hpp"
-#include "Edge.hpp"
-#include "GeometryList.hpp"
-#include "Polygon.hpp"
-#include "BoundingBox.hpp"
 
 namespace GIMSGEOMETRY{
   class GIMSPoint : public GIMSGeometry {

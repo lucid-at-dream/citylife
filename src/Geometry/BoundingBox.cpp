@@ -1,47 +1,46 @@
 #include "BoundingBox.hpp"
 
-GIMSBoundingBox *GIMSBoundingBox::clone (){
-    return new GIMSBoundingBox( this->lowerLeft->clone(), this->upperRight->clone() );
+GIMS_BoundingBox *GIM_SBoundingBox::clone (){
+    return new GIMS_BoundingBox( this->lowerLeft->clone(), this->upperRight->clone() );
 }
 
-double GIMSBoundingBox::xlength(){
+inline double GIMS_BoundingBox::xlength(){
     return fabs( this->upperRight->x - this->lowerLeft->x );
 }
 
-double GIMSBoundingBox::ylength(){
+inline double GIMS_BoundingBox::ylength(){
     return fabs( this->upperRight->y - this->lowerLeft->y );
 }
 
-double GIMSBoundingBox::minx(){
+inline double GIMS_BoundingBox::minx(){
     return this->lowerLeft->x;
 }
 
-double GIMSBoundingBox::maxx(){
+inline double GIMS_BoundingBox::maxx(){
     return this->upperRight->y;
 }
 
-double GIMSBoundingBox::miny(){
+inline double GIMS_BoundingBox::miny(){
     return this->lowerLeft->y;
 }
 
-double GIMSBoundingBox::maxy(){
+inline double GIMS_BoundingBox::maxy(){
     return this->upperRight->y;
 }
 
 /*Unsupported*/
-GIMSGeometry *GIMSBoundingBox::clipToBox ( GIMSBoundingBox * ){
+GIMS_Geometry *GIMS_BoundingBox::clipToBox ( GIMS_BoundingBox * ){
     fprintf(stderr, "Called clipToBox on a bounding box, which is not supported.");
     return NULL;
 }
 
-GIMSBoundingBox::GIMSBoundingBox ( GIMSPoint *lowerLeft, GIMSPoint *upperRight ) {
+GIMS_BoundingBox::GIMS_BoundingBox ( GIMS_Point *lowerLeft, GIMS_Point *upperRight ) {
+    this->type = BOUNDINGBOX;
     this->lowerLeft = lowerLeft;
     this->upperRight = upperRight;
-    this->type = BOUNDINGBOX;
-    this->renderCount = 0;
 }
 
-GIMSBoundingBox::~GIMSBoundingBox(){
+GIMS_BoundingBox::~GIMS_BoundingBox(){
     delete this->lowerLeft;
     delete this->upperRight;
 }

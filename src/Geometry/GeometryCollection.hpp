@@ -2,10 +2,6 @@
 #define GEOMETRYLIST_HPP
 
 #include "GIMSGeometry.hpp"
-#include "Edge.hpp"
-#include "Polygon.hpp"
-#include "Point.hpp"
-#include "BoundingBox.hpp"
 
 namespace GIMSGEOMETRY{
     class GIMSGeometryList  : public GIMSGeometry {

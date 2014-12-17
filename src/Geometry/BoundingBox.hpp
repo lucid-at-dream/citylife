@@ -1,28 +1,24 @@
 #ifndef BOUNDINGBOX_HPP
 #define BOUNDINGBOX_HPP
 
-#include "GIMSGeometry.hpp"
-#include "Edge.hpp"
-#include "GeometryList.hpp"
-#include "Polygon.hpp"
-#include "Point.hpp"
+#include "GIMS_Geometry.hpp"
 
-namespace GIMSGEOMETRY{
-  class GIMSBoundingBox : public GIMSGeometry {
+namespace GIMS_GEOMETRY{
+  class GIMS_BoundingBox : public GIMS_Geometry {
     public:
-      GIMSPoint *lowerLeft ,
-                *upperRight;
+      GIMS_Point *lowerLeft ,
+                 *upperRight;
 
-      GIMSBoundingBox *clone           ();
-      double        xlength         ();
-      double        ylength         ();
-      double        minx            ();
-      double        maxx            ();
-      double        miny            ();
-      double        maxy            ();
-      GIMSGeometry *clipToBox       ( GIMSBoundingBox * );
-                    GIMSBoundingBox ( GIMSPoint *lowerLeft, GIMSPoint *upperRight );
-                   ~GIMSBoundingBox ();
+      GIMS_BoundingBox *clone            ();
+      double            xlength          ();
+      double            ylength          ();
+      double            minx             ();
+      double            maxx             ();
+      double            miny             ();
+      double            maxy             ();
+      GIMS_Geometry    *clipToBox        (GIMS_BoundingBox &);
+                        GIMS_BoundingBox (GIMS_Point &lowerLeft, GIMS_Point &upperRight);
+                       ~GIMS_BoundingBox ();
   };
 }
 

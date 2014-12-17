@@ -1,3 +1,23 @@
+#ifndef EDGE_HPP
+#define EDGE_HPP
+
+#include "GIMSGeometry.hpp"
+
+namespace GIMSGEOMETRY{
+  class GIMSEdge : public GIMSGeometry {
+    public:
+      GIMSPoint *p1,
+                *p2;
+
+      GIMSEdge *clone     ();
+      GIMSGeometry *clipToBox ( GIMSBoundingBox * );
+      GIMSEdge     *trimToBBox( GIMSBoundingBox * );
+                    GIMSEdge  ( GIMSPoint *p1, GIMSPoint *p2 );
+                   ~GIMSEdge  ();
+  };
+}
+
+#endif
 #ifndef EDGELIST_HPP
 #define EDGELIST_HPP
 
