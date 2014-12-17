@@ -1,4 +1,4 @@
-#include "Edge.hpp"
+#include "LineString.hpp"
 
 GIMSEdge *GIMSEdge::clone () {
     return new GIMSEdge( this->p1->clone(), this->p2->clone() );

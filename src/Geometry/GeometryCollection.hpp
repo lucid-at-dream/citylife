@@ -1,17 +1,23 @@
-#ifndef GEOMETRYLIST_HPP
-#define GEOMETRYLIST_HPP
+#ifndef GEOMETRYCOLLECTION_HPP
+#define GEOMETRYCOLLECTION_HPP
 
 #include "GIMSGeometry.hpp"
 
-namespace GIMSGEOMETRY{
-    class GIMSGeometryList  : public GIMSGeometry {
-      public:
-        std::list<GIMSGeometry *> *list;
+namespace GIMS_GEOMETRY{
 
-        GIMSGeometryList *clone            ();
-        GIMSGeometry *clipToBox        ( GIMSBoundingBox * );
-                      GIMSGeometryList ();
-                     ~GIMSGeometryList ();
+    class GIMS_GeometryCollection  : public GIMS_Geometry {
+      public:
+        int size;
+        int allocatedSize;
+        GIMS_Geometry **list;
+
+        void                     append                  (GIMS_Geometry &);
+        GIMS_GeometryCollection *clone                   ();
+        GIMS_Geometry           *clipToBox               (GIMS_BoundingBox &);
+                                 GIMS_GeometryCollection (int size);
+                                 GIMS_GeometryCollection ();
+                                ~GIMS_GeometryCollection ();
     };
+
 }
 #endif
