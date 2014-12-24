@@ -1,4 +1,4 @@
-#include "BoundingBox.hpp"
+#include "Geometry.hpp"
 
 GIMS_BoundingBox *GIM_SBoundingBox::clone (){
     return new GIMS_BoundingBox( this->lowerLeft->clone(), this->upperRight->clone() );

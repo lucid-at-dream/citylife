@@ -1,6 +1,4 @@
-#include "GeometryCollection.hpp"
-
-using namespace GIMS_GeometryCollection;
+#include "Geometry.hpp"
 
 /*append a geometry to the list*/
 void GIMS_GeometryCollection::nappend(GIMSGeometry &g){

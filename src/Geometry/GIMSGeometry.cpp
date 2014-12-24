@@ -1,4 +1,4 @@
-#include "GIMSGeometry.hpp"
+#include "Geometry.hpp"
 
 using namespace GIMS_GEOMETRY;
 

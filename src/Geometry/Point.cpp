@@ -1,4 +1,4 @@
-#include "Point.hpp"
+#include "Geometry.hpp"
 
 /* Returns true if the point lies inside the given bounding box */
 GIMS_Point *GIMS_Point::clone() {

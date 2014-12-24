@@ -1,4 +1,4 @@
-#include "Polygon.hpp"
+#include "Geometry.hpp"
 
 GIMS_Polygon *GIMS_Polygon::clone(){    
     GIMS_LineString **ir_fresh = (GIMS_LineString **)malloc(this->ir_allocatedSize * sizeof(GIMS_LineString *));

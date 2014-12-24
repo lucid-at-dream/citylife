@@ -1,4 +1,4 @@
-#include "LineString.hpp"
+#include "Geometry.hpp"
 
 GIMS_LineSegment *GIMS_LineSegment::clone () {
     return new GIMS_LineSegment( this->p1->clone(), this->p2->clone() );

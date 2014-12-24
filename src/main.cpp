@@ -4,7 +4,7 @@
 #include <list>
 #include "PGConnection.h"
 #include "Connect2Postgis.h"
-#include "GIMSGeometry.hpp"
+#include "Geometry.hpp"
 //#include "PMQuadTree.hpp"
 //#include "DebRender.hpp"
 
@@ -120,27 +120,27 @@ GIMS_Geometry *retrieveFeature ( OGRFeature *feature ) {
         }
         
         int M = ( (OGRPolygon *) geometry)->getNumInteriorRings();
-        GIMS_Polygon polygon = new GIMS_Polygon(M);
-        polygon->exteriorRing = exteriorRing;
+        GIMS_Polygon *polygon = new GIMS_Polygon(M);
+        polygon->externalRing = exteriorRing;
 
         for( int k=0; k<M; k++ ){ 
             OGRLinearRing *f_intRing = ( (OGRPolygon *) geometry)->getInteriorRing(k);
-            N = intRing->getNumPoints();
+            N = f_intRing->getNumPoints();
             GIMS_Ring *intRing = new GIMS_Ring(N);
 
             for (int i = 1; i < N; i++) {
                 f_intRing->getPoint (i, tmp);
-                intRing->appendPoint(new GIMS_Point(tmp->getX(), tmp->getY());
+                intRing->appendPoint(new GIMS_Point(tmp->getX(), tmp->getY()));
 
 #warning: just for test code. remove after correctness check
                 if ( intRing->list[0]->x == tmp->getX() &&
                      intRing->list[0]->y == tmp->getY() ){
                     printf("yo! watch out for this one."
-                           "At translation of polygon between gdal and gims\n").
+                           "At translation of polygon between gdal and gims.\n");
                 }
 //end of test code
             }
-            polygon->appendInteriorRing(intRing);
+            polygon->appendInternalRing(intRing);
        }
        delete tmp;
        return polygon;
