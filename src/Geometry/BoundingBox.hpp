@@ -1,7 +1,7 @@
 #ifndef BOUNDINGBOX_HPP
 #define BOUNDINGBOX_HPP
 
-#include "GIMS_Geometry.hpp"
+#include "GIMSGeometry.hpp"
 
 namespace GIMS_GEOMETRY{
   class GIMS_BoundingBox : public GIMS_Geometry {

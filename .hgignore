@@ -35,3 +35,5 @@ commit.sh
 session.vim
 tags
 trimToBBox.cpp
+hide.sh
+move_back.sh

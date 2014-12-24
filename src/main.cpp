@@ -4,18 +4,17 @@
 #include <list>
 #include "PGConnection.h"
 #include "Connect2Postgis.h"
-#include "PMQuadTree.hpp"
-#include "DebRender.hpp"
-#define INTERSECTION_COLOR "#D49"
+#include "GIMSGeometry.hpp"
+//#include "PMQuadTree.hpp"
+//#include "DebRender.hpp"
 
-using namespace PMQUADTREE;
-using namespace GIMSGEOMETRY;
+//using namespace PMQUADTREE;
+using namespace GIMS_GEOMETRY;
 
 int total = 0;
 unsigned long int incId = 1;
 
-GIMSGeometry *retrieveFeature ( OGRFeature *feature );
-void dumpList (std::list<GIMSGeometry *> *list);
+GIMS_Geometry *retrieveFeature ( OGRFeature *feature );
 
 int main (int argc, char *argv[]) {
 
@@ -33,14 +32,14 @@ int main (int argc, char *argv[]) {
     double lenx = envelope->MaxX - envelope->MinX,
            leny = envelope->MaxY - envelope->MinY,
            len  = lenx > leny ? lenx : leny;
-    
-    PMQuadTree *tree = new PMQuadTree( new GIMSBoundingBox(
-                                           new GIMSPoint (envelope->MinX, envelope->MinY),
-                                           new GIMSPoint (envelope->MinX + len, envelope->MinY + len) ) );
-    
+    /*
+    PMQuadTree *tree = new PMQuadTree( new GIMS_BoundingBox(
+                                           new GIMS_Point (envelope->MinX, envelope->MinY),
+                                           new GIMS_Point (envelope->MinX + len, envelope->MinY + len) ) );
+    */
     OGRFeature *feature;
-    GIMSGeometry* query;
-    GIMSGeometry* aux;
+    GIMS_Geometry* query;
+    GIMS_Geometry* aux;
     int count = 0;
     while ( (feature = layer->GetNextFeature() ) != NULL) {
     
@@ -52,7 +51,7 @@ int main (int argc, char *argv[]) {
         */
         //printf("%d\n", count);
         aux = retrieveFeature (feature);
-        
+        /*
         aux->id = incId++;
         if(aux != NULL){
             if(count == 0)
@@ -62,6 +61,8 @@ int main (int argc, char *argv[]) {
             }
             count++;
         }
+        */
+        count++;
         delete feature;
 
         if(count >= 50)
@@ -70,123 +71,79 @@ int main (int argc, char *argv[]) {
     }
     printf("inserted %d edges.\n", total);
     
-    tree->query = query;
-    renderer = new DebRenderer();
-    renderer->renderCallback = tree;
+    //tree->query = query;
+    //renderer = new DebRenderer();
+    //renderer->renderCallback = tree;
     //renderer->renderSvg("outtree.svg", 400, 400);
-    renderer->mainloop(argc, argv);
+    //renderer->mainloop(argc, argv);
 
     delete layer;
     
     return 0;
 }
 
-void dumpList (std::list<GIMSGeometry *> *list) {
-    std::list<GIMSGeometry *>::iterator it = list->begin();
-    
-    for (; it != list->end(); it++) {
-        printf ("(%lf, %lf) -> (%lf, %lf)\n", ((GIMSEdge *)(*it))->p1->x, ((GIMSEdge *)(*it))->p1->y,
-                                              ((GIMSEdge *)(*it))->p2->x, ((GIMSEdge *)(*it))->p2->y );
-    }
-}
+GIMS_Geometry *retrieveFeature ( OGRFeature *feature ) {
 
-GIMSGeometry *retrieveFeature ( OGRFeature *feature ) {
-
-    GIMSGeometryList *geomlist = new GIMSGeometryList();
     OGRGeometry *geometry = feature->GetGeometryRef();
     
-    if ( //geometry->getGeometryType() == wkbMultiPoint ||
-         geometry->getGeometryType() == wkbPoint         ) {
-        TODO(Implement support for point data loading)
-        perror("called an unimplemented segment (retrieve a point OGRFeature)");
-        exit(-1);
+    if (geometry->getGeometryType() == wkbPoint) { //wkbMultiPoint
 
-    } else if ( //geometry->getGeometryType() == wkbMultiLineString ||
-                geometry->getGeometryType() == wkbLineString         ) {
+        OGRPoint *f_point = (OGRPoint *)geometry;
+        GIMS_Point *point = new GIMS_Point(f_point->getX(), f_point->getY());
+        return point;
 
-        OGRLineString *lineString = ( (OGRLineString *) geometry);
-        int N = lineString->getNumPoints();
-        
-        total += N-1;
+    } else if (geometry->getGeometryType() == wkbLineString) { //wkbMultiLineString 
+
+        OGRLineString *f_lineString = ( (OGRLineString *) geometry);
+        int N = f_lineString->getNumPoints();
+        GIMS_LineString *lineString = new GIMS_LineString(N);
 
         OGRPoint *tmp = new OGRPoint;
-        lineString->getPoint (0, tmp);
-
-        GIMSPoint *prev = NULL,
-                  *curr = new GIMSPoint(tmp->getX(), tmp->getY());
-        
-        for (int i = 1; i < N; i++) {
-
-            prev = curr;
-            lineString->getPoint (i, tmp);
-            curr = new GIMSPoint( tmp->getX(), tmp->getY() );
-            
-            if ( curr->x != prev->x || curr->y != prev->y ) {
-                geomlist->list->push_back( new GIMSEdge(prev, curr) );
-            }
+        for (int i = 0; i < N; i++) {
+            f_lineString->getPoint (i, tmp);
+            lineString->appendPoint(new GIMS_Point(tmp->getX(), tmp->getY()));
         }
         
         delete tmp;
-        return geomlist;
+        return lineString;
         
-    } else if ( //geometry->getGeometryType() == wkbMultiPolygon ||
-                geometry->getGeometryType() == wkbPolygon         ) {
-        
-        GIMSGeometryList *exteriorRing = new GIMSGeometryList();
-
+    } else if (geometry->getGeometryType() == wkbPolygon) { //wkbMultiPolygon
+ 
         OGRLinearRing *extRing = ( (OGRPolygon *) geometry)->getExteriorRing();
         int N = extRing->getNumPoints();
+        GIMS_Ring *exteriorRing = new GIMS_Ring(N);
 
         OGRPoint *tmp = new OGRPoint;
-        extRing->getPoint (0, tmp);
-
-        GIMSPoint *prev = NULL,
-                  *curr = new GIMSPoint(tmp->getX(), tmp->getY());
-
-        total += N+1;
-
         for (int i = 1; i < N; i++) {
-            prev = curr;
             extRing->getPoint (i, tmp);
-            curr = new GIMSPoint( tmp->getX(), tmp->getY() );
-            
-            if ( curr->x != prev->x || curr->y != prev->y ) {
-                exteriorRing->list->push_back( new GIMSEdge(prev, curr) );
-            }
+            exteriorRing->appendPoint(new GIMS_Point(tmp->getX(), tmp->getY()));
         }
         
-
         int M = ( (OGRPolygon *) geometry)->getNumInteriorRings();
-        GIMSGeometryList *interiorRings = new GIMSGeometryList();
+        GIMS_Polygon polygon = new GIMS_Polygon(M);
+        polygon->exteriorRing = exteriorRing;
 
-        for( int k=0; k<M; k++ ){
-            GIMSGeometryList *gimsIntRing = new GIMSGeometryList();
-            
-            OGRLinearRing *intRing = ( (OGRPolygon *) geometry)->getInteriorRing(k);
+        for( int k=0; k<M; k++ ){ 
+            OGRLinearRing *f_intRing = ( (OGRPolygon *) geometry)->getInteriorRing(k);
             N = intRing->getNumPoints();
-
-            intRing->getPoint (0, tmp);
-
-            GIMSPoint *prev = NULL,
-                      *curr = new GIMSPoint(tmp->getX(), tmp->getY());
+            GIMS_Ring *intRing = new GIMS_Ring(N);
 
             for (int i = 1; i < N; i++) {
-                prev = curr;
-                intRing->getPoint (i, tmp);
-                curr = new GIMSPoint( tmp->getX(), tmp->getY() );
-                
-                if ( curr->x != prev->x || curr->y != prev->y ) {
-                    gimsIntRing->list->push_back( new GIMSEdge(prev, curr) );
+                f_intRing->getPoint (i, tmp);
+                intRing->appendPoint(new GIMS_Point(tmp->getX(), tmp->getY());
+
+#warning: just for test code. remove after correctness check
+                if ( intRing->list[0]->x == tmp->getX() &&
+                     intRing->list[0]->y == tmp->getY() ){
+                    printf("yo! watch out for this one."
+                           "At translation of polygon between gdal and gims\n").
                 }
+//end of test code
             }
-            interiorRings->list->push_back(gimsIntRing);
-        }
-        delete tmp;
-
-        GIMSPolygon *polygon = new GIMSPolygon(exteriorRing, interiorRings);
-        polygon->id = incId++;
-        return polygon;
-
+            polygon->appendInteriorRing(intRing);
+       }
+       delete tmp;
+       return polygon;
     } else {
         perror ("unsupported type of geometry detected.");
         return NULL;

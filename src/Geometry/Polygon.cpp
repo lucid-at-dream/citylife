@@ -47,6 +47,14 @@ GIMS_Polygon::GIMS_Polygon( GIMS_LineString *externalRing, GIMS_LineString **int
     this->ir_allocatedSize = ir_allocatedSize;
 }
 
+GIMS_Polygon::GIMS_Polygon(int ir_allocatedSize){
+    this->type = POLYGON;
+    this->externalRing = NULL;
+    this->internalRings = (GIMS_LineString **)malloc(ir_allocatedSize * sizeof(GIMS_LineString *));
+    this->ir_size = 0;
+    this->ir_allocatedSize = ir_allocatedSize;
+}
+
 GIMS_Polygon::GIMS_Polygon(){
     this->type = POLYGON;
     this->externalRing = this->internalRings = NULL;

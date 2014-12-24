@@ -14,7 +14,8 @@ namespace GIMS_GEOMETRY{
         GIMS_Polygon  *clone              ();
         GIMS_Geometry *clipToBox          (GIMS_BoundingBox *);
         void           appendInternalRing (GIMS_LineString *);
-                       GIMS_Polygon       (GIMS_LineString *, GIMS_LineString **);
+                       GIMS_Polygon       (GIMS_LineString *, GIMS_LineString **, int, int);
+                       GIMS_Polygon       (int);
                        GIMS_Polygon       ();
                       ~GIMS_Polygon       ();
     };
