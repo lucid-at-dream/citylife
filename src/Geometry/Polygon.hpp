@@ -2,21 +2,21 @@
 #define POLYGON_HPP
 
 #include "GIMSGeometry.hpp"
-#include "Edge.hpp"
-#include "GeometryList.hpp"
-#include "Point.hpp"
-#include "BoundingBox.hpp"
 
-namespace GIMSGEOMETRY{
-    class GIMSPolygon : public GIMSGeometry {
+namespace GIMS_GEOMETRY{
+    class GIMS_Polygon : public GIMS_Geometry {
       public:
-        GIMSGeometryList *externalRing,
-                         *internalRings;
+        int ir_allocatedSize, ir_size;
 
-        GIMSPolygon  *clone     ();
-        GIMSGeometry *clipToBox ( GIMSBoundingBox * );
-                      GIMSPolygon  ( GIMSGeometryList *, GIMSGeometryList * );
-                     ~GIMSPolygon  ();
+        GIMS_LineString  *externalRing,
+                        **internalRings;
+
+        GIMS_Polygon  *clone              ();
+        GIMS_Geometry *clipToBox          (GIMS_BoundingBox *);
+        void           appendInternalRing (GIMS_LineString *);
+                       GIMS_Polygon       (GIMS_LineString *, GIMS_LineString **);
+                       GIMS_Polygon       ();
+                      ~GIMS_Polygon       ();
     };
 }
 
