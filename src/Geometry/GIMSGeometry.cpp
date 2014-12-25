@@ -5,13 +5,13 @@ using namespace GIMS_GEOMETRY;
 GIMS_Geometry::~GIMS_Geometry (){}
 
 /*returns the squared distance between two points*/
-double distanceSquared2p(GIMS_Point &p1, GIMS_Point &p2){
+double distanceSquared2p(GIMS_Point *p1, GIMS_Point *p2){
     return (p2->x - p1->x) * (p2->x - p1->x)+
            (p2->y - p1->y) * (p2->y - p1->y);
 }
 
 /*returns the cosine of the angle between vectors p1-p2 and p2-p3*/
-double cosine3p(GIMS_Point &p1, GIMS_Point &p2, GIMS_Point &p3){
+double cosine3p(GIMS_Point *p1, GIMS_Point *p2, GIMS_Point *p3){
     double SD12 = distanceSquared2p(p1, p2),
            SD13 = distanceSquared2p(p1, p3),
            SD23 = distanceSquared2p(p2, p3);
@@ -20,14 +20,14 @@ double cosine3p(GIMS_Point &p1, GIMS_Point &p2, GIMS_Point &p3){
 }
 
 /*returns angle between vectors p1-p2 and p2-p3*/
-double angle3p(GIMS_Point &p1, GIMS_Point &p2, GIMS_Point &p3){
+double angle3p(GIMS_Point *p1, GIMS_Point *p2, GIMS_Point *p3){
     return acos( cosine3p(p1,p2,p3) );
 }
 
 /*Returns the squared distance between a point "p" and the closest point that
   lies in the given line segment "e". Note that the distance is squared to avoid
   possibly unnecessary square roots.*/
-double distToSegmentSquared(GIMS_Point &p, GIMS_LineSegment &e) {
+double distToSegmentSquared(GIMS_Point *p, GIMS_LineSegment *e) {
 
     //Length of the line segment squared
     double lineSegLenSquared = (e->p1->x - e->p2->x) * (e->p1->x - e->p2->x) + 

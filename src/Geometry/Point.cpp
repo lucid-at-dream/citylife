@@ -19,7 +19,7 @@ bool GIMS_Point::isInsideBox ( GIMS_BoundingBox *box ) {
 
 /* Returns to which side of the vector defined by (edge->p1, edge->p2) the point
    lies. The sides are defined in the enum GIMS_Side */
-GIMS_Side GIMS_Point::sideOf ( GIMS_Edge *edge) {
+GIMS_Side GIMS_Point::sideOf ( GIMS_LineSegment *edge) {
     double s = (edge->p2->x - edge->p1->x) * (this->y - edge->p1->y) -
                (edge->p2->y - edge->p1->y) * (this->x - edge->p1->x);
     return s < 0 ? RIGHT : (s > 0 ? LEFT : ALIGNED);
@@ -59,7 +59,7 @@ GIMS_Point::~GIMS_Point() {}
 void GIMS_MultiPoint::append(GIMS_Point *pt){
     this->size += 1;
     if(this->size > this->allocatedSize){
-        this->list = (GIMS_Point **)realloc(this->size * sizeof(GIMS_Point *));
+        this->list = (GIMS_Point **)realloc(this->list, this->size * sizeof(GIMS_Point *));
         this->allocatedSize = this->size;
     }
     this->list[this->size-1] = pt;
@@ -73,7 +73,7 @@ GIMS_MultiPoint *GIMS_MultiPoint::clone(){
 }
 
 GIMS_Geometry *GIMS_MultiPoint::clipToBox(GIMS_BoundingBox *box){
-    MultiPoint *clipped = null;
+    GIMS_MultiPoint *clipped = NULL;
     for(int i=0; i<this->size; i++){
         if( this->list[i]->isInsideBox(box) ){
             if(clipped == NULL)
@@ -95,7 +95,7 @@ GIMS_MultiPoint::GIMS_MultiPoint(){
     this->list = NULL;
 }
 
-GIMS_MutliPoint::~GIMS_MultiPoint(){
+GIMS_MultiPoint::~GIMS_MultiPoint(){
     free(this->list);
 }
 
