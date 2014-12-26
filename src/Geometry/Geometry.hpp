@@ -164,17 +164,15 @@ namespace GIMS_GEOMETRY {
 
     class GIMS_Polygon : public GIMS_Geometry {
       public:
-        int ir_allocatedSize, ir_size;
 
-        GIMS_LineString  *externalRing,
-                        **internalRings;
+        GIMS_LineString      *externalRing;
+        GIMS_MultiLineString *internalRings;
 
         GIMS_Polygon  *clone              ();
         GIMS_Geometry *clipToBox          (GIMS_BoundingBox *);
         void           appendInternalRing (GIMS_LineString *);
-                       GIMS_Polygon       (GIMS_LineString *, GIMS_LineString **, int, int);
-                       GIMS_Polygon       (int);
-                       GIMS_Polygon       ();
+                       GIMS_Polygon       (GIMS_LineString *, GIMS_MultiLineString *);
+                       GIMS_Polygon       (int, int);
                       ~GIMS_Polygon       ();
     };
 
