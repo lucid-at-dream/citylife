@@ -127,7 +127,8 @@ namespace GIMS_GEOMETRY {
 
         GIMS_MultiLineString *clone                ();
         GIMS_Geometry        *clipToBox            (GIMS_BoundingBox *);
-        void                  append               (GIMS_Point *p);
+        void                  merge                (GIMS_MultiLineString *mls);
+        void                  append               (GIMS_LineString *);
                               GIMS_MultiLineString (int size);
                               GIMS_MultiLineString ();
                              ~GIMS_MultiLineString ();
