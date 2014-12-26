@@ -1,6 +1,6 @@
 #include "Geometry.hpp"
 
-GIMS_BoundingBox *GIM_SBoundingBox::clone (){
+GIMS_BoundingBox *GIMS_BoundingBox::clone (){
     return new GIMS_BoundingBox( this->lowerLeft->clone(), this->upperRight->clone() );
 }
 
