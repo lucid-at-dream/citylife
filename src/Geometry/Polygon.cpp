@@ -5,21 +5,34 @@ GIMS_Polygon *GIMS_Polygon::clone(){
 }
 
 GIMS_Geometry *GIMS_Polygon::clipToBox(GIMS_BoundingBox *box){
-    GIMS_MultiLineString *exterior = (GIMS_MultiLineString *)(this->externalRing->clipToBox(box));
-
-    GIMS_MultiLineString **interior = (GIMS_MultiLineString *)(this->internalRings->clipToBox(box));
+    GIMS_MultiLineString *exterior = NULL,
+                         *interior = NULL;
     
+    if(this->externalRing != NULL)
+        exterior = (GIMS_MultiLineString *)(this->externalRing->clipToBox(box));
+
+    if(this->internalRings != NULL)
+        interior = (GIMS_MultiLineString *)(this->internalRings->clipToBox(box));
+
     if(exterior != NULL || interior != NULL)
         return new GIMS_Polygon( exterior, interior );
     else
         return NULL;
 }
 
-void appendInternalRing(GIMS_LineString *ir){
+void GIMS_Polygon::appendExternalRing(GIMS_LineString *er){
+    if(this->externalRing == NULL)
+        this->externalRing = new GIMS_MultiLineString(1);
+    this->externalRing->append(er);
+}
+
+void GIMS_Polygon::appendInternalRing(GIMS_LineString *ir){
+    if(this->internalRings == NULL)
+        this->internalRings = new GIMS_MultiLineString(1);
     this->internalRings->append(ir);
 }
 
-GIMS_Polygon::GIMS_Polygon(GIMS_LineString *externalRing, GIMS_MultiLineString *internalRings){
+GIMS_Polygon::GIMS_Polygon(GIMS_MultiLineString *externalRing, GIMS_MultiLineString *internalRings){
     this->type = POLYGON;
     this->externalRing = externalRing;
     this->internalRings = internalRings;
@@ -27,8 +40,8 @@ GIMS_Polygon::GIMS_Polygon(GIMS_LineString *externalRing, GIMS_MultiLineString *
 
 GIMS_Polygon::GIMS_Polygon(int ext_alloc, int int_alloc){
     this->type = POLYGON;
-    this->externalRing = new GIMS_LineString(ext_alloc);
-    this->internalRIngs = new GIMS_MultiLineString(int_alloc);
+    this->externalRing = new GIMS_MultiLineString(ext_alloc);
+    this->internalRings = new GIMS_MultiLineString(int_alloc);
 }
 
 GIMS_Polygon::GIMS_Polygon(){

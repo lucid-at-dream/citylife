@@ -91,7 +91,8 @@ GIMS_LineString::~GIMS_LineString (){
 }
 
 GIMS_LineString *GIMS_LineString::clone (){
-    GIMS_LineString *newList = new GIMS_LineString(this->size);
+    GIMS_LineString *newList = new GIMS_LineString(this->allocatedSize);
+    newList->size = this->size;
     memcpy(newList->list, this->list, this->size*sizeof(GIMS_Point *));
     return newList;
 }
@@ -149,7 +150,8 @@ void GIMS_LineString::appendPoint(GIMS_Point *p){
 
 GIMS_Ring::GIMS_Ring(int size){
     this->type = RING;
-    this->size = this->allocatedSize = size;
+    this->size = 0;
+    this->allocatedSize = size;
     this->list = (GIMS_Point **)malloc(size * sizeof(GIMS_Point *));
 }
 
@@ -210,7 +212,8 @@ void GIMS_MultiLineString::append(GIMS_LineString *l){
 
 GIMS_MultiLineString::GIMS_MultiLineString(int size){
     this->type = MULTILINESTRING;
-    this->size = this->allocatedSize = size;
+    this->size = 0;
+    this->allocatedSize = size;
     this->list = (GIMS_LineString **)malloc(size * sizeof(GIMS_LineString *));   
 }
 

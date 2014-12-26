@@ -65,7 +65,7 @@ int main (int argc, char *argv[]) {
         count++;
         delete feature;
 
-        if(count >= 50)
+        if(count >= 500)
             break;
 
     }
@@ -120,8 +120,8 @@ GIMS_Geometry *retrieveFeature ( OGRFeature *feature ) {
         }
         
         int M = ( (OGRPolygon *) geometry)->getNumInteriorRings();
-        GIMS_Polygon *polygon = new GIMS_Polygon(M);
-        polygon->externalRing = exteriorRing;
+        GIMS_Polygon *polygon = new GIMS_Polygon(N,M);
+        polygon->appendExternalRing(exteriorRing);
 
         for( int k=0; k<M; k++ ){ 
             OGRLinearRing *f_intRing = ( (OGRPolygon *) geometry)->getInteriorRing(k);
