@@ -15,7 +15,7 @@ GIMS_LineSegment::~GIMS_LineSegment() {
     delete this->p2;
 }
 
-GIMSGeometry *GIMS_LineSegment::clipToBox ( GIMSBoundingBox *box ){
+GIMS_Geometry *GIMS_LineSegment::clipToBox ( GIMS_BoundingBox *box ){
 
     GIMS_Point upperLeft  = { box->lowerLeft->x , box->upperRight->y },
                lowerRight = { box->upperRight->x, box->lowerLeft->y  };
@@ -96,7 +96,7 @@ GIMS_LineString *GIMS_LineString::clone (){
     return newList;
 }
 
-GIMSGeometry *GIMS_LineString::clipToBox (GIMSBoundingBox *box){
+GIMS_Geometry *GIMS_LineString::clipToBox (GIMS_BoundingBox *box){
     GIMSMultiLineString *clipped = NULL;
     GIMS_LineString *partial = NULL;
 
