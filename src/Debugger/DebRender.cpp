@@ -96,65 +96,110 @@ void DebRenderer::render ( Cairo::RefPtr<Cairo::Context> cr ) {
     cr->stroke();
 }
 
+void DebRenderer::renderGeometry( Cairo::RefPtr<Cairo::Context> cr, GIMS_Geometry *g ){
 
-void DebRenderer::renderGeometry( Cairo::RefPtr<Cairo::Context> cr, GIMSGeometry *g ){
-    if ( g->type == POINT ) {
-        renderPoint( cr, (GIMSPoint *)g );
-        cr->stroke();
-        return;
-
-    } else if ( g->type == EDGE ) {
-        renderEdge( cr, (GIMSEdge *)g );
-        cr->stroke();
-        return;
-
-    } else if ( g->type == BOUNDINGBOX ) {
-        renderBBox( cr, (GIMSBoundingBox *)g );
-        cr->stroke();
-        return;
-
-    } else if ( g->type == MIXEDLIST ) {
-        for( std::list<GIMSGeometry *>::iterator it = ((GIMSGeometryList *)g)->list->begin();
-             it != ((GIMSGeometryList *)g)->list->end(); it++ ) {
-            renderGeometry( cr, *it );
-        }
-    } else if ( g->type == POLYGON ){
-        GIMSPolygon *p = (GIMSPolygon *)g;
-        renderGeometry(cr, p->externalRing);
-        for(list<GIMSGeometry *>::iterator it = p->internalRings->list->begin();
-            it != p->internalRings->list->end(); it++)
-            renderGeometry(cr, *it);
-    }else{
-        fprintf(stderr, "tryed to render unsupported geometry type. Quiting.\n");
-    }
+    switch(g->type){
+        case BOUNDINGBOX:
+            renderBBox(cr, (GIMS_BoundingBox *)g );
+            break;
+        case POINT:
+            renderPoint(cr, (GIMS_Point *)g);
+            break;
+        case LINESTRING:
+            renderLineString(cr, (GIMS_LineString *)g);
+            break;
+        case RING:
+            renderRing(cr, (GIMS_Ring *)g);
+            break;
+        case POLYGON:
+            renderPolygon(cr, (GIMS_Polygon *)g);
+            break;
+        case MULTIPOINT:
+            renderMultiPoint(cr, (GIMS_MultiPoint *)g);
+            break;
+        case MULTILINESTRING:
+            renderMultiLineString(cr, (GIMS_MultiLineString *)g);
+            break;
+        /*case MULTIPOLYGON: //not supported yet
+            renderMultiPolygon(cr, (GIMS_MultiPolygon *)g);
+            break;*/
+        case GEOMETRYCOLLECTION:
+            renderGeometryCollection(cr, (GIMS_GeometryCollection *)g);
+            break;
+        case LINESEGMENT:
+            renderLineSegment(cr, (GIMS_LineSegment *)g);
+            break;
+        default:
+            printf("tryed to render a geometry with unknown type. Not Rendering!\n");
+    };
 }
 
-void DebRenderer::renderPoint ( Cairo::RefPtr<Cairo::Context> cr, GIMSPoint *p ) {
+void DebRenderer::renderPoint ( Cairo::RefPtr<Cairo::Context> cr, GIMS_Point *p ) {
     double x = (p->x+translatex)*scalex,
            y = (p->y+translatey)*scaley;
-
-    cr->arc(x, y, 3.0/zoom, 0., 2*M_PI);
+    cr->arc(x, y, 2.5/zoom, 0.0, 2*M_PI);
     cr->stroke_preserve();
     cr->fill();
 }
 
-void DebRenderer::renderEdge ( Cairo::RefPtr<Cairo::Context> cr, GIMSEdge *e ) {
-    cr->move_to((e->p1->x + translatex)*scalex, (e->p1->y + translatey)*scaley);
-    cr->line_to((e->p2->x + translatex)*scalex, (e->p2->y + translatey)*scaley);
+void DebRenderer::renderLineString ( Cairo::RefPtr<Cairo::Context> cr, GIMS_LineString *ls ) {
+    cr->move_to((ls->list[0]->x + translatex)*scalex, (ls->list[0]->y + translatey)*scaley);
+    for(int i=1; i < ls->size; i++)
+        cr->line_to((ls->list[i]->x + translatex)*scalex, (ls->list[i]->y + translatey)*scaley);
 }
 
-void DebRenderer::renderFilledBBox ( Cairo::RefPtr<Cairo::Context> cr, GIMSBoundingBox *box ) {
+void DebRenderer::renderFilledBBox ( Cairo::RefPtr<Cairo::Context> cr, GIMS_BoundingBox *box ) {
     renderBBox(cr, box);
     cr->stroke_preserve();
+    cr->fill();
 }
 
-void DebRenderer::renderBBox ( Cairo::RefPtr<Cairo::Context> cr, GIMSBoundingBox *box ) {
-    //printf("rendering box\n");
+void DebRenderer::renderBBox ( Cairo::RefPtr<Cairo::Context> cr, GIMS_BoundingBox *box ) {
     cr->move_to((box->lowerLeft->x + translatex)*scalex,  (box->lowerLeft->y + translatey)*scaley );
     cr->line_to((box->lowerLeft->x + translatex)*scalex,  (box->upperRight->y + translatey)*scaley);
     cr->line_to((box->upperRight->x + translatex)*scalex, (box->upperRight->y + translatey)*scaley);
     cr->line_to((box->upperRight->x + translatex)*scalex, (box->lowerLeft->y + translatey)*scaley );
     cr->line_to((box->lowerLeft->x + translatex)*scalex,  (box->lowerLeft->y + translatey)*scaley );
+}
+
+
+void DebRenderer::renderRing(Cairo::RefPtr<Cairo::Context> cr, GIMS_Ring *ring){
+    cr->move_to((ring->list[0]->x + translatex)*scalex, (ring->list[0]->y + translatey)*scaley);
+    for(int i=1; i < ring->size; i++)
+        cr->line_to((ring->list[i]->x + translatex)*scalex, (ring->list[i]->y + translatey)*scaley);
+    cr->line_to((ring->list[0]->x + translatex)*scalex, (ring->list[0]->y + translatey)*scaley);
+}
+
+void DebRenderer::renderPolygon(Cairo::RefPtr<Cairo::Context> cr, GIMS_Polygon *g){
+    this->renderMultiLineString(cr, g->externalRing);
+    this->renderMultiLineString(cr, g->internalRings);
+}
+
+void DebRenderer::renderMultiPoint(Cairo::RefPtr<Cairo::Context> cr, GIMS_MultiPoint *g){
+    for(int i=0; i<g->size; i++)
+        this->renderPoint(cr, g->list[i]);
+}
+
+void DebRenderer::renderMultiLineString(Cairo::RefPtr<Cairo::Context> cr, GIMS_MultiLineString *g){
+    for(int i=0; i<g->size; i++)
+        this->renderLineString(cr, g->list[i]);
+}
+
+/* Not supported yet
+void DebRenderer::renderMultiPolygon(Cairo::RefPtr<Cairo::Context> cr, GIMS_MultiPolygon *g){
+    for(int i=0; i<g->size; i++)
+        this->renderPolygon(cr, g->list[i]);
+}
+*/
+
+void DebRenderer::renderGeometryCollection(Cairo::RefPtr<Cairo::Context> cr, GIMS_GeometryCollection *g){
+    for(int i=0; i<g->size; i++)
+        this->renderGeometry(cr, g->list[i]);
+}
+
+void DebRenderer::renderLineSegment(Cairo::RefPtr<Cairo::Context> cr, GIMS_LineSegment *g){
+    cr->move_to((g->p1->x + translatex)*scalex, (g->p1->y + translatey)*scaley);
+    cr->line_to((g->p2->x + translatex)*scalex, (g->p2->y + translatey)*scaley);
 }
 
 void DebRenderer::setScale (double x, double y) {
@@ -191,7 +236,7 @@ void DebRenderer::init( int argc, char *argv[] ){
     darea->set_hexpand(true);
     darea->set_vexpand(true);
     darea->set_size_request(400, 400);
-    window->set_title("GIMS Debug Visualization Tool");
+    window->set_title("GIMS_ Debug Visualization Tool");
 
     window->show_all();
 }
