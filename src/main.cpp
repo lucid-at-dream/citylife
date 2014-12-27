@@ -1,12 +1,28 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
-#include <list>
 #include "PGConnection.h"
 #include "Connect2Postgis.h"
 #include "Geometry.hpp"
 //#include "PMQuadTree.hpp"
-//#include "DebRender.hpp"
+#include "DebRender.hpp"
+
+class Debug : public DebugRenderable{
+  public:
+    GIMS_GeometryCollection *list;
+    void debugRender( Cairo::RefPtr<Cairo::Context> );
+    void onClick(double x, double y);
+    Debug(int);
+};
+void Debug::debugRender( Cairo::RefPtr<Cairo::Context> cr ){
+    printf("began render\n");
+    renderer->renderGeometry(cr, this->list);
+    printf("done rendering\n");
+}
+void Debug::onClick(double x, double y){}
+Debug::Debug(int size){
+    this->list = new GIMS_GeometryCollection(size);
+}
 
 //using namespace PMQUADTREE;
 using namespace GIMS_GEOMETRY;
@@ -19,19 +35,17 @@ GIMS_Geometry *retrieveFeature ( OGRFeature *feature );
 int main (int argc, char *argv[]) {
 
     Geometry::Connect2Postgis getGeom;
-    
     OGRLayer *layer = getGeom.GetLayerByName ("planet_osm_polygon");
     
     OGREnvelope *envelope = new OGREnvelope;
-    
     if ( layer->GetExtent ( envelope, FALSE ) != OGRERR_NONE ) {
         perror ("could not retrieve layer envelope");
         exit (-1);
     }
-    
     double lenx = envelope->MaxX - envelope->MinX,
            leny = envelope->MaxY - envelope->MinY,
            len  = lenx > leny ? lenx : leny;
+
     /*
     PMQuadTree *tree = new PMQuadTree( new GIMS_BoundingBox(
                                            new GIMS_Point (envelope->MinX, envelope->MinY),
@@ -41,6 +55,7 @@ int main (int argc, char *argv[]) {
     GIMS_Geometry* query;
     GIMS_Geometry* aux;
     int count = 0;
+    Debug *deb = new Debug(5);
     while ( (feature = layer->GetNextFeature() ) != NULL) {
     
         /*
@@ -51,6 +66,7 @@ int main (int argc, char *argv[]) {
         */
         //printf("%d\n", count);
         aux = retrieveFeature (feature);
+        deb->list->append(aux);
         /*
         aux->id = incId++;
         if(aux != NULL){
@@ -65,17 +81,20 @@ int main (int argc, char *argv[]) {
         count++;
         delete feature;
 
-        if(count >= 500)
+        if(count >= 50)
             break;
 
     }
     printf("inserted %d edges.\n", total);
     
     //tree->query = query;
-    //renderer = new DebRenderer();
+    renderer = new DebRenderer();
+    renderer->setScale(400.0/lenx, -400.0/leny);
+    renderer->setTranslation( -envelope->MinX, -envelope->MaxY );
     //renderer->renderCallback = tree;
+    renderer->renderCallback = deb;
     //renderer->renderSvg("outtree.svg", 400, 400);
-    //renderer->mainloop(argc, argv);
+    renderer->mainloop(argc, argv);
 
     delete layer;
     

@@ -36,7 +36,8 @@ GIMS_Geometry *GIMS_GeometryCollection::clipToBox ( GIMS_BoundingBox *box ){
 
 GIMS_GeometryCollection::GIMS_GeometryCollection(int size){
     this->type = GEOMETRYCOLLECTION;
-    this->size = this->allocatedSize = size;
+    this->size = 0;
+    this->allocatedSize = size;
     this->list = (GIMS_Geometry **)malloc(size * sizeof(GIMS_Geometry *));
 }
 

@@ -1,3 +1,6 @@
+#ifndef GEOMETRY_HPP
+#define GEOMETRY_HPP
+
 #include "SystemBase.hpp"
 #include <cmath>
 #include <cstring>
@@ -188,4 +191,4 @@ double angle3p(GIMS_Point *p1, GIMS_Point *p2, GIMS_Point *p3);
 double cosine3p(GIMS_Point *p1, GIMS_Point *p2, GIMS_Point *p3);
 double distToSegmentSquared(GIMS_Point *p, GIMS_LineSegment *e);
 
-
+#endif
