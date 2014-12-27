@@ -15,9 +15,7 @@ class Debug : public DebugRenderable{
     Debug(int);
 };
 void Debug::debugRender( Cairo::RefPtr<Cairo::Context> cr ){
-    printf("began render\n");
     renderer->renderGeometry(cr, this->list);
-    printf("done rendering\n");
 }
 void Debug::onClick(double x, double y){}
 Debug::Debug(int size){
@@ -133,7 +131,7 @@ GIMS_Geometry *retrieveFeature ( OGRFeature *feature ) {
         GIMS_Ring *exteriorRing = new GIMS_Ring(N);
 
         OGRPoint *tmp = new OGRPoint;
-        for (int i = 1; i < N; i++) {
+        for (int i = 0; i < N; i++) {
             extRing->getPoint (i, tmp);
             exteriorRing->appendPoint(new GIMS_Point(tmp->getX(), tmp->getY()));
         }
@@ -147,22 +145,18 @@ GIMS_Geometry *retrieveFeature ( OGRFeature *feature ) {
             N = f_intRing->getNumPoints();
             GIMS_Ring *intRing = new GIMS_Ring(N);
 
-            for (int i = 1; i < N; i++) {
+            for (int i = 0; i < N; i++) {
                 f_intRing->getPoint (i, tmp);
                 intRing->appendPoint(new GIMS_Point(tmp->getX(), tmp->getY()));
-
-#warning: just for test code. remove after correctness check
-                if ( intRing->list[0]->x == tmp->getX() &&
-                     intRing->list[0]->y == tmp->getY() ){
-                    printf("yo! watch out for this one."
-                           "At translation of polygon between gdal and gims.\n");
-                }
-//end of test code
             }
+            if( intRing->list[0]->equals(intRing->list[intRing->size-1]) )
+                printf("wololo\n");
+
             polygon->appendInternalRing(intRing);
-       }
-       delete tmp;
-       return polygon;
+        }
+
+        delete tmp;
+        return polygon;
     } else {
         perror ("unsupported type of geometry detected.");
         return NULL;
