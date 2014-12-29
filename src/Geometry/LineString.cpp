@@ -1,7 +1,9 @@
 #include "Geometry.hpp"
 
 GIMS_LineSegment *GIMS_LineSegment::clone () {
-    return new GIMS_LineSegment( this->p1->clone(), this->p2->clone() );
+    GIMS_LineSegment fresh = new GIMS_LineSegment( this->p1->clone(), this->p2->clone() );
+    fresh->id = this->id;
+    return fresh;
 }
 
 GIMS_LineSegment::GIMS_LineSegment ( GIMS_Point *p1, GIMS_Point *p2 ){
@@ -92,6 +94,7 @@ GIMS_LineString::~GIMS_LineString (){
 
 GIMS_LineString *GIMS_LineString::clone (){
     GIMS_LineString *newList = new GIMS_LineString(this->allocatedSize);
+    newList->id = this->id;
     newList->size = this->size;
     memcpy(newList->list, this->list, this->size*sizeof(GIMS_Point *));
     return newList;
@@ -101,12 +104,7 @@ GIMS_Geometry *GIMS_LineString::clipToBox (GIMS_BoundingBox *box){
     GIMS_MultiLineString *clipped = NULL;
     GIMS_LineString *partial = NULL;
 
-    //if this is a ring, then the first and last points are also connected.
-    int goLast = 1;
-    if(this->type == RING)
-        goLast = 0;
-
-    for( int i = 0; i<this->size-goLast; i++ ){
+    for( int i = 0; i<this->size-1; i++ ){
         GIMS_LineSegment segment = this->getLineSegment(i);
         if( segment.clipToBox(box) != NULL ){
             if(partial == NULL){
@@ -115,8 +113,10 @@ GIMS_Geometry *GIMS_LineString::clipToBox (GIMS_BoundingBox *box){
             }
             partial->appendPoint(segment.p2);
         }else if(partial != NULL){
-            if(clipped == NULL)
-                clipped = new GIMS_MultiLineString();
+            if(clipped == NULL){
+                clipped = new GIMS_MultiLineString(1);
+                clipped->id = this->id;
+            }
             clipped->append(partial);
             partial = NULL;
         }
@@ -125,8 +125,8 @@ GIMS_Geometry *GIMS_LineString::clipToBox (GIMS_BoundingBox *box){
 }
 
 GIMS_LineSegment GIMS_LineString::getLineSegment (int index){
-    return GIMS_LineSegment( this->list[index%(this->size)],
-                             this->list[(index+1)%(this->size)]);
+    return GIMS_LineSegment( this->list[index],
+                             this->list[index+1]);
 }
 
 void GIMS_LineString::appendPoint(GIMS_Point *p){
@@ -161,11 +161,6 @@ GIMS_Ring::GIMS_Ring(){
     this->list = NULL;
 }
 
-GIMS_Ring::~GIMS_Ring(){
-    free(this->list);
-}
-
-
 
 
 
@@ -174,6 +169,7 @@ GIMS_Ring::~GIMS_Ring(){
 
 GIMS_MultiLineString *GIMS_MultiLineString::clone(){
     GIMS_MultiLineString *fresh = new GIMS_MultiLineString(this->size);
+    fresh->id = this->id;
     memcpy(fresh->list, this->list, this->size * sizeof(GIMS_LineString *));
     return fresh;
 }
@@ -183,8 +179,10 @@ GIMS_Geometry *GIMS_MultiLineString::clipToBox(GIMS_BoundingBox *box){
     for(int i=0; i<this->size; i++){
         GIMS_MultiLineString *partial = (GIMS_MultiLineString *)this->list[i]->clipToBox(box);
         if(partial != NULL){
-            if(clipped == NULL)
+            if(clipped == NULL){
                 clipped = new GIMS_MultiLineString(1);
+                clipped->id = this->id;
+            }
             clipped->merge(partial);
         }
     }

@@ -1,6 +1,6 @@
 #include "PMQuadTree.hpp"
 
-using namespace GIMSGEOMETRY;
+using namespace GIMS_GEOMETRY;
 using namespace PMQUADTREE;
 using namespace std;
 
@@ -11,8 +11,8 @@ double ymultiplier[4] =  {0.5, 0.5, 0.0, 0.0};
 int depth = 0;
 
 bool renderEdge = false;
-list<GIMSGeometry *> *renderQueue = new list<GIMSGeometry *>();
-list<GIMSGeometry *> *redRenderQueue = new list<GIMSGeometry *>();
+list<GIMS_Geometry *> *renderQueue = new list<GIMS_Geometry *>();
+list<GIMS_Geometry *> *redRenderQueue = new list<GIMS_Geometry *>();
 
 /*
 -->Polygonal Map QuadTree Node
@@ -21,9 +21,8 @@ list<GIMSGeometry *> *redRenderQueue = new list<GIMSGeometry *>();
 /*Returns all nodes of the Polygonal Map QuadTree that intersect the border of
   the geometry passed by parameter. Note: This means that this function does not 
   return nodes strictly contained inside polygons.*/
-void *Node::search (GIMSGeometry *geom){
-
-    GIMSGeometry *clipped = geom->clipToBox(this->square);
+void *Node::search (GIMS_Geometry *geom){
+    GIMS_Geometry *clipped = geom->clipToBox(this->square);
     if( clipped == NULL )
         return NULL;
 
@@ -55,7 +54,7 @@ Node *Node::goNorth( double x ){
         return NULL;
 
     //we simply create a point out of the node, a little upper and search for it.
-    GIMSPoint pt = GIMSPoint(x, this->square->upperRight->y);
+    GIMS_Point pt = GIMS_Point(x, this->square->upperRight->y);
     pt.y += ERR_MARGIN * 4;
 
     //we first get the first node above this that contains the created point.
@@ -81,25 +80,19 @@ Node *Node::goNorth( double x ){
 
 /*if node has reference to a geometry labeled with id, returns the geometry's 
   reference, else returns NULL*/
-GIMSGeometry *Node::hasReferenceTo( unsigned long int id ){
-
+GIMS_Geometry *Node::hasReferenceTo( long id ){
     if( this->dictionary == NULL )
         return NULL;
 
-    if( this->dictionary->size() == 0 )
+    auto aux = this->dictionary->find(id);
+    if(aux != this->dictionary->end())
+        return aux->second;
+    else
         return NULL;
-
-    for( list<GIMSGeometry *>::iterator it = this->dictionary->begin();
-         it != this->dictionary->end(); it++ ){
-        if( (*it)->id == id ){
-            return *it;
-        }
-    }
-    return NULL;
 }
 
 /*Returns true if a polygon "pol" that intersects the node contains point "pt".*/
-bool Node::polygonContainsPoint(GIMSPolygon *pol, GIMSPoint *pt){
+bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
     /*Explanation:
       According to the paper where pmqtrees are proposed, the procedure to label
       a point is as follows:
@@ -116,7 +109,7 @@ bool Node::polygonContainsPoint(GIMSPolygon *pol, GIMSPoint *pt){
 
     /*find the first node in the north direction than intersects polygon pol*/
     Node *n = this;
-    GIMSGeometry *first;
+    GIMS_Geometry *first;
 
     while( (first = n->hasReferenceTo( pol->id )) == NULL ){
         n = n->goNorth( pt->x );
@@ -125,64 +118,50 @@ bool Node::polygonContainsPoint(GIMSPolygon *pol, GIMSPoint *pt){
     }
 
     //set up the query point
-    GIMSPoint *qp = n->square->lowerLeft->clone();
+    GIMS_Point *qp = n->square->lowerLeft->clone();
     qp->x = pt->x;
 
     //The first portion of the polygon "pol" that we found going in the north direction
-    GIMSPolygon *p = (GIMSPolygon *)first;
+    GIMS_Polygon *p = (GIMS_Polygon *)first;
 
     /*from all the line segments that belong to polygon pol and that intersect 
       the node we just found, find out which one is closest to point pt.*/
     
-    //keep track whether the closes edge is from an internal ring or the external
+    //keep track whether the closest edge is from an internal ring or the external
     //ring, as it will affect the side the point should be on to be contained.
     bool isEdgeFromExtRing = false;
     double minDist = 1e100;
     double tmp;
-    GIMSEdge *closest = NULL;
-    //Keep track of the adjacent edges in order to account for vertex sharing within the node.
-    GIMSEdge *closestPrev = NULL,
-             *closestNext = NULL;
-    GIMSEdge *prev = NULL;
-
+    int min_i, min_j;
+    
     //iterate over the edges from the external ring
-    for( list<GIMSGeometry *>::iterator it = p->externalRing->list->begin();
-         it != p->externalRing->list->end(); it++ ){
-        if( (tmp = distToSegmentSquared( qp, (GIMSEdge *)(*it) )) < minDist ){
-            minDist = tmp;
-            closest = (GIMSEdge *)(*it);
-            closestPrev = prev;
-            list<GIMSGeometry *>::iterator aux = it;
-            aux++;
-            if( aux != p->externalRing->list->end() )
-                closestNext = (GIMSEdge *)(*aux);
-            else
-                closestNext = NULL;
-            isEdgeFromExtRing = true;
+    for(int i=0; i<p->externalRing->size; i++){
+        for(int j=0; j<p->externalRing->list[i]->size-1; j++){
+            GIMS_LineSegment *curr = p->externalRing->list[i]->getLineSegment(j);
+            if( (tmp = disToSegmentSquared(qp, curr)) < minDist ){
+                minDist = tmp; min_i = i; min_j = j;
+                isEdgeFromExtRing = true;
+            }
         }
-        prev = (GIMSEdge *)(*it);
     }
 
-    //iterate over the edges from the internal rings
-    for( list<GIMSGeometry *>::iterator int_ring = p->internalRings->list->begin();
-         int_ring != p->internalRings->list->end(); int_ring++ ){
-        prev = NULL;
-        for( list<GIMSGeometry *>::iterator it = ((GIMSGeometryList *)(*int_ring))->list->begin();
-             it != ((GIMSGeometryList *)(*int_ring))->list->end(); it++ ){
-            if( (tmp = distToSegmentSquared( qp, (GIMSEdge *)(*it) )) < minDist ){
-                minDist = tmp;
-                closest = (GIMSEdge *)(*it);
-                closestPrev = prev;
-                list<GIMSGeometry *>::iterator aux = it;
-                aux++;
-                if( aux != ((GIMSGeometryList *)(*int_ring))->list->end() )
-                    closestNext = (GIMSEdge *)(*aux);
-                else
-                    closestNext = NULL;
+    //iterate over the edges from the internal ring
+    for(int i=0; i<p->internalRings->size; i++){
+        for(int j=0; j<p->internalRings->list[i]->size-1; j++){
+            GIMS_LineSegment *curr = p->internalRings->list[i]->getLineSegment(j);
+            if((tmp = distToSegmentSquared(qp, curr)) < minDist){
+                minDist = tmp; min_i = i; min_j = j;
                 isEdgeFromExtRing = false;
             }
         }
     }
+    
+    GIMS_LineString *src;
+    if(isEdgeFromExtRing)
+        src = p->externalRing->list[i];
+    else
+        src = p->internalRings->list[i];
+    GIMS_LineSegment *closest = src->getLineSegment[j];
 
     /*if one of the closest line segment endpoints lies within the square that
       bounds node n, we must get the 2nd edge that shares the same endpoint.
@@ -194,51 +173,47 @@ bool Node::polygonContainsPoint(GIMSPolygon *pol, GIMSPoint *pt){
          p2inside = closest->p2->isInsideBox(n->square);
 
     if( p1inside || p2inside ){
-        GIMSPoint *pt2 = p1inside ? closest->p1 : closest->p2;
-        GIMSPoint *unshared1 = p1inside ? closest->p2 : closest->p1;
 
-        GIMSEdge *e1 = closest, *e2;
-        if( closestPrev != NULL && (closestPrev->p1->equals(pt2) || closestPrev->p2->equals(pt2)) ){
-            e2 = closestPrev;
-        }else{
-            if( closestNext != NULL && (closestNext->p1->equals(pt2) || closestNext->p2->equals(pt2)) ){
-                e2 = closestNext;
-            }else{
-                //if this is reached, it means that even though an endpoint of the
-                //closest edge lied inside the node, the edge didn't have adjacent
-                //edges, which means the ring is not closed, which is not possible.
-                fprintf(stderr, "@polygonContainsPoint - !Bug Alert! - open ring?\n");
-                fprintf(stderr, "fatal, cannot proceed with this function.\n");
-                return false;
-            }
+        GIMS_LineSegment *other = src->getLineSegment((j+1)%src->size);
+        if( !(other->p1->equals(pt2) || other->p2->equals(pt2)) ){
+            if(j-1 < 0)
+                other = src->getLineSegment(src->size-2);
+            else
+                other = src->getLineSegment(j-1);
         }
-        GIMSPoint *unshared2 = e2->p1->equals(pt2) ? e2->p2 : e2->p1;
+
+#warning: remove the following code after correctness check
+        if( !(other->p1->equals(pt2) || other->p2->equals(pt2)) )
+            printf("Error at pmqtree pol containment: Open ring!\n");
+//end of bloatware
+
+        //find all necessary edges
+        GIMS_Point *pt2 = p1inside ? closest->p1 : closest->p2;
+        GIMS_Point *unshared1 = p1inside ? closest->p2 : closest->p1;
+        GIMS_Point *unshared2 = other->p1->isInsideBox(n->square) ? other->p1 : other->p2;
 
         //compute and compare angles
         double angle1 = angle3p(unshared1, pt2, qp),
                angle2 = angle3p(unshared2, pt2, qp);
 
-        closest = angle1 < angle2 ? e1 : e2;
+        closest = angle1 < angle2 ? closest : other;
     }
 
-    /*check which side of closest pt lies in*/
+    /*check to which side of "closest" "pt" lies*/
     if( isEdgeFromExtRing ){
         if( qp->sideOf(closest) == RIGHT )
             return true;
-        else
-            return false;
     }else{
         if( qp->sideOf(closest) == LEFT )
             return true;
-        else
-            return false;
     }
+    return false;
 }
 
 /*Returns all nodes that intersect a given poligon "pol", including the 
   polygon's interior. This means that this function returns all tree nodes that
   are strictly contained in the polygon.*/
-void *Node::searchInterior (GIMSPolygon *pol){
+void *Node::searchInterior (GIMS_Polygon *pol){
 
     if ( this->type != GRAY ) { //if the node is a leaf node
         list<Node *> *l = new list<Node *>;
@@ -247,17 +222,17 @@ void *Node::searchInterior (GIMSPolygon *pol){
     }else{
         list<Node *> *retlist = new list<Node *>;
         
-        GIMSPolygon *clipped;
+        GIMS_Polygon *clipped;
         for( Quadrant q : quadrantList ) {
             //check for intersections between pol and the node
-            clipped = (GIMSPolygon *)(pol->clipToBox(sons[q]->square));
+            clipped = (GIMS_Polygon *)(pol->clipToBox(sons[q]->square));
 
             bool contained = false;
             if( clipped == NULL ){
                 //if there are no intersections, then either the node is strictly
                 //contained in the polygon interior or exterior
-                GIMSPoint p = GIMSPoint( sons[q]->square->upperRight->x - 4 * ERR_MARGIN,
-                                         sons[q]->square->upperRight->y                 );
+                GIMS_Point p = GIMS_Point( sons[q]->square->upperRight->x - 4 * ERR_MARGIN,
+                                           sons[q]->square->upperRight->y                  );
                 contained = sons[q]->polygonContainsPoint( pol, &p );
             }
 
@@ -278,7 +253,7 @@ void *Node::searchInterior (GIMSPolygon *pol){
 }
 
 /*Inserts geometry "geom" in the tree*/
-void Node::insert ( GIMSGeometry *geom ) {
+void Node::insert ( GIMS_Geometry *geom ) {
 
     depth++;
     if( depth > 100 ){
@@ -287,7 +262,7 @@ void Node::insert ( GIMSGeometry *geom ) {
         return;
     }
 
-    GIMSGeometry *clipped = (GIMSGeometry *)(geom->clipToBox ( this->square ));
+    GIMS_Geometry *clipped = (GIMS_Geometry *)(geom->clipToBox ( this->square ));
 
     if (clipped == NULL) { //geometry to insert does not intersect this node
         depth--;
@@ -300,16 +275,16 @@ void Node::insert ( GIMSGeometry *geom ) {
         
         if (this->dictionary != NULL) { //merge clipped with the node's dictionary
             if( clipped->type == MIXEDLIST ){
-                ((GIMSGeometryList *)(clipped))->list->insert (
-                        ((GIMSGeometryList *)(clipped))->list->end(),
+                ((GIMS_GeometryList *)(clipped))->list->insert(
+                        ((GIMS_GeometryList *)(clipped))->list->end(),
                         this->dictionary->begin(),
-                        this->dictionary->end() );
+                        this->dictionary->end());
                 delete this->dictionary;
                 this->dictionary = NULL;
             }else{
                 this->dictionary->push_back(clipped);
-                clipped = new GIMSGeometryList();
-                ((GIMSGeometryList *)(clipped))->list = this->dictionary;
+                clipped = new GIMS_GeometryList();
+                ((GIMS_GeometryList *)(clipped))->list = this->dictionary;
                 this->dictionary = NULL;
             }
         }
@@ -317,7 +292,7 @@ void Node::insert ( GIMSGeometry *geom ) {
         if ( this->validateGeometry ( clipped ) ) {
             //if the geometry is a valid node geometry we insert it into the node
             this->type = BLACK;
-            this->dictionary = ((GIMSGeometryList *)(clipped))->list;
+            this->dictionary = ((GIMS_GeometryList *)(clipped))->list;
             depth--;
             return;
         } else {
@@ -335,79 +310,79 @@ void Node::insert ( GIMSGeometry *geom ) {
 /* Returns true if the given geometry is a valid one for the calling node
    !Note! The bounding box geometry is not supported.
    The behaviour is undefined in such a situation.!Note! */
-bool Node::validateGeometry (GIMSGeometry *g) {
+bool Node::validateGeometry (GIMS_Geometry *g) {
 
     //printf("datatype: %d\n", g->type);
     if( g->type != MIXEDLIST ){
         return true;
     }
 
-    GIMSPoint *contained = NULL;
+    GIMS_Point *contained = NULL;
 
-    GIMSGeometryList *geom = (GIMSGeometryList *)g;
-    for ( list<GIMSGeometry *>::iterator it = geom->list->begin(); it != geom->list->end(); it++ ) {
+    GIMS_GeometryList *geom = (GIMS_GeometryList *)g;
+    for ( list<GIMS_Geometry *>::iterator it = geom->list->begin(); it != geom->list->end(); it++ ) {
 
         if ( (*it)->type == POINT ) {
             if(contained == NULL)
-                contained = (GIMSPoint *)(*it);
+                contained = (GIMS_Point *)(*it);
             else{
-                if( !((GIMSPoint *)(*it))->equals(contained) )
+                if( !((GIMS_Point *)(*it))->equals(contained) )
                     return false;
             }
 
         }else if ( (*it)->type == EDGE ) {
 
-            bool p1Inside = ((GIMSEdge *)(*it))->p1->isInsideBox( this->square ),
-                 p2Inside = ((GIMSEdge *)(*it))->p2->isInsideBox( this->square );
+            bool p1Inside = ((GIMS_LineSegment *)(*it))->p1->isInsideBox( this->square ),
+                 p2Inside = ((GIMS_LineSegment *)(*it))->p2->isInsideBox( this->square );
 
-                if( p1Inside && contained != NULL && !((GIMSEdge *)(*it))->p1->equals(contained) )
+                if( p1Inside && contained != NULL && !((GIMS_LineSegment *)(*it))->p1->equals(contained) )
                     return false;
-                if( p2Inside && contained != NULL && !((GIMSEdge *)(*it))->p2->equals(contained) )
+                if( p2Inside && contained != NULL && !((GIMS_LineSegment *)(*it))->p2->equals(contained) )
                     return false;
                 if ( p1Inside && p2Inside )
                     return false;
 
                 if( contained == NULL ){
                     if(p1Inside)
-                        contained = ((GIMSEdge *)(*it))->p1;
+                        contained = ((GIMS_LineSegment *)(*it))->p1;
                     else if(p2Inside)
-                        contained = ((GIMSEdge *)(*it))->p2;
+                        contained = ((GIMS_LineSegment *)(*it))->p2;
                 }
 
         }else if( (*it)->type == POLYGON ){
-            GIMSPolygon *p = (GIMSPolygon *)(*it);
+            GIMS_Polygon *p = (GIMS_Polygon *)(*it);
 
             //validate the external ring
-            for ( list<GIMSGeometry *>::iterator ext = p->externalRing->list->begin(); ext != p->externalRing->list->end(); ext++ ){
-                bool p1Inside = ((GIMSEdge *)(*ext))->p1->isInsideBox( this->square ),
-                     p2Inside = ((GIMSEdge *)(*ext))->p2->isInsideBox( this->square );
-                if( (contained != NULL && p1Inside && !((GIMSEdge *)(*ext))->p1->equals(contained)) ||
-                    (contained != NULL && p2Inside && !((GIMSEdge *)(*ext))->p2->equals(contained)) ||
+            for ( list<GIMS_Geometry *>::iterator ext = p->externalRing->list->begin(); ext != p->externalRing->list->end(); ext++ ){
+                bool p1Inside = ((GIMS_LineSegment *)(*ext))->p1->isInsideBox( this->square ),
+                     p2Inside = ((GIMS_LineSegment *)(*ext))->p2->isInsideBox( this->square );
+                if( (contained != NULL && p1Inside && !((GIMS_LineSegment *)(*ext))->p1->equals(contained)) ||
+                    (contained != NULL && p2Inside && !((GIMS_LineSegment *)(*ext))->p2->equals(contained)) ||
                     (p1Inside && p2Inside) ){
                     return false;
                 }else if(contained == NULL){
                     if(p1Inside)
-                        contained = ((GIMSEdge *)(*ext))->p1;
+                        contained = ((GIMS_LineSegment *)(*ext))->p1;
                     if(p2Inside)
-                        contained = ((GIMSEdge *)(*ext))->p2;
+                        contained = ((GIMS_LineSegment *)(*ext))->p2;
                 }
             }
 
             //iterate over the internal rings
-            for ( list<GIMSGeometry *>::iterator ir = p->internalRings->list->begin(); ir != p->internalRings->list->end(); ir++ ){
+            for ( list<GIMS_Geometry *>::iterator ir = p->internalRings->list->begin(); ir != p->internalRings->list->end(); ir++ ){
                 //and validate each of those internal rings
-                for( list<GIMSGeometry *>::iterator edge = ((GIMSGeometryList *)(*ir))->list->begin(); edge != ((GIMSGeometryList *)(*ir))->list->end(); edge++ ){
-                    bool p1Inside = ((GIMSEdge *)(*edge))->p1->isInsideBox( this->square ),
-                         p2Inside = ((GIMSEdge *)(*edge))->p2->isInsideBox( this->square );
-                    if( (contained != NULL && p1Inside && !((GIMSEdge *)(*edge))->p1->equals(contained)) ||
-                        (contained != NULL && p2Inside && !((GIMSEdge *)(*edge))->p2->equals(contained)) ||
+                for( list<GIMS_Geometry *>::iterator edge = ((GIMS_GeometryList *)(*ir))->list->begin(); edge != ((GIMS_GeometryList *)(*ir))->list->end(); edge++ ){
+                    bool p1Inside = ((GIMS_LineSegment *)(*edge))->p1->isInsideBox( this->square ),
+                         p2Inside = ((GIMS_LineSegment *)(*edge))->p2->isInsideBox( this->square );
+                    if( (contained != NULL && p1Inside && !((GIMS_LineSegment *)(*edge))->p1->equals(contained)) ||
+                        (contained != NULL && p2Inside && !((GIMS_LineSegment *)(*edge))->p2->equals(contained)) ||
                         (p1Inside && p2Inside) )
                         return false;
                     else if(contained == NULL){
                         if(p1Inside)
-                            contained = ((GIMSEdge *)(*edge))->p1;
+                            contained = ((GIMS_LineSegment *)(*edge))->p1;
                         if(p2Inside)
-                            contained = ((GIMSEdge *)(*edge))->p2;
+                            contained = ((GIMS_LineSegment *)(*edge))->p2;
                     }
                 }
             }
@@ -427,12 +402,12 @@ void Node::split(){
     
     for (Quadrant q : quadrantList) {
         /*create and link corresponding square*/
-        GIMSBoundingBox *square = 
-            new GIMSBoundingBox(
-                new GIMSPoint( this->square->minx() + xlen * xmultiplier[q],
+        GIMS_BoundingBox *square = 
+            new GIMS_BoundingBox(
+                new GIMS_Point( this->square->minx() + xlen * xmultiplier[q],
                                this->square->miny() + ylen * ymultiplier[q]
                              ),
-                new GIMSPoint( this->square->minx() + xlen * (xmultiplier[q] + 0.5),
+                new GIMS_Point( this->square->minx() + xlen * (xmultiplier[q] + 0.5),
                                this->square->miny() + ylen * (ymultiplier[q] + 0.5)
                              )
                 );
@@ -447,15 +422,15 @@ void Node::split(){
 Node::Node(){
     this->type = WHITE;
     this->square = NULL;
-    this->dictionary = new list<GIMSGeometry *>;
+    this->dictionary = new list<GIMS_Geometry *>;
     this->sons[0] = this->sons[1] = this->sons[2] = this->sons[3] = NULL;
     this->father = NULL;
 }
 
-Node::Node( GIMSBoundingBox *square ){
+Node::Node( GIMS_BoundingBox *square ){
     this->type = WHITE;
     this->square = square;
-    this->dictionary = new list<GIMSGeometry *>;
+    this->dictionary = new list<GIMS_Geometry *>;
     this->sons[0] = this->sons[1] = this->sons[2] = this->sons[3] = NULL;
     this->father = NULL;
 }
@@ -471,7 +446,7 @@ Polygonal Map QuadTree Node<--
 
 
 
-PMQuadTree::PMQuadTree (GIMSBoundingBox *domain) {
+PMQuadTree::PMQuadTree (GIMS_BoundingBox *domain) {
     this->root = new Node( domain );
     this->query = NULL;
 }
@@ -481,37 +456,37 @@ PMQuadTree::~PMQuadTree () {}
 
 
 /*Functions that take care of the construction and maintenance of the structure*/
-void PMQuadTree::build  (GIMSGeometry *geom){}
+void PMQuadTree::build  (GIMS_Geometry *geom){}
 
-void PMQuadTree::insert ( GIMSGeometry *geom ) {
+void PMQuadTree::insert ( GIMS_Geometry *geom ) {
     this->root->insert(geom);
 }
 
-void PMQuadTree::remove (GIMSGeometry *geom){
+void PMQuadTree::remove (GIMS_Geometry *geom){
 
 }
 
 /*return all leaf nodes that intersect geom*/
-void *PMQuadTree::search (GIMSGeometry *geom){
+void *PMQuadTree::search (GIMS_Geometry *geom){
     return this->root->search(geom);
 }
 
 
 
 /*Follow the operations between the data structure and a given geometry*/
-RelStatus PMQuadTree::intersects_g  ( GIMSGeometry *result, GIMSGeometry *geom){
+RelStatus PMQuadTree::intersects_g  ( GIMS_Geometry *result, GIMS_Geometry *geom){
     return UNDECIDED_RELATIONSHIP;
 }
 
-RelStatus PMQuadTree::meets_g       ( GIMSGeometry *result, GIMSGeometry *geom){
+RelStatus PMQuadTree::meets_g       ( GIMS_Geometry *result, GIMS_Geometry *geom){
     return UNDECIDED_RELATIONSHIP;
 }
 
-RelStatus PMQuadTree::contains_g    ( GIMSGeometry *result, GIMSGeometry *geom){
+RelStatus PMQuadTree::contains_g    ( GIMS_Geometry *result, GIMS_Geometry *geom){
     return UNDECIDED_RELATIONSHIP;
 }
 
-RelStatus PMQuadTree::isContained_g ( GIMSGeometry *result, GIMSGeometry *geom){
+RelStatus PMQuadTree::isContained_g ( GIMS_Geometry *result, GIMS_Geometry *geom){
     return UNDECIDED_RELATIONSHIP;
 }
 
@@ -519,7 +494,7 @@ RelStatus PMQuadTree::isContained_g ( GIMSGeometry *result, GIMSGeometry *geom){
 
 /*Retrieve all geometry elements that are partially or totally contained
   in a given bounding box*/
-RelStatus PMQuadTree::isBoundedBy ( GIMSGeometry *result, GIMSBoundingBox *box){
+RelStatus PMQuadTree::isBoundedBy ( GIMS_Geometry *result, GIMS_BoundingBox *box){
     return UNDECIDED_RELATIONSHIP;
 }
 
@@ -545,7 +520,7 @@ void PMQuadTree::debugRender(Cairo::RefPtr<Cairo::Context> cr){
     if(query != NULL){
         list<Node *> *results;
         if( query->type == POLYGON )
-            results = (list<Node *> *)(this->root->searchInterior( (GIMSPolygon *)(this->query) ));
+            results = (list<Node *> *)(this->root->searchInterior( (GIMS_Polygon *)(this->query) ));
         else
             results = (list<Node *> *)(this->root->search( this->query ));
         cr->set_source_rgba(0.0, 0.19, 0.69, 0.2);
@@ -558,12 +533,12 @@ void PMQuadTree::debugRender(Cairo::RefPtr<Cairo::Context> cr){
     }
 
     cr->set_source_rgba(0.19, 0.73, 0.12, 0.5);
-    for(list<GIMSGeometry *>::iterator it = renderQueue->begin(); it != renderQueue->end(); it++){
+    for(list<GIMS_Geometry *>::iterator it = renderQueue->begin(); it != renderQueue->end(); it++){
         renderer->renderGeometry(cr, *it);
     }
 
     cr->set_source_rgba(0.73, 0.19, 0.03, 0.5);
-    for(list<GIMSGeometry *>::iterator it = redRenderQueue->begin(); it != redRenderQueue->end(); it++){
+    for(list<GIMS_Geometry *>::iterator it = redRenderQueue->begin(); it != redRenderQueue->end(); it++){
         renderer->renderGeometry(cr, *it);
     }
 
@@ -590,26 +565,26 @@ void PMQuadTree::renderLeafNode (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
         return;
 
     if (n->type == BLACK) { //the WHITE type stands for empty node, thus we ignore it.
-        for ( list<GIMSGeometry *>::iterator it = n->dictionary->begin();
+        for ( list<GIMS_Geometry *>::iterator it = n->dictionary->begin();
               it != n->dictionary->end(); it++ ) {
 
             if( (*it)->renderCount >= renderer->renderCount )
                 continue;
 
             if ( (*it)->type == EDGE ) {
-                //GIMSEdge *trimmed =  ((GIMSEdge*)(*it))->trimToBBox(n->square);
+                //GIMS_LineSegment *trimmed =  ((GIMS_LineSegment*)(*it))->trimToBBox(n->square);
                 //renderer->renderGeometry( cr, trimmed );
                 //delete trimmed;
                 renderer->renderGeometry( cr, *it );
                 (*it)->renderCount++;
             }else if( (*it)->type == POINT ) {
-                renderer->renderGeometry( cr, (GIMSPoint*)(*it) );
+                renderer->renderGeometry( cr, (GIMS_Point*)(*it) );
                 (*it)->renderCount++;
             }else if( (*it)->type == POLYGON ) {
                 (*it)->renderCount++;
-                renderer->renderGeometry( cr, ((GIMSPolygon *)(*it))->externalRing );
+                renderer->renderGeometry( cr, ((GIMS_Polygon *)(*it))->externalRing );
                 cr->set_source_rgb(0.69, 0.19, 0.0);
-                renderer->renderGeometry( cr, ((GIMSPolygon *)(*it))->internalRings );
+                renderer->renderGeometry( cr, ((GIMS_Polygon *)(*it))->internalRings );
                 cr->set_source_rgb(0.0, 0.0, 0.0);
             }
         }
@@ -620,8 +595,8 @@ void PMQuadTree::onClick( double x, double y){
     printf("begin click event\n");
 
     /*
-    GIMSPolygon *pol= (GIMSPolygon *)(((GIMSGeometryList *)(this->query))->list->front());
-    GIMSPoint *pt = new GIMSPoint(x,y);
+    GIMS_Polygon *pol= (GIMS_Polygon *)(((GIMS_GeometryList *)(this->query))->list->front());
+    GIMS_Point *pt = new GIMS_Point(x,y);
     renderEdge = true;
     Node *n = ((list<Node *> *)(this->root->search(pt)))->front();
     n->polygonContainsPoint(pol, pt);

@@ -1,7 +1,8 @@
 #include "Geometry.hpp"
 
 GIMS_Polygon *GIMS_Polygon::clone(){    
-    return new GIMS_Polygon(this->externalRing->clone(),this->internalRings->clone());
+    GIMS_Polygon *fresh = new GIMS_Polygon(this->externalRing->clone(),this->internalRings->clone());
+    fresh->id = this->id;
 }
 
 GIMS_Geometry *GIMS_Polygon::clipToBox(GIMS_BoundingBox *box){
@@ -14,9 +15,11 @@ GIMS_Geometry *GIMS_Polygon::clipToBox(GIMS_BoundingBox *box){
     if(this->internalRings != NULL)
         interior = (GIMS_MultiLineString *)(this->internalRings->clipToBox(box));
 
-    if(exterior != NULL || interior != NULL)
-        return new GIMS_Polygon( exterior, interior );
-    else
+    if(exterior != NULL || interior != NULL){
+        GIMS_Polygon *clipped = new GIMS_Polygon( exterior, interior );
+        clipped->id = this->id;
+        return clipped;
+    }else
         return NULL;
 }
 

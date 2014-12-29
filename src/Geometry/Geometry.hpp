@@ -46,7 +46,7 @@ namespace GIMS_GEOMETRY {
     class GIMS_Geometry {
       public:
         GeometryType type;
-        unsigned long long int id; //osm_id
+        long id; //osm_id
 
         //returns the subset of geometry component that intersect a given bounding box
         virtual GIMS_Geometry *clipToBox     ( GIMS_BoundingBox * ) = 0;
@@ -119,7 +119,6 @@ namespace GIMS_GEOMETRY {
       public:
          GIMS_Ring(int size);
          GIMS_Ring();
-        ~GIMS_Ring();
     };
 
     class GIMS_MultiLineString : public GIMS_Geometry {
