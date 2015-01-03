@@ -120,9 +120,9 @@ void DebRenderer::renderGeometry( Cairo::RefPtr<Cairo::Context> cr, GIMS_Geometr
         case MULTILINESTRING:
             renderMultiLineString(cr, (GIMS_MultiLineString *)g);
             break;
-        /*case MULTIPOLYGON: //not supported yet
+        case MULTIPOLYGON: //not supported yet
             renderMultiPolygon(cr, (GIMS_MultiPolygon *)g);
-            break;*/
+            break;
         case GEOMETRYCOLLECTION:
             renderGeometryCollection(cr, (GIMS_GeometryCollection *)g);
             break;
@@ -172,7 +172,11 @@ void DebRenderer::renderRing(Cairo::RefPtr<Cairo::Context> cr, GIMS_Ring *ring){
 
 void DebRenderer::renderPolygon(Cairo::RefPtr<Cairo::Context> cr, GIMS_Polygon *g){
     this->renderMultiLineString(cr, g->externalRing);
+    cr->stroke();
+    cr->set_source_rgb(255, 0, 0);
     this->renderMultiLineString(cr, g->internalRings);
+    cr->stroke();
+    cr->set_source_rgb(0, 0, 0);
 }
 
 void DebRenderer::renderMultiPoint(Cairo::RefPtr<Cairo::Context> cr, GIMS_MultiPoint *g){
@@ -185,12 +189,10 @@ void DebRenderer::renderMultiLineString(Cairo::RefPtr<Cairo::Context> cr, GIMS_M
         this->renderLineString(cr, g->list[i]);
 }
 
-/* Not supported yet
 void DebRenderer::renderMultiPolygon(Cairo::RefPtr<Cairo::Context> cr, GIMS_MultiPolygon *g){
     for(int i=0; i<g->size; i++)
         this->renderPolygon(cr, g->list[i]);
 }
-*/
 
 void DebRenderer::renderGeometryCollection(Cairo::RefPtr<Cairo::Context> cr, GIMS_GeometryCollection *g){
     for(int i=0; i<g->size; i++)

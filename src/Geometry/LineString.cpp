@@ -1,8 +1,7 @@
 #include "Geometry.hpp"
 
 GIMS_LineSegment *GIMS_LineSegment::clone () {
-    GIMS_LineSegment fresh = new GIMS_LineSegment( this->p1->clone(), this->p2->clone() );
-    fresh->id = this->id;
+    GIMS_LineSegment *fresh = new GIMS_LineSegment( this->p1->clone(), this->p2->clone() );
     return fresh;
 }
 
@@ -94,7 +93,6 @@ GIMS_LineString::~GIMS_LineString (){
 
 GIMS_LineString *GIMS_LineString::clone (){
     GIMS_LineString *newList = new GIMS_LineString(this->allocatedSize);
-    newList->id = this->id;
     newList->size = this->size;
     memcpy(newList->list, this->list, this->size*sizeof(GIMS_Point *));
     return newList;
@@ -115,7 +113,6 @@ GIMS_Geometry *GIMS_LineString::clipToBox (GIMS_BoundingBox *box){
         }else if(partial != NULL){
             if(clipped == NULL){
                 clipped = new GIMS_MultiLineString(1);
-                clipped->id = this->id;
             }
             clipped->append(partial);
             partial = NULL;
@@ -169,7 +166,6 @@ GIMS_Ring::GIMS_Ring(){
 
 GIMS_MultiLineString *GIMS_MultiLineString::clone(){
     GIMS_MultiLineString *fresh = new GIMS_MultiLineString(this->size);
-    fresh->id = this->id;
     memcpy(fresh->list, this->list, this->size * sizeof(GIMS_LineString *));
     return fresh;
 }
@@ -181,7 +177,6 @@ GIMS_Geometry *GIMS_MultiLineString::clipToBox(GIMS_BoundingBox *box){
         if(partial != NULL){
             if(clipped == NULL){
                 clipped = new GIMS_MultiLineString(1);
-                clipped->id = this->id;
             }
             clipped->merge(partial);
         }

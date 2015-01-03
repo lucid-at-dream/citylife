@@ -14,7 +14,6 @@ void GIMS_GeometryCollection::append(GIMS_Geometry *g){
 GIMS_GeometryCollection *GIMS_GeometryCollection::clone () {
     GIMS_GeometryCollection *fresh = new GIMS_GeometryCollection(this->size);
     memcpy(fresh->list, this->list, this->size * sizeof(GIMS_Geometry *));
-    fresh->id = this->id;
     return fresh;
 }
 

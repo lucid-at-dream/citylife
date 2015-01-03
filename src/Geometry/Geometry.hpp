@@ -46,11 +46,9 @@ namespace GIMS_GEOMETRY {
     class GIMS_Geometry {
       public:
         GeometryType type;
-        long id; //osm_id
 
-        //returns the subset of geometry component that intersect a given bounding box
+        //returns the subset of geometry components that intersect a given bounding box
         virtual GIMS_Geometry *clipToBox     ( GIMS_BoundingBox * ) = 0;
-        
         virtual GIMS_Geometry *clone         () = 0;
         virtual               ~GIMS_Geometry ();
     };
@@ -156,7 +154,7 @@ namespace GIMS_GEOMETRY {
           int allocatedSize;
           GIMS_Point **list;
 
-          void             append(GIMS_Point *cmp);
+          void             append(GIMS_Point *);
           GIMS_MultiPoint *clone();
           GIMS_Geometry   *clipToBox(GIMS_BoundingBox *);
                            GIMS_MultiPoint();
@@ -180,6 +178,19 @@ namespace GIMS_GEOMETRY {
                       ~GIMS_Polygon       ();
     };
 
+    class GIMS_MultiPolygon : public GIMS_Geometry {
+      public:
+          int size;
+          int allocatedSize;
+          GIMS_Polygon **list;
+
+          void               append(GIMS_Polygon *);
+          GIMS_MultiPolygon *clone();
+          GIMS_Geometry     *clipToBox(GIMS_BoundingBox *);
+                             GIMS_MultiPolygon();
+                             GIMS_MultiPolygon(int size);
+                            ~GIMS_MultiPolygon();
+    };
 }
 
 using namespace GIMS_GEOMETRY;

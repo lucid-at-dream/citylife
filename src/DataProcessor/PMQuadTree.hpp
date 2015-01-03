@@ -79,6 +79,13 @@ namespace PMQUADTREE {
 
     };
 
+    class PMQTGeometry : public GIMS_Geometry{
+      public:
+        GIMS_Geometry *ref;
+        PMQT_Geometry(GIMS_Geometry *);
+        ~PMQT_Geometry();
+    }
+
 }
 
 extern PMQUADTREE::Quadrant quadrantList[4];
