@@ -6,6 +6,10 @@ GIMS_LineSegment *GIMS_LineSegment::clone () {
     return fresh;
 }
 
+GIMS_LineSegment::GIMS_LineSegment(){
+    this->type = LINESEGMENT
+}
+
 GIMS_LineSegment::GIMS_LineSegment ( GIMS_Point *p1, GIMS_Point *p2 ){
     this->type = LINESEGMENT;
     this->p1 = p1;

@@ -15,35 +15,28 @@ namespace PMQUADTREE {
     enum Quadrant {NW = 0, NE = 1, SE = 2, SW = 3};
     enum Direction {NORTH, SOUTH, EAST, WEST};
 
-    class NodeDictionary {
-      public:
-        map<long, GIMS_Geometry *> *pointless,
-                                   *pointful;
-        GIMS_Point *shpt;
-        
-        bool insert(GIMS_Geometry *);
-
-    }
-
     class Node {
       public:
         NodeType type;
         GIMS_BoundingBox *square;
-        map<long, GIMS_Geometry *> *dictionary;
+        list<GIMS_Geometry *> *dictionary;
         Node *father;
         Node *sons[4];
 
-        void *search                 (GIMS_Geometry *geom);
-        void *searchInterior         (GIMS_Polygon *pol);
-        void  insert                 (GIMS_Geometry *);
-        bool  validateGeometry       (GIMS_Geometry *);
-        bool  polygonContainsPoint   (GIMS_Polygon *pol, GIMS_Point *pt);
-        GIMS_Geometry *hasReferenceTo (unsigned long int id);
-        Node *goNorth                (double x);
-        void  split                  ();
-              Node                   ();
-              Node                   (GIMS_BoundingBox *square);
-             ~Node                   ();
+        //dictionary related functions
+        list<GIMS_Geometry *> *clipDict(list<GIMS_Geometry *> dict);
+
+        void *search                  (GIMS_Geometry *geom);
+        void *searchInterior          (GIMS_Polygon *pol);
+        void  insert                  (GIMS_Geometry *);
+        bool  validateGeometry        (list<GIMS_Geometry *> *);
+        bool  polygonContainsPoint    (GIMS_Polygon *pol, GIMS_Point *pt);
+        GIMS_Geometry *hasReferenceTo (long id);
+        Node *goNorth                 (double x);
+        void  split                   ();
+              Node                    ();
+              Node                    (GIMS_BoundingBox *square);
+             ~Node                    ();
     };
 
     class PMQuadTree : public GIMS_DataStruct, public DebugRenderable {
@@ -78,15 +71,9 @@ namespace PMQUADTREE {
         void renderLeafNode ( Cairo::RefPtr<Cairo::Context>, Node *n );
 
     };
-
-    class PMQTGeometry : public GIMS_Geometry{
-      public:
-        GIMS_Geometry *ref;
-        PMQT_Geometry(GIMS_Geometry *);
-        ~PMQT_Geometry();
-    }
-
 }
+
+void mergeDicts(list<GIMS_Geometry *> a, list<GIMS_Geometry *> b);
 
 extern PMQUADTREE::Quadrant quadrantList[4];
 extern char quadrantLabels[4][3];

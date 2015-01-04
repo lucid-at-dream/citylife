@@ -6,6 +6,11 @@ GIMS_BoundingBox *GIMS_BoundingBox::clone (){
     return fresh;
 }
 
+inline GIMSPoint GIMS_BoundingBox::getCenter(){
+    return GIMS_Point( (this->upperRight->x + this->lowerLeft->x)/2.0,
+                       (this->upperRight->y + this->lowerLeft->y)/2.0 );            
+}
+
 inline double GIMS_BoundingBox::xlength(){
     return fabs( this->upperRight->x - this->lowerLeft->x );
 }

@@ -62,6 +62,7 @@ namespace GIMS_GEOMETRY {
                    *upperRight;
   
         GIMS_BoundingBox *clone            ();
+        GIMS_Point        getCenter        ();
         double            xlength          ();
         double            ylength          ();
         double            minx             ();
@@ -95,6 +96,7 @@ namespace GIMS_GEOMETRY {
         GIMS_LineSegment *clone            ();
         GIMS_Geometry    *clipToBox        (GIMS_BoundingBox *);
         GIMS_LineSegment *trimToBBox       (GIMS_BoundingBox *);
+                          GIMS_LineSegment ();
                           GIMS_LineSegment (GIMS_Point *p1, GIMS_Point *p2);
                          ~GIMS_LineSegment ();
     };
