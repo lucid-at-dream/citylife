@@ -1,7 +1,9 @@
 #include "Geometry.hpp"
 
 GIMS_Polygon *GIMS_Polygon::clone(){    
-    return new GIMS_Polygon(this->externalRing->clone(),this->internalRings->clone());
+    GIMS_Polygon *fresh = new GIMS_Polygon(this->externalRing->clone(),this->internalRings->clone());
+    fresh->id = this->id;
+    return fresh;
 }
 
 GIMS_Geometry *GIMS_Polygon::clipToBox(GIMS_BoundingBox *box){
@@ -16,6 +18,7 @@ GIMS_Geometry *GIMS_Polygon::clipToBox(GIMS_BoundingBox *box){
 
     if(exterior != NULL || interior != NULL){
         GIMS_Polygon *clipped = new GIMS_Polygon( exterior, interior );
+        clipped->id = this->id;
         return clipped;
     }else
         return NULL;
@@ -73,6 +76,7 @@ GIMS_MultiPolygon *GIMS_MultiPolygon::clone(){
     GIMS_MultiPolygon *fresh = new GIMS_MultiPolygon(this->allocatedSize);
     memcpy(fresh->list, this->list, this->size * sizeof(GIMS_Polygon *));
     fresh->size = this->size;
+    fresh->id = this->id;
     return fresh;
 }
 
@@ -86,8 +90,10 @@ GIMS_Geometry *GIMS_MultiPolygon::clipToBox(GIMS_BoundingBox *box){
         
         GIMS_Polygon *partial = (GIMS_Polygon *)(this->list[i]->clipToBox(box));
         if(partial != NULL){
-            if(clipped == NULL)
+            if(clipped == NULL){
                 clipped = new GIMS_MultiPolygon(1);
+                clipped->id = this->id;
+            }
             clipped->append(partial);
         }
     }

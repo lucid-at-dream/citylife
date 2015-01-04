@@ -3,6 +3,7 @@
 /* Returns true if the point lies inside the given bounding box */
 GIMS_Point *GIMS_Point::clone() {
     GIMS_Point *fresh = new GIMS_Point(this->x, this->y);
+    fresh->id = this->id;
     return fresh;
 }
 
@@ -70,6 +71,7 @@ GIMS_MultiPoint *GIMS_MultiPoint::clone(){
     GIMS_MultiPoint *fresh = new GIMS_MultiPoint(this->allocatedSize);
     memcpy(fresh->list, this->list, this->size * sizeof(GIMS_Point *));
     fresh->size = this->size;
+    fresh->id = this->id;
     return fresh;
 }
 
@@ -79,6 +81,7 @@ GIMS_Geometry *GIMS_MultiPoint::clipToBox(GIMS_BoundingBox *box){
         if( this->list[i]->isInsideBox(box) ){
             if(clipped == NULL){
                 clipped = new GIMS_MultiPoint(1);
+                clipped->id = this->id;
             }
             clipped->append(this->list[i]);
         }

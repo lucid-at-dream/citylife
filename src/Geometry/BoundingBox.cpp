@@ -1,7 +1,9 @@
 #include "Geometry.hpp"
 
 GIMS_BoundingBox *GIMS_BoundingBox::clone (){
-    return new GIMS_BoundingBox( this->lowerLeft->clone(), this->upperRight->clone() );
+    GIMS_BoundingBox *fresh = new GIMS_BoundingBox( this->lowerLeft->clone(), this->upperRight->clone() );
+    fresh->id = this->id;
+    return fresh;
 }
 
 inline double GIMS_BoundingBox::xlength(){
