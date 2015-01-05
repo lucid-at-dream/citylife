@@ -295,6 +295,8 @@ void Node::insert ( list<GIMS_Geometry *> *geom ) {
         return;
     }
 
+    printf("boas\n");
+
     if ( this->type != GRAY ) { //node type is only gray when it's not a leaf
                                 //we're therefore accessing leaf nodes in this block
 
@@ -303,6 +305,7 @@ void Node::insert ( list<GIMS_Geometry *> *geom ) {
         }
 
         if ( this->validateGeometry(clipped) ) {
+            printf("inserting\n");
             //if the geometry is a valid node geometry we insert it into the node
             if(this->dictionary != NULL)
                 delete this->dictionary;
@@ -331,74 +334,49 @@ void Node::insert ( list<GIMS_Geometry *> *geom ) {
    The behaviour is undefined in such a situation.!Note! */
 bool Node::validateGeometry (list<GIMS_Geometry *> *dict) {
 
-    GIMS_Point *shared = NULL;
+    GIMS_Point *sharedPoint = NULL;
 
     for ( list<GIMS_Geometry *>::iterator it = dict->begin(); it != dict->end(); it++ ) {
 
         if ( (*it)->type == POINT ) {
-            if(contained == NULL)
-                contained = (GIMS_Point *)(*it);
-            else{
-                if( !((GIMS_Point *)(*it))->equals(contained) )
-                    return false;
-            }
+            GIMS_Point *pt = (GIMS_Point *)(*it);
+            if( sharedPoint == NULL)
+                sharedPoint = pt;
+            else if( !pt->equals(sharedPoint) )
+                return false;
 
         }else if ( (*it)->type == LINESEGMENT ) {
+            GIMS_LineSegment *l = (GIMS_LineSegment *)(*it);
 
-            bool p1Inside = ((GIMS_LineSegment *)(*it))->p1->isInsideBox( this->square ),
-                 p2Inside = ((GIMS_LineSegment *)(*it))->p2->isInsideBox( this->square );
+            bool p1Inside = l->p1->isInsideBox( this->square ),
+                 p2Inside = l->p2->isInsideBox( this->square );
 
-                if( p1Inside && contained != NULL && !((GIMS_LineSegment *)(*it))->p1->equals(contained) )
-                    return false;
-                if( p2Inside && contained != NULL && !((GIMS_LineSegment *)(*it))->p2->equals(contained) )
-                    return false;
                 if ( p1Inside && p2Inside )
                     return false;
-
-                if( contained == NULL ){
-                    if(p1Inside)
-                        contained = ((GIMS_LineSegment *)(*it))->p1;
-                    else if(p2Inside)
-                        contained = ((GIMS_LineSegment *)(*it))->p2;
-                }
+                if( p1Inside && sharedPoint != NULL && !l->p1->equals(sharedPoint) )
+                    return false;
+                if( p2Inside && sharedPoint != NULL && !l->p2->equals(sharedPoint) )
+                    return false;
+                if( sharedPoint == NULL )
+                    sharedPoint = p1Inside ? l->p1 : (p2Inside ? l->p2 : NULL);
 
         }else if( (*it)->type == POLYGON ){
             GIMS_Polygon *p = (GIMS_Polygon *)(*it);
+            GIMS_MultiLineString *rings[2] = {p->externalRing, p->internalRings};
 
-            //validate the external ring
-            for ( list<GIMS_Geometry *>::iterator ext = p->externalRing->list->begin(); ext != p->externalRing->list->end(); ext++ ){
-                bool p1Inside = ((GIMS_LineSegment *)(*ext))->p1->isInsideBox( this->square ),
-                     p2Inside = ((GIMS_LineSegment *)(*ext))->p2->isInsideBox( this->square );
-                if( (contained != NULL && p1Inside && !((GIMS_LineSegment *)(*ext))->p1->equals(contained)) ||
-                    (contained != NULL && p2Inside && !((GIMS_LineSegment *)(*ext))->p2->equals(contained)) ||
-                    (p1Inside && p2Inside) ){
-                    return false;
-                }else if(contained == NULL){
-                    if(p1Inside)
-                        contained = ((GIMS_LineSegment *)(*ext))->p1;
-                    if(p2Inside)
-                        contained = ((GIMS_LineSegment *)(*ext))->p2;
-                }
-            }
-
-            //iterate over the internal rings
-            for ( list<GIMS_Geometry *>::iterator ir = p->internalRings->list->begin(); ir != p->internalRings->list->end(); ir++ ){
-                //and validate each of those internal rings
-                for( list<GIMS_Geometry *>::iterator edge = ((GIMS_GeometryList *)(*ir))->list->begin(); edge != ((GIMS_GeometryList *)(*ir))->list->end(); edge++ ){
-                    bool p1Inside = ((GIMS_LineSegment *)(*edge))->p1->isInsideBox( this->square ),
-                         p2Inside = ((GIMS_LineSegment *)(*edge))->p2->isInsideBox( this->square );
-                    if( (contained != NULL && p1Inside && !((GIMS_LineSegment *)(*edge))->p1->equals(contained)) ||
-                        (contained != NULL && p2Inside && !((GIMS_LineSegment *)(*edge))->p2->equals(contained)) ||
-                        (p1Inside && p2Inside) )
-                        return false;
-                    else if(contained == NULL){
-                        if(p1Inside)
-                            contained = ((GIMS_LineSegment *)(*edge))->p1;
-                        if(p2Inside)
-                            contained = ((GIMS_LineSegment *)(*edge))->p2;
+            for(GIMS_MultiLineString *src : rings){
+                for(int i=0; i<src->size; i++){
+                    for(int j=0; j<src->list[i]->size; j++){
+                        GIMS_Point *aux = src->list[i]->list[j];
+                        bool auxInside = aux->isInsideBox( this->square );
+                        if( auxInside && sharedPoint != NULL && !aux->equals(sharedPoint) )
+                            return false;
+                        if( auxInside && sharedPoint == NULL )
+                            sharedPoint = aux;
                     }
                 }
             }
+        
         }else{
             fprintf(stderr, "unsupported geometry was passed on to the node validation function." );
             exit(-1);
@@ -472,7 +450,10 @@ PMQuadTree::~PMQuadTree () {}
 void PMQuadTree::build  (GIMS_Geometry *geom){}
 
 void PMQuadTree::insert ( GIMS_Geometry *geom ) {
-    this->root->insert(geom);
+    list<GIMS_Geometry *> *aux = new list<GIMS_Geometry *>();
+    aux->push_back(geom);
+    this->root->insert(aux);
+    delete aux;
 }
 
 void PMQuadTree::remove (GIMS_Geometry *geom){
@@ -572,34 +553,16 @@ void PMQuadTree::renderTree (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
 /*Render a leaf node and contained geometries*/
 void PMQuadTree::renderLeafNode (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
 
-    //renderer->renderGeometry(cr, n->square);
+    renderer->renderGeometry(cr, n->square);
 
     if( n->dictionary == NULL )
         return;
 
     if (n->type == BLACK) { //the WHITE type stands for empty node, thus we ignore it.
-        for ( list<GIMS_Geometry *>::iterator it = n->dictionary->begin();
-              it != n->dictionary->end(); it++ ) {
-
-            if( (*it)->renderCount >= renderer->renderCount )
-                continue;
-
-            if ( (*it)->type == EDGE ) {
-                //GIMS_LineSegment *trimmed =  ((GIMS_LineSegment*)(*it))->trimToBBox(n->square);
-                //renderer->renderGeometry( cr, trimmed );
-                //delete trimmed;
-                renderer->renderGeometry( cr, *it );
-                (*it)->renderCount++;
-            }else if( (*it)->type == POINT ) {
-                renderer->renderGeometry( cr, (GIMS_Point*)(*it) );
-                (*it)->renderCount++;
-            }else if( (*it)->type == POLYGON ) {
-                (*it)->renderCount++;
-                renderer->renderGeometry( cr, ((GIMS_Polygon *)(*it))->externalRing );
-                cr->set_source_rgb(0.69, 0.19, 0.0);
-                renderer->renderGeometry( cr, ((GIMS_Polygon *)(*it))->internalRings );
-                cr->set_source_rgb(0.0, 0.0, 0.0);
-            }
+        for( list<GIMS_Geometry *>::iterator it = n->dictionary->begin();
+             it != n->dictionary->end(); it++ ) {
+            
+            renderer->renderGeometry( cr, *it );
         }
     }
 }

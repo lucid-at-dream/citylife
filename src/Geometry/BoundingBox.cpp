@@ -6,32 +6,32 @@ GIMS_BoundingBox *GIMS_BoundingBox::clone (){
     return fresh;
 }
 
-inline GIMSPoint GIMS_BoundingBox::getCenter(){
+GIMS_Point GIMS_BoundingBox::getCenter(){
     return GIMS_Point( (this->upperRight->x + this->lowerLeft->x)/2.0,
                        (this->upperRight->y + this->lowerLeft->y)/2.0 );            
 }
 
-inline double GIMS_BoundingBox::xlength(){
+double GIMS_BoundingBox::xlength(){
     return fabs( this->upperRight->x - this->lowerLeft->x );
 }
 
-inline double GIMS_BoundingBox::ylength(){
+double GIMS_BoundingBox::ylength(){
     return fabs( this->upperRight->y - this->lowerLeft->y );
 }
 
-inline double GIMS_BoundingBox::minx(){
+double GIMS_BoundingBox::minx(){
     return this->lowerLeft->x;
 }
 
-inline double GIMS_BoundingBox::maxx(){
+double GIMS_BoundingBox::maxx(){
     return this->upperRight->y;
 }
 
-inline double GIMS_BoundingBox::miny(){
+double GIMS_BoundingBox::miny(){
     return this->lowerLeft->y;
 }
 
-inline double GIMS_BoundingBox::maxy(){
+double GIMS_BoundingBox::maxy(){
     return this->upperRight->y;
 }
 
@@ -48,6 +48,4 @@ GIMS_BoundingBox::GIMS_BoundingBox ( GIMS_Point *lowerLeft, GIMS_Point *upperRig
 }
 
 GIMS_BoundingBox::~GIMS_BoundingBox(){
-    delete this->lowerLeft;
-    delete this->upperRight;
 }

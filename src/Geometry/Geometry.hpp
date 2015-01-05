@@ -54,8 +54,6 @@ namespace GIMS_GEOMETRY {
         virtual               ~GIMS_Geometry ();
     };
 
-
-
     class GIMS_BoundingBox : public GIMS_Geometry {
       public:
         GIMS_Point *lowerLeft ,

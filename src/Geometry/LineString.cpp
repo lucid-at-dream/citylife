@@ -7,7 +7,7 @@ GIMS_LineSegment *GIMS_LineSegment::clone () {
 }
 
 GIMS_LineSegment::GIMS_LineSegment(){
-    this->type = LINESEGMENT
+    this->type = LINESEGMENT;
 }
 
 GIMS_LineSegment::GIMS_LineSegment ( GIMS_Point *p1, GIMS_Point *p2 ){
@@ -17,8 +17,6 @@ GIMS_LineSegment::GIMS_LineSegment ( GIMS_Point *p1, GIMS_Point *p2 ){
 }
 
 GIMS_LineSegment::~GIMS_LineSegment() {
-    delete this->p1;
-    delete this->p2;
 }
 
 GIMS_Geometry *GIMS_LineSegment::clipToBox ( GIMS_BoundingBox *box ){
@@ -130,9 +128,8 @@ GIMS_Geometry *GIMS_LineString::clipToBox (GIMS_BoundingBox *box){
 }
 
 GIMS_LineSegment GIMS_LineString::getLineSegment (int index){
-    GIMS_LineSegment *ls = GIMS_LineSegment( this->list[index],
-                                             this->list[index+1]);
-    ls->id = this->id;
+    GIMS_LineSegment ls = GIMS_LineSegment( this->list[index], this->list[index+1]);
+    ls.id = this->id;
     return ls;
 }
 
@@ -229,6 +226,7 @@ GIMS_MultiLineString::GIMS_MultiLineString(){
 }
 
 GIMS_MultiLineString::~GIMS_MultiLineString(){
-    free(this->list);
+    if(this->list != NULL)
+        free(this->list);
 }
 
