@@ -97,6 +97,7 @@ void DebRenderer::render ( Cairo::RefPtr<Cairo::Context> cr ) {
 }
 
 void DebRenderer::renderGeometry( Cairo::RefPtr<Cairo::Context> cr, GIMS_Geometry *g ){
+    if( g == NULL ) return;
 
     switch(g->type){
         case BOUNDINGBOX:
@@ -135,6 +136,7 @@ void DebRenderer::renderGeometry( Cairo::RefPtr<Cairo::Context> cr, GIMS_Geometr
 }
 
 void DebRenderer::renderPoint ( Cairo::RefPtr<Cairo::Context> cr, GIMS_Point *p ) {
+    if( p == NULL ) return;
     double x = (p->x+translatex)*scalex,
            y = (p->y+translatey)*scaley;
     cr->arc(x, y, 2.5/zoom, 0.0, 2*M_PI);
@@ -143,18 +145,21 @@ void DebRenderer::renderPoint ( Cairo::RefPtr<Cairo::Context> cr, GIMS_Point *p 
 }
 
 void DebRenderer::renderLineString ( Cairo::RefPtr<Cairo::Context> cr, GIMS_LineString *ls ) {
+    if( ls == NULL ) return;
     cr->move_to((ls->list[0]->x + translatex)*scalex, (ls->list[0]->y + translatey)*scaley);
     for(int i=1; i < ls->size; i++)
         cr->line_to((ls->list[i]->x + translatex)*scalex, (ls->list[i]->y + translatey)*scaley);
 }
 
 void DebRenderer::renderFilledBBox ( Cairo::RefPtr<Cairo::Context> cr, GIMS_BoundingBox *box ) {
+    if( box == NULL ) return;
     renderBBox(cr, box);
     cr->stroke_preserve();
     cr->fill();
 }
 
 void DebRenderer::renderBBox ( Cairo::RefPtr<Cairo::Context> cr, GIMS_BoundingBox *box ) {
+    if( box == NULL ) return;
     cr->move_to((box->lowerLeft->x + translatex)*scalex,  (box->lowerLeft->y + translatey)*scaley );
     cr->line_to((box->lowerLeft->x + translatex)*scalex,  (box->upperRight->y + translatey)*scaley);
     cr->line_to((box->upperRight->x + translatex)*scalex, (box->upperRight->y + translatey)*scaley);
@@ -164,6 +169,7 @@ void DebRenderer::renderBBox ( Cairo::RefPtr<Cairo::Context> cr, GIMS_BoundingBo
 
 
 void DebRenderer::renderRing(Cairo::RefPtr<Cairo::Context> cr, GIMS_Ring *ring){
+    if( ring == NULL ) return;
     cr->move_to((ring->list[0]->x + translatex)*scalex, (ring->list[0]->y + translatey)*scaley);
     for(int i=1; i < ring->size; i++)
         cr->line_to((ring->list[i]->x + translatex)*scalex, (ring->list[i]->y + translatey)*scaley);
@@ -171,6 +177,7 @@ void DebRenderer::renderRing(Cairo::RefPtr<Cairo::Context> cr, GIMS_Ring *ring){
 }
 
 void DebRenderer::renderPolygon(Cairo::RefPtr<Cairo::Context> cr, GIMS_Polygon *g){
+    if( g == NULL) return;
     this->renderMultiLineString(cr, g->externalRing);
     cr->stroke();
     cr->set_source_rgb(255, 0, 0);
@@ -180,26 +187,31 @@ void DebRenderer::renderPolygon(Cairo::RefPtr<Cairo::Context> cr, GIMS_Polygon *
 }
 
 void DebRenderer::renderMultiPoint(Cairo::RefPtr<Cairo::Context> cr, GIMS_MultiPoint *g){
+    if( g == NULL) return;
     for(int i=0; i<g->size; i++)
         this->renderPoint(cr, g->list[i]);
 }
 
 void DebRenderer::renderMultiLineString(Cairo::RefPtr<Cairo::Context> cr, GIMS_MultiLineString *g){
+    if( g == NULL) return;
     for(int i=0; i<g->size; i++)
         this->renderLineString(cr, g->list[i]);
 }
 
 void DebRenderer::renderMultiPolygon(Cairo::RefPtr<Cairo::Context> cr, GIMS_MultiPolygon *g){
+    if( g == NULL) return;
     for(int i=0; i<g->size; i++)
         this->renderPolygon(cr, g->list[i]);
 }
 
 void DebRenderer::renderGeometryCollection(Cairo::RefPtr<Cairo::Context> cr, GIMS_GeometryCollection *g){
+    if( g == NULL) return;
     for(int i=0; i<g->size; i++)
         this->renderGeometry(cr, g->list[i]);
 }
 
 void DebRenderer::renderLineSegment(Cairo::RefPtr<Cairo::Context> cr, GIMS_LineSegment *g){
+    if( g == NULL) return;
     cr->move_to((g->p1->x + translatex)*scalex, (g->p1->y + translatey)*scaley);
     cr->line_to((g->p2->x + translatex)*scalex, (g->p2->y + translatey)*scaley);
 }

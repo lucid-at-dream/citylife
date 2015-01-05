@@ -53,6 +53,7 @@ int main (int argc, char *argv[]) {
         if(aux != NULL){
             aux->id = incId++;
             tree->insert ( aux );
+            if(!count) query = aux;
             count++;
         }
         delete feature;
@@ -63,7 +64,7 @@ int main (int argc, char *argv[]) {
     }
     printf("inserted %d points.\n", total);
     
-    //tree->query = query;
+    tree->query = query;
     renderer = new DebRenderer();
     renderer->setScale(400.0/lenx, -400.0/leny);
     renderer->setTranslation( -envelope->MinX, -envelope->MaxY );

@@ -44,10 +44,12 @@ bool GIMS_Point::equals ( GIMS_Point *cmp ) {
 }
 
 GIMS_Point::GIMS_Point() {
+    this->id = 0;
     this->type = POINT;
 }
 
 GIMS_Point::GIMS_Point (double x, double y) {
+    this->id = 0;
     this->x = x;
     this->y = y;
     this->type = POINT;
@@ -90,12 +92,14 @@ GIMS_Geometry *GIMS_MultiPoint::clipToBox(GIMS_BoundingBox *box){
 }
 
 GIMS_MultiPoint::GIMS_MultiPoint(int size){
+    this->id = 0;
     this->size = 0;
     this->allocatedSize = size;
     this->list = (GIMS_Point **)malloc(size * sizeof(GIMS_Point *));
 }
 
 GIMS_MultiPoint::GIMS_MultiPoint(){
+    this->id = 0;
     this->size = this->allocatedSize = 0;
     this->list = NULL;
 }

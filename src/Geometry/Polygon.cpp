@@ -43,12 +43,14 @@ GIMS_Polygon::GIMS_Polygon(GIMS_MultiLineString *externalRing, GIMS_MultiLineStr
 }
 
 GIMS_Polygon::GIMS_Polygon(int ext_alloc, int int_alloc){
+    this->id = 0;
     this->type = POLYGON;
     this->externalRing = new GIMS_MultiLineString(ext_alloc);
     this->internalRings = new GIMS_MultiLineString(int_alloc);
 }
 
 GIMS_Polygon::GIMS_Polygon(){
+    this->id = 0;
     this->type = POLYGON;
     this->externalRing = this->internalRings = NULL;
 }
@@ -101,6 +103,7 @@ GIMS_Geometry *GIMS_MultiPolygon::clipToBox(GIMS_BoundingBox *box){
 }
 
 GIMS_MultiPolygon::GIMS_MultiPolygon(){
+    this->id = 0;
     this->type = MULTIPOLYGON;
     this->size = this->allocatedSize = 0;
     this->list = NULL;
@@ -108,6 +111,7 @@ GIMS_MultiPolygon::GIMS_MultiPolygon(){
 
 GIMS_MultiPolygon::GIMS_MultiPolygon(int size){
     this->type = MULTIPOLYGON;
+    this->id = 0;
     this->size = 0;
     this->allocatedSize = size;
     this->list = (GIMS_Polygon **)malloc(size * sizeof(GIMS_Polygon *));

@@ -86,7 +86,7 @@ GIMS_Geometry *Node::hasReferenceTo( long id ){
 
     for(list<GIMS_Geometry *>::iterator it = this->dictionary->begin();
         it != this->dictionary->end(); it++){
-        if( (*it)->id == id )
+        if( (*it)->id != 0 && (*it)->id == id )
             return *it;
     }
     return NULL;
@@ -124,6 +124,11 @@ bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
     //The first portion of the polygon "pol" that we found going in the north direction
     GIMS_Polygon *p = (GIMS_Polygon *)first;
 
+    if(renderEdge){
+        renderQueue->push_back(&qp);
+        redRenderQueue->push_back(p);
+    }
+
     /*from all the line segments that belong to polygon pol and that intersect 
       the node we just found, find out which one is closest to point pt.*/
     
@@ -135,28 +140,22 @@ bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
     int min_i, min_j;
     GIMS_LineSegment closest;
 
-    //iterate over the edges from the external ring
-    for(int i=0; i<p->externalRing->size; i++){
-        for(int j=0; j<p->externalRing->list[i]->size-1; j++){
-            GIMS_LineSegment curr = p->externalRing->list[i]->getLineSegment(j);
-            if( (tmp = distToSegmentSquared(&qp, &curr)) < minDist ){
-                minDist = tmp; min_i = i; min_j = j; closest = curr;
-                isEdgeFromExtRing = true;
+
+
+    //iterate over the edges from the polygon rings
+    GIMS_MultiLineString *prings[2] = {p->externalRing, p->internalRings};
+
+    for(GIMS_MultiLineString *ring : prings){
+        for(int i=0; ring != NULL && i<ring->size; i++){
+            for(int j=0; j<ring->list[i]->size-1; j++){
+                GIMS_LineSegment curr = ring->list[i]->getLineSegment(j);
+                if( (tmp = distToSegmentSquared(&qp, &curr)) < minDist ){
+                    minDist = tmp; min_i = i; min_j = j; closest = curr;
+                    isEdgeFromExtRing = (ring == p->externalRing);
+                }
             }
         }
     }
-
-    //iterate over the edges from the internal ring
-    for(int i=0; i<p->internalRings->size; i++){
-        for(int j=0; j<p->internalRings->list[i]->size-1; j++){
-            GIMS_LineSegment curr = p->internalRings->list[i]->getLineSegment(j);
-            if((tmp = distToSegmentSquared(&qp, &curr)) < minDist){
-                minDist = tmp; min_i = i; min_j = j; closest = curr;
-                isEdgeFromExtRing = false;
-            }
-        }
-    }
-
 
     /*if one of the closest line segment endpoints lies within the square that
       bounds node n, we must get the 2nd edge that shares the same endpoint.
@@ -295,8 +294,6 @@ void Node::insert ( list<GIMS_Geometry *> *geom ) {
         return;
     }
 
-    printf("boas\n");
-
     if ( this->type != GRAY ) { //node type is only gray when it's not a leaf
                                 //we're therefore accessing leaf nodes in this block
 
@@ -305,7 +302,6 @@ void Node::insert ( list<GIMS_Geometry *> *geom ) {
         }
 
         if ( this->validateGeometry(clipped) ) {
-            printf("inserting\n");
             //if the geometry is a valid node geometry we insert it into the node
             if(this->dictionary != NULL)
                 delete this->dictionary;
@@ -365,7 +361,7 @@ bool Node::validateGeometry (list<GIMS_Geometry *> *dict) {
             GIMS_MultiLineString *rings[2] = {p->externalRing, p->internalRings};
 
             for(GIMS_MultiLineString *src : rings){
-                for(int i=0; i<src->size; i++){
+                for(int i=0; src!=NULL && i<src->size; i++){
                     for(int j=0; j<src->list[i]->size; j++){
                         GIMS_Point *aux = src->list[i]->list[j];
                         bool auxInside = aux->isInsideBox( this->square );
@@ -517,6 +513,7 @@ void PMQuadTree::debugRender(Cairo::RefPtr<Cairo::Context> cr){
             results = (list<Node *> *)(this->root->searchInterior( (GIMS_Polygon *)(this->query) ));
         else
             results = (list<Node *> *)(this->root->search( this->query ));
+        cr->stroke();
         cr->set_source_rgba(0.0, 0.19, 0.69, 0.2);
         for( list<Node *>::iterator i = results->begin(); i!= results->end(); i++ ){
             renderer->renderFilledBBox( cr, (*i)->square );
@@ -526,14 +523,24 @@ void PMQuadTree::debugRender(Cairo::RefPtr<Cairo::Context> cr){
         printf("null query\n");
     }
 
-    cr->set_source_rgba(0.19, 0.73, 0.12, 0.5);
-    for(list<GIMS_Geometry *>::iterator it = renderQueue->begin(); it != renderQueue->end(); it++){
-        renderer->renderGeometry(cr, *it);
+    if( renderQueue->size() > 0 ){
+        printf("rendering green queue\n");
+        cr->stroke();
+        cr->set_source_rgba(0.19, 0.73, 0.12, 0.5);
+        for(list<GIMS_Geometry *>::iterator it = renderQueue->begin(); it != renderQueue->end(); it++){
+            renderer->renderGeometry(cr, *it);
+        }
+        cr->stroke();
     }
 
-    cr->set_source_rgba(0.73, 0.19, 0.03, 0.5);
-    for(list<GIMS_Geometry *>::iterator it = redRenderQueue->begin(); it != redRenderQueue->end(); it++){
-        renderer->renderGeometry(cr, *it);
+    if( redRenderQueue->size() > 0){
+        printf("rendering red queue\n");
+        cr->stroke();
+        cr->set_source_rgba(0.73, 0.19, 0.03, 0.5);
+        for(list<GIMS_Geometry *>::iterator it = redRenderQueue->begin(); it != redRenderQueue->end(); it++){
+            renderer->renderGeometry(cr, *it);
+        }
+        cr->stroke();
     }
 
 }
@@ -570,14 +577,12 @@ void PMQuadTree::renderLeafNode (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
 void PMQuadTree::onClick( double x, double y){
     printf("begin click event\n");
 
-    /*
-    GIMS_Polygon *pol= (GIMS_Polygon *)(((GIMS_GeometryList *)(this->query))->list->front());
+    GIMS_Polygon *pol= (GIMS_Polygon *)(this->query);
     GIMS_Point *pt = new GIMS_Point(x,y);
     renderEdge = true;
     Node *n = ((list<Node *> *)(this->root->search(pt)))->front();
     n->polygonContainsPoint(pol, pt);
     renderEdge = false;
-    */
 
     printf("finished click event\n");
 }

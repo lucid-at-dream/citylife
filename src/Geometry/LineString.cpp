@@ -8,9 +8,11 @@ GIMS_LineSegment *GIMS_LineSegment::clone () {
 
 GIMS_LineSegment::GIMS_LineSegment(){
     this->type = LINESEGMENT;
+    this->id = 0;
 }
 
 GIMS_LineSegment::GIMS_LineSegment ( GIMS_Point *p1, GIMS_Point *p2 ){
+    this->id = 0;
     this->type = LINESEGMENT;
     this->p1 = p1;
     this->p2 = p2;
@@ -80,6 +82,7 @@ GIMS_LineString::GIMS_LineString (int size){
     this->list = (GIMS_Point **)malloc(size * sizeof(GIMS_Point *));
     this->allocatedSize = size;
     this->size = 0;
+    this->id = 0;
 }
 
 GIMS_LineString::GIMS_LineString (){
@@ -87,6 +90,7 @@ GIMS_LineString::GIMS_LineString (){
     this->list = NULL;
     this->allocatedSize = 0;
     this->size = 0;
+    this->id = 0;
 }
 
 GIMS_LineString::~GIMS_LineString (){
@@ -124,6 +128,15 @@ GIMS_Geometry *GIMS_LineString::clipToBox (GIMS_BoundingBox *box){
             partial = NULL;
         }
     }
+
+    if(partial != NULL){
+        if(clipped == NULL){
+            clipped = new GIMS_MultiLineString(1);
+            clipped->id = this->id;
+        }
+        clipped->append(partial);
+    }
+
     return clipped;
 }
 
@@ -217,12 +230,14 @@ GIMS_MultiLineString::GIMS_MultiLineString(int size){
     this->size = 0;
     this->allocatedSize = size;
     this->list = (GIMS_LineString **)malloc(size * sizeof(GIMS_LineString *));   
+    this->id = 0;
 }
 
 GIMS_MultiLineString::GIMS_MultiLineString(){
     this->type = MULTILINESTRING;
     this->size = this->allocatedSize = 0;
     this->list = NULL;
+    this->id = 0;
 }
 
 GIMS_MultiLineString::~GIMS_MultiLineString(){
