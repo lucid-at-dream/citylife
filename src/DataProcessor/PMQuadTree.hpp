@@ -24,11 +24,11 @@ namespace PMQUADTREE {
         Node *sons[4];
 
         //dictionary related functions
-        list<GIMS_Geometry *> *clipDict(list<GIMS_Geometry *> dict);
+        list<GIMS_Geometry *> *clipDict(list<GIMS_Geometry *> *dict);
 
         void *search                  (GIMS_Geometry *geom);
         void *searchInterior          (GIMS_Polygon *pol);
-        void  insert                  (GIMS_Geometry *);
+        void  insert                  (list<GIMS_Geometry *> *);
         bool  validateGeometry        (list<GIMS_Geometry *> *);
         bool  polygonContainsPoint    (GIMS_Polygon *pol, GIMS_Point *pt);
         GIMS_Geometry *hasReferenceTo (long id);

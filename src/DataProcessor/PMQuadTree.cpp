@@ -261,12 +261,12 @@ void *Node::searchInterior (GIMS_Polygon *pol){
     }
 }
 
-void mergeDicts(list<GIMS_Geometry *> a, list<GIMS_Geometry *> b){
+void mergeDicts(list<GIMS_Geometry *> *a, list<GIMS_Geometry *> *b){
     a->insert(a->end(), b->begin(), b->end());
 }
 
-list<GIMS_Geometry *> *Node::clipDict(list<GIMS_Geometry *> dict){
-    list<GIMS_Geometry *> clipped = NULL;
+list<GIMS_Geometry *> *Node::clipDict(list<GIMS_Geometry *> *dict){
+    list<GIMS_Geometry *> *clipped = NULL;
     GIMS_Geometry *partial;
     for(list<GIMS_Geometry *>::iterator it = dict->begin(); it != dict->end(); it++){
         if( (partial = (*it)->clipToBox(this->square)) ){
@@ -279,7 +279,7 @@ list<GIMS_Geometry *> *Node::clipDict(list<GIMS_Geometry *> dict){
 }
 
 /*Inserts geometry "geom" in the tree*/
-void Node::insert ( list<GIMS_Geometry *> geom ) {
+void Node::insert ( list<GIMS_Geometry *> *geom ) {
 
     depth++;
     if( depth > 100 ){
@@ -324,18 +324,16 @@ void Node::insert ( list<GIMS_Geometry *> geom ) {
     }
     
     depth--;
-    if( clipped->type != POINT )
-        delete clipped;
 }
 
 /* Returns true if the given geometry is a valid one for the calling node
    !Note! The bounding box geometry is not supported.
    The behaviour is undefined in such a situation.!Note! */
-bool Node::validateGeometry () {
+bool Node::validateGeometry (list<GIMS_Geometry *> *dict) {
 
     GIMS_Point *shared = NULL;
 
-    for ( list<GIMS_Geometry *>::iterator it = this->dictionary->begin(); it != this->dictionary->end(); it++ ) {
+    for ( list<GIMS_Geometry *>::iterator it = dict->begin(); it != dict->end(); it++ ) {
 
         if ( (*it)->type == POINT ) {
             if(contained == NULL)
@@ -345,7 +343,7 @@ bool Node::validateGeometry () {
                     return false;
             }
 
-        }else if ( (*it)->type == EDGE ) {
+        }else if ( (*it)->type == LINESEGMENT ) {
 
             bool p1Inside = ((GIMS_LineSegment *)(*it))->p1->isInsideBox( this->square ),
                  p2Inside = ((GIMS_LineSegment *)(*it))->p2->isInsideBox( this->square );
