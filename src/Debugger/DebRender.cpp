@@ -1,13 +1,11 @@
 #include "DebRender.hpp"
 
 bool on_drag_begin(GdkEventButton* event) {
-    printf("began drag\n");
     renderer->dragBegin ( );
     return false;
 }
 
 bool on_drag_end(GdkEventButton *event) {
-    printf("end drag\n");
     double prev_panx = renderer->panx,
            prev_pany = renderer->pany;
     renderer->dragEnd( );
@@ -131,7 +129,7 @@ void DebRenderer::renderGeometry( Cairo::RefPtr<Cairo::Context> cr, GIMS_Geometr
             renderLineSegment(cr, (GIMS_LineSegment *)g);
             break;
         default:
-            printf("tryed to render a geometry with unknown type. Not Rendering!\n");
+            fprintf(stderr,"tryed to render a geometry with unknown type. Not Rendering!\n");
     };
 }
 
@@ -139,9 +137,11 @@ void DebRenderer::renderPoint ( Cairo::RefPtr<Cairo::Context> cr, GIMS_Point *p 
     if( p == NULL ) return;
     double x = (p->x+translatex)*scalex,
            y = (p->y+translatey)*scaley;
+    cr->stroke();
     cr->arc(x, y, 2.5/zoom, 0.0, 2*M_PI);
     cr->stroke_preserve();
     cr->fill();
+    cr->stroke();
 }
 
 void DebRenderer::renderLineString ( Cairo::RefPtr<Cairo::Context> cr, GIMS_LineString *ls ) {

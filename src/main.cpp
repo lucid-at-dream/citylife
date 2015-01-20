@@ -18,10 +18,12 @@ GIMS_Geometry *retrieveFeature ( OGRFeature *feature );
 int main (int argc, char *argv[]) {
 
     Geometry::Connect2Postgis getGeom;
-    OGRLayer *layer = getGeom.GetLayerByName ("planet_osm_polygon");
-    
+    OGRLayer *pol_layer = getGeom.GetLayerByName ("planet_osm_polygon");
+    OGRLayer *pt_layer = getGeom.GetLayerByName ("planet_osm_point");
+    OGRLayer *ln_layer = getGeom.GetLayerByName ("planet_osm_line");
+
     OGREnvelope *envelope = new OGREnvelope;
-    if ( layer->GetExtent ( envelope, FALSE ) != OGRERR_NONE ) {
+    if ( pol_layer->GetExtent ( envelope, FALSE ) != OGRERR_NONE ) {
         perror ("could not retrieve layer envelope");
         exit (-1);
     }
@@ -39,40 +41,45 @@ int main (int argc, char *argv[]) {
     GIMS_Geometry* query;
     GIMS_Geometry* aux;
     int count = 0;
-    while ( (feature = layer->GetNextFeature() ) != NULL) {
-    
-        /*
-        if ( feature->GetFieldAsDouble(feature->GetFieldIndex("way_area")) < 10000 ) {
-            delete feature;
-            continue;
-        }
-        */
-        //printf("%d\n", count);
-        aux = retrieveFeature (feature);
+
+    GIMS_GeometryCollection *glist = new GIMS_GeometryCollection();
+    OGRLayer *layers[2] = {pol_layer, pt_layer };
+    for(OGRLayer *layer : layers){
+        while ( (feature = layer->GetNextFeature() ) != NULL) {
         
-        if(aux != NULL){
-            aux->id = incId++;
-            tree->insert ( aux );
-            if(!count) query = aux;
-            count++;
+            /*
+            if ( feature->GetFieldAsDouble(feature->GetFieldIndex("way_area")) < 10000 ) {
+                delete feature;
+                continue;
+            }
+            */
+            //printf("%d\n", count);
+            aux = retrieveFeature (feature);
+            
+            if(aux != NULL){
+                aux->id = incId++;
+                glist->append(aux);
+                tree->insert ( aux );
+                if(!count) query = aux;
+                count++;
+            }
+            delete feature;
+
+            if(count >= 50)
+                break;
+
         }
-        delete feature;
-
-        if(count >= 50)
-            break;
-
+        delete layer;
     }
     printf("inserted %d points.\n", total);
-    
     tree->query = query;
     renderer = new DebRenderer();
     renderer->setScale(400.0/lenx, -400.0/leny);
     renderer->setTranslation( -envelope->MinX, -envelope->MaxY );
     renderer->renderCallback = tree;
-    //renderer->renderSvg("outtree.svg", 400, 400);
-    renderer->mainloop(argc, argv);
+    renderer->renderSvg("outtree.svg", 400, 400);
+    renderer->mainloop(argc, argv);/**/
 
-    delete layer;
     
     return 0;
 }
@@ -130,9 +137,6 @@ GIMS_Geometry *retrieveFeature ( OGRFeature *feature ) {
                 f_intRing->getPoint (i, tmp);
                 intRing->appendPoint(new GIMS_Point(tmp->getX(), tmp->getY()));
             }
-            if( intRing->list[0]->equals(intRing->list[intRing->size-1]) )
-                printf("wololo\n");
-
             polygon->appendInternalRing(intRing);
         }
 

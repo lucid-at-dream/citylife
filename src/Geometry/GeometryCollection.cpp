@@ -32,6 +32,7 @@ GIMS_Geometry *GIMS_GeometryCollection::clipToBox ( GIMS_BoundingBox *box ){
             clipped->append(g);
         }
     }
+    clipped->id = this->id;
     return clipped;
 }
 

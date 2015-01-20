@@ -22,18 +22,14 @@ list<GIMS_Geometry *> *redRenderQueue = new list<GIMS_Geometry *>();
   the geometry passed by parameter. Note: This means that this function does not 
   return nodes strictly contained inside polygons.*/
 void *Node::search (GIMS_Geometry *geom){
+   
+    GIMS_Geometry *clipped = geom->clipToBox(this->square);
+    if( clipped == NULL )
+        return NULL;
 
-    if ( this->type != GRAY ) {
-        list<Node *> *l = new list<Node *>;
-        l->push_back(this);
-        return l;
+    list<Node *> *retlist = new list<Node *>;
     
-    }else{
-        GIMS_Geometry *clipped = geom->clipToBox(this->square);
-        if( clipped == NULL )
-            return NULL;
-
-        list<Node *> *retlist = new list<Node *>;
+    if(this->type == GRAY){
         for( Quadrant q : quadrantList ) {
             list<Node *> *l = (list<Node *> *)sons[q]->search(clipped);
             if( l != NULL ){
@@ -41,12 +37,12 @@ void *Node::search (GIMS_Geometry *geom){
                 delete l;
             }
         }
-        //we check if it's a point before deleting, because clipping a point returns a pointer
-        //to the point itself and not to another geometry.
-        if( clipped->type != POINT )
-            delete clipped;
-        return retlist;
+    }else{
+        retlist->push_back(this);
     }
+    
+    return retlist;
+
 }
 
 /*Returns a neighboor node in the north direction. Chooses the neighboor node 
@@ -114,8 +110,9 @@ bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
 
     while( (first = n->hasReferenceTo( pol->id )) == NULL ){
         n = n->goNorth( pt->x );
-        if( n == NULL )
+        if( n == NULL ){
             return false;
+        }
     }
 
     //set up the query point
@@ -123,11 +120,6 @@ bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
 
     //The first portion of the polygon "pol" that we found going in the north direction
     GIMS_Polygon *p = (GIMS_Polygon *)first;
-
-    if(renderEdge){
-        renderQueue->push_back(&qp);
-        redRenderQueue->push_back(p);
-    }
 
     /*from all the line segments that belong to polygon pol and that intersect 
       the node we just found, find out which one is closest to point pt.*/
@@ -249,7 +241,6 @@ void *Node::searchInterior (GIMS_Polygon *pol){
             }else if( clipped != NULL ){
                 //if the node is intersected we call recursively to its sons.
                 list<Node *> *l = (list<Node *> *)sons[q]->searchInterior(clipped);
-                delete clipped;
                 if( l != NULL ){
                     retlist->insert( retlist->end(), l->begin(), l->end() );
                     delete l;
@@ -374,7 +365,7 @@ bool Node::validateGeometry (list<GIMS_Geometry *> *dict) {
             }
         
         }else{
-            fprintf(stderr, "unsupported geometry was passed on to the node validation function." );
+            fprintf(stderr, "unsupported geometry was passed on to the node validation function.\n" );
             exit(-1);
         }
     }
@@ -524,9 +515,8 @@ void PMQuadTree::debugRender(Cairo::RefPtr<Cairo::Context> cr){
     }
 
     if( renderQueue->size() > 0 ){
-        printf("rendering green queue\n");
         cr->stroke();
-        cr->set_source_rgba(0.19, 0.73, 0.12, 0.5);
+        cr->set_source_rgb(0.19, 0.73, 0.12);
         for(list<GIMS_Geometry *>::iterator it = renderQueue->begin(); it != renderQueue->end(); it++){
             renderer->renderGeometry(cr, *it);
         }
@@ -534,9 +524,8 @@ void PMQuadTree::debugRender(Cairo::RefPtr<Cairo::Context> cr){
     }
 
     if( redRenderQueue->size() > 0){
-        printf("rendering red queue\n");
         cr->stroke();
-        cr->set_source_rgba(0.73, 0.19, 0.03, 0.5);
+        cr->set_source_rgb(0.73, 0.19, 0.03);
         for(list<GIMS_Geometry *>::iterator it = redRenderQueue->begin(); it != redRenderQueue->end(); it++){
             renderer->renderGeometry(cr, *it);
         }
@@ -575,7 +564,7 @@ void PMQuadTree::renderLeafNode (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
 }
 
 void PMQuadTree::onClick( double x, double y){
-    printf("begin click event\n");
+    printf("begin click event at %lf %lf\n", x, y);
 
     GIMS_Polygon *pol= (GIMS_Polygon *)(this->query);
     GIMS_Point *pt = new GIMS_Point(x,y);
@@ -584,5 +573,4 @@ void PMQuadTree::onClick( double x, double y){
     n->polygonContainsPoint(pol, pt);
     renderEdge = false;
 
-    printf("finished click event\n");
 }
