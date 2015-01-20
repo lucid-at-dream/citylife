@@ -326,50 +326,61 @@ bool Node::validateGeometry (list<GIMS_Geometry *> *dict) {
     for ( list<GIMS_Geometry *>::iterator it = dict->begin(); it != dict->end(); it++ ) {
 
         if ( (*it)->type == POINT ) {
-            GIMS_Point *pt = (GIMS_Point *)(*it);
-            if( sharedPoint == NULL)
-                sharedPoint = pt;
-            else if( !pt->equals(sharedPoint) )
+            if( !this->validatePoint( (GIMS_Point *)(*it), &sharedPoint ) )
                 return false;
-
         }else if ( (*it)->type == LINESEGMENT ) {
-            GIMS_LineSegment *l = (GIMS_LineSegment *)(*it);
-
-            bool p1Inside = l->p1->isInsideBox( this->square ),
-                 p2Inside = l->p2->isInsideBox( this->square );
-
-                if ( p1Inside && p2Inside )
-                    return false;
-                if( p1Inside && sharedPoint != NULL && !l->p1->equals(sharedPoint) )
-                    return false;
-                if( p2Inside && sharedPoint != NULL && !l->p2->equals(sharedPoint) )
-                    return false;
-                if( sharedPoint == NULL )
-                    sharedPoint = p1Inside ? l->p1 : (p2Inside ? l->p2 : NULL);
-
+            if( !this->validateLineSegment( (GIMS_LineSegment *)(*it), &sharedPoint ) )
+                return false;
         }else if( (*it)->type == POLYGON ){
-            GIMS_Polygon *p = (GIMS_Polygon *)(*it);
-            GIMS_MultiLineString *rings[2] = {p->externalRing, p->internalRings};
-
-            for(GIMS_MultiLineString *src : rings){
-                for(int i=0; src!=NULL && i<src->size; i++){
-                    for(int j=0; j<src->list[i]->size; j++){
-                        GIMS_Point *aux = src->list[i]->list[j];
-                        bool auxInside = aux->isInsideBox( this->square );
-                        if( auxInside && sharedPoint != NULL && !aux->equals(sharedPoint) )
-                            return false;
-                        if( auxInside && sharedPoint == NULL )
-                            sharedPoint = aux;
-                    }
-                }
-            }
-        
+            if( !this->validatePolygon( (GIMS_Polygon *)(*it), &sharedPoint ) )
+                return false;
         }else{
             fprintf(stderr, "unsupported geometry was passed on to the node validation function.\n" );
             exit(-1);
         }
     }
     
+    return true;
+}
+
+bool Node::validatePoint( GIMS_Point *pt, GIMS_Point **sharedPoint ){
+    if( *sharedPoint == NULL)
+        *sharedPoint = pt;
+    else if( !pt->equals(*sharedPoint) )
+        return false;
+    return true;
+}
+
+bool Node::validateLineSegment(GIMS_LineSegment *l, GIMS_Point **sharedPoint){
+    bool p1Inside = l->p1->isInsideBox( this->square ),
+         p2Inside = l->p2->isInsideBox( this->square );
+
+    if ( p1Inside && p2Inside )
+        return false;
+    if( p1Inside && *sharedPoint != NULL && !l->p1->equals(*sharedPoint) )
+        return false;
+    if( p2Inside && *sharedPoint != NULL && !l->p2->equals(*sharedPoint) )
+        return false;
+    if( *sharedPoint == NULL )
+        *sharedPoint = p1Inside ? l->p1 : (p2Inside ? l->p2 : NULL);
+    return true;
+}
+
+bool Node::validatePolygon(GIMS_Polygon *p, GIMS_Point **sharedPoint){
+    GIMS_MultiLineString *rings[2] = {p->externalRing, p->internalRings};
+
+    for(GIMS_MultiLineString *src : rings){
+        for(int i=0; src!=NULL && i<src->size; i++){
+            for(int j=0; j<src->list[i]->size; j++){
+                GIMS_Point *aux = src->list[i]->list[j];
+                bool auxInside = aux->isInsideBox( this->square );
+                if( auxInside && *sharedPoint != NULL && !aux->equals(*sharedPoint) )
+                    return false;
+                if( auxInside && *sharedPoint == NULL )
+                    *sharedPoint = aux;
+            }
+        }
+    }
     return true;
 }
 
