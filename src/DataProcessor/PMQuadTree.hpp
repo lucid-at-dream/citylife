@@ -32,6 +32,7 @@ namespace PMQUADTREE {
         bool  validateGeometry        (list<GIMS_Geometry *> *);
         bool  validatePolygon         (GIMS_Polygon *p, GIMS_Point **sharedPoint);
         bool  validatePoint           (GIMS_Point *pt, GIMS_Point **sharedPoint);
+        bool  validateLineString      (GIMS_LineString *ls, GIMS_Point **sharedPoint); 
         bool  validateLineSegment     (GIMS_LineSegment *l, GIMS_Point **sharedPoint);
         bool  polygonContainsPoint    (GIMS_Polygon *pol, GIMS_Point *pt);
         GIMS_Geometry *hasReferenceTo (long id);

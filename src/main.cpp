@@ -43,7 +43,7 @@ int main (int argc, char *argv[]) {
     int count = 0;
 
     GIMS_GeometryCollection *glist = new GIMS_GeometryCollection();
-    OGRLayer *layers[2] = {pol_layer, pt_layer };
+    OGRLayer *layers[1] = {pt_layer };
     for(OGRLayer *layer : layers){
         while ( (feature = layer->GetNextFeature() ) != NULL) {
         
@@ -65,7 +65,7 @@ int main (int argc, char *argv[]) {
             }
             delete feature;
 
-            if(count >= 50)
+            if(count >= 1000)
                 break;
 
         }

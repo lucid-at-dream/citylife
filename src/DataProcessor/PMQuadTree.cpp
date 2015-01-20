@@ -325,18 +325,68 @@ bool Node::validateGeometry (list<GIMS_Geometry *> *dict) {
 
     for ( list<GIMS_Geometry *>::iterator it = dict->begin(); it != dict->end(); it++ ) {
 
-        if ( (*it)->type == POINT ) {
-            if( !this->validatePoint( (GIMS_Point *)(*it), &sharedPoint ) )
-                return false;
-        }else if ( (*it)->type == LINESEGMENT ) {
-            if( !this->validateLineSegment( (GIMS_LineSegment *)(*it), &sharedPoint ) )
-                return false;
-        }else if( (*it)->type == POLYGON ){
-            if( !this->validatePolygon( (GIMS_Polygon *)(*it), &sharedPoint ) )
-                return false;
-        }else{
-            fprintf(stderr, "unsupported geometry was passed on to the node validation function.\n" );
-            exit(-1);
+        switch((*it)->type){
+            
+            case POINT:{
+                if( !this->validatePoint( (GIMS_Point *)(*it), &sharedPoint ) )
+                    return false;
+                break;
+            }
+
+            case LINESTRING:
+            case RING:{
+                if( this->validateLineString((GIMS_LineString *)(*it), &sharedPoint) )
+                    return false;
+                break;
+            }
+            
+            case POLYGON:{
+                if( !this->validatePolygon( (GIMS_Polygon *)(*it), &sharedPoint ) )
+                    return false;
+                break;
+            }
+            
+            case MULTIPOINT:{
+                GIMS_MultiPoint *mpt = (GIMS_MultiPoint*)(*it);
+                for(int i=0; i<mpt->size; i++){
+                    if( !this->validatePoint(mpt->list[i], &sharedPoint) )
+                        return false;
+                }
+            }
+
+            case MULTILINESTRING:{
+                GIMS_MultiLineString *mls = (GIMS_MultiLineString *)(*it);
+                for(int i=0; i<mls->size; i++){
+                    if( !this->validateLineString(mls->list[i], &sharedPoint) )
+                        return false;
+                }
+                break;
+            }
+            
+            case MULTIPOLYGON:{
+                GIMS_MultiPolygon *mp = (GIMS_MultiPolygon *)(*it);
+                for(int i=0; i<mp->size; i++){
+                    if( !this->validatePolygon(mp->list[i], &sharedPoint) )
+                        return false;
+                }
+                break;
+            }
+            
+            case GEOMETRYCOLLECTION:{
+
+                break;
+            }
+            case LINESEGMENT:{
+                if( !this->validateLineSegment( (GIMS_LineSegment *)(*it), &sharedPoint ) )
+                    return false;
+                break;
+            }
+            
+            default:{
+                fprintf(stderr, "unsupported geometry was passed on to the "
+                        "node validation function.\n" );
+                exit(-1);
+            }
         }
     }
     
@@ -348,6 +398,15 @@ bool Node::validatePoint( GIMS_Point *pt, GIMS_Point **sharedPoint ){
         *sharedPoint = pt;
     else if( !pt->equals(*sharedPoint) )
         return false;
+    return true;
+}
+
+bool Node::validateLineString( GIMS_LineString *ls, GIMS_Point **sharedPoint ){
+    for(int i; i<ls->size; i++){
+        if(ls->list[i]->isInsideBox(this->square))
+            if(!this->validatePoint(ls->list[i], sharedPoint))
+                return false;
+    }
     return true;
 }
 
