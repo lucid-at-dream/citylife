@@ -37,3 +37,8 @@ tags
 trimToBBox.cpp
 hide.sh
 move_back.sh
+ask
+cplot.py
+err
+outtree.svg
+tmp
