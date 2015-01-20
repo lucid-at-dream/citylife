@@ -292,7 +292,7 @@ void Node::insert ( list<GIMS_Geometry *> *geom ) {
             mergeDicts(clipped, this->dictionary);
         }
 
-        if ( this->validateGeometry(clipped) ) {
+        if ( this->validate(clipped) ) {
             //if the geometry is a valid node geometry we insert it into the node
             if(this->dictionary != NULL)
                 delete this->dictionary;
@@ -319,77 +319,75 @@ void Node::insert ( list<GIMS_Geometry *> *geom ) {
 /* Returns true if the given geometry is a valid one for the calling node
    !Note! The bounding box geometry is not supported.
    The behaviour is undefined in such a situation.!Note! */
-bool Node::validateGeometry (list<GIMS_Geometry *> *dict) {
-
+bool Node::validate (list<GIMS_Geometry *> *dict) {
     GIMS_Point *sharedPoint = NULL;
-
     for ( list<GIMS_Geometry *>::iterator it = dict->begin(); it != dict->end(); it++ ) {
+        if( !this->validateGeometry((*it), &sharedPoint) )
+            return false;
+    }
+    return true;
+}
 
-        switch((*it)->type){
-            
-            case POINT:{
-                if( !this->validatePoint( (GIMS_Point *)(*it), &sharedPoint ) )
+bool Node::validateGeometry (GIMS_Geometry *g, GIMS_Point **sharedPoint){
+    switch(g->type){
+        case POINT:{
+            if( !this->validatePoint( (GIMS_Point *)g, sharedPoint ) )
+                return false;
+            break;
+        }
+        case LINESTRING:
+        case RING:{
+            if( this->validateLineString((GIMS_LineString *)g, sharedPoint) )
+                return false;
+            break;
+        }
+        case POLYGON:{
+            if( !this->validatePolygon( (GIMS_Polygon *)g, sharedPoint ) )
+                return false;
+            break;
+        }
+        case MULTIPOINT:{
+            GIMS_MultiPoint *mpt = (GIMS_MultiPoint*)g;
+            for(int i=0; i<mpt->size; i++){
+                if( !this->validatePoint(mpt->list[i], sharedPoint) )
                     return false;
-                break;
-            }
-
-            case LINESTRING:
-            case RING:{
-                if( this->validateLineString((GIMS_LineString *)(*it), &sharedPoint) )
-                    return false;
-                break;
-            }
-            
-            case POLYGON:{
-                if( !this->validatePolygon( (GIMS_Polygon *)(*it), &sharedPoint ) )
-                    return false;
-                break;
-            }
-            
-            case MULTIPOINT:{
-                GIMS_MultiPoint *mpt = (GIMS_MultiPoint*)(*it);
-                for(int i=0; i<mpt->size; i++){
-                    if( !this->validatePoint(mpt->list[i], &sharedPoint) )
-                        return false;
-                }
-            }
-
-            case MULTILINESTRING:{
-                GIMS_MultiLineString *mls = (GIMS_MultiLineString *)(*it);
-                for(int i=0; i<mls->size; i++){
-                    if( !this->validateLineString(mls->list[i], &sharedPoint) )
-                        return false;
-                }
-                break;
-            }
-            
-            case MULTIPOLYGON:{
-                GIMS_MultiPolygon *mp = (GIMS_MultiPolygon *)(*it);
-                for(int i=0; i<mp->size; i++){
-                    if( !this->validatePolygon(mp->list[i], &sharedPoint) )
-                        return false;
-                }
-                break;
-            }
-            
-            case GEOMETRYCOLLECTION:{
-
-                break;
-            }
-            case LINESEGMENT:{
-                if( !this->validateLineSegment( (GIMS_LineSegment *)(*it), &sharedPoint ) )
-                    return false;
-                break;
-            }
-            
-            default:{
-                fprintf(stderr, "unsupported geometry was passed on to the "
-                        "node validation function.\n" );
-                exit(-1);
             }
         }
+        case MULTILINESTRING:{
+            GIMS_MultiLineString *mls = (GIMS_MultiLineString *)g;
+            for(int i=0; i<mls->size; i++){
+                if( !this->validateLineString(mls->list[i], sharedPoint) )
+                    return false;
+            }
+            break;
+        }
+        case MULTIPOLYGON:{
+            GIMS_MultiPolygon *mp = (GIMS_MultiPolygon *)g;
+            for(int i=0; i<mp->size; i++){
+                if( !this->validatePolygon(mp->list[i], sharedPoint) )
+                    return false;
+            }
+            break;
+        }
+        case GEOMETRYCOLLECTION:{
+            GIMS_GeometryCollection *gc = (GIMS_GeometryCollection *)g;
+            for(int i=0; i<gc->size; i++){
+                if( !this->validateGeometry(gc->list[i], sharedPoint) )
+                    return false;
+            }
+            break;
+        }
+        case LINESEGMENT:{
+            if( !this->validateLineSegment( (GIMS_LineSegment *)g, sharedPoint ) )
+                return false;
+            break;
+        }
+        default:{
+            fprintf(stderr, "unsupported geometry was passed on to the "
+                    "node validation function.\n" );
+            exit(-1);
+        }
     }
-    
     return true;
 }
 

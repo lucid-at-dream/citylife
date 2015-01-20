@@ -29,7 +29,8 @@ namespace PMQUADTREE {
         void *search                  (GIMS_Geometry *geom);
         void *searchInterior          (GIMS_Polygon *pol);
         void  insert                  (list<GIMS_Geometry *> *);
-        bool  validateGeometry        (list<GIMS_Geometry *> *);
+        bool  validate                (list<GIMS_Geometry *> *);
+        bool  validateGeometry        (GIMS_Geometry *p, GIMS_Point **sharedPoint);
         bool  validatePolygon         (GIMS_Polygon *p, GIMS_Point **sharedPoint);
         bool  validatePoint           (GIMS_Point *pt, GIMS_Point **sharedPoint);
         bool  validateLineString      (GIMS_LineString *ls, GIMS_Point **sharedPoint); 
