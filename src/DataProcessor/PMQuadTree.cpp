@@ -116,7 +116,11 @@ bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
     }
 
     //set up the query point
-    GIMS_Point qp = GIMS_Point(pt->x, n->square->lowerLeft->y);
+    GIMS_Point qp;
+    if(this == n)
+        qp = *pt;
+    else
+        qp = GIMS_Point(pt->x, n->square->lowerLeft->y);
 
     //The first portion of the polygon "pol" that we found going in the north direction
     GIMS_Polygon *p = (GIMS_Polygon *)first;
@@ -129,10 +133,7 @@ bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
     bool isEdgeFromExtRing = false;
     double minDist = 1e100;
     double tmp;
-    int min_i, min_j;
     GIMS_LineSegment closest;
-
-
 
     //iterate over the edges from the polygon rings
     GIMS_MultiLineString *prings[2] = {p->externalRing, p->internalRings};
@@ -142,7 +143,8 @@ bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
             for(int j=0; j<ring->list[i]->size-1; j++){
                 GIMS_LineSegment curr = ring->list[i]->getLineSegment(j);
                 if( (tmp = distToSegmentSquared(&qp, &curr)) < minDist ){
-                    minDist = tmp; min_i = i; min_j = j; closest = curr;
+                    minDist = tmp;
+                    closest = curr;
                     isEdgeFromExtRing = (ring == p->externalRing);
                 }
             }
@@ -160,7 +162,7 @@ bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
 
     bool p1inside = closest.p1->isInsideBox(n->square),
          p2inside = closest.p2->isInsideBox(n->square);
-
+GIMS_LineSegment auxls;
     if( p1inside || p2inside ){
         GIMS_Point *shpoint = p1inside ? closest.p1 : closest.p2;
         GIMS_Point *unshared1 = p1inside ? closest.p2 : closest.p1;
@@ -169,17 +171,16 @@ bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
 
         //find the edge that shares the endpoint with current "closest"
         bool found = false;
-        for(int i=0; i<src->size && !found; i++){
-            for(int j=0; j<src->list[i]->size-1 && !found; j++){
-                if( i != min_i && j != min_j ){
-                    other = src->list[i]->getLineSegment(j);
-                    if( other.p1->equals(shpoint) ){
-                        unshared2 = other.p2;
-                        found = true;
-                    }else if( other.p2->equals(shpoint) ){
-                        unshared2 = other.p1;
-                        found = true;
-                    }
+        int i,j;
+        for(i=0; i<src->size && !found; i++){
+            for(j=0; j<src->list[i]->size-1 && !found; j++){
+                other = src->list[i]->getLineSegment(j);
+                if( other.p1->equals(shpoint) && !other.p2->equals(unshared1) ){
+                    unshared2 = other.p2;
+                    found = true;
+                }else if( other.p2->equals(shpoint) && !other.p1->equals(unshared1) ){
+                    unshared2 = other.p1;
+                    found = true;
                 }
             }
         }
@@ -187,15 +188,17 @@ bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
         //compute and compare angles
         double angle1 = angle3p(unshared1, shpoint, &qp),
                angle2 = angle3p(unshared2, shpoint, &qp);
+        
+        auxls = angle1 >= angle2 ? other : closest;    
         closest = angle1 < angle2 ? closest : other;
     }
 
     /*Finally we check to which side of "closest" "pt" lies and report depending on whether
      * we're comparing against an external or internal ring.*/
     if( isEdgeFromExtRing ){
-        return (qp.sideOf(&closest) == RIGHT) ? true : false;
+        return (qp.sideOf(&closest) != LEFT) ? true : false;
     }else{
-        return (qp.sideOf(&closest) == LEFT) ? true : false;
+        return (qp.sideOf(&closest) != RIGHT) ? true : false;
     }
 }
 
@@ -337,7 +340,7 @@ bool Node::validateGeometry (GIMS_Geometry *g, GIMS_Point **sharedPoint){
         }
         case LINESTRING:
         case RING:{
-            if( this->validateLineString((GIMS_LineString *)g, sharedPoint) )
+            if( !this->validateLineString((GIMS_LineString *)g, sharedPoint) )
                 return false;
             break;
         }
@@ -633,12 +636,15 @@ void PMQuadTree::renderLeafNode (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
 
 void PMQuadTree::onClick( double x, double y){
     printf("begin click event at %lf %lf\n", x, y);
-
     GIMS_Polygon *pol= (GIMS_Polygon *)(this->query);
     GIMS_Point *pt = new GIMS_Point(x,y);
     renderEdge = true;
+    clock_t start = clock();
     Node *n = ((list<Node *> *)(this->root->search(pt)))->front();
-    n->polygonContainsPoint(pol, pt);
+    if( n->polygonContainsPoint(pol, pt) )
+        renderQueue->push_back(pt);
+    else
+        redRenderQueue->push_back(pt);
+    printf("took %.6lf cpu secs to label the point\n", (double)(clock() - start)/(double)CLOCKS_PER_SEC);
     renderEdge = false;
-
 }

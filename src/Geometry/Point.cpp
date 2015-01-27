@@ -92,6 +92,7 @@ GIMS_Geometry *GIMS_MultiPoint::clipToBox(GIMS_BoundingBox *box){
 }
 
 GIMS_MultiPoint::GIMS_MultiPoint(int size){
+    this->type = MULTIPOINT;
     this->id = 0;
     this->size = 0;
     this->allocatedSize = size;
@@ -99,6 +100,7 @@ GIMS_MultiPoint::GIMS_MultiPoint(int size){
 }
 
 GIMS_MultiPoint::GIMS_MultiPoint(){
+    this->type = MULTIPOINT;
     this->id = 0;
     this->size = this->allocatedSize = 0;
     this->list = NULL;

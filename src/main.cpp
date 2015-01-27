@@ -66,7 +66,7 @@ int main (int argc, char *argv[]) {
             }
             delete feature;
 
-            if(count >= 250)
+            if(count >= 100)
                 break;
 
         }

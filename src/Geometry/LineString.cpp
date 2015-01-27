@@ -141,6 +141,9 @@ GIMS_Geometry *GIMS_LineString::clipToBox (GIMS_BoundingBox *box){
 }
 
 GIMS_LineSegment GIMS_LineString::getLineSegment (int index){
+    if( index+1 >= size )
+        printf("reading uninitialized value at line string!!\n");
+    
     GIMS_LineSegment ls = GIMS_LineSegment( this->list[index], this->list[index+1]);
     ls.id = this->id;
     return ls;
@@ -170,12 +173,14 @@ GIMS_Ring::GIMS_Ring(int size){
     this->size = 0;
     this->allocatedSize = size;
     this->list = (GIMS_Point **)malloc(size * sizeof(GIMS_Point *));
+    this->id = 0;
 }
 
 GIMS_Ring::GIMS_Ring(){
     this->type = RING;
     this->size = this->allocatedSize = 0;
     this->list = NULL;
+    this->id = 0;
 }
 
 
