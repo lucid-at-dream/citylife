@@ -198,7 +198,7 @@ GIMS_LineSegment auxls;
     if( isEdgeFromExtRing ){
         return (qp.sideOf(&closest) != LEFT) ? true : false;
     }else{
-        return (qp.sideOf(&closest) != RIGHT) ? true : false;
+        return (qp.sideOf(&closest) != RIGHT) ? false : true;
     }
 }
 
@@ -620,7 +620,7 @@ void PMQuadTree::renderTree (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
 /*Render a leaf node and contained geometries*/
 void PMQuadTree::renderLeafNode (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
 
-    renderer->renderGeometry(cr, n->square);
+    //renderer->renderGeometry(cr, n->square);
 
     if( n->dictionary == NULL )
         return;

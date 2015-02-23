@@ -9,11 +9,11 @@
 
 namespace Geometry {
 
-    char pgDriverConn[] = "PG:dbname=gis user=magisu hostaddr=127.0.0.1 port=5432";
+    char pgDriverConn[] = "PG:dbname=portugal user=magisu hostaddr=127.0.0.1 port=5432";
     //char pgDriverConn[] = "PG:dbname=OSM user=postgres password=postgres hostaddr=127.0.0.1 port=5432";
     //char pgDriverConn[] = "PG:dbname=OSMDB user=postgres password=postgres hostaddr=213.146.201.225 port=5432";
     //char pgDriverConn[] = "PG:dbname=OSM user=sgpgims password=gims123 hostaddr=146.185.30.61 port=5432";
-    char conn[] = "dbname=gis user=magisu hostaddr=127.0.0.1 port=5432";
+    char conn[] = "dbname=portugal user=magisu hostaddr=127.0.0.1 port=5432";
     //char conn[] = "dbname=OSM user=postgres password=postgres hostaddr=127.0.0.1 port=5432";
     char query[] = "select ST_AsText(way) as geom from planet_osm_line";
     

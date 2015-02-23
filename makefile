@@ -2,7 +2,7 @@
 CC = g++
 LDLIBS = -lm -lpq -lgdal
 #COPT = -O2 -march=native -mtune=native
-COPT =
+COPT = -Og
 CFLAGS = -g -Wall -std=c++11 -pedantic ${LDLIBS} ${COPT}
 CTESTFLAGS = -lgtest
 

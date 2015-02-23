@@ -21,9 +21,10 @@ int main (int argc, char *argv[]) {
     OGRLayer *pol_layer = getGeom.GetLayerByName ("planet_osm_polygon");
     OGRLayer *pt_layer = getGeom.GetLayerByName ("planet_osm_point");
     OGRLayer *ln_layer = getGeom.GetLayerByName ("planet_osm_line");
+    OGRLayer *road_layer = getGeom.GetLayerByName ("planet_osm_roads");
 
     OGREnvelope *envelope = new OGREnvelope;
-    if ( pol_layer->GetExtent ( envelope, FALSE ) != OGRERR_NONE ) {
+    if ( ln_layer->GetExtent ( envelope, FALSE ) != OGRERR_NONE ) {
         perror ("could not retrieve layer envelope");
         exit (-1);
     }
@@ -33,43 +34,46 @@ int main (int argc, char *argv[]) {
 
     PMQuadTree *tree = 
         new PMQuadTree( new GIMS_BoundingBox(
-            new GIMS_Point (envelope->MinX, envelope->MinY),
+            new GIMS_Point (envelope->MinX - len, envelope->MinY - len),
             new GIMS_Point (envelope->MinX + len, envelope->MinY + len)
         ));
-    
+   
+    lenx = leny = len;
+
     OGRFeature *feature;
-    GIMS_Geometry* query;
+    GIMS_Geometry* query = NULL;
     GIMS_Geometry* aux;
     int count = 0;
 
     GIMS_GeometryCollection *glist = new GIMS_GeometryCollection();
-    OGRLayer *layers[3] = {pt_layer, ln_layer, pol_layer};
+    OGRLayer *layers[4] = {pt_layer, ln_layer, pol_layer, road_layer};
     for(OGRLayer *layer : layers){
         count = 0;
         while ( (feature = layer->GetNextFeature() ) != NULL) {
         
-            /*
-            if ( feature->GetFieldAsDouble(feature->GetFieldIndex("way_area")) < 10000 ) {
+            /*if ( feature->GetFieldAsDouble(feature->GetFieldIndex("way_area")) < 5000000 ) {
                 delete feature;
                 continue;
-            }
-            */
-            //printf("%d\n", count);
+            }*/
+            
             aux = retrieveFeature (feature);
             
             if(aux != NULL){
                 aux->id = incId++;
                 glist->append(aux);
                 tree->insert ( aux );
-                if(!count) query = aux;
+                if(!count && aux->type == POLYGON)
+                    if(((GIMS_Polygon *)aux)->internalRings != NULL)
+                        query = aux;
                 count++;
             }
             delete feature;
 
-            if(count >= 100)
+            if(count >= 15)
                 break;
 
         }
+        printf("%d geoms\n", count);
         delete layer;
     }
     printf("inserted %d points.\n", total);
@@ -79,8 +83,10 @@ int main (int argc, char *argv[]) {
     renderer->setTranslation( -envelope->MinX, -envelope->MaxY );
     renderer->renderCallback = tree;
     renderer->renderSvg("outtree.svg", 400, 400);
-    renderer->mainloop(argc, argv);/**/
+    renderer->mainloop(argc, argv);
 
+    int merda;
+    scanf("%d", &merda); 
     
     return 0;
 }
@@ -114,6 +120,10 @@ GIMS_Geometry *retrieveFeature ( OGRFeature *feature ) {
     } else if (geometry->getGeometryType() == wkbPolygon) { //wkbMultiPolygon
  
         OGRLinearRing *extRing = ( (OGRPolygon *) geometry)->getExteriorRing();
+        if(extRing == NULL){
+            perror("Polygon without exterior ring!\n");
+            return NULL;
+        }
         int N = extRing->getNumPoints();
         GIMS_Ring *exteriorRing = new GIMS_Ring(N);
 

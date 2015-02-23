@@ -42,3 +42,6 @@ cplot.py
 err
 outtree.svg
 tmp
+
+tests/cases/*/inputs/*
+tests/cases/*/outputs/*
