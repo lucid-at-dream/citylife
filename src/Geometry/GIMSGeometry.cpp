@@ -2,7 +2,13 @@
 
 using namespace GIMS_GEOMETRY;
 
+GIMS_Geometry *lyWktParse(char *wkt);
+
 GIMS_Geometry::~GIMS_Geometry (){}
+
+GIMS_Geometry *fromWkt(char *wkt){
+    return lyWktParse(wkt);
+}
 
 /*returns the squared distance between two points*/
 double distanceSquared2p(GIMS_Point *p1, GIMS_Point *p2){

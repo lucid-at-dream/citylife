@@ -175,11 +175,3 @@ void yyerror (char *s) {
     printf ("Line %d, col %d: %s: %s\n", lineno, colno-(int)strlen(yytext), s, yytext);
 }
 
-int main(int argc, char **argv ) {
-
-    if( !yyparse() ){
-        cout << geom->toWkt() << endl;
-    }
-
-    return 0;
-}

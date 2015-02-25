@@ -8,6 +8,8 @@
 
   #include "y.tab.h"
 
+  extern GIMS_Geometry *geom;
+
   int lineno = 1, colno = 1, tmp_lineno, tmp_colno;
 %}
 
@@ -33,6 +35,13 @@
 .                           printf("Line %d, col %d: illegal character ('%s')\n", lineno, colno, yytext); colno++;
 
 %%
+
+GIMS_Geometry *lyWktParse(char *wkt){
+    YY_BUFFER_STATE buff = yy_scan_string(wkt);
+    yyparse();
+    yy_delete_buffer(buff);
+    return geom;
+}
 
 int yywrap(void) 
 {

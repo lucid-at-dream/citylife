@@ -1,36 +1,41 @@
 LD = -I.. -std=c++11 -g
 
-all: BoundingBox.o GeometryCollection.o GIMSGeometry.o LineString.o Point.o Polygon.o y.tab.o lex.yy.o
+all: BoundingBox.o GeometryCollection.o GIMSGeometry.o LineString.o Point.o Polygon.o y.tab.o lex.yy.o main.o
 	g++ $^ -o t -ly ${LD} 
 
+main.o: main.c
+	g++ -c main.c ${LD}
+
 y.tab.o: lex.yy.c y.tab.c
-	g++ -c y.tab.c ${LD}
+	g++ -c y.tab.c ${LD} -ly
 
 y.tab.c: wkt.y
 	yacc -d -v wkt.y
 
 lex.yy.o: lex.yy.c y.tab.c
-	g++ -c lex.yy.c ${LD} 
+	g++ -c lex.yy.c ${LD} -ly
 
 lex.yy.c: wkt.l
 	flex wkt.l
 
-BoundingBox.o:
+Geometry.hpp: lex.yy.c y.tab.c
+
+BoundingBox.o: BoundingBox.cpp Geometry.hpp
 	g++ -c BoundingBox.cpp ${LD} 
 
-GeometryCollection.o:
+GeometryCollection.o: GeometryCollection.cpp Geometry.hpp
 	g++ -c GeometryCollection.cpp ${LD}
 
-GIMSGeometry.o:
+GIMSGeometry.o: GIMSGeometry.cpp Geometry.hpp
 	g++ -c GIMSGeometry.cpp ${LD}
 
-LineString.o:
+LineString.o: LineString.cpp Geometry.hpp
 	g++ -c LineString.cpp ${LD}
 
-Point.o:
+Point.o: Point.cpp Geometry.hpp
 	g++ -c Point.cpp ${LD}
 
-Polygon.o:
+Polygon.o: Polygon.cpp Geometry.hpp
 	g++ -c Polygon.cpp ${LD}
 
 clean:

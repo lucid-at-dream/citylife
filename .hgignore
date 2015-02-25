@@ -1,5 +1,7 @@
 syntax: glob
 
+*.o
+
 wkt_inpt/*
 src/Geometry/pol1
 src/Geometry/pol2
