@@ -54,6 +54,7 @@
 %type <mpol> multipolygon_def
 %type <g> atomic
 %type <gc> collection_def
+
 %% 
 
 start: _POINT_           _LPAR_ point_def           _RPAR_ {geom = $3;}
@@ -100,10 +101,10 @@ interior_def: _LPAR_ linestring_def _COMMA_ point_def _RPAR_ {
                   interior->append($2);
                   $$ = interior;
               }
-            | _LPAR_ linestring_def _COMMA_ point_def _RPAR_ _COMMA_ interior_def {
-                  $2->appendPoint($4);
-                  $7->append($2);
-                  $$ = $7;
+            | interior_def _COMMA_ _LPAR_ linestring_def _COMMA_ point_def _RPAR_ {
+                  $4->appendPoint($6);
+                  $1->append($4);
+                  $$ = $1;
               }
             ;
 
@@ -117,13 +118,13 @@ multipoint_def: point_def {
                     mp->append($2);
                     $$ = mp;
                 }
-              | point_def _COMMA_ multipoint_def {
-                    $3->append($1);
-                    $$ = $3;
+              | multipoint_def _COMMA_ point_def {
+                    $1->append($3);
+                    $$ = $1;
                 }
-              | _LPAR_ point_def _RPAR_ _COMMA_ multipoint_def {
-                    $5->append($2);
-                    $$ = $5;
+              | multipoint_def _COMMA_ _LPAR_ point_def _RPAR_ {
+                    $1->append($4);
+                    $$ = $1;
                 }
               ;
 
@@ -132,9 +133,9 @@ multilinestring_def: _LPAR_ linestring_def _RPAR_ {
                          mls->append($2);
                          $$ = mls;
                      }
-                   | _LPAR_ linestring_def _RPAR_ _COMMA_ multilinestring_def {
-                         $5->append($2);
-                         $$ = $5;
+                   | multilinestring_def _COMMA_ _LPAR_ linestring_def _RPAR_ {
+                         $1->append($4);
+                         $$ = $1;
                      }
                    ;
 
@@ -143,9 +144,9 @@ multipolygon_def: _LPAR_ polygon_def _RPAR_ {
                       mp->append($2);
                       $$ = mp;
                   }
-                | _LPAR_ polygon_def _RPAR_ _COMMA_ multipolygon_def {
-                      $5->append($2);
-                      $$ = $5;
+                | multipolygon_def _COMMA_ _LPAR_ polygon_def _RPAR_ {
+                      $1->append($4);
+                      $$ = $1;
                   }
                 ;
 

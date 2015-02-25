@@ -212,10 +212,11 @@ string GIMS_MultiLineString::toWkt(){
             if(j==0)
                 wkt += string("(");
             sprintf(buff, "%lf %lf", this->list[i]->list[j]->x, this->list[i]->list[j]->y);
-            wkt += string(buff) + ( j < this->size - 1 ? string(",") : string(")") );
+            wkt += string(buff) + ( j < this->list[i]->size - 1 ? string(",") : string(")") );
         }
+        wkt += i < this->size - 1 ? "," : ")";
     }
-    
+
     return wkt;
 }
 

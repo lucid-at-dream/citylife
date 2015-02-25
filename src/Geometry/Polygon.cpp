@@ -30,12 +30,13 @@ string GIMS_Polygon::toWkt(){
     if( this->internalRings == NULL){
         wkt += ")";
         return wkt;
-    }
+    }else
+        wkt += ",";
 
     for(int i=0; i<this->internalRings->size; i++){
         for(int j=0; j<this->internalRings->list[i]->size; j++){
             if(j==0)
-                wkt += ",(";
+                wkt += "(";
             sprintf(buff, "%lf %lf", this->internalRings->list[i]->list[j]->x, this->internalRings->list[i]->list[j]->y);
             wkt += string(buff) + ( j < this->internalRings->list[i]->size - 1 ? string(",") : string(")") );
         }
@@ -138,10 +139,11 @@ string GIMS_MultiPolygon::toWkt(){
         if( pol->internalRings == NULL){
             wkt += ")";
         }else{
+            wkt += ",";
             for(int i=0; i<pol->internalRings->size; i++){
                 for(int j=0; j<pol->internalRings->list[i]->size; j++){
                     if(j==0)
-                        wkt += ",(";
+                        wkt += "(";
                     sprintf(buff, "%lf %lf", pol->internalRings->list[i]->list[j]->x, pol->internalRings->list[i]->list[j]->y);
                     wkt += string(buff) + ( j < pol->internalRings->list[i]->size - 1 ? string(",") : string(")") );
                 }
