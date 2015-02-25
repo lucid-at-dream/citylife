@@ -7,7 +7,7 @@
 #define INPUTS_DIR "cases/ptInsidePol/inputs/"
 #define OUTPUTS_DIR "cases/ptInsidePol/inputs/"
 
-using namespace GIMSGEOMETRY;
+using namespace GIMS_GEOMETRY;
 using namespace PMQUADTREE;
 using namespace std;
 
@@ -15,7 +15,8 @@ namespace {
 
     // The fixture for testing class Foo.
     class PtInPolTest : public ::testing::TestWithParam<int> {
-        char[30][] cases_input = {
+      public:
+        char cases_input[30][100] = {
              INPUTS_DIR "1_0",
              INPUTS_DIR "1_1",
              INPUTS_DIR "1_2",
@@ -46,8 +47,8 @@ namespace {
              INPUTS_DIR "5000_7",
              INPUTS_DIR "5000_8",
              INPUTS_DIR "5000_9"
-        }
-        char[30][] cases_output = {
+        };
+        char cases_output[30][100] = {
              OUTPUTS_DIR "1_0",
              OUTPUTS_DIR "1_1",
              OUTPUTS_DIR "1_2",
@@ -78,63 +79,57 @@ namespace {
              OUTPUTS_DIR "5000_7",
              OUTPUTS_DIR "5000_8",
              OUTPUTS_DIR "5000_9"
-        }
+        };
 
-        protected:
-            PtInPolTest() {
-            }
-            virtual ~PMQuadTreeTest() {
-            }
-            virtual void SetUp() {
-            }
-            virtual void TearDown() {
-            }
     };
 
     // Tests particular cases of input to function goNorth
-    TEST_F(PMQuadTreeTest, goNorth) {
+    TEST_P(PtInPolTest, polygonContainsPoint) {
+
+        int curr_test = GetParam();
 
         char inputText[5000000];
-        FILE *in = fopen(cases_input[curr_test], 'r');
+        FILE *in = fopen(cases_input[curr_test], "r");
         fread(inputText, sizeof(char), 5000000, in);
 
         /*read number of points*/
-        int N = atoi(strtok(inputText, '\n'));
+        int N = atoi(strtok(inputText, "\n"));
+        GIMS_Point **points = (GIMS_Point **)malloc(sizeof(GIMS_Point *) * N);
 
         /*read polygon as well known text (wkt)*/
-        char *wkt = strtok(NULL, '\n');
-        GIMS_Polygon *p = (GIMS_Polygon *)fromWkt(wkt); //TODO implement fromWkt method
-        GIMS_BoundingBox *box = p->getExtent(); //TODO implement getExtent method
+        char *wkt = strtok(NULL, "\n");
+        GIMS_Polygon *p = (GIMS_Polygon *)fromWkt(wkt);
+        GIMS_BoundingBox *box = p->getExtent();
 
         /*read the points*/
         for(int i=0; i<N; i++){
-            wkt = strtok(NULL, '\n');
-            points[i] = (GIMS_Point *)fromWkt(wkt); //TODO implement fromWkt method
+            wkt = strtok(NULL, "\n");
+            points[i] = (GIMS_Point *)fromWkt(wkt);
         }
 
         /*run the test*/
         PMQuadTree *tree = new PMQuadTree(box);
         tree->insert(p);
-        char[N] results;
+        char *results = (char *)malloc(N * sizeof(char));
         for(int i=0; i<N; i++){
-            results = tree->polygonContainsPoint(p, points[i]) ? '1' : '0';
+            results[i] = tree->root->polygonContainsPoint(p, points[i]) ? '1' : '0';
         }
 
         /*read expected output file*/
-        FILE *out = fopen(cases_output[curr_test], 'r');
+        FILE *out = fopen(cases_output[curr_test], "r");
         fread(inputText, sizeof(char), 5000000, out);
 
         /*compare the results*/
-        char *wkt = strtok(inputText, '\n');
-        EXPECT_EQ(wkt[0], resuts[0]);
+        wkt = strtok(inputText, "\n");
+        EXPECT_EQ(wkt[0], results[0]);
         for(int i=0; i<N; i++){
-            wkt = strtok(NULL, '\n');
+            wkt = strtok(NULL, "\n");
             EXPECT_EQ(wkt[0], results[i]);
         }
 
-        /*increment test file count*/
-        curr_test++;
+        free(points);
+        free(results);
     }
 }  // namespace
 
-INSTANTIATE_TEST_CASE_P(DefaultTestInstantiation, PtInPolTest, ::testing::RANGE(0,30));
+INSTANTIATE_TEST_CASE_P(DefaultTestInstantiation, PtInPolTest, ::testing::Range(0,30));
