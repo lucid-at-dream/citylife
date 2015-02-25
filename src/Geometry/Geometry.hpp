@@ -4,6 +4,9 @@
 #include "SystemBase.hpp"
 #include <cmath>
 #include <cstring>
+#include <string>
+
+using namespace std;
 
 namespace GIMS_GEOMETRY {
 
@@ -52,13 +55,15 @@ namespace GIMS_GEOMETRY {
         virtual GIMS_Geometry *clipToBox     ( GIMS_BoundingBox * ) = 0;
         virtual GIMS_Geometry *clone         () = 0;
         virtual               ~GIMS_Geometry ();
+        virtual string         toWkt         () = 0;
     };
 
     class GIMS_BoundingBox : public GIMS_Geometry {
       public:
         GIMS_Point *lowerLeft ,
                    *upperRight;
-  
+
+        string            toWkt            ();
         GIMS_BoundingBox *clone            ();
         GIMS_Point        getCenter        ();
         double            xlength          ();
@@ -78,6 +83,7 @@ namespace GIMS_GEOMETRY {
         int allocatedSize;
         GIMS_Geometry **list;
 
+        string                   toWkt                   ();
         void                     append                  (GIMS_Geometry *);
         GIMS_GeometryCollection *clone                   ();
         GIMS_Geometry           *clipToBox               (GIMS_BoundingBox *);
@@ -91,6 +97,7 @@ namespace GIMS_GEOMETRY {
         GIMS_Point *p1,
                    *p2;
 
+        string            toWkt            ();
         GIMS_LineSegment *clone            ();
         GIMS_Geometry    *clipToBox        (GIMS_BoundingBox *);
         GIMS_LineSegment *trimToBBox       (GIMS_BoundingBox *);
@@ -105,6 +112,7 @@ namespace GIMS_GEOMETRY {
         int          size;
         int          allocatedSize;
 
+        string            toWkt           ();
         GIMS_LineString  *clone           ();
         GIMS_Geometry    *clipToBox       (GIMS_BoundingBox *);
         GIMS_LineSegment  getLineSegment  (int index);
@@ -116,8 +124,8 @@ namespace GIMS_GEOMETRY {
 
     class GIMS_Ring : public GIMS_LineString{
       public:
-         GIMS_Ring(int size);
-         GIMS_Ring();
+        GIMS_Ring(int size);
+        GIMS_Ring();
     };
 
     class GIMS_MultiLineString : public GIMS_Geometry {
@@ -126,6 +134,7 @@ namespace GIMS_GEOMETRY {
         int               size;
         int               allocatedSize;
 
+        string                toWkt            ();
         GIMS_MultiLineString *clone                ();
         GIMS_Geometry        *clipToBox            (GIMS_BoundingBox *);
         void                  merge                (GIMS_MultiLineString *mls);
@@ -139,6 +148,7 @@ namespace GIMS_GEOMETRY {
       public:
         double x, y;
 
+        string         toWkt      ();
         bool           equals     (GIMS_Point *cmp);
         GIMS_Point    *clone      ();
         GIMS_Geometry *clipToBox  (GIMS_BoundingBox *);
@@ -155,9 +165,10 @@ namespace GIMS_GEOMETRY {
           int allocatedSize;
           GIMS_Point **list;
 
-          void             append(GIMS_Point *);
-          GIMS_MultiPoint *clone();
-          GIMS_Geometry   *clipToBox(GIMS_BoundingBox *);
+          string           toWkt          ();
+          void             append         (GIMS_Point *);
+          GIMS_MultiPoint *clone          ();
+          GIMS_Geometry   *clipToBox      (GIMS_BoundingBox *);
                            GIMS_MultiPoint();
                            GIMS_MultiPoint(int size);
                           ~GIMS_MultiPoint();
@@ -169,14 +180,16 @@ namespace GIMS_GEOMETRY {
         GIMS_MultiLineString *externalRing,
                              *internalRings;
 
-        GIMS_Polygon  *clone              ();
-        GIMS_Geometry *clipToBox          (GIMS_BoundingBox *);
-        void           appendExternalRing (GIMS_LineString *er);
-        void           appendInternalRing (GIMS_LineString *);
-                       GIMS_Polygon       (GIMS_MultiLineString *, GIMS_MultiLineString *);
-                       GIMS_Polygon       (int, int);
-                       GIMS_Polygon       ();
-                      ~GIMS_Polygon       ();
+        string            toWkt             ();
+        GIMS_Polygon     *clone             ();
+        GIMS_BoundingBox *getExtent         ();
+        GIMS_Geometry    *clipToBox         (GIMS_BoundingBox *);
+        void              appendExternalRing(GIMS_LineString *er);
+        void              appendInternalRing(GIMS_LineString *);
+                          GIMS_Polygon      (GIMS_MultiLineString *, GIMS_MultiLineString *);
+                          GIMS_Polygon      (int, int);
+                          GIMS_Polygon      ();
+                         ~GIMS_Polygon      ();
     };
 
     class GIMS_MultiPolygon : public GIMS_Geometry {
@@ -185,9 +198,10 @@ namespace GIMS_GEOMETRY {
           int allocatedSize;
           GIMS_Polygon **list;
 
-          void               append(GIMS_Polygon *);
-          GIMS_MultiPolygon *clone();
-          GIMS_Geometry     *clipToBox(GIMS_BoundingBox *);
+          string             toWkt            ();
+          void               append           (GIMS_Polygon *);
+          GIMS_MultiPolygon *clone            ();
+          GIMS_Geometry     *clipToBox        (GIMS_BoundingBox *);
                              GIMS_MultiPolygon();
                              GIMS_MultiPolygon(int size);
                             ~GIMS_MultiPolygon();

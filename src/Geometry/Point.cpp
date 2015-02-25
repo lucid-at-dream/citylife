@@ -7,6 +7,12 @@ GIMS_Point *GIMS_Point::clone() {
     return fresh;
 }
 
+string GIMS_Point::toWkt(){
+    char buff[100];
+    sprintf(buff, "POINT(%lf %lf)", this->x, this->y);
+    return buff;
+}
+
 /*Returns true if the point lies inside the parameter bounding box*/
 bool GIMS_Point::isInsideBox ( GIMS_BoundingBox *box ) {
     if ( this->x <= box->upperRight->x + ERR_MARGIN &&  //xmax
@@ -67,6 +73,16 @@ void GIMS_MultiPoint::append(GIMS_Point *pt){
         this->allocatedSize = this->size;
     }
     this->list[this->size-1] = pt;
+}
+
+string GIMS_MultiPoint::toWkt(){
+    string wkt = string("MULTIPOINT(");
+    char buff[100];
+    for(int i=0; i<this->size; i++){
+        sprintf(buff, "%lf %lf", this->list[i]->x, this->list[i]->y);
+        wkt += string(buff) + ( i < this->size - 1 ? "," : ")" );
+    }
+    return wkt;
 }
 
 GIMS_MultiPoint *GIMS_MultiPoint::clone(){

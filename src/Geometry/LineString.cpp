@@ -1,5 +1,11 @@
 #include "Geometry.hpp"
 
+string GIMS_LineSegment::toWkt(){
+    char buff[100];
+    sprintf(buff, "LINESTRING(%lf %lf, %lf %lf)", this->p1->x, this->p1->y, this->p2->x, this->p2->y);
+    return buff;
+}
+
 GIMS_LineSegment *GIMS_LineSegment::clone () {
     GIMS_LineSegment *fresh = new GIMS_LineSegment( this->p1->clone(), this->p2->clone() );
     fresh->id = this->id;
@@ -98,6 +104,16 @@ GIMS_LineString::~GIMS_LineString (){
         free(this->list);
 }
 
+string GIMS_LineString::toWkt(){
+    string wkt = string("LINESTRING(");
+    char buff[100];
+    for(int i=0; i<this->size; i++){
+        sprintf(buff, "%lf %lf", this->list[i]->x, this->list[i]->y);
+        wkt += string(buff) + ( i < this->size - 1 ? string(",") : string(")") );
+    }
+    return wkt;
+}
+
 GIMS_LineString *GIMS_LineString::clone (){
     GIMS_LineString *newList = new GIMS_LineString(this->allocatedSize);
     newList->size = this->size;
@@ -185,9 +201,23 @@ GIMS_Ring::GIMS_Ring(){
 
 
 
-
-
 /*The MultiLineString class.*/
+
+string GIMS_MultiLineString::toWkt(){
+    string wkt = string("MULTILINESTRING(");
+    char buff[100];
+    
+    for(int i=0; i<this->size; i++){
+        for(int j=0; j<this->list[i]->size; j++){
+            if(j==0)
+                wkt += string("(");
+            sprintf(buff, "%lf %lf", this->list[i]->list[j]->x, this->list[i]->list[j]->y);
+            wkt += string(buff) + ( j < this->size - 1 ? string(",") : string(")") );
+        }
+    }
+    
+    return wkt;
+}
 
 GIMS_MultiLineString *GIMS_MultiLineString::clone(){
     GIMS_MultiLineString *fresh = new GIMS_MultiLineString(this->size);

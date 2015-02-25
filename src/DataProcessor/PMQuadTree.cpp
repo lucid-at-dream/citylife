@@ -403,7 +403,7 @@ bool Node::validatePoint( GIMS_Point *pt, GIMS_Point **sharedPoint ){
 }
 
 bool Node::validateLineString( GIMS_LineString *ls, GIMS_Point **sharedPoint ){
-    for(int i; i<ls->size; i++){
+    for(int i=0; i<ls->size; i++){
         if(ls->list[i]->isInsideBox(this->square))
             if(!this->validatePoint(ls->list[i], sharedPoint))
                 return false;

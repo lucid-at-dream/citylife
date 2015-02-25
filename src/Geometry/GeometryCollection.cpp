@@ -10,6 +10,14 @@ void GIMS_GeometryCollection::append(GIMS_Geometry *g){
     this->list[size-1] = g;
 }
 
+string GIMS_GeometryCollection::toWkt(){
+    string wkt = string("GEOMETRYCOLLECTION(");
+    for(int i=0; i<this->size; i++){
+        wkt += this->list[i]->toWkt() + (i < this->size - 1 ? "," : ")");
+    }
+    return wkt;
+}
+
 /*create a copy of this object*/
 GIMS_GeometryCollection *GIMS_GeometryCollection::clone () {
     GIMS_GeometryCollection *fresh = new GIMS_GeometryCollection(this->size);

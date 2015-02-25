@@ -1,5 +1,10 @@
 syntax: glob
 
+wkt_inpt/*
+src/Geometry/pol1
+src/Geometry/pol2
+src/Geometry/t
+
 bin/*
 obj/*
 obj/*/*

@@ -6,6 +6,10 @@ GIMS_BoundingBox *GIMS_BoundingBox::clone (){
     return fresh;
 }
 
+string GIMS_BoundingBox::toWkt(){
+    return "";
+}
+
 GIMS_Point GIMS_BoundingBox::getCenter(){
     return GIMS_Point( (this->upperRight->x + this->lowerLeft->x)/2.0,
                        (this->upperRight->y + this->lowerLeft->y)/2.0 );            

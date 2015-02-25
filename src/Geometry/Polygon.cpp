@@ -1,6 +1,54 @@
 #include "Geometry.hpp"
 
-GIMS_Polygon *GIMS_Polygon::clone(){    
+GIMS_BoundingBox *GIMS_Polygon::getExtent(){
+    double maxx=0, maxy=0, minx=1e100, miny=1e100;
+    
+    for(int i=0; i<this->externalRing->list[0]->size; i++){
+        if(this->externalRing->list[0]->list[i]->x > maxx)
+            maxx = this->externalRing->list[0]->list[i]->x;
+        if(this->externalRing->list[0]->list[i]->y > maxy)
+            maxy = this->externalRing->list[0]->list[i]->y;
+        if(this->externalRing->list[0]->list[i]->x > minx)
+            minx = this->externalRing->list[0]->list[i]->x;
+        if(this->externalRing->list[0]->list[i]->y > miny)
+            miny = this->externalRing->list[0]->list[i]->y;
+    }
+
+    return new GIMS_BoundingBox(new GIMS_Point(minx, miny), new GIMS_Point(maxx, maxy));
+}
+
+string GIMS_Polygon::toWkt(){
+    string wkt = string("POLYGON(");
+    char buff[100];
+    for(int i=0; i<this->externalRing->list[0]->size; i++){
+        if(i==0)
+            wkt += "(";
+        sprintf(buff, "%lf %lf", this->externalRing->list[0]->list[i]->x, this->externalRing->list[0]->list[i]->y);
+        wkt += string(buff) + ( i < this->externalRing->list[0]->size - 1 ? string(",") : string(")") );
+    }
+
+    if( this->internalRings == NULL){
+        wkt += ")";
+        return wkt;
+    }
+
+    for(int i=0; i<this->internalRings->size; i++){
+        for(int j=0; j<this->internalRings->list[i]->size; j++){
+            if(j==0)
+                wkt += ",(";
+            sprintf(buff, "%lf %lf", this->internalRings->list[i]->list[j]->x, this->internalRings->list[i]->list[j]->y);
+            wkt += string(buff) + ( j < this->internalRings->list[i]->size - 1 ? string(",") : string(")") );
+        }
+        if( i < this->internalRings->size - 1 )
+            wkt += ",";
+        else
+            wkt += ")";
+    }
+
+    return wkt;
+}
+
+GIMS_Polygon *GIMS_Polygon::clone(){
     GIMS_Polygon *fresh = new GIMS_Polygon(this->externalRing->clone(),this->internalRings->clone());
     fresh->id = this->id;
     return fresh;
@@ -72,6 +120,40 @@ void GIMS_MultiPolygon::append(GIMS_Polygon *p){
         this->allocatedSize = size;
     }
     this->list[size-1] = p;
+}
+
+string GIMS_MultiPolygon::toWkt(){
+    string wkt = string("MULTIPOLYGON(");
+    char buff[100];
+    for(int k=0; k<this->size; k++){
+        wkt += "(";
+        GIMS_Polygon *pol = this->list[k];
+        for(int i=0; i<pol->externalRing->list[0]->size; i++){
+            if(i==0)
+                wkt += "(";
+            sprintf(buff, "%lf %lf", pol->externalRing->list[0]->list[i]->x, pol->externalRing->list[0]->list[i]->y);
+            wkt += string(buff) + ( i < pol->externalRing->list[0]->size - 1 ? string(",") : string(")") );
+        }
+
+        if( pol->internalRings == NULL){
+            wkt += ")";
+        }else{
+            for(int i=0; i<pol->internalRings->size; i++){
+                for(int j=0; j<pol->internalRings->list[i]->size; j++){
+                    if(j==0)
+                        wkt += ",(";
+                    sprintf(buff, "%lf %lf", pol->internalRings->list[i]->list[j]->x, pol->internalRings->list[i]->list[j]->y);
+                    wkt += string(buff) + ( j < pol->internalRings->list[i]->size - 1 ? string(",") : string(")") );
+                }
+                wkt += i < pol->internalRings->size - 1 ? "," : ")";
+            }
+        }
+
+        wkt += k < this->size - 1 ? "," : ")";
+
+    }
+
+    return wkt;
 }
 
 GIMS_MultiPolygon *GIMS_MultiPolygon::clone(){
