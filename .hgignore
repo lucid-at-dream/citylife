@@ -3,8 +3,7 @@ syntax: glob
 *.o
 
 wkt_inpt/*
-src/Geometry/pol1
-src/Geometry/pol2
+src/Geometry/inputs/*
 src/Geometry/t
 
 bin/*
