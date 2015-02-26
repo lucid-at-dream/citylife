@@ -69,7 +69,7 @@ x = [points[i][0] for i in range(len(points)) if not containments[i]]
 y = [points[i][1] for i in range(len(points)) if not containments[i]]
 plt.plot(x,y,'r.')
 
-#plt.show()
+plt.show()
 
 print("\n".join(["1" if i else "0" for i in containments]))
 

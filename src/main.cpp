@@ -28,13 +28,13 @@ int main (int argc, char *argv[]) {
         perror ("could not retrieve layer envelope");
         exit (-1);
     }
-    double lenx = envelope->MaxX - envelope->MinX,
-           leny = envelope->MaxY - envelope->MinY,
+    double lenx = fabs(envelope->MaxX - envelope->MinX),
+           leny = fabs(envelope->MaxY - envelope->MinY),
            len  = lenx > leny ? lenx : leny;
 
     PMQuadTree *tree = 
         new PMQuadTree( new GIMS_BoundingBox(
-            new GIMS_Point (envelope->MinX - len, envelope->MinY - len),
+            new GIMS_Point (envelope->MinX, envelope->MinY),
             new GIMS_Point (envelope->MinX + len, envelope->MinY + len)
         ));
    

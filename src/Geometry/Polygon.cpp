@@ -1,7 +1,7 @@
 #include "Geometry.hpp"
 
 GIMS_BoundingBox *GIMS_Polygon::getExtent(){
-    double maxx=0, maxy=0, minx=1e100, miny=1e100;
+    double maxx=-1e100, maxy=-1e100, minx=1e100, miny=1e100;
     
     for(int i=0; i<this->externalRing->list[0]->size; i++){
         if(this->externalRing->list[0]->list[i]->x > maxx)

@@ -28,7 +28,7 @@ double GIMS_BoundingBox::minx(){
 }
 
 double GIMS_BoundingBox::maxx(){
-    return this->upperRight->y;
+    return this->upperRight->x;
 }
 
 double GIMS_BoundingBox::miny(){

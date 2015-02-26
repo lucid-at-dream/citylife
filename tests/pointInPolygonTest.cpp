@@ -3,6 +3,7 @@
 #include "gtest/gtest.h"
 #include <cstdio>
 #include <cstring>
+#include <iostream>
 
 #define INPUTS_DIR "tests/cases/ptInsidePol/inputs/"
 #define OUTPUTS_DIR "tests/cases/ptInsidePol/outputs/"
@@ -99,6 +100,7 @@ namespace {
         /*read polygon as well known text (wkt)*/
         char *wkt = strtok(NULL, "\n");
         GIMS_Polygon *p = (GIMS_Polygon *)fromWkt(wkt);
+        p->id = 1;
         GIMS_BoundingBox *box = p->getExtent();
 
         /*read the points*/
@@ -114,6 +116,29 @@ namespace {
         for(int i=0; i<N; i++){
             results[i] = tree->contains(p, points[i]) ? '1' : '0';
         }
+
+        /*if( curr_test == 3 ){
+            cout << p->toWkt() << endl;
+            cout << points[0]->toWkt() << endl;
+
+            double lenx = box->xlength(),
+                   leny = box->ylength(),
+                   minx = box->minx(),
+                   maxx = box->maxx(),
+                   miny = box->miny(),
+                   maxy = box->maxy();
+
+            printf("x:%lf - %lf,\ny:%lf - %lf\n",minx,maxx,miny,maxy);
+
+            tree->query = p;
+            renderer = new DebRenderer();
+            renderer->setScale(400.0/lenx, -400.0/leny);
+            renderer->setTranslation( -minx, -maxy );
+            renderer->renderCallback = tree;
+            int argc = 1;
+            char *argv[] = {"gims"};
+            renderer->mainloop(argc, argv);
+        }*/
 
         /*read expected output file*/
         FILE *out = fopen(cases_output[curr_test], "r");
