@@ -8,9 +8,9 @@ GIMS_BoundingBox *GIMS_Polygon::getExtent(){
             maxx = this->externalRing->list[0]->list[i]->x;
         if(this->externalRing->list[0]->list[i]->y > maxy)
             maxy = this->externalRing->list[0]->list[i]->y;
-        if(this->externalRing->list[0]->list[i]->x > minx)
+        if(this->externalRing->list[0]->list[i]->x < minx)
             minx = this->externalRing->list[0]->list[i]->x;
-        if(this->externalRing->list[0]->list[i]->y > miny)
+        if(this->externalRing->list[0]->list[i]->y < miny)
             miny = this->externalRing->list[0]->list[i]->y;
     }
 

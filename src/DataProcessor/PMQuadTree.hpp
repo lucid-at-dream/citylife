@@ -60,6 +60,10 @@ namespace PMQUADTREE {
         virtual void  remove (GIMS_Geometry *);
         virtual void *search (GIMS_Geometry *);
 
+        /*check if container contains contained. Supports only geometry primitives,
+         *and not multipart geometries.*/
+        bool contains(GIMS_Geometry* container, GIMS_Geometry* contained);
+
         /*Follow the operations between the data structure and a given geometry*/
         virtual RelStatus intersects_g  ( GIMS_Geometry *result, GIMS_Geometry *);
         virtual RelStatus meets_g       ( GIMS_Geometry *result, GIMS_Geometry *);

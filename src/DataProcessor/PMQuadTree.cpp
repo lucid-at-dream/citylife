@@ -526,6 +526,14 @@ void *PMQuadTree::search (GIMS_Geometry *geom){
 
 
 /*Follow the operations between the data structure and a given geometry*/
+bool PMQuadTree::contains(GIMS_Geometry* container, GIMS_Geometry* contained){
+    if(container->type == POLYGON && contained->type == POINT){
+        Node *n = ((list<Node *> *)(this->search(contained)))->front();
+        return n->polygonContainsPoint((GIMS_Polygon *)container, (GIMS_Point *)contained);
+    }
+    return false;
+}
+
 RelStatus PMQuadTree::intersects_g  ( GIMS_Geometry *result, GIMS_Geometry *geom){
     return UNDECIDED_RELATIONSHIP;
 }

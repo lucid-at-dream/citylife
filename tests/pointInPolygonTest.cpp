@@ -112,7 +112,7 @@ namespace {
         tree->insert(p);
         char *results = (char *)malloc(N * sizeof(char));
         for(int i=0; i<N; i++){
-            results[i] = tree->root->polygonContainsPoint(p, points[i]) ? '1' : '0';
+            results[i] = tree->contains(p, points[i]) ? '1' : '0';
         }
 
         /*read expected output file*/
