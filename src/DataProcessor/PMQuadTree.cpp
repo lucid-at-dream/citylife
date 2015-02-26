@@ -162,33 +162,41 @@ bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
 
     bool p1inside = closest.p1->isInsideBox(n->square),
          p2inside = closest.p2->isInsideBox(n->square);
-GIMS_LineSegment auxls;
-    if( p1inside || p2inside ){
-        GIMS_Point *shpoint = p1inside ? closest.p1 : closest.p2;
-        GIMS_Point *unshared1 = p1inside ? closest.p2 : closest.p1;
-        GIMS_Point *unshared2;
-        GIMS_LineSegment other;
+    GIMS_LineSegment auxls;
 
-        //find the edge that shares the endpoint with current "closest"
-        bool found = false;
-        int i,j;
-        for(i=0; i<src->size && !found; i++){
-            for(j=0; j<src->list[i]->size-1 && !found; j++){
-                other = src->list[i]->getLineSegment(j);
-                if( other.p1->equals(shpoint) && !other.p2->equals(unshared1) ){
-                    unshared2 = other.p2;
-                    found = true;
-                }else if( other.p2->equals(shpoint) && !other.p1->equals(unshared1) ){
-                    unshared2 = other.p1;
-                    found = true;
-                }
+    GIMS_Point *shpoint = p1inside ? closest.p1 : closest.p2;
+    GIMS_Point *unshared1 = p1inside ? closest.p2 : closest.p1;
+    GIMS_Point *unshared2 = NULL;
+    GIMS_LineSegment other;
+
+    //find the edge that shares the endpoint with current "closest"
+    bool found = false;
+    int i,j;
+    for(i=0; i<src->size && !found; i++){
+        for(j=0; j<src->list[i]->size-1 && !found; j++){
+            other = src->list[i]->getLineSegment(j);
+            if( other.p1->equals(shpoint) && !other.p2->equals(unshared1) ){
+                unshared2 = other.p2;
+                found = true;
+            }else if( other.p2->equals(shpoint) && !other.p1->equals(unshared1) ){
+                unshared2 = other.p1;
+                found = true;
             }
         }
+    }
 
+    if( unshared2 != NULL ){
         //compute and compare angles
         double angle1 = angle3p(unshared1, shpoint, &qp),
                angle2 = angle3p(unshared2, shpoint, &qp);
         
+        if( renderEdge ){
+            redRenderQueue->push_back(new GIMS_LineSegment(unshared1, shpoint));
+            renderQueue->push_back(new GIMS_LineSegment(unshared2, shpoint));
+            printf("red angle: %lf\n", angle1);
+            printf("green angle: %lf\n", angle2);
+        }
+
         auxls = angle1 >= angle2 ? other : closest;    
         closest = angle1 < angle2 ? closest : other;
     }
@@ -529,7 +537,9 @@ void *PMQuadTree::search (GIMS_Geometry *geom){
 bool PMQuadTree::contains(GIMS_Geometry* container, GIMS_Geometry* contained){
     if(container->type == POLYGON && contained->type == POINT){
         Node *n = ((list<Node *> *)(this->search(contained)))->front();
-        return n->polygonContainsPoint((GIMS_Polygon *)container, (GIMS_Point *)contained);
+        bool res = n->polygonContainsPoint((GIMS_Polygon *)container, (GIMS_Point *)contained);
+
+        return res;
     }
     return false;
 }
@@ -568,6 +578,13 @@ RelStatus PMQuadTree::isBoundedBy ( GIMS_Geometry *result, GIMS_BoundingBox *box
 
 
 /* Functions for debug renderization module */
+void PMQuadTree::renderRed(GIMS_Geometry *g){
+    redRenderQueue->push_back(g);
+    renderEdge = true;
+    this->contains(query, g);
+    renderEdge = false;
+}
+
 void PMQuadTree::debugRender(Cairo::RefPtr<Cairo::Context> cr){
 
     renderer->setScale( 400.0/this->root->square->xlength(),

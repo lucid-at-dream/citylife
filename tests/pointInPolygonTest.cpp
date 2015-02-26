@@ -117,29 +117,6 @@ namespace {
             results[i] = tree->contains(p, points[i]) ? '1' : '0';
         }
 
-        /*if( curr_test == 3 ){
-            cout << p->toWkt() << endl;
-            cout << points[0]->toWkt() << endl;
-
-            double lenx = box->xlength(),
-                   leny = box->ylength(),
-                   minx = box->minx(),
-                   maxx = box->maxx(),
-                   miny = box->miny(),
-                   maxy = box->maxy();
-
-            printf("x:%lf - %lf,\ny:%lf - %lf\n",minx,maxx,miny,maxy);
-
-            tree->query = p;
-            renderer = new DebRenderer();
-            renderer->setScale(400.0/lenx, -400.0/leny);
-            renderer->setTranslation( -minx, -maxy );
-            renderer->renderCallback = tree;
-            int argc = 1;
-            char *argv[] = {"gims"};
-            renderer->mainloop(argc, argv);
-        }*/
-
         /*read expected output file*/
         FILE *out = fopen(cases_output[curr_test], "r");
         int size = fread(inputText, sizeof(char), 5000000, out);
@@ -151,8 +128,9 @@ namespace {
         for(int i=1; i<N; i++){
             wkt = strtok(NULL, "\n");
             EXPECT_EQ(wkt[0], results[i]);
+            delete points[i];
         }
-        
+
         free(inputText);
         free(points);
         free(results);
