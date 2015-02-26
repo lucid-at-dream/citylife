@@ -10,7 +10,7 @@ y.tab.o: lex.yy.c y.tab.c
 	g++ -c y.tab.c ${LD} -ly
 
 y.tab.c: wkt.y
-	yacc -d -v wkt.y
+	yacc -d wkt.y
 
 lex.yy.o: lex.yy.c y.tab.c
 	g++ -c lex.yy.c ${LD} -ly

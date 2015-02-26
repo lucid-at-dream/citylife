@@ -25,11 +25,17 @@ OTESTFILE = test_gims
 #src file list
 HDRFILES = $(shell find ${SRC_DIR} | grep "\\.hpp$$\\|\\.h$$")
 SRCFILES = $(shell find ${SRC_DIR} | grep "\\.cpp$$")
-OBJFILES = $(addprefix ${OBJ_DIR}/./, $(addsuffix .o, $(shell find ${SRC_DIR} | grep "\\.cpp$$" | cut -d '.' -f1 | cut -d / -f2-)))
+#add lex and yacc src files
+OBJFILES = ${OBJ_DIR}/Geometry/lex.yy.o ${OBJ_DIR}/Geometry/y.tab.o
+OBJFILES += $(addprefix ${OBJ_DIR}/./, $(addsuffix .o, $(shell find ${SRC_DIR} | grep "\\.cpp$$" | cut -d '.' -f1 | cut -d / -f2-)))
 
-OBJFILESEXCEPTMAIN = $(addprefix ${OBJ_DIR}/./, $(addsuffix .o, $(shell find ${SRC_DIR} | grep "\\.cpp$$" | grep -v "${SRC_DIR}/main\\.cpp$$" | cut -d '.' -f1 | cut -d / -f2-)))
+#obj files for testing
+#add lex and yacc src files
+OBJFILESEXCEPTMAIN = ${OBJ_DIR}/Geometry/lex.yy.o ${OBJ_DIR}/Geometry/y.tab.o
+OBJFILESEXCEPTMAIN += $(addprefix ${OBJ_DIR}/./, $(addsuffix .o, $(shell find ${SRC_DIR} | grep "\\.cpp$$" | grep -v "${SRC_DIR}/main\\.cpp$$" | cut -d '.' -f1 | cut -d / -f2-)))
 OBJTESTFILESTMP = $(addprefix ${TEST_DIR}/${OBJ_DIR}/, $(addsuffix .o, $(shell find ${TEST_DIR} | grep "\\.cpp$$" | cut -d '.' -f1 | cut -d / -f2-)))
 OBJTESTFILES = ${OBJTESTFILESTMP} ${OBJFILESEXCEPTMAIN}
+
 
 INC_DIR += $(addprefix -I, $(shell dirname $$(find ${SRC_DIR} | grep "\\.hpp$$\\|\\.h$$") | sort | uniq) )
 
@@ -57,6 +63,19 @@ ${BIN_DIR}/${OTESTFILE}: ${OBJTESTFILES} | ${BIN_DIR}
 
 ${TEST_DIR}/${OBJ_DIR}/%.o: ${TEST_DIR}/%.cpp | $$(@D)/
 	${CC} ${CFLAGS} -c $< -o $@ ${INC_DIR} ${CTESTFLAGS}
+
+#rules for the yacc and lex generated files
+${OBJ_DIR}/Geometry/lex.yy.o: ${SRC_DIR}/Geometry/lex.yy.c ${SRC_DIR}/Geometry/y.tab.c | $$(@D)/
+	${CC} ${CFLAGS} -c ${SRC_DIR}/Geometry/lex.yy.c -o $@ ${INC_DIR}
+
+${SRC_DIR}/Geometry/lex.yy.c: ${SRC_DIR}/Geometry/wkt.l
+	flex -o $@ $<
+
+${OBJ_DIR}/Geometry/y.tab.o: ${SRC_DIR}/Geometry/y.tab.c | $$(@D)/
+	${CC} ${CFLAGS} -c $< -o $@ ${INC_DIR}
+
+${SRC_DIR}/Geometry/y.tab.c: ${SRC_DIR}/Geometry/wkt.y
+	yacc -d $< -o $@
 
 
 #create directories

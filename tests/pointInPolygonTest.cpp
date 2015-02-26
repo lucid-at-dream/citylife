@@ -4,8 +4,8 @@
 #include <cstdio>
 #include <cstring>
 
-#define INPUTS_DIR "cases/ptInsidePol/inputs/"
-#define OUTPUTS_DIR "cases/ptInsidePol/inputs/"
+#define INPUTS_DIR "tests/cases/ptInsidePol/inputs/"
+#define OUTPUTS_DIR "tests/cases/ptInsidePol/outputs/"
 
 using namespace GIMS_GEOMETRY;
 using namespace PMQUADTREE;
@@ -88,7 +88,7 @@ namespace {
 
         int curr_test = GetParam();
 
-        char inputText[5000000];
+        char *inputText = (char *)malloc(sizeof(char) * 1000000);
         FILE *in = fopen(cases_input[curr_test], "r");
         fread(inputText, sizeof(char), 5000000, in);
 
@@ -117,16 +117,18 @@ namespace {
 
         /*read expected output file*/
         FILE *out = fopen(cases_output[curr_test], "r");
-        fread(inputText, sizeof(char), 5000000, out);
+        int size = fread(inputText, sizeof(char), 5000000, out);
+        inputText[size] = '\0';
 
         /*compare the results*/
         wkt = strtok(inputText, "\n");
         EXPECT_EQ(wkt[0], results[0]);
-        for(int i=0; i<N; i++){
+        for(int i=1; i<N; i++){
             wkt = strtok(NULL, "\n");
             EXPECT_EQ(wkt[0], results[i]);
         }
-
+        
+        free(inputText);
         free(points);
         free(results);
     }

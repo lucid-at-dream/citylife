@@ -1,5 +1,6 @@
+#line 2 "src/Geometry/lex.yy.c"
 
-#line 3 "lex.yy.c"
+#line 4 "src/Geometry/lex.yy.c"
 
 #define  YY_INT_ALIGNED short int
 
@@ -493,8 +494,8 @@ int yy_flex_debug = 0;
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
-#line 1 "wkt.l"
-#line 2 "wkt.l"
+#line 1 "src/Geometry/wkt.l"
+#line 2 "src/Geometry/wkt.l"
   #include <cstdlib>
   #include <ctype.h>
   #include <cstring>
@@ -507,7 +508,7 @@ char *yytext;
   extern GIMS_Geometry *geom;
 
   int lineno = 1, colno = 1, tmp_lineno, tmp_colno;
-#line 511 "lex.yy.c"
+#line 512 "src/Geometry/lex.yy.c"
 
 #define INITIAL 0
 
@@ -716,10 +717,10 @@ YY_DECL
 		}
 
 	{
-#line 16 "wkt.l"
+#line 16 "src/Geometry/wkt.l"
 
 
-#line 723 "lex.yy.c"
+#line 724 "src/Geometry/lex.yy.c"
 
 	while ( 1 )		/* loops until end-of-file is reached */
 		{
@@ -778,85 +779,85 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 18 "wkt.l"
+#line 18 "src/Geometry/wkt.l"
 colno += strlen(yytext); return _POINT_;
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 19 "wkt.l"
+#line 19 "src/Geometry/wkt.l"
 colno += strlen(yytext); return _LINESTRING_;
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 20 "wkt.l"
+#line 20 "src/Geometry/wkt.l"
 colno += strlen(yytext); return _POLYGON_;
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 21 "wkt.l"
+#line 21 "src/Geometry/wkt.l"
 colno += strlen(yytext); return _MULTIPOINT_;
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 22 "wkt.l"
+#line 22 "src/Geometry/wkt.l"
 colno += strlen(yytext); return _MULTILINESTRING_;
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 23 "wkt.l"
+#line 23 "src/Geometry/wkt.l"
 colno += strlen(yytext); return _MULTIPOLYGON_;
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 24 "wkt.l"
+#line 24 "src/Geometry/wkt.l"
 colno += strlen(yytext); return _COLLECTION_;
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 25 "wkt.l"
+#line 25 "src/Geometry/wkt.l"
 colno += strlen(yytext); return _COMMA_;
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 26 "wkt.l"
+#line 26 "src/Geometry/wkt.l"
 colno += strlen(yytext); return _LPAR_;
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 27 "wkt.l"
+#line 27 "src/Geometry/wkt.l"
 colno += strlen(yytext); return _RPAR_;
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 29 "wkt.l"
+#line 29 "src/Geometry/wkt.l"
 yylval.numberlit=atof(yytext); colno += strlen(yytext); return _NUMBERLIT_;
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
-#line 31 "wkt.l"
+#line 31 "src/Geometry/wkt.l"
 return 0;
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 33 "wkt.l"
+#line 33 "src/Geometry/wkt.l"
 colno++; /* skip whitespace */
 	YY_BREAK
 case 13:
 /* rule 13 can match eol */
 YY_RULE_SETUP
-#line 34 "wkt.l"
+#line 34 "src/Geometry/wkt.l"
 lineno++; colno=1; /* skip whitespace */
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 35 "wkt.l"
+#line 35 "src/Geometry/wkt.l"
 printf("Line %d, col %d: illegal character ('%s')\n", lineno, colno, yytext); colno++;
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 37 "wkt.l"
+#line 37 "src/Geometry/wkt.l"
 ECHO;
 	YY_BREAK
-#line 860 "lex.yy.c"
+#line 861 "src/Geometry/lex.yy.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -1849,7 +1850,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 37 "wkt.l"
+#line 37 "src/Geometry/wkt.l"
 
 
 
