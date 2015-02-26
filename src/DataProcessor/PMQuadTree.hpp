@@ -56,9 +56,10 @@ namespace PMQUADTREE {
         /*Inherited Functions*/
         /*Functions that take care of the construction and maintenance of the structure*/
         virtual void  build  (GIMS_Geometry *);
-        virtual void  insert (GIMS_Geometry *);
+                void  insert (list<GIMS_Geometry *> *geom);
+                void  insert (GIMS_Geometry *);
         virtual void  remove (GIMS_Geometry *);
-        virtual void *search (GIMS_Geometry *);
+                void *search (GIMS_Geometry *);
 
         /*check if container contains contained. Supports only geometry primitives,
          *and not multipart geometries.*/

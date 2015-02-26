@@ -512,6 +512,10 @@ PMQuadTree::~PMQuadTree () {}
 /*Functions that take care of the construction and maintenance of the structure*/
 void PMQuadTree::build  (GIMS_Geometry *geom){}
 
+void PMQuadTree::insert ( list<GIMS_Geometry *> *geom ){
+    this->root->insert(geom);
+}
+
 void PMQuadTree::insert ( GIMS_Geometry *geom ) {
     list<GIMS_Geometry *> *aux = new list<GIMS_Geometry *>();
     aux->push_back(geom);
