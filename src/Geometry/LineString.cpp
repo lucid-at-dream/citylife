@@ -1,5 +1,7 @@
 #include "Geometry.hpp"
 
+void GIMS_LineSegment::deleteClipped(){}
+
 string GIMS_LineSegment::toWkt(){
     char buff[100];
     sprintf(buff, "LINESTRING(%lf %lf, %lf %lf)", this->p1->x, this->p1->y, this->p2->x, this->p2->y);
@@ -82,6 +84,10 @@ GIMS_Geometry *GIMS_LineSegment::clipToBox ( GIMS_BoundingBox *box ){
 
 
 /* From here we define the LineString class */
+
+void GIMS_LineString::deleteClipped(){
+    delete this;
+}
 
 GIMS_LineString::GIMS_LineString (int size){
     this->type = LINESTRING;
@@ -202,6 +208,13 @@ GIMS_Ring::GIMS_Ring(){
 
 
 /*The MultiLineString class.*/
+
+void GIMS_MultiLineString::deleteClipped(){
+    for(int i=0; i<this->size; i++){
+        this->list[i]->deleteClipped();
+    }
+    delete this;
+}
 
 string GIMS_MultiLineString::toWkt(){
     string wkt = string("MULTILINESTRING(");

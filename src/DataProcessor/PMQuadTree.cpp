@@ -188,7 +188,7 @@ bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
         //compute and compare angles
         double angle1 = angle3p(unshared1, shpoint, &qp),
                angle2 = angle3p(unshared2, shpoint, &qp);
-        
+
         auxls = angle1 >= angle2 ? other : closest;    
         closest = angle1 < angle2 ? closest : other;
     }
@@ -316,6 +316,11 @@ void Node::insert ( list<GIMS_Geometry *> *geom ) {
         this->sons[q]->insert ( clipped );
     }
     
+    if( clipped != NULL){
+        for(list<GIMS_Geometry *>::iterator it = clipped->begin(); it != clipped->end(); it++)
+            (*it)->deleteClipped();
+        delete clipped; /*NEW FREE*/
+    }
     depth--;
 }
 
@@ -388,7 +393,7 @@ bool Node::validateGeometry (GIMS_Geometry *g, GIMS_Point **sharedPoint){
         default:{
             fprintf(stderr, "unsupported geometry was passed on to the "
                     "node validation function.\n" );
-            exit(-1);
+            return true;
         }
     }
     return true;
@@ -479,7 +484,7 @@ Node::Node(){
 Node::Node( GIMS_BoundingBox *square ){
     this->type = WHITE;
     this->square = square;
-    this->dictionary = new list<GIMS_Geometry *>;
+    this->dictionary = NULL;
     this->sons[0] = this->sons[1] = this->sons[2] = this->sons[3] = NULL;
     this->father = NULL;
 }

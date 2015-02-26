@@ -1,6 +1,15 @@
 #include "Geometry.hpp"
 
 /*append a geometry to the list*/
+void GIMS_GeometryCollection::deleteClipped(){
+    if(this->list != NULL){
+        for(int i=0; i<this->size; i++){
+            this->list[i]->deleteClipped();
+        }
+    }
+    delete this;
+}
+
 void GIMS_GeometryCollection::append(GIMS_Geometry *g){
     size += 1;
     if( size > allocatedSize ){

@@ -1,5 +1,17 @@
 #include "Geometry.hpp"
 
+void GIMS_Polygon::deleteClipped(){
+    if(this->externalRing != NULL){
+        this->externalRing->deleteClipped();
+        this->externalRing = NULL;
+    }
+    if(this->internalRings != NULL){
+        this->internalRings->deleteClipped();
+        this->internalRings = NULL;
+    }
+    delete this;
+}
+
 GIMS_BoundingBox *GIMS_Polygon::getExtent(){
     double maxx=-1e100, maxy=-1e100, minx=1e100, miny=1e100;
     
@@ -105,14 +117,22 @@ GIMS_Polygon::GIMS_Polygon(){
 }
 
 GIMS_Polygon::~GIMS_Polygon(){
-    delete this->externalRing;
-    delete this->internalRings;
+    if( this->externalRing )
+        delete this->externalRing;
+    if( this->internalRings )
+        delete this->internalRings;
 }
 
 
 
 
 
+void GIMS_MultiPolygon::deleteClipped(){
+    for(int i=0; i<this->size; i++){
+        this->list[i]->deleteClipped();
+    }
+    delete this;
+}
 
 void GIMS_MultiPolygon::append(GIMS_Polygon *p){
     this->size++;
@@ -202,6 +222,7 @@ GIMS_MultiPolygon::GIMS_MultiPolygon(int size){
 }
 
 GIMS_MultiPolygon::~GIMS_MultiPolygon(){
-    free(this->list);
+    if(this->list)
+        free(this->list);
 }
 

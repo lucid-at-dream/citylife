@@ -28,16 +28,23 @@ int main (int argc, char *argv[]) {
         perror ("could not retrieve layer envelope");
         exit (-1);
     }
-    double lenx = fabs(envelope->MaxX - envelope->MinX),
-           leny = fabs(envelope->MaxY - envelope->MinY);
-           //len  = lenx > leny ? lenx : leny;
+    double lenx = 3 * fabs(envelope->MaxX - envelope->MinX),
+           leny = 3 * fabs(envelope->MaxY - envelope->MinY),
+           len  = lenx > leny ? lenx : leny;
+    
+    double minx = envelope->MinX - len/2.0,
+           maxy = envelope->MinY + len/2.0,
+           miny = envelope->MinY - len/2.0,
+           maxx = envelope->MinX + len/2.0;
 
     PMQuadTree *tree = 
         new PMQuadTree( new GIMS_BoundingBox(
-            new GIMS_Point (envelope->MinX, envelope->MinY),
-            new GIMS_Point (envelope->MaxX, envelope->MaxY)
+            new GIMS_Point (minx, miny),
+            new GIMS_Point (maxx, maxy)
         ));
-   
+
+    delete envelope;
+
     //lenx = leny = len;
 
     OGRFeature *feature;
@@ -61,7 +68,7 @@ int main (int argc, char *argv[]) {
             if(aux != NULL){
                 aux->id = incId++;
                 glist->append(aux);
-                tree->insert ( aux );
+                tree->insert (aux);
                 if(!count && aux->type == POLYGON)
                     if(((GIMS_Polygon *)aux)->internalRings != NULL)
                         query = aux;
@@ -77,17 +84,16 @@ int main (int argc, char *argv[]) {
         delete layer;
     }
     printf("inserted %d points.\n", total);
+    
+    /*
     tree->query = query;
     renderer = new DebRenderer();
-    renderer->setScale(400.0/lenx, -400.0/leny);
-    renderer->setTranslation( -envelope->MinX, -envelope->MaxY );
+    renderer->setScale(400.0/len, -400.0/len);
+    renderer->setTranslation( -minx, -maxy );
     renderer->renderCallback = tree;
     renderer->renderSvg("outtree.svg", 400, 400);
     renderer->mainloop(argc, argv);
-
-    int merda;
-    scanf("%d", &merda); 
-    
+    */
     return 0;
 }
 

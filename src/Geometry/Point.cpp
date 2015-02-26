@@ -1,6 +1,8 @@
 #include "Geometry.hpp"
 
 /* Returns true if the point lies inside the given bounding box */
+void GIMS_Point::deleteClipped(){}
+
 GIMS_Point *GIMS_Point::clone() {
     GIMS_Point *fresh = new GIMS_Point(this->x, this->y);
     fresh->id = this->id;
@@ -66,6 +68,10 @@ GIMS_Point::~GIMS_Point() {}
 
 
 /*Multi point implementation below*/
+void GIMS_MultiPoint::deleteClipped(){
+    delete this;
+}
+
 void GIMS_MultiPoint::append(GIMS_Point *pt){
     this->size += 1;
     if(this->size > this->allocatedSize){

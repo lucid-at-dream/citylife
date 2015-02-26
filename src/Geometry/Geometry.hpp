@@ -56,6 +56,7 @@ namespace GIMS_GEOMETRY {
         virtual GIMS_Geometry *clone         () = 0;
         virtual               ~GIMS_Geometry ();
         virtual string         toWkt         () = 0;
+        virtual void           deleteClipped () = 0;
     };
 
     class GIMS_BoundingBox : public GIMS_Geometry {
@@ -73,6 +74,7 @@ namespace GIMS_GEOMETRY {
         double            miny             ();
         double            maxy             ();
         GIMS_Geometry    *clipToBox        (GIMS_BoundingBox *);
+        void              deleteClipped    ();
                           GIMS_BoundingBox (GIMS_Point *lowerLeft, GIMS_Point *upperRight);
                          ~GIMS_BoundingBox ();
     };
@@ -87,6 +89,7 @@ namespace GIMS_GEOMETRY {
         void                     append                  (GIMS_Geometry *);
         GIMS_GeometryCollection *clone                   ();
         GIMS_Geometry           *clipToBox               (GIMS_BoundingBox *);
+        void                     deleteClipped           ();
                                  GIMS_GeometryCollection (int size);
                                  GIMS_GeometryCollection ();
                                 ~GIMS_GeometryCollection ();
@@ -101,6 +104,7 @@ namespace GIMS_GEOMETRY {
         GIMS_LineSegment *clone            ();
         GIMS_Geometry    *clipToBox        (GIMS_BoundingBox *);
         GIMS_LineSegment *trimToBBox       (GIMS_BoundingBox *);
+        void              deleteClipped    ();
                           GIMS_LineSegment ();
                           GIMS_LineSegment (GIMS_Point *p1, GIMS_Point *p2);
                          ~GIMS_LineSegment ();
@@ -117,9 +121,11 @@ namespace GIMS_GEOMETRY {
         GIMS_Geometry    *clipToBox       (GIMS_BoundingBox *);
         GIMS_LineSegment  getLineSegment  (int index);
         void              appendPoint     (GIMS_Point *p);
+        void              deleteClipped   ();
                           GIMS_LineString (int size);
                           GIMS_LineString ();
                          ~GIMS_LineString ();
+
     };
 
     class GIMS_Ring : public GIMS_LineString{
@@ -134,11 +140,12 @@ namespace GIMS_GEOMETRY {
         int               size;
         int               allocatedSize;
 
-        string                toWkt            ();
+        string                toWkt                ();
         GIMS_MultiLineString *clone                ();
         GIMS_Geometry        *clipToBox            (GIMS_BoundingBox *);
         void                  merge                (GIMS_MultiLineString *mls);
         void                  append               (GIMS_LineString *);
+        void                  deleteClipped        ();
                               GIMS_MultiLineString (int size);
                               GIMS_MultiLineString ();
                              ~GIMS_MultiLineString ();
@@ -148,15 +155,16 @@ namespace GIMS_GEOMETRY {
       public:
         double x, y;
 
-        string         toWkt      ();
-        bool           equals     (GIMS_Point *cmp);
-        GIMS_Point    *clone      ();
-        GIMS_Geometry *clipToBox  (GIMS_BoundingBox *);
-        bool           isInsideBox(GIMS_BoundingBox *box);
-        GIMS_Side      sideOf     (GIMS_LineSegment *edge);
-                       GIMS_Point ();
-                       GIMS_Point (double x, double y);
-                      ~GIMS_Point ();
+        string         toWkt        ();
+        bool           equals       (GIMS_Point *cmp);
+        GIMS_Point    *clone        ();
+        GIMS_Geometry *clipToBox    (GIMS_BoundingBox *);
+        bool           isInsideBox  (GIMS_BoundingBox *box);
+        GIMS_Side      sideOf       (GIMS_LineSegment *edge);
+        void           deleteClipped();
+                       GIMS_Point   ();
+                       GIMS_Point   (double x, double y);
+                      ~GIMS_Point   ();
     };
 
     class GIMS_MultiPoint : public GIMS_Geometry {
@@ -169,6 +177,7 @@ namespace GIMS_GEOMETRY {
           void             append         (GIMS_Point *);
           GIMS_MultiPoint *clone          ();
           GIMS_Geometry   *clipToBox      (GIMS_BoundingBox *);
+          void             deleteClipped  ();
                            GIMS_MultiPoint();
                            GIMS_MultiPoint(int size);
                           ~GIMS_MultiPoint();
@@ -184,8 +193,9 @@ namespace GIMS_GEOMETRY {
         GIMS_Polygon     *clone             ();
         GIMS_BoundingBox *getExtent         ();
         GIMS_Geometry    *clipToBox         (GIMS_BoundingBox *);
-        void              appendExternalRing(GIMS_LineString *er);
+        void              appendExternalRing(GIMS_LineString *);
         void              appendInternalRing(GIMS_LineString *);
+        void              deleteClipped     ();
                           GIMS_Polygon      (GIMS_MultiLineString *, GIMS_MultiLineString *);
                           GIMS_Polygon      (int, int);
                           GIMS_Polygon      ();
@@ -202,6 +212,7 @@ namespace GIMS_GEOMETRY {
           void               append           (GIMS_Polygon *);
           GIMS_MultiPolygon *clone            ();
           GIMS_Geometry     *clipToBox        (GIMS_BoundingBox *);
+          void               deleteClipped    ();
                              GIMS_MultiPolygon();
                              GIMS_MultiPolygon(int size);
                             ~GIMS_MultiPolygon();

@@ -53,11 +53,8 @@ namespace Helper {
         return true;
     }
     
-    
-    
     void PGConnection::exit_nicely (PGconn *conn) {
         PQfinish (conn);
-        //exit(1);
     }
     
     
