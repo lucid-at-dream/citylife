@@ -151,8 +151,8 @@ bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
         }
     }
 
-    /*if one of the closest line segment endpoints lies within the square that
-      bounds node n, we must get the 2nd edge that shares the same endpoint.
+    /*if the closest line segment shares the node with an adjacent line segment,
+      we must get the 2nd edge that shares the same endpoint.
       We can call the shared enpoint pt2.
       Given this convention, we must now check which of the two line segments 
       forms the smallest angle with the linesegment pt---pt2. We then check to 
@@ -160,8 +160,7 @@ bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
 
     GIMS_MultiLineString *src = isEdgeFromExtRing ? p->externalRing : p->internalRings;
 
-    bool p1inside = closest.p1->isInsideBox(n->square),
-         p2inside = closest.p2->isInsideBox(n->square);
+    bool p1inside = closest.p1->isInsideBox(n->square);
     GIMS_LineSegment auxls;
 
     GIMS_Point *shpoint = p1inside ? closest.p1 : closest.p2;
@@ -190,13 +189,6 @@ bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
         double angle1 = angle3p(unshared1, shpoint, &qp),
                angle2 = angle3p(unshared2, shpoint, &qp);
         
-        if( renderEdge ){
-            redRenderQueue->push_back(new GIMS_LineSegment(unshared1, shpoint));
-            renderQueue->push_back(new GIMS_LineSegment(unshared2, shpoint));
-            printf("red angle: %lf\n", angle1);
-            printf("green angle: %lf\n", angle2);
-        }
-
         auxls = angle1 >= angle2 ? other : closest;    
         closest = angle1 < angle2 ? closest : other;
     }
@@ -578,13 +570,6 @@ RelStatus PMQuadTree::isBoundedBy ( GIMS_Geometry *result, GIMS_BoundingBox *box
 
 
 /* Functions for debug renderization module */
-void PMQuadTree::renderRed(GIMS_Geometry *g){
-    redRenderQueue->push_back(g);
-    renderEdge = true;
-    this->contains(query, g);
-    renderEdge = false;
-}
-
 void PMQuadTree::debugRender(Cairo::RefPtr<Cairo::Context> cr){
 
     renderer->setScale( 400.0/this->root->square->xlength(),

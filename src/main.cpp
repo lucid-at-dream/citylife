@@ -24,21 +24,21 @@ int main (int argc, char *argv[]) {
     OGRLayer *road_layer = getGeom.GetLayerByName ("planet_osm_roads");
 
     OGREnvelope *envelope = new OGREnvelope;
-    if ( ln_layer->GetExtent ( envelope, FALSE ) != OGRERR_NONE ) {
+    if ( pol_layer->GetExtent ( envelope, FALSE ) != OGRERR_NONE ) {
         perror ("could not retrieve layer envelope");
         exit (-1);
     }
     double lenx = fabs(envelope->MaxX - envelope->MinX),
-           leny = fabs(envelope->MaxY - envelope->MinY),
-           len  = lenx > leny ? lenx : leny;
+           leny = fabs(envelope->MaxY - envelope->MinY);
+           //len  = lenx > leny ? lenx : leny;
 
     PMQuadTree *tree = 
         new PMQuadTree( new GIMS_BoundingBox(
             new GIMS_Point (envelope->MinX, envelope->MinY),
-            new GIMS_Point (envelope->MinX + len, envelope->MinY + len)
+            new GIMS_Point (envelope->MaxX, envelope->MaxY)
         ));
    
-    lenx = leny = len;
+    //lenx = leny = len;
 
     OGRFeature *feature;
     GIMS_Geometry* query = NULL;
