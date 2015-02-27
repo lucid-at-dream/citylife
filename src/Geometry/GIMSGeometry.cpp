@@ -2,12 +2,16 @@
 
 using namespace GIMS_GEOMETRY;
 
-GIMS_Geometry *lyWktParse(char *wkt);
-
 GIMS_Geometry::~GIMS_Geometry (){}
 
 GIMS_Geometry *fromWkt(char *wkt){
+    printf("merda1\n");
     return lyWktParse(wkt);
+}
+
+GIMS_Geometry *lyWktParse(char *wkt){
+    printf("merda2\n");
+    return NULL;
 }
 
 /*returns the squared distance between two points*/

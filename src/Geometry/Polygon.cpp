@@ -1,5 +1,17 @@
 #include "Geometry.hpp"
 
+void GIMS_Polygon::deepDelete(){
+    if(externalRing != NULL){
+        this->externalRing->deepDelete();
+        this->externalRing = NULL;
+    }
+    if(internalRings != NULL){
+        this->internalRings->deepDelete();
+        this->internalRings = NULL;
+    }
+    delete this;
+}
+
 void GIMS_Polygon::deleteClipped(){
     if(this->externalRing != NULL){
         this->externalRing->deleteClipped();
@@ -126,6 +138,12 @@ GIMS_Polygon::~GIMS_Polygon(){
 
 
 
+void GIMS_MultiPolygon::deepDelete(){
+    if( this->list != NULL )
+        for(int i=0; i<this->size; i++)
+            this->list[i]->deepDelete();
+    delete this;
+}
 
 void GIMS_MultiPolygon::deleteClipped(){
     for(int i=0; i<this->size; i++){

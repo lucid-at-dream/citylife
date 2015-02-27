@@ -1,5 +1,11 @@
 #include "Geometry.hpp"
 
+void GIMS_BoundingBox::deepDelete(){
+    delete this->lowerLeft;
+    delete this->upperRight;
+    delete this;
+}
+
 GIMS_BoundingBox *GIMS_BoundingBox::clone (){
     GIMS_BoundingBox *fresh = new GIMS_BoundingBox( this->lowerLeft->clone(), this->upperRight->clone() );
     fresh->id = this->id;

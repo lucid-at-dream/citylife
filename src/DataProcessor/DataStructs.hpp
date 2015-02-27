@@ -30,6 +30,6 @@ class GIMS_DataStruct {
     /*Retrieve all geometry elements that are partially or totally contained
       in a given bounding box*/
     virtual RelStatus isBoundedBy ( GIMS_Geometry *result, GIMS_BoundingBox *) = 0;
+    virtual ~GIMS_DataStruct();
 };
-
 #endif

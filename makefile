@@ -1,82 +1,100 @@
 #compiler settings
 CC = g++
 LDLIBS = -lm -lpq
-#COPT = -O2 -march=native -mtune=native
-COPT = -O0
-CFLAGS = -g -Wall -std=c++11 -pedantic ${LDLIBS} ${COPT}
-CTESTFLAGS = -lgtest
+COPT = -O2 -march=native -mtune=native
+COPT = 
+CFLAGS = -std=c++11 ${LDLIBS} ${COPT}
+CTESTFLAGS = -lgtest -lgtest_main
 
 #directory structure
 SRC_DIR = src
 OBJ_DIR = obj
-LIB_DIR = lib
 BIN_DIR = bin
 TEST_DIR = tests
-
-#directories with source code to include
-CAIROMM = `pkg-config --cflags --libs cairomm-svg-1.0`
-GTKMM = `pkg-config --cflags --libs gtkmm-3.0`
-INC_DIR = -I${LIB_DIR} -I /usr/include/postgresql ${CAIROMM} ${GTKMM}
 
 #resulting executable filename 
 OFILE = gims
 OTESTFILE = test_gims
 
-#src file list
-HDRFILES = $(shell find ${SRC_DIR} | grep "\\.hpp$$\\|\\.h$$")
-SRCFILES = $(shell find ${SRC_DIR} | grep "\\.cpp$$")
-#add lex and yacc src files
-OBJFILES = ${OBJ_DIR}/Geometry/lex.yy.o ${OBJ_DIR}/Geometry/y.tab.o
-OBJFILES += $(addprefix ${OBJ_DIR}/./, $(addsuffix .o, $(shell find ${SRC_DIR} | grep "\\.cpp$$" | cut -d '.' -f1 | cut -d / -f2-)))
+#location of the source file for lex
+LEX_FILE = ${SRC_DIR}/Geometry/lex.yy.c
 
-#obj files for testing
-#add lex and yacc src files
-OBJFILESEXCEPTMAIN = ${OBJ_DIR}/Geometry/lex.yy.o ${OBJ_DIR}/Geometry/y.tab.o
-OBJFILESEXCEPTMAIN += $(addprefix ${OBJ_DIR}/./, $(addsuffix .o, $(shell find ${SRC_DIR} | grep "\\.cpp$$" | grep -v "${SRC_DIR}/main\\.cpp$$" | cut -d '.' -f1 | cut -d / -f2-)))
-OBJTESTFILESTMP = $(addprefix ${TEST_DIR}/${OBJ_DIR}/, $(addsuffix .o, $(shell find ${TEST_DIR} | grep "\\.cpp$$" | cut -d '.' -f1 | cut -d / -f2-)))
-OBJTESTFILES = ${OBJTESTFILESTMP} ${OBJFILESEXCEPTMAIN}
+#location of the source file for yacc
+YACC_FILE = ${SRC_DIR}/Geometry/y.tab.c
+
+#the source directory list
+INC_DIR  = -I ${SRC_DIR}
+INC_DIR += -I ${SRC_DIR}/DBConnection
+INC_DIR += -I ${SRC_DIR}/DataProcessor
+INC_DIR += -I ${SRC_DIR}/Debugger
+INC_DIR += -I ${SRC_DIR}/Geometry
+INC_DIR += -I /usr/include/postgresql
+INC_DIR += `pkg-config --cflags --libs cairomm-svg-1.0`
+INC_DIR += `pkg-config --cflags --libs gtkmm-3.0`
+
+#source file with main function
+OBJMAIN = ${OBJ_DIR}/main.o
+
+#object files
+OBJFILES += ${OBJ_DIR}/DBConnection/DBConnection.o
+OBJFILES += ${OBJ_DIR}/DataProcessor/PMQuadTree.o
+OBJFILES += ${OBJ_DIR}/DataProcessor/DataStructs.o
+OBJFILES += ${OBJ_DIR}/Debugger/DebRender.o
+OBJFILES += ${OBJ_DIR}/Geometry/BoundingBox.o
+OBJFILES += ${OBJ_DIR}/Geometry/GIMSGeometry.o
+OBJFILES += ${OBJ_DIR}/Geometry/GeometryCollection.o
+OBJFILES += ${OBJ_DIR}/Geometry/LineString.o
+OBJFILES += ${OBJ_DIR}/Geometry/Point.o
+OBJFILES += ${OBJ_DIR}/Geometry/Polygon.o
+OBJFILES += ${OBJ_DIR}/Geometry/lex.yy.o
+OBJFILES += ${OBJ_DIR}/Geometry/y.tab.o
+
+#object files for testing source code
+OBJTESTFILES = ${TEST_DIR}/${OBJ_DIR}/pointInPolygonTest.o
 
 
-INC_DIR += $(addprefix -I, $(shell dirname $$(find ${SRC_DIR} | grep "\\.hpp$$\\|\\.h$$") | sort | uniq) )
-
-all: ${BIN_DIR}/${OFILE}
+all: ${YACC_FILE} ${LEX_FILE} ${BIN_DIR}/${OFILE}
 
 run: ${BIN_DIR}/${OFILE}
 	./${BIN_DIR}/${OFILE}
 
-.IGNORE: format
-
-.SECONDEXPANSION:
-#create the wanted object files provided the source files exist.
-${OBJ_DIR}/%.o: ${SRC_DIR}/%.cpp | $$(@D)/
-	${CC} ${CFLAGS} -c $< -o $@ ${INC_DIR}
-
-#link the executable
-${BIN_DIR}/${OFILE}: ${OBJFILES} | ${BIN_DIR}
-	${CC} ${CFLAGS} $^ -o $@ ${INC_DIR}
-
-
-#make an executable for the unit tests
-test: ${BIN_DIR}/${OTESTFILE} 
-${BIN_DIR}/${OTESTFILE}: ${OBJTESTFILES} | ${BIN_DIR}
-	${CC} ${CFLAGS} $^ -o $@ ${INC_DIR} ${CTESTFLAGS} -lgtest_main
-
-${TEST_DIR}/${OBJ_DIR}/%.o: ${TEST_DIR}/%.cpp | $$(@D)/
-	${CC} ${CFLAGS} -c $< -o $@ ${INC_DIR} ${CTESTFLAGS}
-
-#rules for the yacc and lex generated files
-${OBJ_DIR}/Geometry/lex.yy.o: ${SRC_DIR}/Geometry/lex.yy.c ${SRC_DIR}/Geometry/y.tab.c | $$(@D)/
-	${CC} ${CFLAGS} -c ${SRC_DIR}/Geometry/lex.yy.c -o $@ ${INC_DIR}
-
-${SRC_DIR}/Geometry/lex.yy.c: ${SRC_DIR}/Geometry/wkt.l
-	flex -o $@ $<
-
-${OBJ_DIR}/Geometry/y.tab.o: ${SRC_DIR}/Geometry/y.tab.c | $$(@D)/
-	${CC} ${CFLAGS} -c $< -o $@ ${INC_DIR}
-
+#begin
+#create the auto generated source code for lex and yacc
 ${SRC_DIR}/Geometry/y.tab.c: ${SRC_DIR}/Geometry/wkt.y
 	yacc -d $< -o $@
 
+${SRC_DIR}/Geometry/lex.yy.c: ${SRC_DIR}/Geometry/wkt.l
+	flex -o $@ $<
+#end
+
+.SECONDEXPANSION:
+#create the executable
+${BIN_DIR}/${OFILE}: ${OBJFILES} ${OBJMAIN} | ${BIN_DIR}
+	${CC} ${CFLAGS} $^ -o $@ ${INC_DIR}
+
+#compile the object files
+${OBJ_DIR}/%.o: ${SRC_DIR}/%.cpp | $$(@D)/
+	${CC} ${CFLAGS} -c $< -o $@ ${INC_DIR}
+
+#begin
+#targets for the yacc and lex generated files
+${OBJ_DIR}/Geometry/lex.yy.o: ${SRC_DIR}/Geometry/lex.yy.c ${SRC_DIR}/Geometry/y.tab.c | $$(@D)/
+	${CC} ${CFLAGS} -c ${SRC_DIR}/Geometry/lex.yy.c -o $@ ${INC_DIR} -ly
+
+${OBJ_DIR}/Geometry/y.tab.o: ${SRC_DIR}/Geometry/y.tab.c | $$(@D)/
+	${CC} ${CFLAGS} -c $< -o $@ ${INC_DIR} -ly
+#end
+
+#target that should be called for the test executable
+test: ${BIN_DIR}/${OTESTFILE} 
+
+#make an executable for the unit tests
+${BIN_DIR}/${OTESTFILE}: ${OBJTESTFILES} | ${BIN_DIR}
+	${CC} ${CFLAGS} $^ -o $@ ${INC_DIR} ${CTESTFLAGS}
+
+#create object files for the unit tests
+${TEST_DIR}/${OBJ_DIR}/%.o: ${TEST_DIR}/%.cpp | ${TEST_DIR}/${OBJ_DIR}
+	${CC} ${CFLAGS} -c $< -o $@ ${INC_DIR} ${CTESTFLAGS}
 
 #create directories
 ${OBJ_DIR}%/:
@@ -88,13 +106,6 @@ ${TEST_DIR}%/:
 ${BIN_DIR}:
 	mkdir -p ${BIN_DIR}$*
 
-#formats all code files using astyle tool and cleans up .orig files.
-cleanformat: format softclean
-
-#formats all code files using astyle tool.
-format:
-	astyle --recursive "${SRC_DIR}/*.cpp" "${SRC_DIR}/*.hpp" --quiet -X
-
 #compiles with SUPRESS_NOTES flag defined
 quiet: setquiet ${BIN_DIR}/${OFILE}
 setquiet:
@@ -102,16 +113,12 @@ setquiet:
 
 #compiles with DEBUG flag defined
 debug: setdebug ${BIN_DIR}/${OFILE}
-#sets a DEBUG flag (as if defined to 1 in the source code) for every source file.
+#sets a DEBUG flag (as if defined in the source code) for every source file.
 setdebug:
 	$(eval CFLAGS += -DDEBUG)
 
-softclean:
-	$(eval ORIG_FILES = $(shell find src/ | grep \\.orig))
-	rm -f ${ORIG_FILES}
-
-#remove garbage
-clean: softclean
+#remove binaries
+clean:
 	rm -rf ${TEST_DIR}/${OBJ_DIR}
 	rm -rf ${OBJ_DIR}
 	rm -f ${BIN_DIR}/${OFILE}

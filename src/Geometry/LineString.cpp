@@ -2,6 +2,12 @@
 
 void GIMS_LineSegment::deleteClipped(){}
 
+void GIMS_LineSegment::deepDelete(){
+    delete this->p1;
+    delete this->p2;
+    delete this;
+}
+
 string GIMS_LineSegment::toWkt(){
     char buff[100];
     sprintf(buff, "LINESTRING(%lf %lf, %lf %lf)", this->p1->x, this->p1->y, this->p2->x, this->p2->y);
@@ -84,6 +90,12 @@ GIMS_Geometry *GIMS_LineSegment::clipToBox ( GIMS_BoundingBox *box ){
 
 
 /* From here we define the LineString class */
+void GIMS_LineString::deepDelete(){
+    if(this->list != NULL)
+        for(int i=0; i<this->size; i++)
+            delete this->list[i];
+    delete this;
+}
 
 void GIMS_LineString::deleteClipped(){
     delete this;
@@ -208,6 +220,12 @@ GIMS_Ring::GIMS_Ring(){
 
 
 /*The MultiLineString class.*/
+void GIMS_MultiLineString::deepDelete(){
+    if(this->list != NULL)
+        for(int i=0; i<this->size; i++)
+            this->list[i]->deepDelete();
+    delete this;
+}
 
 void GIMS_MultiLineString::deleteClipped(){
     for(int i=0; i<this->size; i++){

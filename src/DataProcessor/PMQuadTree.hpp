@@ -51,29 +51,29 @@ namespace PMQUADTREE {
 
         /*Allocation & Deallocation*/
          PMQuadTree (GIMS_BoundingBox *domain);
-        ~PMQuadTree (void);
+        ~PMQuadTree ();
 
         /*Inherited Functions*/
         /*Functions that take care of the construction and maintenance of the structure*/
-        virtual void  build  (GIMS_Geometry *);
-                void  insert (list<GIMS_Geometry *> *geom);
-                void  insert (GIMS_Geometry *);
-        virtual void  remove (GIMS_Geometry *);
-                void *search (GIMS_Geometry *);
+        void  build  (GIMS_Geometry *);
+        void  insert (list<GIMS_Geometry *> *geom);
+        void  insert (GIMS_Geometry *);
+        void  remove (GIMS_Geometry *);
+        void *search (GIMS_Geometry *);
 
         /*check if container contains contained. Supports only geometry primitives,
          *and not multipart geometries.*/
         bool contains(GIMS_Geometry* container, GIMS_Geometry* contained);
 
         /*Follow the operations between the data structure and a given geometry*/
-        virtual RelStatus intersects_g  ( GIMS_Geometry *result, GIMS_Geometry *);
-        virtual RelStatus meets_g       ( GIMS_Geometry *result, GIMS_Geometry *);
-        virtual RelStatus contains_g    ( GIMS_Geometry *result, GIMS_Geometry *);
-        virtual RelStatus isContained_g ( GIMS_Geometry *result, GIMS_Geometry *);
+        RelStatus intersects_g  ( GIMS_Geometry *result, GIMS_Geometry *);
+        RelStatus meets_g       ( GIMS_Geometry *result, GIMS_Geometry *);
+        RelStatus contains_g    ( GIMS_Geometry *result, GIMS_Geometry *);
+        RelStatus isContained_g ( GIMS_Geometry *result, GIMS_Geometry *);
         
         /*Retrieve all geometry elements that are partially or totally contained
           in a given bounding box*/
-        virtual RelStatus isBoundedBy ( GIMS_Geometry *result, GIMS_BoundingBox *);
+        RelStatus isBoundedBy ( GIMS_Geometry *result, GIMS_BoundingBox *);
 
         void onClick        ( double, double );
         void debugRender    ( Cairo::RefPtr<Cairo::Context> );

@@ -1,7 +1,12 @@
 syntax: glob
 
-*.o
+compile
+*/CMakeLists.txt
 
+*.o
+leak
+
+build/*
 wkt_inpt/*
 src/Geometry/inputs/*
 src/Geometry/t

@@ -262,9 +262,9 @@ list<GIMS_Geometry *> *Node::clipDict(list<GIMS_Geometry *> *dict){
     list<GIMS_Geometry *> *clipped = NULL;
     GIMS_Geometry *partial;
     for(list<GIMS_Geometry *>::iterator it = dict->begin(); it != dict->end(); it++){
-        if( (partial = (*it)->clipToBox(this->square)) ){
+        if( (partial = (*it)->clipToBox(this->square)) != NULL ){
             if( clipped == NULL )
-                clipped = new list<GIMS_Geometry *>;
+                clipped = new list<GIMS_Geometry *>();
             clipped->push_back(partial);
         }
     }
@@ -293,21 +293,17 @@ void Node::insert ( list<GIMS_Geometry *> *geom ) {
 
         if (this->dictionary != NULL) { //merge clipped with the node's dictionary
             mergeDicts(clipped, this->dictionary);
+            delete this->dictionary;
+            this->dictionary = NULL;
         }
 
         if ( this->validate(clipped) ) {
             //if the geometry is a valid node geometry we insert it into the node
-            if(this->dictionary != NULL)
-                delete this->dictionary;
             this->dictionary = clipped;
             this->type = BLACK;
             depth--;
             return;
         } else {
-            if(this->dictionary != NULL){
-                delete this->dictionary;
-                this->dictionary = NULL;
-            }
             this->split();
         }
     }
@@ -316,11 +312,9 @@ void Node::insert ( list<GIMS_Geometry *> *geom ) {
         this->sons[q]->insert ( clipped );
     }
     
-    if( clipped != NULL){
-        for(list<GIMS_Geometry *>::iterator it = clipped->begin(); it != clipped->end(); it++)
-            (*it)->deleteClipped();
-        delete clipped; /*NEW FREE*/
-    }
+    for(list<GIMS_Geometry *>::iterator it = clipped->begin(); it != clipped->end(); it++)
+        (*it)->deleteClipped();
+    delete clipped;
     depth--;
 }
 
@@ -490,8 +484,15 @@ Node::Node( GIMS_BoundingBox *square ){
 }
 
 Node::~Node(){
-    delete this->square;
-    delete this->dictionary;
+    if(this->type == GRAY)
+        for(Quadrant q: quadrantList)
+            delete this->sons[q];
+
+    this->square->deepDelete();
+
+    if(dictionary != NULL)
+        for(list<GIMS_Geometry *>::iterator it = dictionary->begin(); it != dictionary->end(); it++)
+            (*it)->deleteClipped();
 }
 /*
 Polygonal Map QuadTree Node<--
@@ -505,7 +506,9 @@ PMQuadTree::PMQuadTree (GIMS_BoundingBox *domain) {
     this->query = NULL;
 }
 
-PMQuadTree::~PMQuadTree () {}
+PMQuadTree::~PMQuadTree () {
+    delete this->root;
+}
 
 
 

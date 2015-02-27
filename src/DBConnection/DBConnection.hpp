@@ -1,9 +1,9 @@
 #ifndef _DBCONNECTION_HPP_
 #define _DBCONNECTION_HPP_
 
+#include "Geometry.hpp"
 #include "libpq-fe.h"
 #include <list>
-#include "Geometry.hpp"
 
 using namespace std;
 using namespace GIMS_GEOMETRY;
@@ -13,6 +13,7 @@ class PGConnection{
 
   public:
     void connect();
+    void disconnect();
     PGresult *execQuery(char *query);
     list<GIMS_Geometry *> *getGeometry(char *whereClause);
     GIMS_BoundingBox *getOverallExtent();

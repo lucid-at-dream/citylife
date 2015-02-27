@@ -3,6 +3,10 @@
 /* Returns true if the point lies inside the given bounding box */
 void GIMS_Point::deleteClipped(){}
 
+void GIMS_Point::deepDelete(){
+    delete this;
+}
+
 GIMS_Point *GIMS_Point::clone() {
     GIMS_Point *fresh = new GIMS_Point(this->x, this->y);
     fresh->id = this->id;
@@ -68,6 +72,13 @@ GIMS_Point::~GIMS_Point() {}
 
 
 /*Multi point implementation below*/
+void GIMS_MultiPoint::deepDelete(){
+    for(int i=0; i<this->size; i++){
+        delete list[i];
+    }
+    delete this;
+}
+
 void GIMS_MultiPoint::deleteClipped(){
     delete this;
 }

@@ -1,5 +1,8 @@
 #include "DBConnection.hpp"
 
+using namespace std;
+using namespace GIMS_GEOMETRY;
+
 void PGConnection::connect(){
 
     char *keywords[4] = KEYWORDS;
@@ -12,6 +15,10 @@ void PGConnection::connect(){
     }else{
         printf("failed to connect\n");
     }
+}
+
+void PGConnection::disconnect(){
+    PQfinish(this->connection);
 }
 
 PGresult *PGConnection::execQuery(char *query){
@@ -30,6 +37,8 @@ list<GIMS_Geometry *> *PGConnection::getGeometry(char *whereClause){
         g->id = id;
         resultset->push_back(g);
     }
+
+    PQclear(qres);
 
     return resultset;
 }
