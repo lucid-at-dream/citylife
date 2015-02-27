@@ -236,7 +236,7 @@ double distanceSquared2p(GIMS_Point *p1, GIMS_Point *p2);
 double angle3p(GIMS_Point *p1, GIMS_Point *p2, GIMS_Point *p3);
 double cosine3p(GIMS_Point *p1, GIMS_Point *p2, GIMS_Point *p3);
 double distToSegmentSquared(GIMS_Point *p, GIMS_LineSegment *e);
-GIMS_Geometry *lyWktParse(char *wkt);
 GIMS_Geometry *fromWkt(char *wkt);
+GIMS_Geometry *lyWktParse(char *wkt);
 
 #endif
