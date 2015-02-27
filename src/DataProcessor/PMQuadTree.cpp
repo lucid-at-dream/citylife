@@ -41,6 +41,7 @@ void *Node::search (GIMS_Geometry *geom){
         retlist->push_back(this);
     }
     
+    clipped->deleteClipped();
     return retlist;
 
 }
@@ -71,7 +72,10 @@ Node *Node::goNorth( double x ){
     //we then search for the point in the found node to get the containing leaf node.
     //even tough there's no guarantee that only one node will be returned, there's a guarantee
     //that all the retrieved nodes intersect the vertical line that goes through x
-    return ((list<Node *> *)(cNode->search( &pt )))->front();
+    list<Node *> *nodes = (list<Node *> *)(cNode->search( &pt ));
+    Node *northern = nodes->front();
+    delete nodes;
+    return northern;
 }
 
 /*if node has reference to a geometry labeled with id, returns the geometry's 
@@ -540,8 +544,9 @@ void *PMQuadTree::search (GIMS_Geometry *geom){
 /*Follow the operations between the data structure and a given geometry*/
 bool PMQuadTree::contains(GIMS_Geometry* container, GIMS_Geometry* contained){
     if(container->type == POLYGON && contained->type == POINT){
-        Node *n = ((list<Node *> *)(this->search(contained)))->front();
-        bool res = n->polygonContainsPoint((GIMS_Polygon *)container, (GIMS_Point *)contained);
+        list<Node *> *l = (list<Node *> *)(this->search(contained));
+        bool res = l->front()->polygonContainsPoint((GIMS_Polygon *)container, (GIMS_Point *)contained);
+        delete l;
         return res;
     }
     return false;

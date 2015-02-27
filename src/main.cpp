@@ -31,13 +31,17 @@ int main (int argc, char *argv[]) {
     list<GIMS_Geometry *> *roads    = conn.getGeometry("from planet_osm_roads LIMIT   100");
     conn.disconnect();
 
-    //tree->query = polygons->front();
+    tree->query = polygons->front();
     //tree->query->toWkt();
 
     tree->insert(polygons);
     tree->insert(lines);
     tree->insert(points);
     tree->insert(roads);
+
+    for(list<GIMS_Geometry *>::iterator it = points->begin(); it!=points->end(); it++){
+        tree->contains(tree->query, *it);
+    }
 
     /*
     renderer = new DebRenderer();
