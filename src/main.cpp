@@ -39,8 +39,8 @@ int main (int argc, char *argv[]) {
     tree->insert(points);
     tree->insert(roads);
 
-    for(list<GIMS_Geometry *>::iterator it = points->begin(); it!=points->end(); it++){
-        tree->contains(tree->query, *it);
+    for(list<GIMS_Geometry *>::iterator it = polygons->begin(); it!=polygons->end(); it++){
+        delete (list<Node *> *)(tree->root->searchInterior((GIMS_Polygon *)(*it)));
     }
 
     /*

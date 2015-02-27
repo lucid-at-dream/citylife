@@ -217,7 +217,7 @@ void *Node::searchInterior (GIMS_Polygon *pol){
         return l;
     
     }else{
-        list<Node *> *retlist = new list<Node *>;
+        list<Node *> *retlist = new list<Node *>();
         
         char center_contained = -1;
         //iterate over the child nodes
@@ -247,11 +247,12 @@ void *Node::searchInterior (GIMS_Polygon *pol){
                 retlist->push_back(sons[q]);
             }else if( clipped != NULL ){
                 //if the node is intersected we call recursively to its sons.
-                list<Node *> *l = (list<Node *> *)sons[q]->searchInterior(clipped);
+                list<Node *> *l = (list<Node *> *)(sons[q]->searchInterior(clipped));
                 if( l != NULL ){
                     retlist->insert( retlist->end(), l->begin(), l->end() );
                     delete l;
                 }
+                clipped->deleteClipped();
             }
         }
         return retlist;
