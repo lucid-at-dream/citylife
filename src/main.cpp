@@ -31,22 +31,22 @@ int main (int argc, char *argv[]) {
     list<GIMS_Geometry *> *roads    = conn.getGeometry("from planet_osm_roads LIMIT   100");
     conn.disconnect();
 
-    tree->query = polygons->front();
-    tree->query->toWkt();
+    //tree->query = polygons->front();
+    //tree->query->toWkt();
 
     tree->insert(polygons);
     tree->insert(lines);
     tree->insert(points);
     tree->insert(roads);
 
-    
+    /*
     renderer = new DebRenderer();
     renderer->setScale(400.0/extent->xlength(), -400.0/extent->ylength());
     renderer->setTranslation( -extent->minx(), -extent->maxy() );
     renderer->renderCallback = tree;
     renderer->renderSvg("outtree.svg", 400, 400);
     renderer->mainloop(argc, argv);
-
+    */
 
     delete tree;
     for(list<GIMS_Geometry *>::iterator it = polygons->begin(); it!=polygons->end(); it++)

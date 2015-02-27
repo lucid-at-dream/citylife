@@ -1,6 +1,6 @@
 #compiler settings
 CC = g++
-LDLIBS = -lm -lpq
+LDLIBS = -lm -lpq -g
 COPT = -O2 -march=native -mtune=native
 COPT = 
 CFLAGS = -std=c++11 ${LDLIBS} ${COPT}

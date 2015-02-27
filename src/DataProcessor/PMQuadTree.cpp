@@ -273,7 +273,6 @@ list<GIMS_Geometry *> *Node::clipDict(list<GIMS_Geometry *> *dict){
 
 /*Inserts geometry "geom" in the tree*/
 void Node::insert ( list<GIMS_Geometry *> *geom ) {
-
     depth++;
     if( depth > 100 ){
         fprintf(stderr, "max depth reached (100), not inserting. Look out for bugs...\n");
@@ -282,7 +281,6 @@ void Node::insert ( list<GIMS_Geometry *> *geom ) {
     }
 
     list<GIMS_Geometry *> *clipped = this->clipDict(geom);
-
     if (clipped == NULL) { //geometry to insert does not intersect this node
         depth--;
         return;
@@ -470,7 +468,7 @@ void Node::split(){
 Node::Node(){
     this->type = WHITE;
     this->square = NULL;
-    this->dictionary = new list<GIMS_Geometry *>;
+    this->dictionary = NULL;
     this->sons[0] = this->sons[1] = this->sons[2] = this->sons[3] = NULL;
     this->father = NULL;
 }
@@ -490,9 +488,11 @@ Node::~Node(){
 
     this->square->deepDelete();
 
-    if(dictionary != NULL)
+    if(dictionary != NULL){
         for(list<GIMS_Geometry *>::iterator it = dictionary->begin(); it != dictionary->end(); it++)
             (*it)->deleteClipped();
+        delete dictionary;
+    }
 }
 /*
 Polygonal Map QuadTree Node<--
@@ -542,7 +542,6 @@ bool PMQuadTree::contains(GIMS_Geometry* container, GIMS_Geometry* contained){
     if(container->type == POLYGON && contained->type == POINT){
         Node *n = ((list<Node *> *)(this->search(contained)))->front();
         bool res = n->polygonContainsPoint((GIMS_Polygon *)container, (GIMS_Point *)contained);
-
         return res;
     }
     return false;
@@ -642,7 +641,7 @@ void PMQuadTree::renderTree (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
 /*Render a leaf node and contained geometries*/
 void PMQuadTree::renderLeafNode (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
 
-    //renderer->renderGeometry(cr, n->square);
+    renderer->renderGeometry(cr, n->square);
 
     if( n->dictionary == NULL )
         return;

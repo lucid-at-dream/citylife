@@ -228,9 +228,10 @@ void GIMS_MultiLineString::deepDelete(){
 }
 
 void GIMS_MultiLineString::deleteClipped(){
-    for(int i=0; i<this->size; i++){
-        this->list[i]->deleteClipped();
-    }
+    if(this->list != NULL)
+        for(int i=0; i<this->size; i++){
+            this->list[i]->deleteClipped();
+        }
     delete this;
 }
 
@@ -268,6 +269,7 @@ GIMS_Geometry *GIMS_MultiLineString::clipToBox(GIMS_BoundingBox *box){
                 clipped->id = this->id;
             }
             clipped->merge(partial);
+            delete partial;
         }
     }
     return clipped;
