@@ -2,7 +2,7 @@ syntax: glob
 
 compile
 */CMakeLists.txt
-
+cmakefile
 *.o
 leak
 

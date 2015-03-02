@@ -587,6 +587,10 @@ RelStatus PMQuadTree::isBoundedBy ( GIMS_Geometry *result, GIMS_BoundingBox *box
 
 
 /* Functions for debug renderization module */
+void PMQuadTree::renderRed ( GIMS_Geometry *g){
+    redRenderQueue->push_back(g);
+}
+
 void PMQuadTree::debugRender(Cairo::RefPtr<Cairo::Context> cr){
 
     renderer->setScale( 400.0/this->root->square->xlength(),
@@ -647,7 +651,7 @@ void PMQuadTree::renderTree (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
 /*Render a leaf node and contained geometries*/
 void PMQuadTree::renderLeafNode (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
 
-    renderer->renderGeometry(cr, n->square);
+    //renderer->renderGeometry(cr, n->square);
 
     if( n->dictionary == NULL )
         return;

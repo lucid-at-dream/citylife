@@ -2,7 +2,6 @@
 CC = g++
 LDLIBS = -lm -lpq -g
 COPT = -O2 -march=native -mtune=native
-COPT = 
 CFLAGS = -std=c++11 ${LDLIBS} ${COPT}
 CTESTFLAGS = -lgtest -lgtest_main
 
@@ -67,6 +66,18 @@ ${SRC_DIR}/Geometry/lex.yy.c: ${SRC_DIR}/Geometry/wkt.l
 	flex -o $@ $<
 #end
 
+#target that should be called for the test executable
+test: ${BIN_DIR}/${OTESTFILE} 
+
+#make an executable for the unit tests
+${BIN_DIR}/${OTESTFILE}: ${OBJTESTFILES} ${OBJFILES} | ${BIN_DIR}
+	${CC} ${CFLAGS} $^ -o $@ ${INC_DIR} ${CTESTFLAGS}
+
+#create object files for the unit tests
+${TEST_DIR}/${OBJ_DIR}/%.o: ${TEST_DIR}/%.cpp | ${TEST_DIR}/${OBJ_DIR}/
+	${CC} ${CFLAGS} -c $< -o $@ ${INC_DIR} ${CTESTFLAGS}
+
+
 .SECONDEXPANSION:
 #create the executable
 ${BIN_DIR}/${OFILE}: ${OBJFILES} ${OBJMAIN} | ${BIN_DIR}
@@ -84,17 +95,6 @@ ${OBJ_DIR}/Geometry/lex.yy.o: ${SRC_DIR}/Geometry/lex.yy.c ${SRC_DIR}/Geometry/y
 ${OBJ_DIR}/Geometry/y.tab.o: ${SRC_DIR}/Geometry/y.tab.c | $$(@D)/
 	${CC} ${CFLAGS} -c $< -o $@ ${INC_DIR} -ly
 #end
-
-#target that should be called for the test executable
-test: ${BIN_DIR}/${OTESTFILE} 
-
-#make an executable for the unit tests
-${BIN_DIR}/${OTESTFILE}: ${OBJTESTFILES} | ${BIN_DIR}
-	${CC} ${CFLAGS} $^ -o $@ ${INC_DIR} ${CTESTFLAGS}
-
-#create object files for the unit tests
-${TEST_DIR}/${OBJ_DIR}/%.o: ${TEST_DIR}/%.cpp | ${TEST_DIR}/${OBJ_DIR}
-	${CC} ${CFLAGS} -c $< -o $@ ${INC_DIR} ${CTESTFLAGS}
 
 #create directories
 ${OBJ_DIR}%/:
