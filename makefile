@@ -1,7 +1,7 @@
 #compiler settings
 CC = g++
-LDLIBS = -lm -lpq -g
-COPT = -O2 -march=native -mtune=native
+LDLIBS = -lm -lpq -g -Wall
+COPT = -Og -march=native -mtune=native
 CFLAGS = -std=c++11 ${LDLIBS} ${COPT}
 CTESTFLAGS = -lgtest -lgtest_main
 

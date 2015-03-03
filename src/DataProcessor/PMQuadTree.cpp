@@ -259,6 +259,78 @@ void *Node::searchInterior (GIMS_Polygon *pol){
     }
 }
 
+list<GIMS_Geometry *> *Node::unconstrainedActiveSearch(int(*filter)(GIMS_Geometry *)){
+    list<GIMS_Geometry *> *results = new list<GIMS_Geometry *>();
+    
+    if( this->type != GRAY ){
+        if(this->dictionary != NULL){
+            for(list<GIMS_Geometry*>::iterator it = dictionary->begin(); it != dictionary->end(); it++){
+                if(filter(*it))
+                    results->push_back(*it);
+            }
+        }
+    }else{
+        for( Quadrant q : quadrantList ){
+            list<GIMS_Geometry *> *partial = sons[q]->unconstrainedActiveSearch(filter);
+            results->insert(results->end(), partial->begin(), partial->end());
+            delete partial;
+        }
+    }
+    return results;
+}
+
+/*Returns all geometries stored in nodes intersected by polygon pol that pass the
+  filter function test*/
+list<GIMS_Geometry *> *Node::activeInteriorSearch (GIMS_Polygon *pol, 
+                                                    int(*intersectedFilter)(Node *, GIMS_Geometry *, GIMS_Geometry *),
+                                                    int(*containedFilter)(GIMS_Geometry *) ){
+
+    list<GIMS_Geometry *> *results = new list<GIMS_Geometry *>();
+    if ( this->type != GRAY ) { //if the node is a leaf node
+        if(this->dictionary != NULL){
+            for(list<GIMS_Geometry*>::iterator it = dictionary->begin(); it != dictionary->end(); it++){
+                if(intersectedFilter(this, pol, *it))
+                    results->push_back(*it);
+            }
+        }
+        return results;
+    
+    }else{
+        char center_contained = -1;
+        //iterate over the child nodes
+        for( Quadrant q : quadrantList ) {
+
+            //fetch all components of the polygon that intersect the son's square
+            GIMS_Polygon *clipped = (GIMS_Polygon *)(pol->clipToBox(sons[q]->square));
+
+            bool contained = false;
+            if( clipped == NULL ){
+                /*if there are no intersections, then either the node is stricly contained or
+                 *strictly outside of the polygon. Since the father center point belongs to
+                 *all 4 children, we can test only that point for polygon containment.*/
+                if( center_contained == -1 ){
+                    GIMS_Point p = this->square->getCenter();
+                    contained = sons[q]->polygonContainsPoint(pol, &p);
+                    center_contained = contained ? 1 : 0;
+                
+                }else if(center_contained == 1){
+                    list<GIMS_Geometry *> *partial = sons[q]->unconstrainedActiveSearch(containedFilter);
+                    results->insert(results->end(), partial->begin(), partial->end());
+                    delete partial;
+                }
+
+            }else{
+                //if the node is intersected we call recursively to its sons.
+                list<GIMS_Geometry *> *partial = sons[q]->activeInteriorSearch(clipped, intersectedFilter, containedFilter);
+                results->insert( results->end(), partial->begin(), partial->end() );
+                delete partial;
+                clipped->deleteClipped();
+            }
+        }
+        return results;
+    }
+}
+
 void mergeDicts(list<GIMS_Geometry *> *a, list<GIMS_Geometry *> *b){
     a->insert(a->end(), b->begin(), b->end());
 }
@@ -553,6 +625,15 @@ bool PMQuadTree::contains(GIMS_Geometry* container, GIMS_Geometry* contained){
     return false;
 }
 
+list<GIMS_Geometry *> *PMQuadTree::getRelated(GIMS_Geometry *g,
+                                              int(*intersectedFilter)(Node *, GIMS_Geometry *, GIMS_Geometry *),
+                                              int(*containedFilter)(GIMS_Geometry *)){
+    if(g->type == POLYGON){
+        return this->root->activeInteriorSearch((GIMS_Polygon *)g, intersectedFilter, containedFilter);
+    }
+    return NULL;
+}
+
 RelStatus PMQuadTree::intersects_g  ( GIMS_Geometry *result, GIMS_Geometry *geom){
     return UNDECIDED_RELATIONSHIP;
 }
@@ -659,8 +740,8 @@ void PMQuadTree::renderLeafNode (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
     if (n->type == BLACK) { //the WHITE type stands for empty node, thus we ignore it.
         for( list<GIMS_Geometry *>::iterator it = n->dictionary->begin();
              it != n->dictionary->end(); it++ ) {
-            
-            renderer->renderGeometry( cr, *it );
+            if((*it)->type != POINT && (*it)->type != MULTIPOINT)
+                renderer->renderGeometry( cr, *it );
         }
     }
 }

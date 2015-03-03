@@ -38,6 +38,12 @@ namespace PMQUADTREE {
         bool  polygonContainsPoint    (GIMS_Polygon *pol, GIMS_Point *pt);
         GIMS_Geometry *hasReferenceTo (long id);
         Node *goNorth                 (double x);
+
+        list<GIMS_Geometry *> *unconstrainedActiveSearch(int(*filter)(GIMS_Geometry *));
+        list<GIMS_Geometry *> *activeInteriorSearch (GIMS_Polygon *pol, 
+                                                    int(*intersectedFilter)(Node *, GIMS_Geometry *, GIMS_Geometry *),
+                                                    int(*containedFilter)(GIMS_Geometry *) );
+
         void  split                   ();
               Node                    ();
               Node                    (GIMS_BoundingBox *square);
@@ -64,6 +70,12 @@ namespace PMQUADTREE {
         /*check if container contains contained. Supports only geometry primitives,
          *and not multipart geometries.*/
         bool contains(GIMS_Geometry* container, GIMS_Geometry* contained);
+
+        /*given a topological filtering function, report all objects that relate
+          to the first argument of the function.*/
+        list<GIMS_Geometry *> *getRelated(GIMS_Geometry *g,
+                                          int(*intersectedFilter)(Node *, GIMS_Geometry *, GIMS_Geometry *),
+                                          int(*containedFilter)(GIMS_Geometry *));
 
         /*Follow the operations between the data structure and a given geometry*/
         RelStatus intersects_g  ( GIMS_Geometry *result, GIMS_Geometry *);
