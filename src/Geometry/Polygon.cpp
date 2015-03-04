@@ -1,5 +1,14 @@
 #include "Geometry.hpp"
 
+int GIMS_Polygon::getPointCount(){
+    int total = 0;
+    if(this->externalRing != NULL)
+        total += this->externalRing->getPointCount();
+    if(this->internalRings != NULL)
+        total += this->internalRings->getPointCount();
+    return total;
+}
+
 void GIMS_Polygon::deepDelete(){
     if(externalRing != NULL){
         this->externalRing->deepDelete();
@@ -137,6 +146,16 @@ GIMS_Polygon::~GIMS_Polygon(){
 
 
 
+
+
+
+
+int GIMS_MultiPolygon::getPointCount(){
+    int total = 0;
+    for(int i=0; i<size; i++)
+        total += list[i]->getPointCount();
+    return total;
+}
 
 void GIMS_MultiPolygon::deepDelete(){
     if( this->list != NULL )

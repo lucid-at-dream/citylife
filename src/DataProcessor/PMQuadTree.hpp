@@ -29,6 +29,7 @@ namespace PMQUADTREE {
         void *search                  (GIMS_Geometry *geom);
         void *searchInterior          (GIMS_Polygon *pol);
         void  insert                  (list<GIMS_Geometry *> *);
+        int   numPoints               (list<GIMS_Geometry *> *);
         bool  validate                (list<GIMS_Geometry *> *);
         bool  validateGeometry        (GIMS_Geometry *p, GIMS_Point **sharedPoint);
         bool  validatePolygon         (GIMS_Polygon *p, GIMS_Point **sharedPoint);
@@ -88,10 +89,14 @@ namespace PMQUADTREE {
         RelStatus isBoundedBy ( GIMS_Geometry *result, GIMS_BoundingBox *);
 
         void renderRed      ( GIMS_Geometry * );
+        void renderGreen    ( GIMS_Geometry * );
         void onClick        ( double, double );
         void debugRender    ( Cairo::RefPtr<Cairo::Context> );
         void renderTree     ( Cairo::RefPtr<Cairo::Context>, Node *n );
         void renderLeafNode ( Cairo::RefPtr<Cairo::Context>, Node *n );
+
+        int getNumNodes();
+        int getMaxDepth();
 
     };
 }

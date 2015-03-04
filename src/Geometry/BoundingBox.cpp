@@ -1,5 +1,9 @@
 #include "Geometry.hpp"
 
+int GIMS_BoundingBox::getPointCount(){
+    return 2;
+}
+
 void GIMS_BoundingBox::deepDelete(){
     delete this->lowerLeft;
     delete this->upperRight;

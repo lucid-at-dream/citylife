@@ -5,6 +5,8 @@
 #include <cstring>
 #include <iostream>
 
+#define RENDERTEST 400
+
 #define INPUTS_DIR "tests/cases/ptInsidePol/inputs/"
 #define OUTPUTS_DIR "tests/cases/ptInsidePol/outputs/"
 
@@ -115,6 +117,25 @@ namespace {
         char *results = (char *)malloc(N * sizeof(char));
         for(int i=0; i<N; i++){
             results[i] = tree->contains(p, points[i]) ? '1' : '0';
+        }
+
+        if( curr_test == RENDERTEST ){
+            for(int i=0; i<N; i++){
+                if( results[i] == '0' ){
+                    tree->renderRed(points[i]);
+                }else{
+                    tree->renderGreen(points[i]);
+                }
+            }
+
+            tree->query = p;
+            renderer = new DebRenderer();
+            renderer->setScale(400.0/box->xlength(), -400.0/box->ylength());
+            renderer->setTranslation( -box->minx(), -box->maxy() );
+            renderer->renderCallback = tree;
+            int argc = 1;
+            char *argv[] = {"gims", "test"};
+            renderer->mainloop(argc, argv);
         }
 
         /*read expected output file*/

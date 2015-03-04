@@ -1,6 +1,10 @@
 #include "Geometry.hpp"
 
 /* Returns true if the point lies inside the given bounding box */
+int GIMS_Point::getPointCount(){
+    return 1;
+}
+
 void GIMS_Point::deleteClipped(){}
 
 void GIMS_Point::deepDelete(){
@@ -72,6 +76,10 @@ GIMS_Point::~GIMS_Point() {}
 
 
 /*Multi point implementation below*/
+int GIMS_MultiPoint::getPointCount(){
+    return size;
+}
+
 void GIMS_MultiPoint::deepDelete(){
     for(int i=0; i<this->size; i++){
         delete list[i];

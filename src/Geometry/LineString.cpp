@@ -1,5 +1,9 @@
 #include "Geometry.hpp"
 
+int GIMS_LineSegment::getPointCount(){
+    return 2;
+}
+
 void GIMS_LineSegment::deleteClipped(){}
 
 void GIMS_LineSegment::deepDelete(){
@@ -90,6 +94,10 @@ GIMS_Geometry *GIMS_LineSegment::clipToBox ( GIMS_BoundingBox *box ){
 
 
 /* From here we define the LineString class */
+int GIMS_LineString::getPointCount(){
+    return size;
+}
+
 void GIMS_LineString::deepDelete(){
     if(this->list != NULL)
         for(int i=0; i<this->size; i++)
@@ -220,6 +228,13 @@ GIMS_Ring::GIMS_Ring(){
 
 
 /*The MultiLineString class.*/
+int GIMS_MultiLineString::getPointCount(){
+    int total = 0;
+    for(int i=0; i<size; i++)
+        total += list[i]->size;
+    return total;
+}
+
 void GIMS_MultiLineString::deepDelete(){
     if(this->list != NULL)
         for(int i=0; i<this->size; i++)

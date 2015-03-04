@@ -1,6 +1,12 @@
 #include "Geometry.hpp"
 
-/*append a geometry to the list*/
+int GIMS_GeometryCollection::getPointCount(){
+    int total = 0;
+    for(int i=0; i<size; i++)
+        total += this->list[i]->getPointCount();
+    return total;
+}
+
 void GIMS_GeometryCollection::deepDelete(){
     if(this->list != NULL)
         for(int i=0; i<this->size; i++)

@@ -8,7 +8,7 @@ Quadrant quadrantList[4] =  {NW, NE, SE, SW};
 char quadrantLabels[4][3] =  {"NW", "NE", "SE", "SW"};
 double xmultiplier[4] =  {0.0, 0.5, 0.5, 0.0};
 double ymultiplier[4] =  {0.5, 0.5, 0.0, 0.0};
-int depth = 0;
+int depth = 0, maxDepth = 0, nnodes = 1;
 
 bool renderEdge = false;
 list<GIMS_Geometry *> *renderQueue = new list<GIMS_Geometry *>();
@@ -193,7 +193,7 @@ bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
         double angle1 = angle3p(unshared1, shpoint, &qp),
                angle2 = angle3p(unshared2, shpoint, &qp);
 
-        auxls = angle1 >= angle2 ? other : closest;    
+        auxls = angle1 >= angle2 ? other : closest;
         closest = angle1 < angle2 ? closest : other;
     }
 
@@ -313,7 +313,9 @@ list<GIMS_Geometry *> *Node::activeInteriorSearch (GIMS_Polygon *pol,
                     contained = sons[q]->polygonContainsPoint(pol, &p);
                     center_contained = contained ? 1 : 0;
                 
-                }else if(center_contained == 1){
+                }
+
+                if(center_contained == 1){
                     list<GIMS_Geometry *> *partial = sons[q]->unconstrainedActiveSearch(containedFilter);
                     results->insert(results->end(), partial->begin(), partial->end());
                     delete partial;
@@ -351,8 +353,12 @@ list<GIMS_Geometry *> *Node::clipDict(list<GIMS_Geometry *> *dict){
 /*Inserts geometry "geom" in the tree*/
 void Node::insert ( list<GIMS_Geometry *> *geom ) {
     depth++;
-    if( depth > 100 ){
-        fprintf(stderr, "max depth reached (100), not inserting. Look out for bugs...\n");
+
+    if(depth > maxDepth)
+        maxDepth = depth;
+
+    if( depth > 200 ){
+        fprintf(stderr, "max depth reached (200), not inserting. Look out for bugs...\n");
         depth--;
         return;
     }
@@ -373,6 +379,7 @@ void Node::insert ( list<GIMS_Geometry *> *geom ) {
         }
 
         if ( this->validate(clipped) ) {
+        //if(this->numPoints(clipped) <= 50) {
             //if the geometry is a valid node geometry we insert it into the node
             this->dictionary = clipped;
             this->type = BLACK;
@@ -403,6 +410,14 @@ bool Node::validate (list<GIMS_Geometry *> *dict) {
             return false;
     }
     return true;
+}
+
+int Node::numPoints(list<GIMS_Geometry *> *dict){
+    int total = 0;
+    for(list<GIMS_Geometry *>::iterator it = dict->begin(); it != dict->end(); it++){
+        total += (*it)->getPointCount();
+    }
+    return total;
 }
 
 bool Node::validateGeometry (GIMS_Geometry *g, GIMS_Point **sharedPoint){
@@ -520,6 +535,7 @@ bool Node::validatePolygon(GIMS_Polygon *p, GIMS_Point **sharedPoint){
 
 /*creates four new sons (one for each quadrant) in the calling node*/
 void Node::split(){
+    nnodes += 4;
     double xlen = this->square->xlength(),
            ylen = this->square->ylength();
     
@@ -587,6 +603,12 @@ PMQuadTree::~PMQuadTree () {
     delete this->root;
 }
 
+int PMQuadTree::getNumNodes(){
+    return nnodes;
+}
+int PMQuadTree::getMaxDepth(){
+    return maxDepth;
+}
 
 
 /*Functions that take care of the construction and maintenance of the structure*/
@@ -672,6 +694,10 @@ void PMQuadTree::renderRed ( GIMS_Geometry *g){
     redRenderQueue->push_back(g);
 }
 
+void PMQuadTree::renderGreen ( GIMS_Geometry *g){
+    renderQueue->push_back(g);
+}
+
 void PMQuadTree::debugRender(Cairo::RefPtr<Cairo::Context> cr){
 
     renderer->setScale( 400.0/this->root->square->xlength(),
@@ -739,8 +765,7 @@ void PMQuadTree::renderLeafNode (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
 
     if (n->type == BLACK) { //the WHITE type stands for empty node, thus we ignore it.
         for( list<GIMS_Geometry *>::iterator it = n->dictionary->begin();
-             it != n->dictionary->end(); it++ ) {
-            if((*it)->type != POINT && (*it)->type != MULTIPOINT)
+            it != n->dictionary->end(); it++ ) {
                 renderer->renderGeometry( cr, *it );
         }
     }
@@ -748,6 +773,10 @@ void PMQuadTree::renderLeafNode (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
 
 void PMQuadTree::onClick( double x, double y){
     printf("begin click event at %lf %lf\n", x, y);
+    
+    if(this->query == NULL)
+        return;
+
     GIMS_Polygon *pol= (GIMS_Polygon *)(this->query);
     GIMS_Point *pt = new GIMS_Point(x,y);
     renderEdge = true;

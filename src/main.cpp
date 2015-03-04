@@ -39,26 +39,103 @@ int main (int argc, char *argv[]) {
         cout << "==== STARTING DEMO 2 ====\n";
         demo2();
         cout << "==== FINISHED DEMO 2 ====\n";
+    }else{
+
+        PGConnection conn = PGConnection();
+        conn.connect();
+
+        GIMS_BoundingBox *extent = conn.getOverallExtent();
+        PMQuadTree *tree = new PMQuadTree( extent );
+
+        list<GIMS_Geometry *> *polygons = conn.getGeometry("from planet_osm_polygon");
+        cout << "polygons loaded" << endl;
+        list<GIMS_Geometry *> *lines    = conn.getGeometry("from planet_osm_line");
+        cout << "lines loaded" << endl;
+        list<GIMS_Geometry *> *roads  = conn.getGeometry("from planet_osm_roads");
+        cout << "roads loaded" << endl;
+        list<GIMS_Geometry *> *points   = conn.getGeometry("from planet_osm_point"); /*152675 points*/
+        cout << "points loaded" << endl;
+
+        clock_t start, stop;
+
+        start = clock();
+        tree->insert(polygons);
+        cout << "polygons inserted" << endl;
+        cout << "tree maximum depth: " << tree->getMaxDepth() << endl;
+        cout << "total number of nodes: " << tree->getNumNodes() << endl;
+
+
+        tree->insert(points);
+        cout << "points inserted" << endl;
+        cout << "tree maximum depth: " << tree->getMaxDepth() << endl;
+        cout << "total number of nodes: " << tree->getNumNodes() << endl;
+
+
+        tree->insert(lines);
+        cout << "lines inserted" << endl;
+        cout << "tree maximum depth: " << tree->getMaxDepth() << endl;
+        cout << "total number of nodes: " << tree->getNumNodes() << endl;
+
+
+        tree->insert(roads);
+        cout << "roads inserted" << endl;
+        cout << "tree maximum depth: " << tree->getMaxDepth() << endl;
+        cout << "total number of nodes: " << tree->getNumNodes() << endl;
+        stop = clock();
+
+        cout << "took ";
+        cout << (stop - start)/(double)CLOCKS_PER_SEC;
+        cout << " seconds to build the whole index" << endl;
+
+        /*
+        tree->query = polygons->front();
+        renderer = new DebRenderer();
+        renderer->setScale(400.0/extent->xlength(), -400.0/extent->ylength());
+        renderer->setTranslation( -extent->minx(), -extent->maxy() );
+        renderer->renderCallback = tree;
+        renderer->mainloop(argc, argv);
+        */
+
+        delete renderer;
+        delete tree;
+        for(list<GIMS_Geometry *>::iterator it = roads->begin(); it!=roads->end(); it++)
+            (*it)->deepDelete();
+        for(list<GIMS_Geometry *>::iterator it = lines->begin(); it!=lines->end(); it++)
+            (*it)->deepDelete();
+        for(list<GIMS_Geometry *>::iterator it = polygons->begin(); it!=polygons->end(); it++)
+            (*it)->deepDelete();
+        for(list<GIMS_Geometry *>::iterator it = points->begin(); it!=points->end(); it++)
+            (*it)->deepDelete();
+        delete polygons;
+        delete points;
+        delete roads;
+        delete lines;
     }
-    
+
     return 0;
 }
 
 
 void demo2(){
+    clock_t start, stop;
+
+    start = clock();
     PGConnection conn = PGConnection();
     conn.connect();
+    stop = clock();
+
+    cout << "took ";
+    cout << (stop - start)/(double)CLOCKS_PER_SEC;
+    cout << " seconds to connect to the database" << endl;
 
     /*retrieve layers extent*/
     GIMS_BoundingBox *extent = conn.getOverallExtent();
-
-    clock_t start, stop;
 
     /*create an empty pmqtree bounded by the computed extent*/
     PMQuadTree *tree = new PMQuadTree( extent );
 
     start = clock();
-    list<GIMS_Geometry *> *polygons = conn.getGeometry("from planet_osm_polygon where way_area > 500000000 LIMIT 1");
+    list<GIMS_Geometry *> *polygons = conn.getGeometry("from planet_osm_polygon where osm_id=-1715038");
     list<GIMS_Geometry *> *points   = conn.getGeometry("from planet_osm_point"); /*152675 points*/
     conn.disconnect();
     stop = clock();
@@ -90,11 +167,17 @@ void demo2(){
         (*it)->type = POINT;
         tree->renderRed(*it);
     }
+    tree->query = polygons->front();
     renderer = new DebRenderer();
     renderer->setScale(400.0/extent->xlength(), -400.0/extent->ylength());
     renderer->setTranslation( -extent->minx(), -extent->maxy() );
     renderer->renderCallback = tree;
     renderer->renderSvg("demo2.svg", 400, 400);
+    /*
+    char *argv[] = {"gims", "demo2"};
+    int argc = 2;
+    renderer->mainloop(argc, argv);
+    */
     delete renderer;
 
     delete tree;
@@ -120,7 +203,7 @@ void demo1(){
     PMQuadTree *tree = new PMQuadTree( extent );
 
     start = clock();
-    list<GIMS_Geometry *> *polygons = conn.getGeometry("from planet_osm_polygon where way_area > 500000000 LIMIT 1");
+    list<GIMS_Geometry *> *polygons = conn.getGeometry("from planet_osm_polygon where osm_id=-1715038");
     list<GIMS_Geometry *> *points   = conn.getGeometry("from planet_osm_point"); /*152675 points*/
     conn.disconnect();
     stop = clock();
