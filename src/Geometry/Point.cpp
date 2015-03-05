@@ -11,6 +11,47 @@ void GIMS_Point::deepDelete(){
     delete this;
 }
 
+double GIMS_Point::distance(GIMS_Point *p){
+    return sqrt((this->x - p->x) * (this->x - p->x) + (this->y - p->y) * (this->y - p->y));
+}
+
+double GIMS_Point::distanceSquared(GIMS_Point *p){
+    return (this->x - p->x) * (this->x - p->x) + (this->y - p->y) * (this->y - p->y);
+}
+
+GIMS_Point GIMS_Point::getClosestPoint(GIMS_LineSegment *e){
+    //Length of the line segment squared
+    double lineSegLenSquared = (e->p1->x - e->p2->x) * (e->p1->x - e->p2->x) + 
+                               (e->p1->y - e->p2->y) * (e->p1->y - e->p2->y);
+
+    if (lineSegLenSquared == 0)
+        //if true then the line segment is actually a point.
+        return *(e->p1);
+
+    //dot product of (p - e->p1, e->p2 - e->p1)
+    double dotProduct = (this->x - e->p1->x) * (e->p2->x - e->p1->x) + 
+                        (this->y - e->p1->y) * (e->p2->y - e->p1->y);
+
+    /*If we define the line that extends edge "e" as l(t) = e->p1 + t * (e->p2 - e->p1)
+      The closest point of "p" that lies in line "l", is a point "cp" such that
+      the line p(t) = p + t *(cp - p) forms a 90º degree angle with line "l".
+      In order to find the value of t in l(t) for point cp, we have 
+      t = [(p - e->p1).(e->p2 - e->p1)] / |e->p2 - e->p1|^2*/
+    double t = dotProduct/ lineSegLenSquared;
+    if (t < 0){
+        //if t < 0 then cp lies beyond e->p1, and therefore e->p1 is the closest point
+        return *(e->p1);
+    }if (t > 1){
+        //if t < 0 then cp lies beyond e->p2, and therefore e->p2 is the closest point
+        return *(e->p2);
+    }
+
+    //if t is in [0,1], then we must calculate point cp (nearest_pt)
+    double nearest_pt_x = e->p1->x + t * (e->p2->x - e->p1->x),
+           nearest_pt_y = e->p1->y + t * (e->p2->y - e->p1->y);
+    return GIMS_Point(nearest_pt_x, nearest_pt_y);
+}
+
 GIMS_Point *GIMS_Point::clone() {
     GIMS_Point *fresh = new GIMS_Point(this->x, this->y);
     fresh->id = this->id;
@@ -53,7 +94,8 @@ GIMS_Geometry *GIMS_Point::clipToBox ( GIMS_BoundingBox *box ){
 
 /*returns true if the coordinates of both points are the same. false otherwise.*/
 bool GIMS_Point::equals ( GIMS_Point *cmp ) {
-    if( this->x == cmp->x && this->y == cmp->y ){
+    if( this->x <= cmp->x + ERR_MARGIN && this->x >= cmp->x - ERR_MARGIN &&
+        this->y <= cmp->y + ERR_MARGIN && this->y >= cmp->y - ERR_MARGIN ){
         return true;
     }
     return false;

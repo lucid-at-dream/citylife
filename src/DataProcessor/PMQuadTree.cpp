@@ -120,11 +120,13 @@ bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
     }
 
     //set up the query point
-    GIMS_Point qp;
+    GIMS_Point qp, *auxqp = NULL;
     if(this == n)
         qp = *pt;
-    else
-        qp = GIMS_Point(pt->x, n->square->lowerLeft->y);
+    else{
+        auxqp = new GIMS_Point(pt->x, n->square->lowerLeft->y);
+        qp = *auxqp;
+    }
 
     //The first portion of the polygon "pol" that we found going in the north direction
     GIMS_Polygon *p = (GIMS_Polygon *)first;
@@ -137,7 +139,9 @@ bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
     bool isEdgeFromExtRing = false;
     double minDist = 1e100;
     double tmp;
+
     GIMS_LineSegment closest;
+    GIMS_Point closestPoint;
 
     //iterate over the edges from the polygon rings
     GIMS_MultiLineString *prings[2] = {p->externalRing, p->internalRings};
@@ -146,13 +150,22 @@ bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
         for(int i=0; ring != NULL && i<ring->size; i++){
             for(int j=0; j<ring->list[i]->size-1; j++){
                 GIMS_LineSegment curr = ring->list[i]->getLineSegment(j);
-                if( (tmp = distToSegmentSquared(&qp, &curr)) < minDist ){
+                GIMS_Point tmp_point = curr.closestPointWithinRange(n->square, &qp);
+
+                if( (tmp = qp.distanceSquared(&tmp_point)) < minDist ){
                     minDist = tmp;
                     closest = curr;
+                    closestPoint = tmp_point;
                     isEdgeFromExtRing = (ring == p->externalRing);
                 }
             }
         }
+    }
+
+    if( renderEdge ){
+        printf("%lf\n", minDist);
+        renderQueue->push_back(closestPoint.clone());
+        redRenderQueue->push_back(qp.clone());
     }
 
     /*if the closest line segment shares the node with an adjacent line segment,
@@ -162,48 +175,56 @@ bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
       forms the smallest angle with the linesegment pt---pt2. We then check to 
       with side of that line pt lies.*/
 
-    GIMS_MultiLineString *src = isEdgeFromExtRing ? p->externalRing : p->internalRings;
+    if( closestPoint.equals(closest.p1) || closestPoint.equals(closest.p2) ){
 
-    bool p1inside = closest.p1->isInsideBox(n->square);
-    GIMS_LineSegment auxls;
+        GIMS_MultiLineString *src = isEdgeFromExtRing ? p->externalRing : p->internalRings;
 
-    GIMS_Point *shpoint = p1inside ? closest.p1 : closest.p2;
-    GIMS_Point *unshared1 = p1inside ? closest.p2 : closest.p1;
-    GIMS_Point *unshared2 = NULL;
-    GIMS_LineSegment other;
+        GIMS_Point *shpoint   = closestPoint.equals(closest.p1) ? closest.p1 : closest.p2;
+        GIMS_Point *unshared1 = closestPoint.equals(closest.p1) ? closest.p2 : closest.p1;
+        GIMS_Point *unshared2 = NULL;
+        GIMS_LineSegment other;
 
-    //find the edge that shares the endpoint with current "closest"
-    bool found = false;
-    int i,j;
-    for(i=0; i<src->size && !found; i++){
-        for(j=0; j<src->list[i]->size-1 && !found; j++){
-            other = src->list[i]->getLineSegment(j);
-            if( other.p1->equals(shpoint) && !other.p2->equals(unshared1) ){
-                unshared2 = other.p2;
-                found = true;
-            }else if( other.p2->equals(shpoint) && !other.p1->equals(unshared1) ){
-                unshared2 = other.p1;
-                found = true;
+        //find the edge that shares the endpoint with current "closest"
+        bool found = false;
+        int i,j;
+        for(i=0; i<src->size && !found; i++){
+            for(j=0; j<src->list[i]->size-1 && !found; j++){
+                other = src->list[i]->getLineSegment(j);
+                if( other.p1->equals(shpoint) && !other.p2->equals(unshared1) ){
+                    unshared2 = other.p2;
+                    found = true;
+                }else if( other.p2->equals(shpoint) && !other.p1->equals(unshared1) ){
+                    unshared2 = other.p1;
+                    found = true;
+                }
             }
+        }
+
+        GIMS_LineSegment auxls;
+        if( unshared2 != NULL ){
+            //compute and compare angles
+            double angle1 = angle3p(unshared1, shpoint, &qp),
+                   angle2 = angle3p(unshared2, shpoint, &qp);
+
+            auxls = angle1 < angle2 ? other : closest;
+            closest = angle1 < angle2 ? closest : other;
+
+            if(renderEdge){
+                redRenderQueue->push_back(auxls.clone());
+            }
+        }else{
+            //in this case the vertex sharing edge is in another node
         }
     }
 
-    if( unshared2 != NULL ){
-        //compute and compare angles
-        double angle1 = angle3p(unshared1, shpoint, &qp),
-               angle2 = angle3p(unshared2, shpoint, &qp);
+    if(renderEdge)
+        renderQueue->push_back(closest.clone());
 
-        auxls = angle1 >= angle2 ? other : closest;
-        closest = angle1 < angle2 ? closest : other;
-    }
-
-    /*Finally we check to which side of "closest" "pt" lies and report depending on whether
-     * we're comparing against an external or internal ring.*/
-    if( isEdgeFromExtRing ){
+    /*Finally we check to which side of "closest" "pt" lies and report.*/
+    if( isEdgeFromExtRing )
         return (qp.sideOf(&closest) != LEFT) ? true : false;
-    }else{
-        return (qp.sideOf(&closest) != RIGHT) ? false : true;
-    }
+    else
+        return (qp.sideOf(&closest) == RIGHT) ? true : false;
 }
 
 /*Returns all nodes that intersect a given poligon "pol", including the 
@@ -378,8 +399,8 @@ void Node::insert ( list<GIMS_Geometry *> *geom ) {
             this->dictionary = NULL;
         }
 
-        if ( this->validate(clipped) ) {
-        //if(this->numPoints(clipped) <= 50) {
+        //if ( this->validate(clipped) ) {
+        if(this->numPoints(clipped) <= 50) {
             //if the geometry is a valid node geometry we insert it into the node
             this->dictionary = clipped;
             this->type = BLACK;

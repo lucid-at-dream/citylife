@@ -39,6 +39,122 @@ GIMS_LineSegment::GIMS_LineSegment ( GIMS_Point *p1, GIMS_Point *p2 ){
 GIMS_LineSegment::~GIMS_LineSegment() {
 }
 
+/*returns the point contained in this line segment that is both inside the give
+  bounding box "range" and is closer to point "pt" than any other point in the
+  line segment. it is assumed that the line segment allways has some portion of 
+  it inside the given range.*/
+GIMS_Point GIMS_LineSegment::closestPointWithinRange(GIMS_BoundingBox *range, GIMS_Point *pt){
+
+    bool p1inside = this->p1->isInsideBox(range),
+         p2inside = this->p2->isInsideBox(range);
+
+    /*if this line segment is fully within the given range we can solve the 
+      unconstrained version of the problem.*/
+    if ( p1inside && p2inside )
+        return pt->getClosestPoint(this);
+
+    /*otherwise we must calculate the clipped line segment and use it as input to
+      the unconstrained version of the problem.*/
+
+    GIMS_LineSegment clipped;
+    GIMS_Point p1, p2;
+
+    /*these are the square limits*/
+    double ymax = range->upperRight->y,
+           ymin = range->lowerLeft->y,
+           xmax = range->upperRight->x,
+           xmin = range->lowerLeft->x;
+
+    /*if line is vertical*/
+    if ( this->p1->x == this->p2->x ) {
+        if ( p1inside ) {
+            double int_y = this->p1->y > this->p2->y ? ymin : ymax;
+            p1 = *(this->p1);
+            p2 = GIMS_Point(this->p1->x, int_y);
+        } else if ( p2inside ) {
+            double int_y = this->p2->y > this->p1->y ? ymin : ymax;
+            p1 = GIMS_Point(this->p1->x, int_y);
+            p2 = *(this->p2);
+        } else {
+            p1 = GIMS_Point(this->p1->x, ymin);
+            p2 = GIMS_Point(this->p1->x, ymax);
+        }
+        
+    /*if line is horizontal*/
+    } else if ( this->p1->y == this->p2->y ) {
+        if ( p1inside ) {
+            double int_x = this->p1->x > this->p2->x ? xmin : xmax;
+            p1 = *(this->p1);
+            p2 = GIMS_Point(int_x, this->p1->y);
+            
+        } else if ( p2inside ) {
+            double int_x = this->p2->x > this->p1->x ? xmin : xmax;
+            p1 = GIMS_Point(int_x, this->p1->y);
+            p2 = *(this->p2);
+            
+        } else {
+            p1 = GIMS_Point(xmin, this->p1->y);
+            p2 = GIMS_Point(xmax, this->p1->y);
+        }
+
+    /*given that we've tested for both vertical and horizontal lines, we may now
+      assume that the line segment has a declive different from zero.*/
+    }else{
+
+        /*for each line that forms the bounding box, compute the value of t in
+          the line equation l(t) = p1 + t*(p2-p1), that results in an intersection.*/
+        
+        double t_int_ymax = (ymax - this->p1->y) / (this->p2->y - this->p1->y),
+               t_int_ymin = (ymin - this->p1->y) / (this->p2->y - this->p1->y),
+               t_int_xmax = (xmax - this->p1->x) / (this->p2->x - this->p1->x),
+               t_int_xmin = (xmin - this->p1->x) / (this->p2->x - this->p1->x);
+        
+        /*there are at most two of this values of t within the range [0,1], that
+          is, contained in the line segment. There's also at least one within 
+          that range because otherwise both line segment endpoints would be 
+          contained in the bounding box and we already ruled out that case.*/
+
+        /*we now compute the clipped line segment endpoints. One of them may be
+          a line segment endpoint itself. Therefore we initialize accordingly.*/
+        if( p1inside )
+            p1 = *(this->p1);
+        else if( p2inside )
+            p1 = *(this->p2);
+        bool p1found = p1inside || p2inside;
+
+        /*For each value of "t", we check if the corresponding point is within 
+          the given range. Also, to prevent double counting intersection points
+          that lie in the square's corner we check if a similar point hasn't 
+          been counted*/
+        double t_values[] = {t_int_ymax, t_int_ymin, t_int_xmax, t_int_xmin};
+        for (double t : t_values) {
+            //outside the line segment.
+            if( t < 0 || t > 1 )
+                continue;
+
+            GIMS_Point ipt = GIMS_Point(this->p1->x + t * (this->p2->x - this->p1->x), 
+                                        this->p1->y + t * (this->p2->y - this->p1->y));
+
+            //the resulting point is outside the given range.
+            if( ipt.x > xmax || ipt.x < xmin ||
+                ipt.y > ymax || ipt.y < ymin )
+                continue;
+
+            //right now we now that the resulting point is a valid intersection 
+            //point. Never the less we still have to figure out if it's been 
+            //previously counted or not.
+            if( !p1found ){
+                p1 = ipt;
+                p1found = true;
+            }else if( !ipt.equals(&p1) )
+                p2 = ipt;
+        }
+    }
+
+    clipped = GIMS_LineSegment(&p1, &p2);
+    return pt->getClosestPoint(&clipped);
+}
+
 GIMS_Geometry *GIMS_LineSegment::clipToBox ( GIMS_BoundingBox *box ){
 
     GIMS_Point upperLeft  = { box->lowerLeft->x , box->upperRight->y },
@@ -328,4 +444,6 @@ GIMS_MultiLineString::~GIMS_MultiLineString(){
     if(this->list != NULL)
         free(this->list);
 }
+
+
 

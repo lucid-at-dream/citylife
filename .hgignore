@@ -1,5 +1,8 @@
 syntax: glob
 
+demoquery
+demo1.svg
+demo2.svg
 compile
 */CMakeLists.txt
 cmakefile

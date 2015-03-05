@@ -5,6 +5,7 @@
 #include <cstring>
 #include <string>
 #include "SystemBase.hpp"
+#include <iostream>
 
 using namespace std;
 
@@ -106,16 +107,16 @@ namespace GIMS_GEOMETRY {
         GIMS_Point *p1,
                    *p2;
 
-        string            toWkt            ();
-        GIMS_LineSegment *clone            ();
-        GIMS_Geometry    *clipToBox        (GIMS_BoundingBox *);
-        GIMS_LineSegment *trimToBBox       (GIMS_BoundingBox *);
-        void              deleteClipped    ();
-        void              deepDelete       ();
-        int               getPointCount    ();
-                          GIMS_LineSegment ();
-                          GIMS_LineSegment (GIMS_Point *p1, GIMS_Point *p2);
-                         ~GIMS_LineSegment ();
+        string            toWkt                  ();
+        GIMS_LineSegment *clone                  ();
+        GIMS_Geometry    *clipToBox              (GIMS_BoundingBox *);
+        GIMS_Point        closestPointWithinRange(GIMS_BoundingBox *range, GIMS_Point *pt);
+        void              deleteClipped          ();
+        void              deepDelete             ();
+        int               getPointCount          ();
+                          GIMS_LineSegment       ();
+                          GIMS_LineSegment       (GIMS_Point *p1, GIMS_Point *p2);
+                         ~GIMS_LineSegment       ();
     };
 
     class GIMS_LineString : public GIMS_Geometry {
@@ -167,18 +168,21 @@ namespace GIMS_GEOMETRY {
       public:
         double x, y;
 
-        string         toWkt        ();
-        bool           equals       (GIMS_Point *cmp);
-        GIMS_Point    *clone        ();
-        GIMS_Geometry *clipToBox    (GIMS_BoundingBox *);
-        bool           isInsideBox  (GIMS_BoundingBox *box);
-        GIMS_Side      sideOf       (GIMS_LineSegment *edge);
-        void           deleteClipped();
-        void           deepDelete   ();
-        int            getPointCount();
-                       GIMS_Point   ();
-                       GIMS_Point   (double x, double y);
-                      ~GIMS_Point   ();
+        string         toWkt          ();
+        double         distance       (GIMS_Point *);
+        double         distanceSquared(GIMS_Point *);
+        GIMS_Point     getClosestPoint(GIMS_LineSegment *);
+        bool           equals         (GIMS_Point *cmp);
+        GIMS_Point    *clone          ();
+        GIMS_Geometry *clipToBox      (GIMS_BoundingBox *);
+        bool           isInsideBox    (GIMS_BoundingBox *box);
+        GIMS_Side      sideOf         (GIMS_LineSegment *edge);
+        void           deleteClipped  ();
+        void           deepDelete     ();
+        int            getPointCount  ();
+                       GIMS_Point     ();
+                       GIMS_Point     (double x, double y);
+                      ~GIMS_Point     ();
     };
 
     class GIMS_MultiPoint : public GIMS_Geometry {

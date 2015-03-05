@@ -5,7 +5,7 @@
 #include <cstring>
 #include <iostream>
 
-#define RENDERTEST 400
+#define RENDERTEST 111
 
 #define INPUTS_DIR "tests/cases/ptInsidePol/inputs/"
 #define OUTPUTS_DIR "tests/cases/ptInsidePol/outputs/"
