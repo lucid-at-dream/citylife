@@ -1,5 +1,9 @@
 syntax: glob
 
+src/DataProcessor/main.c
+src/DataProcessor/makefile
+src/DataProcessor/t
+
 demoquery
 demo1.svg
 demo2.svg
