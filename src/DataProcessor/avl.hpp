@@ -3,6 +3,8 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <list>
+#include <cmath>
 
 using namespace std;
 
@@ -37,6 +39,41 @@ class AVLNode{
                 delete this->right;
         }
 
+        void prettyPrint(){
+            list<pair<int, AVLNode *> > queue = list<pair<int, AVLNode *> >();
+            queue.push_back(pair<int, AVLNode *>(0,this));
+
+            int inc = pow( 2, log(this->height)/log(2.0) );
+            int prevLevel = 0, currLevel = 0;
+
+            while(queue.size() > 0){
+
+                pair<int, AVLNode *> curr = queue.front();
+
+                prevLevel = currLevel;
+                currLevel = curr.first;
+                if( currLevel != prevLevel ){
+                    cout << endl;
+                    inc = pow( 2, log(this->height - currLevel)/log(2.0) );
+                }
+
+                for(int i=0; i<inc; i++)
+                    cout << " ";
+
+                if( curr.second == NULL ){
+                    queue.remove(curr);
+                    continue;
+                }
+
+                cout << getKey(curr.second->data);
+                queue.remove(curr);
+
+                queue.push_back(pair<int, AVLNode *>( currLevel + 1, curr.second->left ) );
+                queue.push_back(pair<int, AVLNode *>( currLevel + 1, curr.second->right) );
+            }
+
+        }
+
         void preOrder(){
             cout << this->data << "(" << height << "), ";
             if(this->left != NULL)
@@ -59,7 +96,6 @@ class AVLNode{
             int added = 0;
             if(compar > 0){
                 if(this->right == NULL){
-                    cout << "adding " << item << " to the right" << endl;
                     this->right = new AVLNode<KEY, DATATYPE>(item, cmp, getKey);
                     this->right->parent = this;
                     added = 1;
@@ -67,7 +103,6 @@ class AVLNode{
                     added = this->right->insert(item); //check for nullness
             }else if(compar < 0){
                 if(this->left == NULL){
-                    cout << "adding " << item << " to the left" << endl;
                     this->left = new AVLNode<KEY, DATATYPE>(item, cmp, getKey);
                     this->left->parent = this;
                     added = 1;
@@ -85,8 +120,6 @@ class AVLNode{
 
             //rebalance
             if( balance > 1 || balance < -1 ){
-                cout << "rebalancing" << endl;
-
                 // Left Left Case
                 if (balance >  1 && cmp(getKey(item), getKey(this->left->data)) < 0 )
                     this->rotateRight();
@@ -111,40 +144,42 @@ class AVLNode{
             return added;
         }
 
-        /*TODO. Rebalancing*/
-        int remove(KEY item){
+        /*TODO. Rebalancing and height updating*/
+        AVLNode *remove(KEY item){
 
             int compar = cmp(item, getKey(this->data));
 
             if(compar > 0){
                 if(this->right == NULL)
-                    return 0;
+                    return NULL;
                 else
                     return this->right->remove(item); //check for nullness
             }else if(compar < 0){
                 if(this->left == NULL)
-                    return 0;
+                    return NULL;
                 else
                     return this->left->remove(item); //check for nullness
             }
 
             /*if there are is offspring, we can delete right away*/
 
-/*TODO: watch out for parent nullness when node is the root*/
-
             /*if there's only one child, we can just replace this node for it*/
             if( this->left != NULL && this->right == NULL ){
-                if( this->parent->right == this )
-                    this->parent->right = this->left;
-                else
-                    this->parent->left = this->left;
+                if( this->parent != NULL ){
+                    if( this->parent->right == this )
+                        this->parent->right = this->left;
+                    else
+                        this->parent->left = this->left;
+                }
                 this->left->parent = this->parent;
 
             }else if( this->left == NULL && this->right != NULL ){
-                if( this->parent->right == this )
-                    this->parent->right = this->right;
-                else
-                    this->parent->left = this->right;
+                if( this->parent != NULL ){
+                    if( this->parent->right == this )
+                        this->parent->right = this->right;
+                    else
+                        this->parent->left = this->right;
+                }
                 this->right->parent = this->parent;
 
             }else{
@@ -156,22 +191,43 @@ class AVLNode{
                 while(leftmost->left != NULL)
                     leftmost = leftmost->left;
 
+                cout << "leftmost " << getKey(leftmost->data) << endl;
+
                 /*remove it*/
-                if( leftmost->right != NULL ){
-                    leftmost->parent->left = leftmost->right;
-                    leftmost->right->parent = leftmost->parent;
+                if( leftmost->parent->right == leftmost ){
+                    leftmost->parent->right = NULL;
+                    if( leftmost->right != NULL ){
+                        leftmost->parent->right = leftmost->right;
+                        leftmost->right->parent = leftmost->parent;
+                    }
+                }else{
+                    leftmost->parent->left = NULL;
+                    if( leftmost->right != NULL ){
+                        leftmost->parent->left = leftmost->right;
+                        leftmost->right->parent = leftmost->parent;
+                    }
                 }
 
                 /*replace ourselves*/
-                if( this->parent->right == this )
-                    this->parent->right = leftmost;
-                else
-                    this->parent->left = leftmost;
+                if( this->parent != NULL ){
+                    if( this->parent->right == this )
+                        this->parent->right = leftmost;
+                    else
+                        this->parent->left = leftmost;
+                }
+
                 leftmost->parent = this->parent;
+                
+                leftmost->right = this->right;
+                if(leftmost->right != NULL)
+                    leftmost->right->parent = leftmost;
+                
+                leftmost->left = this->left;
+                if(leftmost->left != NULL)
+                    leftmost->left->parent = leftmost;
             }
 
-            delete this;
-            return -1;
+            return this;
         }
 
         void rotateLeft(){
@@ -202,9 +258,9 @@ class AVLNode{
             this->left->parent = this->parent;
             if(this->parent != NULL){
                 if(this->parent->left == this)
-                    this->parent->left = this->right;
+                    this->parent->left = this->left;
                 else
-                    this->parent->right = this->right;
+                    this->parent->right = this->left;
             }
             this->parent = this->left;
             this->left = aux;
@@ -231,6 +287,10 @@ class AVLTree{
 
         void preOrder(){
             this->root->preOrder();
+        }
+
+        void prettyPrint(){
+            this->root->prettyPrint();
         }
 
         //constructor
@@ -264,12 +324,19 @@ class AVLTree{
                 this->root = this->root->parent;
         }
 
-        void remove(KEY item){
-            //remove
-            this->nnodes += this->root->remove(item);
-            //update root
-            while(this->root->parent != NULL)
-                this->root = this->root->parent;
+        AVLNode<KEY, DATATYPE> *remove(KEY item){
+            AVLNode<KEY, DATATYPE> *rm = this->root->remove(item);
+            if( rm != NULL ){
+                this->nnodes--;
+
+                if( this->root == rm )
+                    this->root = rm->right != NULL ? rm->right : rm->left;
+
+                while(this->root->parent != NULL)
+                    this->root = this->root->parent;
+
+            }
+            return rm;
         }
 };
 
