@@ -39,6 +39,7 @@ class AVLNode{
                 delete this->right;
         }
 
+        //tree like printing function
         void prettyPrint(){
             list<pair<int, AVLNode *> > queue = list<pair<int, AVLNode *> >();
             queue.push_back(pair<int, AVLNode *>(0,this));
@@ -74,6 +75,7 @@ class AVLNode{
 
         }
 
+        //prints the elements in preorder
         void preOrder(){
             cout << this->data << "(" << height << "), ";
             if(this->left != NULL)
@@ -82,18 +84,21 @@ class AVLNode{
                 this->right->preOrder();
         }
 
+        //updates the node height
         void updateHeight(){
             int hleft  = this->left  != NULL ? this->left->height : 0,
                 hright = this->right != NULL ? this->right->height: 0;
             this->height = hleft > hright ? hleft + 1 : hright + 1;
         }
 
+        //returns the balance factor of the tree rooted at this node
         int getBalance(){
             int hleft  = this->left  != NULL ? this->left->height : 0,
                 hright = this->right != NULL ? this->right->height: 0;
             return hleft - hright;
         }
 
+        //retrieves the data corresponding to the given key
         DATATYPE find(KEY key){
             AVLNode *aux = this;
             int compar;
@@ -110,6 +115,17 @@ class AVLNode{
             return (DATATYPE)NULL;
         }
 
+        int merge(AVLNode<KEY, DATATYPE> *other){
+            int ninserted = 0;
+            if( other->left != NULL )
+                ninserted += this->merge(other->left);
+            if( other->right != NULL )
+                ninserted += this->merge(other->right);
+            ninserted += this->insert(other->data);
+            return ninserted;
+        }
+
+        //inserts a given item in the tree
         int insert(DATATYPE item){
 
             int compar = cmp(getKey(item), getKey(this->data));
@@ -395,8 +411,14 @@ class AVLTree{
         }
 
         //function definitions
-        void size(){
+        int size(){
             return this->nnodes;
+        }
+
+        /*TODO: !Optimize! this can be done in linear time with in order traversals*/
+        //merges the given tree into this tree.
+        void merge(AVLTree<KEY, DATATYPE> &tree) {
+            this->nnodes += this->root->merge(tree.root);
         }
 
         DATATYPE find(KEY key){
