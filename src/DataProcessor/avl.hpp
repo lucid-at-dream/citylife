@@ -88,7 +88,28 @@ class AVLNode{
             this->height = hleft > hright ? hleft + 1 : hright + 1;
         }
 
-        //function definitions
+        int getBalance(){
+            int hleft  = this->left  != NULL ? this->left->height : 0,
+                hright = this->right != NULL ? this->right->height: 0;
+            return hleft - hright;
+        }
+
+        DATATYPE find(KEY key){
+            AVLNode *aux = this;
+            int compar;
+            while(aux != NULL){
+                compar = cmp(key, getKey(aux->data));
+                if( compar > 0 ){
+                    aux = aux->right;
+                }else if( compar < 0 ){
+                    aux = aux->left;
+                }else{
+                    return aux->data;
+                }
+            }
+            return (DATATYPE)NULL;
+        }
+
         int insert(DATATYPE item){
 
             int compar = cmp(getKey(item), getKey(this->data));
@@ -147,87 +168,153 @@ class AVLNode{
         /*TODO. Rebalancing and height updating*/
         AVLNode *remove(KEY item){
 
+            AVLNode *removedNode = NULL;
+
             int compar = cmp(item, getKey(this->data));
 
             if(compar > 0){
-                if(this->right == NULL)
-                    return NULL;
-                else
-                    return this->right->remove(item); //check for nullness
+                if(this->right != NULL)
+                    removedNode = this->right->remove(item); //check for nullness
+                return removedNode;
             }else if(compar < 0){
-                if(this->left == NULL)
-                    return NULL;
-                else
-                    return this->left->remove(item); //check for nullness
-            }
+                if(this->left != NULL)
+                    removedNode = this->left->remove(item); //check for nullness
+                return removedNode;
 
-            /*if there are is offspring, we can delete right away*/
+            }else{ /*this is the node to remove*/
+                removedNode = this;
 
-            /*if there's only one child, we can just replace this node for it*/
-            if( this->left != NULL && this->right == NULL ){
-                if( this->parent != NULL ){
-                    if( this->parent->right == this )
-                        this->parent->right = this->left;
+                /*if there is no offspring, we can delete right away*/
+                if( this->left == NULL && this->right == NULL )
+                    if( this == this->parent->left )
+                        this->parent->left = NULL;
                     else
-                        this->parent->left = this->left;
-                }
-                this->left->parent = this->parent;
-
-            }else if( this->left == NULL && this->right != NULL ){
-                if( this->parent != NULL ){
-                    if( this->parent->right == this )
-                        this->parent->right = this->right;
-                    else
-                        this->parent->left = this->right;
-                }
-                this->right->parent = this->parent;
-
-            }else{
-                /*if we have two children, we need to fetch the leftmost node of the 
-                  right subtree and replace this node for it.*/
-                
-                /*find it*/
-                AVLNode *leftmost = this->right;
-                while(leftmost->left != NULL)
-                    leftmost = leftmost->left;
-
-                cout << "leftmost " << getKey(leftmost->data) << endl;
-
-                /*remove it*/
-                if( leftmost->parent->right == leftmost ){
-                    leftmost->parent->right = NULL;
-                    if( leftmost->right != NULL ){
-                        leftmost->parent->right = leftmost->right;
-                        leftmost->right->parent = leftmost->parent;
+                        this->parent->right = NULL;
+                /*if there's only one child, we can just replace this node for it*/
+                else if( this->left != NULL && this->right == NULL ){
+                    if( this->parent != NULL ){
+                        if( this->parent->right == this )
+                            this->parent->right = this->left;
+                        else
+                            this->parent->left = this->left;
                     }
+                    this->left->parent = this->parent;
+
+                }else if( this->left == NULL && this->right != NULL ){
+                    if( this->parent != NULL ){
+                        if( this->parent->right == this )
+                            this->parent->right = this->right;
+                        else
+                            this->parent->left = this->right;
+                    }
+                    this->right->parent = this->parent;
+
                 }else{
-                    leftmost->parent->left = NULL;
-                    if( leftmost->right != NULL ){
-                        leftmost->parent->left = leftmost->right;
-                        leftmost->right->parent = leftmost->parent;
+                    /*if we have two children, we need to fetch the leftmost node of the 
+                      right subtree and replace this node for it.*/
+                    
+                    /*find it*/
+                    AVLNode *leftmost = this->right;
+                    while(leftmost->left != NULL)
+                        leftmost = leftmost->left;
+
+                    /*remove it*/
+                    if( leftmost->parent->right == leftmost ){
+                        leftmost->parent->right = NULL;
+                        if( leftmost->right != NULL ){
+                            leftmost->parent->right = leftmost->right;
+                            leftmost->right->parent = leftmost->parent;
+                        }
+                    }else{
+                        leftmost->parent->left = NULL;
+                        if( leftmost->right != NULL ){
+                            leftmost->parent->left = leftmost->right;
+                            leftmost->right->parent = leftmost->parent;
+                        }
                     }
-                }
 
-                /*replace ourselves*/
-                if( this->parent != NULL ){
-                    if( this->parent->right == this )
-                        this->parent->right = leftmost;
-                    else
-                        this->parent->left = leftmost;
-                }
+                    /*replace ourselves*/
+                    if( this->parent != NULL ){
+                        if( this->parent->right == this )
+                            this->parent->right = leftmost;
+                        else
+                            this->parent->left = leftmost;
+                    }
 
-                leftmost->parent = this->parent;
-                
-                leftmost->right = this->right;
-                if(leftmost->right != NULL)
-                    leftmost->right->parent = leftmost;
-                
-                leftmost->left = this->left;
-                if(leftmost->left != NULL)
-                    leftmost->left->parent = leftmost;
+                    leftmost->parent = this->parent;
+                    
+                    leftmost->right = this->right;
+                    if(leftmost->right != NULL)
+                        leftmost->right->parent = leftmost;
+                    
+                    leftmost->left = this->left;
+                    if(leftmost->left != NULL)
+                        leftmost->left->parent = leftmost;
+                }
             }
 
-            return this;
+            AVLNode *startLeaf = this->left ? this->left : this->right ? this->right : this->parent;
+            AVLNode *aux = startLeaf;
+
+            if(aux != NULL){
+                while(aux->parent != NULL)
+                    aux = aux->parent;
+                
+                int compar = 0;
+                while( aux != NULL ){
+                    startLeaf = aux;
+                    compar = cmp(item, getKey(aux->data));
+                    if(compar > 0)
+                        aux = aux->right;
+                    else if(compar < 0)
+                        aux = aux->left;
+                }
+
+                while(startLeaf->parent != NULL){
+                    startLeaf->rebalanceAfterRemove();
+                    startLeaf = startLeaf->parent;
+                }
+            }
+
+            return removedNode;
+        }
+
+        void rebalanceAfterRemove(){
+
+            //update node height
+            int hleft  = this->left  != NULL ? this->left->height : 0,
+                hright = this->right != NULL ? this->right->height: 0;
+            this->height = hleft > hright ? hleft + 1 : hright + 1;
+
+            //check if this subtree is unbalanced
+            int balance = hleft -hright;
+ 
+            // If this node becomes unbalanced, then there are 4 cases
+         
+            // Left Left Case
+            if (balance > 1 && this->left->getBalance() >= 0)
+                this->rotateRight();
+         
+            // Left Right Case
+            if (balance > 1 && this->left->getBalance() < 0)
+            {
+                this->left->rotateLeft();
+                this->rotateRight();
+            }
+         
+            // Right Right Case
+            if (balance < -1 && this->right->getBalance() <= 0)
+                this->rotateLeft();
+         
+            // Right Left Case
+            if (balance < -1 && this->right->getBalance() > 0)
+            {
+                this->right->rotateRight();
+                this->rotateLeft();
+            }
+
+            if(this->parent != NULL)
+                this->parent->rebalanceAfterRemove();
         }
 
         void rotateLeft(){
@@ -310,6 +397,10 @@ class AVLTree{
         //function definitions
         void size(){
             return this->nnodes;
+        }
+
+        DATATYPE find(KEY key){
+            return this->root->find(key);
         }
 
         void insert(DATATYPE item){
