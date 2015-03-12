@@ -1,9 +1,10 @@
 #ifndef PMQUADTREE_HPP
 #define PMQUADTREE_HPP
 
+#include "SystemBase.hpp"
 #include "DataStructs.hpp"
 #include "DebRender.hpp"
-#include <map>
+#include "avl.hpp"
 #include <list>
 #include <cmath>
 
@@ -19,18 +20,18 @@ namespace PMQUADTREE {
       public:
         NodeType type;
         GIMS_BoundingBox *square;
-        list<GIMS_Geometry *> *dictionary;
+        AVLTree<long, GIMS_Geometry *> *dictionary;
         Node *father;
         Node *sons[4];
 
         //dictionary related functions
-        list<GIMS_Geometry *> *clipDict(list<GIMS_Geometry *> *dict);
+        AVLTree<long, GIMS_Geometry *> *clipDict(AVLTree<long, GIMS_Geometry *> *dict);
 
         void *search                  (GIMS_Geometry *geom);
         void *searchInterior          (GIMS_Polygon *pol);
-        void  insert                  (list<GIMS_Geometry *> *);
-        int   numPoints               (list<GIMS_Geometry *> *);
-        bool  validate                (list<GIMS_Geometry *> *);
+        void  insert                  (AVLTree<long, GIMS_Geometry *> *);
+        int   numPoints               (AVLTree<long, GIMS_Geometry *> *);
+        bool  validate                (AVLTree<long, GIMS_Geometry *> *);
         bool  validateGeometry        (GIMS_Geometry *p, GIMS_Point **sharedPoint);
         bool  validatePolygon         (GIMS_Polygon *p, GIMS_Point **sharedPoint);
         bool  validatePoint           (GIMS_Point *pt, GIMS_Point **sharedPoint);
@@ -40,10 +41,10 @@ namespace PMQUADTREE {
         GIMS_Geometry *hasReferenceTo (long id);
         Node *goNorth                 (double x);
 
-        list<GIMS_Geometry *> *unconstrainedActiveSearch(int(*filter)(GIMS_Geometry *));
-        list<GIMS_Geometry *> *activeInteriorSearch (GIMS_Polygon *pol, 
-                                                    int(*intersectedFilter)(Node *, GIMS_Geometry *, GIMS_Geometry *),
-                                                    int(*containedFilter)(GIMS_Geometry *) );
+        AVLTree<long, GIMS_Geometry *> *unconstrainedActiveSearch(int(*filter)(GIMS_Geometry *));
+        AVLTree<long, GIMS_Geometry *> *activeInteriorSearch (GIMS_Polygon *pol, 
+                                                              int(*intersectedFilter)(Node *, GIMS_Geometry *, GIMS_Geometry *),
+                                                              int(*containedFilter)(GIMS_Geometry *) );
 
         void  split                   ();
               Node                    ();
@@ -63,7 +64,7 @@ namespace PMQUADTREE {
         /*Inherited Functions*/
         /*Functions that take care of the construction and maintenance of the structure*/
         void  build  (GIMS_Geometry *);
-        void  insert (list<GIMS_Geometry *> *geom);
+        void  insert (AVLTree<long, GIMS_Geometry *> *geom);
         void  insert (GIMS_Geometry *);
         void  remove (GIMS_Geometry *);
         void *search (GIMS_Geometry *);
@@ -74,9 +75,9 @@ namespace PMQUADTREE {
 
         /*given a topological filtering function, report all objects that relate
           to the first argument of the function.*/
-        list<GIMS_Geometry *> *getRelated(GIMS_Geometry *g,
-                                          int(*intersectedFilter)(Node *, GIMS_Geometry *, GIMS_Geometry *),
-                                          int(*containedFilter)(GIMS_Geometry *));
+        AVLTree<long, GIMS_Geometry *> *getRelated(GIMS_Geometry *g,
+                                                   int(*intersectedFilter)(Node *, GIMS_Geometry *, GIMS_Geometry *),
+                                                   int(*containedFilter)(GIMS_Geometry *));
 
         /*Follow the operations between the data structure and a given geometry*/
         RelStatus intersects_g  ( GIMS_Geometry *result, GIMS_Geometry *);
@@ -101,7 +102,8 @@ namespace PMQUADTREE {
     };
 }
 
-void mergeDicts(list<GIMS_Geometry *> a, list<GIMS_Geometry *> b);
+int cmp(long a, long b);
+long getKey(GIMS_Geometry *g);
 
 extern PMQUADTREE::Quadrant quadrantList[4];
 extern char quadrantLabels[4][3];

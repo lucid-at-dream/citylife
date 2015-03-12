@@ -1,8 +1,11 @@
 #ifndef _DBCONNECTION_HPP_
 #define _DBCONNECTION_HPP_
 
+#include "SystemBase.hpp"
+#include "PMQuadTree.hpp"
 #include "Geometry.hpp"
 #include "libpq-fe.h"
+#include "avl.hpp"
 #include <list>
 
 using namespace std;
@@ -15,7 +18,8 @@ class PGConnection{
     void connect();
     void disconnect();
     PGresult *execQuery(char *query);
-    list<GIMS_Geometry *> *getGeometry(char *whereClause);
+    list<GIMS_Geometry *> *getGeometryAsList(char *whereClause);
+    AVLTree<long, GIMS_Geometry *> *getGeometry(char *whereClause);
     GIMS_BoundingBox *getOverallExtent();
 };
 

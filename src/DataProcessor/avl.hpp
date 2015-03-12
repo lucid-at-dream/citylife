@@ -115,16 +115,6 @@ class AVLNode{
             return (DATATYPE)NULL;
         }
 
-        int merge(AVLNode<KEY, DATATYPE> *other){
-            int ninserted = 0;
-            if( other->left != NULL )
-                ninserted += this->merge(other->left);
-            if( other->right != NULL )
-                ninserted += this->merge(other->right);
-            ninserted += this->insert(other->data);
-            return ninserted;
-        }
-
         //inserts a given item in the tree
         int insert(DATATYPE item){
 
@@ -153,7 +143,7 @@ class AVLNode{
             this->height = hleft > hright ? hleft + 1 : hright + 1;
 
             //check if this subtree is unbalanced
-            int balance = hleft -hright;
+            int balance = hleft - hright;
 
             //rebalance
             if( balance > 1 || balance < -1 ){
@@ -181,7 +171,7 @@ class AVLNode{
             return added;
         }
 
-        /*TODO. Rebalancing and height updating*/
+        /*TODO. height update is buggy!!*/
         AVLNode *remove(KEY item){
 
             AVLNode *removedNode = NULL;
@@ -201,13 +191,15 @@ class AVLNode{
                 removedNode = this;
 
                 /*if there is no offspring, we can delete right away*/
-                if( this->left == NULL && this->right == NULL )
-                    if( this == this->parent->left )
-                        this->parent->left = NULL;
-                    else
-                        this->parent->right = NULL;
+                if( this->left == NULL && this->right == NULL ){
+                    if(this->parent != NULL){
+                        if( this == this->parent->left )
+                            this->parent->left = NULL;
+                        else
+                            this->parent->right = NULL;
+                    }
                 /*if there's only one child, we can just replace this node for it*/
-                else if( this->left != NULL && this->right == NULL ){
+                }else if( this->left != NULL && this->right == NULL ){
                     if( this->parent != NULL ){
                         if( this->parent->right == this )
                             this->parent->right = this->left;
@@ -388,12 +380,93 @@ class AVLTree{
 
     public:
 
+        class iterator{
+            private:
+                AVLNode<KEY, DATATYPE> *node;
+
+            public:
+                iterator(AVLNode<KEY, DATATYPE> *n){
+                    this->node = n;
+                }
+
+                iterator operator++(int) {
+                    this->next();
+                    return *this;
+                }
+
+                bool operator==(const iterator& rhs){
+                    return this->equals(rhs);
+                }
+
+                bool operator!=(const iterator& rhs){
+                    return !(this->equals(rhs));
+                }
+
+                DATATYPE operator* (){
+                    return this->getData();
+                }
+
+
+                void next(){
+                    /*the next in order sucessor is the leftmost leaf of the right subtree.*/
+                    if(node->right != NULL){
+                        this->node = this->node->right;
+                        while(this->node->left != NULL)
+                            this->node = this->node->left;
+                    
+                    /*if there's no right subtree, then we need to go up.*/
+                    }else{
+                        if( this->node->parent != NULL ){
+                            if(this->node == this->node->parent->left)
+                                this->node = this->node->parent;
+                            else{
+                                while(this->node->parent != NULL && this->node == this->node->parent->right)
+                                    this->node = this->node->parent;
+                                this->node = this->node->parent;
+                            }
+                        }else{
+                            this->node = NULL;
+                        }
+                    }
+                }
+
+                bool equals(iterator it){
+                    if(this->node == it.node)
+                        return true;
+                    return false;
+                }
+
+                DATATYPE getData(){
+                    return node->data;
+                }
+        };
+
+        iterator begin(){
+            if(this->root == NULL)
+                return this->end();
+            AVLNode<KEY, DATATYPE> *aux = this->root;
+            while(aux->left != NULL){
+                aux = aux->left;
+            }
+            return iterator(aux);
+        }
+
+        iterator end(){
+            return iterator(NULL);
+        }
+
         void preOrder(){
             this->root->preOrder();
         }
 
         void prettyPrint(){
             this->root->prettyPrint();
+        }
+
+        DATATYPE top(){
+            if(this->root == NULL)
+                return (DATATYPE)NULL;
+            return this->root->data;
         }
 
         //constructor
@@ -417,11 +490,14 @@ class AVLTree{
 
         /*TODO: !Optimize! this can be done in linear time with in order traversals*/
         //merges the given tree into this tree.
-        void merge(AVLTree<KEY, DATATYPE> &tree) {
-            this->nnodes += this->root->merge(tree.root);
+        void merge(AVLTree<KEY, DATATYPE> *tree) {
+            for(AVLTree<KEY, DATATYPE>::iterator it = tree->begin(); it != tree->end(); it++)
+                this->insert(*it);    
         }
 
         DATATYPE find(KEY key){
+            if(this->root == NULL)
+                return (DATATYPE)NULL;
             return this->root->find(key);
         }
 
@@ -438,6 +514,9 @@ class AVLTree{
         }
 
         AVLNode<KEY, DATATYPE> *remove(KEY item){
+            if(this->root == NULL)
+                return NULL;
+
             AVLNode<KEY, DATATYPE> *rm = this->root->remove(item);
             if( rm != NULL ){
                 this->nnodes--;
@@ -445,8 +524,9 @@ class AVLTree{
                 if( this->root == rm )
                     this->root = rm->right != NULL ? rm->right : rm->left;
 
-                while(this->root->parent != NULL)
-                    this->root = this->root->parent;
+                if(this->root != NULL)
+                    while(this->root->parent != NULL)
+                        this->root = this->root->parent;
 
             }
             return rm;

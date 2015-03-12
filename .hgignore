@@ -1,5 +1,8 @@
 syntax: glob
 
+src/DataProcessor/inpt/*
+src/DataProcessor/autorun.sh
+
 src/DataProcessor/main.c
 src/DataProcessor/makefile
 src/DataProcessor/t

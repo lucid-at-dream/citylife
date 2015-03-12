@@ -47,13 +47,13 @@ int main (int argc, char *argv[]) {
         GIMS_BoundingBox *extent = conn.getOverallExtent();
         PMQuadTree *tree = new PMQuadTree( extent );
 
-        list<GIMS_Geometry *> *polygons = conn.getGeometry("from planet_osm_polygon");
+        AVLTree<long, GIMS_Geometry *> *polygons = conn.getGeometry("from planet_osm_polygon");
         cout << "polygons loaded" << endl;
-        list<GIMS_Geometry *> *lines    = conn.getGeometry("from planet_osm_line");
+        AVLTree<long, GIMS_Geometry *> *lines    = conn.getGeometry("from planet_osm_line");
         cout << "lines loaded" << endl;
-        list<GIMS_Geometry *> *roads  = conn.getGeometry("from planet_osm_roads");
+        AVLTree<long, GIMS_Geometry *> *roads    = conn.getGeometry("from planet_osm_roads");
         cout << "roads loaded" << endl;
-        list<GIMS_Geometry *> *points   = conn.getGeometry("from planet_osm_point"); /*152675 points*/
+        AVLTree<long, GIMS_Geometry *> *points   = conn.getGeometry("from planet_osm_point"); /*152675 points*/
         cout << "points loaded" << endl;
 
         clock_t start, stop;
@@ -98,13 +98,13 @@ int main (int argc, char *argv[]) {
 
         delete renderer;
         delete tree;
-        for(list<GIMS_Geometry *>::iterator it = roads->begin(); it!=roads->end(); it++)
+        for(AVLTree<long, GIMS_Geometry *>::iterator it = roads->begin(); it!=roads->end(); it++)
             (*it)->deepDelete();
-        for(list<GIMS_Geometry *>::iterator it = lines->begin(); it!=lines->end(); it++)
+        for(AVLTree<long, GIMS_Geometry *>::iterator it = lines->begin(); it!=lines->end(); it++)
             (*it)->deepDelete();
-        for(list<GIMS_Geometry *>::iterator it = polygons->begin(); it!=polygons->end(); it++)
+        for(AVLTree<long, GIMS_Geometry *>::iterator it = polygons->begin(); it!=polygons->end(); it++)
             (*it)->deepDelete();
-        for(list<GIMS_Geometry *>::iterator it = points->begin(); it!=points->end(); it++)
+        for(AVLTree<long, GIMS_Geometry *>::iterator it = points->begin(); it!=points->end(); it++)
             (*it)->deepDelete();
         delete polygons;
         delete points;
@@ -135,8 +135,8 @@ void demo2(){
     PMQuadTree *tree = new PMQuadTree( extent );
 
     start = clock();
-    list<GIMS_Geometry *> *polygons = conn.getGeometry("from planet_osm_polygon where osm_id=-1715038");
-    list<GIMS_Geometry *> *points   = conn.getGeometry("from planet_osm_point"); /*152675 points*/
+    AVLTree<long, GIMS_Geometry *> *polygons = conn.getGeometry("from planet_osm_polygon where osm_id=-1715038");
+    AVLTree<long, GIMS_Geometry *> *points   = conn.getGeometry("from planet_osm_point"); /*152675 points*/
     conn.disconnect();
     stop = clock();
 
@@ -154,7 +154,7 @@ void demo2(){
     cout << " seconds to insert the 1 polygon" << endl;
 
     start = clock();
-    list<GIMS_Geometry *> *results = tree->getRelated(polygons->front(), ifilter_ContainedPoints, cfilter_ContainedPoints);
+    AVLTree<long, GIMS_Geometry *> *results = tree->getRelated(polygons->top(), ifilter_ContainedPoints, cfilter_ContainedPoints);
     stop = clock();
 
     cout << "took ";
@@ -163,27 +163,27 @@ void demo2(){
 
     cout << results->size() << " points are inside the polygon" << endl;
 
-    for(list<GIMS_Geometry *>::iterator it=results->begin(); it != results->end(); it++){
+    for(AVLTree<long, GIMS_Geometry *>::iterator it=results->begin(); it != results->end(); it++){
         (*it)->type = POINT;
         tree->renderRed(*it);
     }
-    tree->query = polygons->front();
+    tree->query = polygons->top();
     renderer = new DebRenderer();
     renderer->setScale(400.0/extent->xlength(), -400.0/extent->ylength());
     renderer->setTranslation( -extent->minx(), -extent->maxy() );
     renderer->renderCallback = tree;
     renderer->renderSvg("demo2.svg", 400, 400);
-    /*
+    
     char *argv[] = {"gims", "demo2"};
     int argc = 2;
     renderer->mainloop(argc, argv);
-    */
+    
     delete renderer;
 
     delete tree;
-    for(list<GIMS_Geometry *>::iterator it = polygons->begin(); it!=polygons->end(); it++)
+    for(AVLTree<long, GIMS_Geometry *>::iterator it = polygons->begin(); it!=polygons->end(); it++)
         (*it)->deepDelete();
-    for(list<GIMS_Geometry *>::iterator it = points->begin(); it!=points->end(); it++)
+    for(AVLTree<long, GIMS_Geometry *>::iterator it = points->begin(); it!=points->end(); it++)
         (*it)->deepDelete();
     delete polygons;
     delete points;
@@ -203,8 +203,8 @@ void demo1(){
     PMQuadTree *tree = new PMQuadTree( extent );
 
     start = clock();
-    list<GIMS_Geometry *> *polygons = conn.getGeometry("from planet_osm_polygon where osm_id=-1715038");
-    list<GIMS_Geometry *> *points   = conn.getGeometry("from planet_osm_point"); /*152675 points*/
+    AVLTree<long, GIMS_Geometry *> *polygons = conn.getGeometry("from planet_osm_polygon where osm_id=-1715038");
+    AVLTree<long, GIMS_Geometry *> *points   = conn.getGeometry("from planet_osm_point"); /*152675 points*/
     conn.disconnect();
     stop = clock();
 
@@ -222,8 +222,8 @@ void demo1(){
 
     start = clock();
     int ptcount = 0; 
-    for(list<GIMS_Geometry *>::iterator it = points->begin(); it!=points->end(); it++){
-        if( tree->contains(polygons->front(), *it) ){
+    for(AVLTree<long, GIMS_Geometry *>::iterator it = points->begin(); it!=points->end(); it++){
+        if( tree->contains(polygons->top(), *it) ){
             tree->renderRed(*it);
             ptcount++;
         }
@@ -244,9 +244,9 @@ void demo1(){
     delete renderer;
 
     delete tree;
-    for(list<GIMS_Geometry *>::iterator it = polygons->begin(); it!=polygons->end(); it++)
+    for(AVLTree<long, GIMS_Geometry *>::iterator it = polygons->begin(); it!=polygons->end(); it++)
         (*it)->deepDelete();
-    for(list<GIMS_Geometry *>::iterator it = points->begin(); it!=points->end(); it++)
+    for(AVLTree<long, GIMS_Geometry *>::iterator it = points->begin(); it!=points->end(); it++)
         (*it)->deepDelete();
     delete polygons;
     delete points;

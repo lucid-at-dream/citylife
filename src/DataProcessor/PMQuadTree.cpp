@@ -1,5 +1,7 @@
 #include "PMQuadTree.hpp"
 
+#define POINTS_PER_NODE 50
+
 using namespace GIMS_GEOMETRY;
 using namespace PMQUADTREE;
 using namespace std;
@@ -17,6 +19,14 @@ list<GIMS_Geometry *> *redRenderQueue = new list<GIMS_Geometry *>();
 /*
 -->Polygonal Map QuadTree Node
 */
+
+int cmp(long a, long b){
+    return a > b ? 1 : b > a ? -1 : 0;
+}
+
+long getKey(GIMS_Geometry *g){
+    return g->id;
+}
 
 /*Returns all nodes of the Polygonal Map QuadTree that intersect the border of
   the geometry passed by parameter. Note: This means that this function does not 
@@ -84,12 +94,7 @@ GIMS_Geometry *Node::hasReferenceTo( long id ){
     if( this->dictionary == NULL )
         return NULL;
 
-    for(list<GIMS_Geometry *>::iterator it = this->dictionary->begin();
-        it != this->dictionary->end(); it++){
-        if( (*it)->id != 0 && (*it)->id == id )
-            return *it;
-    }
-    return NULL;
+    return this->dictionary->find(id);
 }
 
 /*Returns true if a polygon "pol" that intersects the node contains point "pt".*/
@@ -120,12 +125,11 @@ bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
     }
 
     //set up the query point
-    GIMS_Point qp, *auxqp = NULL;
+    GIMS_Point qp;
     if(this == n)
         qp = *pt;
     else{
-        auxqp = new GIMS_Point(pt->x, n->square->lowerLeft->y);
-        qp = *auxqp;
+        qp = GIMS_Point(pt->x, n->square->lowerLeft->y);
     }
 
     //The first portion of the polygon "pol" that we found going in the north direction
@@ -280,20 +284,22 @@ void *Node::searchInterior (GIMS_Polygon *pol){
     }
 }
 
-list<GIMS_Geometry *> *Node::unconstrainedActiveSearch(int(*filter)(GIMS_Geometry *)){
-    list<GIMS_Geometry *> *results = new list<GIMS_Geometry *>();
+/*TODO pass on the result set so that it can be reused and not merged and deleted every time*/
+AVLTree<long, GIMS_Geometry *> *Node::unconstrainedActiveSearch(int(*filter)(GIMS_Geometry *)){
+    AVLTree<long, GIMS_Geometry *> *results = new AVLTree<long, GIMS_Geometry *>(cmp, getKey);
     
     if( this->type != GRAY ){
         if(this->dictionary != NULL){
-            for(list<GIMS_Geometry*>::iterator it = dictionary->begin(); it != dictionary->end(); it++){
+            /*TODO: implement iterators*/
+            for(AVLTree<long, GIMS_Geometry *>::iterator it = dictionary->begin(); it != dictionary->end(); it++){
                 if(filter(*it))
-                    results->push_back(*it);
+                    results->insert(*it);
             }
         }
     }else{
         for( Quadrant q : quadrantList ){
-            list<GIMS_Geometry *> *partial = sons[q]->unconstrainedActiveSearch(filter);
-            results->insert(results->end(), partial->begin(), partial->end());
+            AVLTree<long, GIMS_Geometry *> *partial = sons[q]->unconstrainedActiveSearch(filter);
+            results->merge(partial);
             delete partial;
         }
     }
@@ -302,16 +308,20 @@ list<GIMS_Geometry *> *Node::unconstrainedActiveSearch(int(*filter)(GIMS_Geometr
 
 /*Returns all geometries stored in nodes intersected by polygon pol that pass the
   filter function test*/
-list<GIMS_Geometry *> *Node::activeInteriorSearch (GIMS_Polygon *pol, 
-                                                    int(*intersectedFilter)(Node *, GIMS_Geometry *, GIMS_Geometry *),
-                                                    int(*containedFilter)(GIMS_Geometry *) ){
+/*TODO: pass on the result set so that it doesn't have to be merged and deleted every time*/
+AVLTree<long, GIMS_Geometry *> *Node::activeInteriorSearch (
+                                    GIMS_Polygon *pol, 
+                                    int(*intersectedFilter)(Node *, GIMS_Geometry *, GIMS_Geometry *),
+                                    int(*containedFilter)(GIMS_Geometry *)
+                                ){
 
-    list<GIMS_Geometry *> *results = new list<GIMS_Geometry *>();
+    AVLTree<long, GIMS_Geometry *> *results = new AVLTree<long, GIMS_Geometry *>(cmp, getKey);
     if ( this->type != GRAY ) { //if the node is a leaf node
         if(this->dictionary != NULL){
-            for(list<GIMS_Geometry*>::iterator it = dictionary->begin(); it != dictionary->end(); it++){
+            /*TODO: implement iterators*/
+            for(AVLTree<long, GIMS_Geometry *>::iterator it = dictionary->begin(); it != dictionary->end(); it++){
                 if(intersectedFilter(this, pol, *it))
-                    results->push_back(*it);
+                    results->insert(*it);
             }
         }
         return results;
@@ -337,15 +347,21 @@ list<GIMS_Geometry *> *Node::activeInteriorSearch (GIMS_Polygon *pol,
                 }
 
                 if(center_contained == 1){
-                    list<GIMS_Geometry *> *partial = sons[q]->unconstrainedActiveSearch(containedFilter);
-                    results->insert(results->end(), partial->begin(), partial->end());
+                    AVLTree<long, GIMS_Geometry *> *partial = sons[q]->unconstrainedActiveSearch(containedFilter);
+                    results->merge(partial);
                     delete partial;
                 }
 
             }else{
                 //if the node is intersected we call recursively to its sons.
-                list<GIMS_Geometry *> *partial = sons[q]->activeInteriorSearch(clipped, intersectedFilter, containedFilter);
-                results->insert( results->end(), partial->begin(), partial->end() );
+                AVLTree<long, GIMS_Geometry *> *partial = sons[q]->activeInteriorSearch(clipped, intersectedFilter, containedFilter);
+                int sum = results->size() + partial->size();
+
+                results->merge(partial);
+
+                if( results->size() != sum )
+                    cout << results->size() << ", " << sum << ", " << partial->size() << endl;
+
                 delete partial;
                 clipped->deleteClipped();
             }
@@ -354,25 +370,24 @@ list<GIMS_Geometry *> *Node::activeInteriorSearch (GIMS_Polygon *pol,
     }
 }
 
-void mergeDicts(list<GIMS_Geometry *> *a, list<GIMS_Geometry *> *b){
-    a->insert(a->end(), b->begin(), b->end());
-}
-
-list<GIMS_Geometry *> *Node::clipDict(list<GIMS_Geometry *> *dict){
-    list<GIMS_Geometry *> *clipped = NULL;
+/*TODO: implement iterators*/
+AVLTree<long, GIMS_Geometry *> *Node::clipDict(AVLTree<long, GIMS_Geometry *> *dict){
+    AVLTree<long, GIMS_Geometry *> *clipped = NULL;
+    
     GIMS_Geometry *partial;
-    for(list<GIMS_Geometry *>::iterator it = dict->begin(); it != dict->end(); it++){
+    for(AVLTree<long, GIMS_Geometry *>::iterator it = dict->begin(); it != dict->end(); it++){
         if( (partial = (*it)->clipToBox(this->square)) != NULL ){
             if( clipped == NULL )
-                clipped = new list<GIMS_Geometry *>();
-            clipped->push_back(partial);
+                clipped = new AVLTree<long, GIMS_Geometry *>(cmp, getKey);
+            clipped->insert(partial);
         }
     }
+
     return clipped;
 }
 
 /*Inserts geometry "geom" in the tree*/
-void Node::insert ( list<GIMS_Geometry *> *geom ) {
+void Node::insert ( AVLTree<long, GIMS_Geometry *> *geom ) {
     depth++;
 
     if(depth > maxDepth)
@@ -384,7 +399,7 @@ void Node::insert ( list<GIMS_Geometry *> *geom ) {
         return;
     }
 
-    list<GIMS_Geometry *> *clipped = this->clipDict(geom);
+    AVLTree<long, GIMS_Geometry *> *clipped = this->clipDict(geom);
     if (clipped == NULL) { //geometry to insert does not intersect this node
         depth--;
         return;
@@ -394,13 +409,13 @@ void Node::insert ( list<GIMS_Geometry *> *geom ) {
                                 //we're therefore accessing leaf nodes in this block
 
         if (this->dictionary != NULL) { //merge clipped with the node's dictionary
-            mergeDicts(clipped, this->dictionary);
+            clipped->merge(this->dictionary);
             delete this->dictionary;
             this->dictionary = NULL;
         }
 
         //if ( this->validate(clipped) ) {
-        if(this->numPoints(clipped) <= 50) {
+        if(this->numPoints(clipped) <= POINTS_PER_NODE) {
             //if the geometry is a valid node geometry we insert it into the node
             this->dictionary = clipped;
             this->type = BLACK;
@@ -415,7 +430,8 @@ void Node::insert ( list<GIMS_Geometry *> *geom ) {
         this->sons[q]->insert ( clipped );
     }
     
-    for(list<GIMS_Geometry *>::iterator it = clipped->begin(); it != clipped->end(); it++)
+    /*TODO: implement iterators*/
+    for(AVLTree<long, GIMS_Geometry *>::iterator it = clipped->begin(); it != clipped->end(); it++)
         (*it)->deleteClipped();
     delete clipped;
     depth--;
@@ -424,18 +440,20 @@ void Node::insert ( list<GIMS_Geometry *> *geom ) {
 /* Returns true if the given geometry is a valid one for the calling node
    !Note! The bounding box geometry is not supported.
    The behaviour is undefined in such a situation.!Note! */
-bool Node::validate (list<GIMS_Geometry *> *dict) {
+/*TODO: implement iterators*/
+bool Node::validate (AVLTree<long, GIMS_Geometry *> *dict) {
     GIMS_Point *sharedPoint = NULL;
-    for ( list<GIMS_Geometry *>::iterator it = dict->begin(); it != dict->end(); it++ ) {
+    for ( AVLTree<long, GIMS_Geometry *>::iterator it = dict->begin(); it != dict->end(); it++ ) {
         if( !this->validateGeometry((*it), &sharedPoint) )
             return false;
     }
     return true;
 }
 
-int Node::numPoints(list<GIMS_Geometry *> *dict){
+/*TODO: implement iterators*/
+int Node::numPoints(AVLTree<long, GIMS_Geometry *> *dict){
     int total = 0;
-    for(list<GIMS_Geometry *>::iterator it = dict->begin(); it != dict->end(); it++){
+    for(AVLTree<long, GIMS_Geometry *>::iterator it = dict->begin(); it != dict->end(); it++){
         total += (*it)->getPointCount();
     }
     return total;
@@ -602,8 +620,9 @@ Node::~Node(){
 
     this->square->deepDelete();
 
+    /*TODO: implement iterators*/
     if(dictionary != NULL){
-        for(list<GIMS_Geometry *>::iterator it = dictionary->begin(); it != dictionary->end(); it++)
+        for(AVLTree<long, GIMS_Geometry *>::iterator it = dictionary->begin(); it != dictionary->end(); it++)
             (*it)->deleteClipped();
         delete dictionary;
     }
@@ -635,19 +654,19 @@ int PMQuadTree::getMaxDepth(){
 /*Functions that take care of the construction and maintenance of the structure*/
 void PMQuadTree::build  (GIMS_Geometry *geom){}
 
-void PMQuadTree::insert ( list<GIMS_Geometry *> *geom ){
+void PMQuadTree::insert ( AVLTree<long, GIMS_Geometry *> *geom ){
     this->root->insert(geom);
 }
 
 void PMQuadTree::insert ( GIMS_Geometry *geom ) {
-    list<GIMS_Geometry *> *aux = new list<GIMS_Geometry *>();
-    aux->push_back(geom);
+    AVLTree<long, GIMS_Geometry *> *aux = new AVLTree<long, GIMS_Geometry *>(cmp, getKey);
+    aux->insert(geom);
     this->root->insert(aux);
     delete aux;
 }
 
 void PMQuadTree::remove (GIMS_Geometry *geom){
-
+    /*TODO: implement remotion*/
 }
 
 /*return all leaf nodes that intersect geom*/
@@ -668,7 +687,7 @@ bool PMQuadTree::contains(GIMS_Geometry* container, GIMS_Geometry* contained){
     return false;
 }
 
-list<GIMS_Geometry *> *PMQuadTree::getRelated(GIMS_Geometry *g,
+AVLTree<long, GIMS_Geometry *> *PMQuadTree::getRelated(GIMS_Geometry *g,
                                               int(*intersectedFilter)(Node *, GIMS_Geometry *, GIMS_Geometry *),
                                               int(*containedFilter)(GIMS_Geometry *)){
     if(g->type == POLYGON){
@@ -785,12 +804,14 @@ void PMQuadTree::renderLeafNode (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
         return;
 
     if (n->type == BLACK) { //the WHITE type stands for empty node, thus we ignore it.
-        for( list<GIMS_Geometry *>::iterator it = n->dictionary->begin();
+        for( AVLTree<long, GIMS_Geometry *>::iterator it = n->dictionary->begin();
             it != n->dictionary->end(); it++ ) {
+                if((*it)->type != POINT)
                 renderer->renderGeometry( cr, *it );
         }
     }
 }
+
 
 void PMQuadTree::onClick( double x, double y){
     printf("begin click event at %lf %lf\n", x, y);

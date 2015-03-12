@@ -25,7 +25,33 @@ PGresult *PGConnection::execQuery(char *query){
     return PQexec(this->connection, query);
 }
 
-list<GIMS_Geometry *> *PGConnection::getGeometry(char *whereClause){
+int dbcmp(long a, long b){
+    return a > b ? 1 : b > a ? -1 : 0;
+}
+
+long dbGetKey(GIMS_Geometry *g){
+    return g->id;
+}
+
+AVLTree<long, GIMS_Geometry *> *PGConnection::getGeometry(char *whereClause){
+    char buff[1000];
+    sprintf(buff, "Select osm_id, st_asText(st_transform(way, %d)) %s", SRID, whereClause);
+    PGresult *qres = this->execQuery(buff);
+
+    AVLTree<long, GIMS_Geometry *> *resultset = new AVLTree<long, GIMS_Geometry *>(dbcmp, dbGetKey);
+    for(int i=0; i<PQntuples(qres); i++){
+        unsigned long int id = atol(PQgetvalue(qres, i, 0));
+        GIMS_Geometry *g = fromWkt(PQgetvalue(qres, i, 1));
+        g->id = id;
+        resultset->insert(g);
+    }
+
+    PQclear(qres);
+
+    return resultset;
+}
+
+list<GIMS_Geometry *> *PGConnection::getGeometryAsList(char *whereClause){
     char buff[1000];
     sprintf(buff, "Select osm_id, st_asText(st_transform(way, %d)) %s", SRID, whereClause);
     PGresult *qres = this->execQuery(buff);
