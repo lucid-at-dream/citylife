@@ -107,6 +107,7 @@ namespace GIMS_GEOMETRY {
         GIMS_Point *p1,
                    *p2;
 
+        bool              coversPoint            (GIMS_Point *pt);
         string            toWkt                  ();
         GIMS_LineSegment *clone                  ();
         GIMS_Geometry    *clipToBox              (GIMS_BoundingBox *);
@@ -126,6 +127,7 @@ namespace GIMS_GEOMETRY {
         int          allocatedSize;
 
         string            toWkt           ();
+        bool              coversPoint     (GIMS_Point *pt);
         GIMS_LineString  *clone           ();
         GIMS_Geometry    *clipToBox       (GIMS_BoundingBox *);
         GIMS_LineSegment  getLineSegment  (int index);
@@ -152,6 +154,7 @@ namespace GIMS_GEOMETRY {
         int               allocatedSize;
 
         string                toWkt                ();
+        bool                  coversPoint          (GIMS_Point *pt);
         GIMS_MultiLineString *clone                ();
         GIMS_Geometry        *clipToBox            (GIMS_BoundingBox *);
         void                  merge                (GIMS_MultiLineString *mls);

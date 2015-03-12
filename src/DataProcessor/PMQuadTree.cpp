@@ -53,8 +53,30 @@ void *Node::search (GIMS_Geometry *geom){
     
     clipped->deleteClipped();
     return retlist;
-
 }
+
+void Node::activeSearch(AVLTree<long, GIMS_Geometry *> *resultset, 
+                        GIMS_Geometry *geom,
+                        int(*intersectedFilter)(Node *, GIMS_Geometry *, GIMS_Geometry *)){
+    
+    GIMS_Geometry *clipped = geom->clipToBox(this->square);
+    if( clipped == NULL )
+        return;
+    
+    if(this->type == GRAY){
+        for( Quadrant q : quadrantList )
+            sons[q]->activeSearch(resultset, clipped, intersectedFilter);
+    }else{
+        for(AVLTree<long, GIMS_Geometry *>::iterator it = this->dictionary->begin();
+            it != this->dictionary->end(); it++){
+            if(intersectedFilter(this, geom, *it))
+                resultset->insert(*it);
+        }
+    }
+    
+    clipped->deleteClipped();
+}
+
 
 /*Returns a neighboor node in the north direction. Chooses the neighboor node 
   that intersects the vertical line defined by x = <param:x>. If two northen 
@@ -685,6 +707,13 @@ bool PMQuadTree::contains(GIMS_Geometry* container, GIMS_Geometry* contained){
         return res;
     }
     return false;
+}
+
+AVLTree<long, GIMS_Geometry *> *PMQuadTree::activeSearch(GIMS_Geometry *g,
+                                                         int(*filter)(Node *, GIMS_Geometry *, GIMS_Geometry *)){
+    AVLTree<long, GIMS_Geometry *> *resultset = new AVLTree<long, GIMS_Geometry *>(cmp, getKey);     
+    this->root->activeSearch(resultset, g, filter);
+    return resultset;
 }
 
 AVLTree<long, GIMS_Geometry *> *PMQuadTree::getRelated(GIMS_Geometry *g,

@@ -41,6 +41,10 @@ namespace PMQUADTREE {
         GIMS_Geometry *hasReferenceTo (long id);
         Node *goNorth                 (double x);
 
+        void  activeSearch(AVLTree<long, GIMS_Geometry *> *resultset, 
+                           GIMS_Geometry *geom,
+                           int(*intersectedFilter)(Node *, GIMS_Geometry *, GIMS_Geometry *));
+
         AVLTree<long, GIMS_Geometry *> *unconstrainedActiveSearch(int(*filter)(GIMS_Geometry *));
         AVLTree<long, GIMS_Geometry *> *activeInteriorSearch (GIMS_Polygon *pol, 
                                                               int(*intersectedFilter)(Node *, GIMS_Geometry *, GIMS_Geometry *),
@@ -78,6 +82,8 @@ namespace PMQUADTREE {
         AVLTree<long, GIMS_Geometry *> *getRelated(GIMS_Geometry *g,
                                                    int(*intersectedFilter)(Node *, GIMS_Geometry *, GIMS_Geometry *),
                                                    int(*containedFilter)(GIMS_Geometry *));
+        AVLTree<long, GIMS_Geometry *> *activeSearch(GIMS_Geometry *g,
+                                                     int(*filter)(Node *, GIMS_Geometry *, GIMS_Geometry *));
 
         /*Follow the operations between the data structure and a given geometry*/
         RelStatus intersects_g  ( GIMS_Geometry *result, GIMS_Geometry *);

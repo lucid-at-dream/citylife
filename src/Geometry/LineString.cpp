@@ -36,6 +36,38 @@ GIMS_LineSegment::GIMS_LineSegment ( GIMS_Point *p1, GIMS_Point *p2 ){
     this->p2 = p2;
 }
 
+bool GIMS_LineSegment::coversPoint(GIMS_Point *pt){
+
+   double miny = p2->y < p1->y ? p2->y : p1->y,
+          maxy = p2->y > p1->y ? p2->y : p1->y,
+          minx = p2->x < p1->x ? p2->x : p1->x,
+          maxx = p2->x > p1->x ? p2->x : p1->x;
+   
+    /*if line is vertical*/
+    if(p1->x == p2->x){
+        if(pt->x == p1->x && pt->y <= maxy + ERR_MARGIN && pt->y >= miny - ERR_MARGIN)
+            return true;
+        return false;
+    }
+
+    /*if line is horizontal*/
+    if(p1->y == p2->y){
+        if(pt->y == p1->y && pt->x <= maxx + ERR_MARGIN && pt->x >= minx - ERR_MARGIN)
+            return true;
+        return false;
+    }
+
+   double m = (p2->y - p1->y) / (p2->x - p1->x);
+   double b = p1->y - m * p1->x;
+   if ( fabs(pt->y - (m*pt->x+b)) >= ERR_MARGIN){
+       return false;
+   }
+
+   if(pt->y <= maxy + ERR_MARGIN && pt->y >= miny - ERR_MARGIN)
+        return true;
+   return false;
+}
+
 GIMS_LineSegment::~GIMS_LineSegment() {
 }
 
@@ -225,6 +257,14 @@ void GIMS_LineString::deleteClipped(){
     delete this;
 }
 
+bool GIMS_LineString::coversPoint(GIMS_Point *pt){
+    for(int i=0; i<this->size-1; i++){
+        if( this->getLineSegment(i).coversPoint(pt) )
+            return true;
+    }
+    return false;
+}
+
 GIMS_LineString::GIMS_LineString (int size){
     this->type = LINESTRING;
     this->list = (GIMS_Point **)malloc(size * sizeof(GIMS_Point *));
@@ -349,6 +389,14 @@ int GIMS_MultiLineString::getPointCount(){
     for(int i=0; i<size; i++)
         total += list[i]->size;
     return total;
+}
+
+bool GIMS_MultiLineString::coversPoint(GIMS_Point *pt){
+    for(int i=0; i<this->size; i++){
+        if( this->list[i]->coversPoint(pt) )
+            return true;
+    }
+    return false;
 }
 
 void GIMS_MultiLineString::deepDelete(){
