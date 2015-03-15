@@ -19,6 +19,13 @@ int sfilter_LineCoveredPoints(Node* n, GIMS_Geometry *line, GIMS_Geometry *g){
     return 0;
 }
 
+int sfilter_PointCoveredByLines(Node* n, GIMS_Geometry *point, GIMS_Geometry *g){
+    if( (g->type == LINESTRING || g->type == MULTILINESTRING) && 
+        ((GIMS_MultiLineString *)(g))->coversPoint((GIMS_Point *)point) )
+        return 1;
+    return 0;
+}
+
 int ifilter_ContainedPoints(Node* n, GIMS_Geometry *polygon, GIMS_Geometry *g){
     if( g->type == POINT && n->polygonContainsPoint((GIMS_Polygon *)polygon, (GIMS_Point *)g))
         return 1;
@@ -35,6 +42,7 @@ int cfilter_ContainedPoints(GIMS_Geometry *g){
 void demo1();
 void demo2();
 void demo3();
+void demo4();
 
 int main (int argc, char *argv[]) {
 
@@ -47,9 +55,13 @@ int main (int argc, char *argv[]) {
         demo2();
         cout << "==== FINISHED DEMO 2 ====\n";
     }else if( argc > 1 && strcmp(argv[1], "demo3") == 0 ){
-        cout << "==== STARTING DEMO 2 ====\n";
+        cout << "==== STARTING DEMO 3 ====\n";
         demo3();
-        cout << "==== FINISHED DEMO 2 ====\n";
+        cout << "==== FINISHED DEMO 3 ====\n";
+    }else if( argc > 1 && strcmp(argv[1], "demo4") == 0 ){
+        cout << "==== STARTING DEMO 4 ====\n";
+        demo4();
+        cout << "==== FINISHED DEMO 4 ====\n";
     }else{
 
         PGConnection conn = PGConnection();
@@ -124,6 +136,87 @@ int main (int argc, char *argv[]) {
     }
 
     return 0;
+}
+
+void demo4(){
+    clock_t start, stop;
+
+    start = clock();
+    PGConnection conn = PGConnection();
+    conn.connect();
+    stop = clock();
+
+    cout << "took ";
+    cout << (stop - start)/(double)CLOCKS_PER_SEC;
+    cout << " seconds to connect to the database" << endl;
+
+    /*retrieve layers extent*/
+    GIMS_BoundingBox *extent = conn.getOverallExtent();
+
+    /*create an empty pmqtree bounded by the computed extent*/
+    PMQuadTree *tree = new PMQuadTree( extent );
+
+    start = clock();
+    AVLTree<long, GIMS_Geometry *> *lines = conn.getGeometry("from planet_osm_line where random() < 0.1");
+    AVLTree<long, GIMS_Geometry *> *points   = conn.getGeometry("from planet_osm_point LIMIT 100000"); /*152675 points*/
+    conn.disconnect();
+    stop = clock();
+
+    cout << "took ";
+    cout << (stop - start)/(double)CLOCKS_PER_SEC;
+    cout << " seconds to fetch all the data" << endl;
+
+    start = clock();
+    tree->insert(lines);
+    tree->insert(points);
+    stop = clock();
+
+    cout << "took ";
+    cout << (stop - start)/(double)CLOCKS_PER_SEC;
+    cout << " seconds to insert the 1 linestring" << endl;
+
+    start = clock();
+
+    AVLTree<long, GIMS_Geometry *> *results;
+    for(AVLTree<long, GIMS_Geometry *>::iterator it = points->begin(); it != points->end(); it++){
+        
+        results = tree->activeSearch(points->top(), sfilter_PointCoveredByLines);
+        if(results->size() > 0){
+            cout << results->size() << " lines cover one of the points." << endl;
+        
+            tree->renderRed(*it);
+            for(AVLTree<long, GIMS_Geometry *>::iterator res_it=results->begin(); res_it != results->end(); res_it++){
+                tree->renderRed(*res_it);
+            }
+        }        
+        delete results;
+    }
+    stop = clock();
+
+    cout << "took ";
+    cout << (stop - start)/(double)CLOCKS_PER_SEC;
+    cout << " seconds to find all the covered points" << endl;
+
+    tree->query = points->top();
+    renderer = new DebRenderer();
+    renderer->setScale(400.0/extent->xlength(), -400.0/extent->ylength());
+    renderer->setTranslation( -extent->minx(), -extent->maxy() );
+    renderer->renderCallback = tree;
+    renderer->renderSvg("demo4.svg", 400, 400);
+    
+    char *argv[] = {"gims", "demo4"};
+    int argc = 2;
+    renderer->mainloop(argc, argv);
+    
+    delete renderer;
+
+    delete tree;
+    for(AVLTree<long, GIMS_Geometry *>::iterator it = lines->begin(); it!=lines->end(); it++)
+        (*it)->deepDelete();
+    for(AVLTree<long, GIMS_Geometry *>::iterator it = points->begin(); it!=points->end(); it++)
+        (*it)->deepDelete();
+    delete lines;
+    delete points;
 }
 
 void demo3(){
