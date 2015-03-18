@@ -35,9 +35,10 @@ INC_DIR += `pkg-config --cflags --libs gtkmm-3.0`
 OBJMAIN = ${OBJ_DIR}/main.o
 
 #object files
-OBJFILES += ${OBJ_DIR}/DBConnection/DBConnection.o
+OBJFILES += ${OBJ_DIR}/DataProcessor/avl.o
+OBJFILES += ${OBJ_DIR}/DataProcessor/DE9IM.o
 OBJFILES += ${OBJ_DIR}/DataProcessor/PMQuadTree.o
-OBJFILES += ${OBJ_DIR}/DataProcessor/DataStructs.o
+OBJFILES += ${OBJ_DIR}/DBConnection/DBConnection.o
 OBJFILES += ${OBJ_DIR}/Debugger/DebRender.o
 OBJFILES += ${OBJ_DIR}/Geometry/BoundingBox.o
 OBJFILES += ${OBJ_DIR}/Geometry/GIMSGeometry.o

@@ -25,22 +25,7 @@ double cosine3p(GIMS_Point *p1, GIMS_Point *p2, GIMS_Point *p3){
 
 /*returns angle between vectors p1-p2 and p2-p3*/
 double angle3p(GIMS_Point *p1, GIMS_Point *p2, GIMS_Point *p3){
-    /*
-    GIMS_Point v1 = {p2->x - p1->x, p2->y - p1->y};
-    GIMS_Point v2 = {p3->x - p2->x, p3->y - p2->y};
-
-    double norm1 = sqrt( v1.x * v1.x + v1.y * v1.y );
-    v1.x /= norm1;
-    v1.y /= norm1;
-
-    double norm2 = sqrt( v2.x * v2.x + v2.y * v2.y );
-    v2.x /= norm2;
-    v2.y /= norm2;
-
-    double angle = -acos(v1.x*v2.x + v1.y * v2.y);
-    */
-    double angle = acos( cosine3p(p1,p2,p3) );
-    return angle;
+    return acos(cosine3p(p1,p2,p3));
 }
 
 /*Returns the squared distance between a point "p" and the closest point that

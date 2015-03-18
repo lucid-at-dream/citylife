@@ -6,27 +6,26 @@ using namespace GIMS_GEOMETRY;
 using namespace PMQUADTREE;
 using namespace std;
 
+/*global variables initialization*/
 Quadrant quadrantList[4] =  {NW, NE, SE, SW};
 char quadrantLabels[4][3] =  {"NW", "NE", "SE", "SW"};
 double xmultiplier[4] =  {0.0, 0.5, 0.5, 0.0};
 double ymultiplier[4] =  {0.5, 0.5, 0.0, 0.0};
+
+/*auxiliar variables for statistics*/
 int depth = 0, maxDepth = 0, nnodes = 1;
 
+/*auxiliar variables for the debug rendering process.*/
 bool renderEdge = false;
 list<GIMS_Geometry *> *renderQueue = new list<GIMS_Geometry *>();
 list<GIMS_Geometry *> *redRenderQueue = new list<GIMS_Geometry *>();
 
+
+
+
 /*
 -->Polygonal Map QuadTree Node
 */
-
-int cmp(long a, long b){
-    return a > b ? 1 : b > a ? -1 : 0;
-}
-
-long getKey(GIMS_Geometry *g){
-    return g->id;
-}
 
 /*Returns all nodes of the Polygonal Map QuadTree that intersect the border of
   the geometry passed by parameter. Note: This means that this function does not 
@@ -54,29 +53,6 @@ void *Node::search (GIMS_Geometry *geom){
     clipped->deleteClipped();
     return retlist;
 }
-
-void Node::activeSearch(AVLTree<long, GIMS_Geometry *> *resultset, 
-                        GIMS_Geometry *geom,
-                        int(*intersectedFilter)(Node *, GIMS_Geometry *, GIMS_Geometry *)){
-    
-    GIMS_Geometry *clipped = geom->clipToBox(this->square);
-    if( clipped == NULL )
-        return;
-    
-    if(this->type == GRAY){
-        for( Quadrant q : quadrantList )
-            sons[q]->activeSearch(resultset, clipped, intersectedFilter);
-    }else{
-        for(AVLTree<long, GIMS_Geometry *>::iterator it = this->dictionary->begin();
-            it != this->dictionary->end(); it++){
-            if(intersectedFilter(this, geom, *it))
-                resultset->insert(*it);
-        }
-    }
-    
-    clipped->deleteClipped();
-}
-
 
 /*Returns a neighboor node in the north direction. Chooses the neighboor node 
   that intersects the vertical line defined by x = <param:x>. If two northen 
@@ -116,7 +92,13 @@ GIMS_Geometry *Node::hasReferenceTo( long id ){
     if( this->dictionary == NULL )
         return NULL;
 
-    return this->dictionary->find(id);
+    for(list<GIMS_Geometry *>::iterator it = this->dictionary->begin();
+        it != this->dictionary->end(); it++){
+        if((*it)->id == id)
+            return *it;
+    }
+
+    return NULL;
 }
 
 /*Returns true if a polygon "pol" that intersects the node contains point "pt".*/
@@ -306,47 +288,54 @@ void *Node::searchInterior (GIMS_Polygon *pol){
     }
 }
 
-/*TODO pass on the result set so that it can be reused and not merged and deleted every time*/
-AVLTree<long, GIMS_Geometry *> *Node::unconstrainedActiveSearch(int(*filter)(GIMS_Geometry *)){
-    AVLTree<long, GIMS_Geometry *> *results = new AVLTree<long, GIMS_Geometry *>(cmp, getKey);
-    
+void Node::unconstrainedActiveSearch(DE9IM *resultset, int(*filter)(GIMS_Geometry *)){
     if( this->type != GRAY ){
         if(this->dictionary != NULL){
-            /*TODO: implement iterators*/
-            for(AVLTree<long, GIMS_Geometry *>::iterator it = dictionary->begin(); it != dictionary->end(); it++){
-                if(filter(*it))
-                    results->insert(*it);
+            for(list<GIMS_Geometry *>::iterator it = dictionary->begin(); it != dictionary->end(); it++){
+                if(filter(*it)){
+                    
+                    resultset->setIntersect((*it)->id); //we trivially now know that query and *it intersect
+                    resultset->setII((*it)->id); //we trivially now know that query's interior and *it's interior intersect 
+                    
+                    /*since *it border intersects this node which is contained in the query,
+                    we can assume that there's at least a portion of *it's exterior intersecting
+                    query's interior.*/
+                    resultset->setIE((*it)->id);
+
+                    /*since part of *it's border is inside the polygon, we know that, unless *it's
+                      contained border is solely a polygon's interior ring, *it's exterior intersects query's border*/
+                    if( //if it is not a polygon
+                        (*it)->type != POLYGON
+                        //or if it is a polygon containing external ring border
+                        || ( (*it)->type == POLYGON && 
+                           ( ((GIMS_Polygon *)(*it))->externalRing != NULL && ((GIMS_Polygon *)(*it))->externalRing->size > 0 ) )
+                        ){
+                        //then we can conclude the previous statement (just above the if clause)
+                        resultset->setBE((*it)->id);
+                    }
+                }
             }
         }
     }else{
         for( Quadrant q : quadrantList ){
-            AVLTree<long, GIMS_Geometry *> *partial = sons[q]->unconstrainedActiveSearch(filter);
-            results->merge(partial);
-            delete partial;
+            sons[q]->unconstrainedActiveSearch(resultset, filter);
         }
     }
-    return results;
 }
 
 /*Returns all geometries stored in nodes intersected by polygon pol that pass the
   filter function test*/
 /*TODO: pass on the result set so that it doesn't have to be merged and deleted every time*/
-AVLTree<long, GIMS_Geometry *> *Node::activeInteriorSearch (
-                                    GIMS_Polygon *pol, 
-                                    int(*intersectedFilter)(Node *, GIMS_Geometry *, GIMS_Geometry *),
-                                    int(*containedFilter)(GIMS_Geometry *)
-                                ){
-
-    AVLTree<long, GIMS_Geometry *> *results = new AVLTree<long, GIMS_Geometry *>(cmp, getKey);
+void Node::activeInteriorSearch( DE9IM *resultset, GIMS_Polygon *query, int(*filter)(GIMS_Geometry *) ){
+    
     if ( this->type != GRAY ) { //if the node is a leaf node
         if(this->dictionary != NULL){
-            /*TODO: implement iterators*/
-            for(AVLTree<long, GIMS_Geometry *>::iterator it = dictionary->begin(); it != dictionary->end(); it++){
-                if(intersectedFilter(this, pol, *it))
-                    results->insert(*it);
+            for(list<GIMS_Geometry *>::iterator it = dictionary->begin(); it != dictionary->end(); it++){
+                if( filter(*it) ){
+                    this->buildIM(resultset, query, *it);
+                }
             }
         }
-        return results;
     
     }else{
         char center_contained = -1;
@@ -354,7 +343,7 @@ AVLTree<long, GIMS_Geometry *> *Node::activeInteriorSearch (
         for( Quadrant q : quadrantList ) {
 
             //fetch all components of the polygon that intersect the son's square
-            GIMS_Polygon *clipped = (GIMS_Polygon *)(pol->clipToBox(sons[q]->square));
+            GIMS_Polygon *clipped = (GIMS_Polygon *)(query->clipToBox(sons[q]->square));
 
             bool contained = false;
             if( clipped == NULL ){
@@ -363,53 +352,67 @@ AVLTree<long, GIMS_Geometry *> *Node::activeInteriorSearch (
                  *all 4 children, we can test only that point for polygon containment.*/
                 if( center_contained == -1 ){
                     GIMS_Point p = this->square->getCenter();
-                    contained = sons[q]->polygonContainsPoint(pol, &p);
+                    contained = sons[q]->polygonContainsPoint(query, &p);
                     center_contained = contained ? 1 : 0;
-                
                 }
 
                 if(center_contained == 1){
-                    AVLTree<long, GIMS_Geometry *> *partial = sons[q]->unconstrainedActiveSearch(containedFilter);
-                    results->merge(partial);
-                    delete partial;
+                    sons[q]->unconstrainedActiveSearch(resultset, filter);
                 }
 
             }else{
                 //if the node is intersected we call recursively to its sons.
-                AVLTree<long, GIMS_Geometry *> *partial = sons[q]->activeInteriorSearch(clipped, intersectedFilter, containedFilter);
-                int sum = results->size() + partial->size();
-
-                results->merge(partial);
-
-                if( results->size() != sum )
-                    cout << results->size() << ", " << sum << ", " << partial->size() << endl;
-
-                delete partial;
+                sons[q]->activeInteriorSearch(resultset, clipped, filter);
                 clipped->deleteClipped();
             }
         }
-        return results;
     }
 }
 
-/*TODO: implement iterators*/
-AVLTree<long, GIMS_Geometry *> *Node::clipDict(AVLTree<long, GIMS_Geometry *> *dict){
-    AVLTree<long, GIMS_Geometry *> *clipped = NULL;
+void Node::activeSearch(DE9IM *resultset, GIMS_Geometry *query, int(*filter)(GIMS_Geometry *)){
     
+    GIMS_Geometry *clipped = query->clipToBox(this->square);
+    if( clipped == NULL )
+        return;
+    
+    if(this->type == GRAY){
+        for( Quadrant q : quadrantList )
+            sons[q]->activeSearch(resultset, clipped, filter);
+    }else{
+        for(list<GIMS_Geometry *>::iterator it = this->dictionary->begin();
+            it != this->dictionary->end(); it++){
+            if(filter(*it)){
+                this->buildIM(resultset, query, *it);
+            }
+        }
+    }
+    
+    clipped->deleteClipped();
+}
+
+
+
+list<GIMS_Geometry *> *Node::clipDict(list<GIMS_Geometry *> *dict){
+    list<GIMS_Geometry *> *clipped = NULL;
+
     GIMS_Geometry *partial;
-    for(AVLTree<long, GIMS_Geometry *>::iterator it = dict->begin(); it != dict->end(); it++){
+    for(list<GIMS_Geometry *>::iterator it = dict->begin(); it != dict->end(); it++){
         if( (partial = (*it)->clipToBox(this->square)) != NULL ){
             if( clipped == NULL )
-                clipped = new AVLTree<long, GIMS_Geometry *>(cmp, getKey);
-            clipped->insert(partial);
+                clipped = new list<GIMS_Geometry *>();
+            clipped->push_back(partial);
         }
     }
 
     return clipped;
 }
 
+void Node::remove (GIMS_Geometry *geom){
+    /*TODO: implement remotion*/
+}
+
 /*Inserts geometry "geom" in the tree*/
-void Node::insert ( AVLTree<long, GIMS_Geometry *> *geom ) {
+void Node::insert ( list<GIMS_Geometry *> *geom ) {
     depth++;
 
     if(depth > maxDepth)
@@ -421,7 +424,7 @@ void Node::insert ( AVLTree<long, GIMS_Geometry *> *geom ) {
         return;
     }
 
-    AVLTree<long, GIMS_Geometry *> *clipped = this->clipDict(geom);
+    list<GIMS_Geometry *> *clipped = this->clipDict(geom);
     if (clipped == NULL) { //geometry to insert does not intersect this node
         depth--;
         return;
@@ -431,7 +434,7 @@ void Node::insert ( AVLTree<long, GIMS_Geometry *> *geom ) {
                                 //we're therefore accessing leaf nodes in this block
 
         if (this->dictionary != NULL) { //merge clipped with the node's dictionary
-            clipped->merge(this->dictionary);
+            clipped->insert(clipped->end(), dictionary->begin(), dictionary->end());
             delete this->dictionary;
             this->dictionary = NULL;
         }
@@ -452,8 +455,7 @@ void Node::insert ( AVLTree<long, GIMS_Geometry *> *geom ) {
         this->sons[q]->insert ( clipped );
     }
     
-    /*TODO: implement iterators*/
-    for(AVLTree<long, GIMS_Geometry *>::iterator it = clipped->begin(); it != clipped->end(); it++)
+    for(list<GIMS_Geometry *>::iterator it = clipped->begin(); it != clipped->end(); it++)
         (*it)->deleteClipped();
     delete clipped;
     depth--;
@@ -462,20 +464,18 @@ void Node::insert ( AVLTree<long, GIMS_Geometry *> *geom ) {
 /* Returns true if the given geometry is a valid one for the calling node
    !Note! The bounding box geometry is not supported.
    The behaviour is undefined in such a situation.!Note! */
-/*TODO: implement iterators*/
-bool Node::validate (AVLTree<long, GIMS_Geometry *> *dict) {
+bool Node::validate (list<GIMS_Geometry *> *dict) {
     GIMS_Point *sharedPoint = NULL;
-    for ( AVLTree<long, GIMS_Geometry *>::iterator it = dict->begin(); it != dict->end(); it++ ) {
+    for ( list<GIMS_Geometry *>::iterator it = dict->begin(); it != dict->end(); it++ ) {
         if( !this->validateGeometry((*it), &sharedPoint) )
             return false;
     }
     return true;
 }
 
-/*TODO: implement iterators*/
-int Node::numPoints(AVLTree<long, GIMS_Geometry *> *dict){
+int Node::numPoints(list<GIMS_Geometry *> *dict){
     int total = 0;
-    for(AVLTree<long, GIMS_Geometry *>::iterator it = dict->begin(); it != dict->end(); it++){
+    for(list<GIMS_Geometry *>::iterator it = dict->begin(); it != dict->end(); it++){
         total += (*it)->getPointCount();
     }
     return total;
@@ -644,11 +644,193 @@ Node::~Node(){
 
     /*TODO: implement iterators*/
     if(dictionary != NULL){
-        for(AVLTree<long, GIMS_Geometry *>::iterator it = dictionary->begin(); it != dictionary->end(); it++)
+        for(list<GIMS_Geometry *>::iterator it = dictionary->begin(); it != dictionary->end(); it++)
             (*it)->deleteClipped();
         delete dictionary;
     }
 }
+
+
+
+
+/*9 intersection model building functions*/
+void Node::buildIM (DE9IM *resultset, GIMS_Geometry *query, GIMS_Geometry *other){
+    if(query->type == POINT){
+        buildIM_point(resultset, (GIMS_Point *)query, other);
+    }else if(query->type == LINESTRING){
+        buildIM_linestring(resultset, (GIMS_LineString *)query, other);
+    }else if(query->type == POLYGON){
+        buildIM_polygon(resultset, (GIMS_Polygon *)query, other);
+    }else{
+        perror("unsuported: topologicalSearch called on a multi geometry.");
+    }
+}
+
+void Node::buildIM_polygon(DE9IM *resultset, GIMS_Polygon *query, GIMS_Geometry *other){
+    if(other->type == POINT){
+
+        resultset->setIE(other->id);
+        resultset->setBE(other->id);
+
+        //if the polygon lies inside or on the polygon's border
+        if(this->polygonContainsPoint(query, (GIMS_Point *)other)){
+            resultset->setIntersect(other->id);
+            //if the point doesn't lie on the polygon's border
+            if( ( query->externalRing == NULL  || !query->externalRing->coversPoint((GIMS_Point *)other) ) &&
+                ( query->internalRings == NULL || !query->internalRings->coversPoint((GIMS_Point *)other) )){
+                resultset->setII(other->id);
+            }
+        }else{
+            resultset->setEI(other->id);
+            resultset->setEB(other->id);
+        }
+
+    }else if(other->type == LINESTRING){
+TODO(BUILD_IM: polygon vs linestring)
+        /*check if query intersects other*/
+        /*check if query's interior intersects other's interior*/
+        /*check if query's exterior intersects other's interior*/
+        /*check if query's interior intersects other's exterior*/
+        /*check if query's exterior intersects other's boundary*/
+        /*check if query's boundary intersects other's exterior*/
+
+    }else if(other->type == MULTILINESTRING){
+TODO(BUILD_IM: polygon vs multilinestring)
+
+    }else if(other->type == POLYGON){
+TODO(BUILD_IM: polygon vs polygon)
+
+    }
+}
+
+void Node::buildIM_linestring(DE9IM *resultset, GIMS_LineString *query, GIMS_Geometry *other){
+    if(other->type == POINT){
+
+        resultset->setIE(other->id);
+        resultset->setBE(other->id);
+
+        GIMS_Point *point = (GIMS_Point *)other;  
+
+        /*if the point is contained in the linestring then they intersect*/
+        bool contained = query->coversPoint(point);
+        if( contained ){
+            resultset->setIntersect(other->id);
+
+            /*if the point is contained in the linestring and the point is different 
+              from the line string endpoints, then their interiors intersect.*/
+            if( !point->equals(query->list[0]) && !point->equals(query->list[query->size-1]) )
+                resultset->setII(other->id);
+
+        }else{
+            /*at this point we known that the point and line string don't intersect*/
+            resultset->setEI(other->id);
+            resultset->setEB(other->id);
+        }
+
+    }else if(other->type == LINESTRING){
+TODO(BUILD_IM: linestring vs linestring)
+    }else if(other->type == MULTILINESTRING){
+TODO(BUILD_IM: linestring vs multilinestring)
+    }else if(other->type == POLYGON){
+TODO(BUILD_IM: linestring vs polygon)
+    }
+}
+
+void Node::buildIM_point(DE9IM *resultset, GIMS_Point *query, GIMS_Geometry *other){
+    if( other->type == POINT ){
+        if( query->equals((GIMS_Point *)other)  ){
+            resultset->setIntersect(other->id);
+            resultset->setII(other->id);
+        }else{
+            resultset->setIE(other->id);
+            resultset->setBE(other->id);
+            resultset->setEI(other->id);
+            resultset->setEB(other->id);
+        }
+
+    }else if( other->type == LINESTRING ){
+
+        resultset->setEI(other->id);
+        resultset->setEB(other->id);
+
+        GIMS_LineString *ls = (GIMS_LineString *)other;  
+
+        /*if the point is contained in the linestring then they intersect*/
+        bool contained = ls->coversPoint(query);
+        if( contained ){
+            resultset->setIntersect(other->id);
+
+            /*if the point is contained in the linestring and the point is different 
+              from the line string endpoints, then their interiors intersect.*/
+            if( !query->equals(ls->list[0]) && !query->equals(ls->list[ls->size-1]) )
+                resultset->setII(other->id);
+
+        }else{
+            /*at this point we known that the point and line string don't intersect*/
+            resultset->setIE(other->id);
+            resultset->setBE(other->id);
+        }
+
+    }else if( other->type == MULTILINESTRING ){
+
+        resultset->setEI(other->id);
+        resultset->setEB(other->id);
+
+        GIMS_MultiLineString *mls = (GIMS_MultiLineString *)other;
+
+        bool contained = false;
+        for(int i=0; i<mls->size; i++){
+            contained = mls->list[i]->coversPoint(query);
+            if( contained ){
+                resultset->setIntersect(other->id);
+
+                /*if the point is contained in the linestring and the point is different 
+                  from the line string endpoints, then their interiors intersect.*/
+TODO(is this a clipped linestring? if so we may be mistaking the border and the interior)
+                if( !query->equals(mls->list[i]->list[0]) && !query->equals(mls->list[i]->list[mls->list[i]->size-1]) )
+                    resultset->setII(other->id);
+                break;
+            }
+        }
+
+        if(!contained){
+            /*at this point we known that the point and line string don't intersect*/
+            resultset->setIE(other->id);
+            resultset->setBE(other->id);
+        }
+
+    }else if( other->type == POLYGON ){
+
+        resultset->setEI(other->id);
+        resultset->setEB(other->id);
+
+        //if the polygon lies inside or on the polygon's border
+        if(this->polygonContainsPoint((GIMS_Polygon *)other, (GIMS_Point *)query)){
+            resultset->setIntersect(other->id);
+            //if the point doesn't lie on the polygon's border
+
+            if( ( ((GIMS_Polygon *)other)->externalRing == NULL  || !((GIMS_Polygon *)other)->externalRing->coversPoint((GIMS_Point *)other) ) &&
+                ( ((GIMS_Polygon *)other)->internalRings == NULL || !((GIMS_Polygon *)other)->internalRings->coversPoint((GIMS_Point *)other) )){
+                resultset->setII(other->id);
+            }
+        }else{
+            resultset->setIE(other->id);
+            resultset->setBE(other->id);
+        }
+
+    }else{
+        perror("someone is trying to build a 9-intersection matrix against a weird geometry type.");
+    }
+}
+
+
+
+
+
+
+
+
+
 /*
 Polygonal Map QuadTree Node<--
 */
@@ -674,17 +856,15 @@ int PMQuadTree::getMaxDepth(){
 
 
 /*Functions that take care of the construction and maintenance of the structure*/
-void PMQuadTree::build  (GIMS_Geometry *geom){}
-
-void PMQuadTree::insert ( AVLTree<long, GIMS_Geometry *> *geom ){
-    this->root->insert(geom);
-}
-
 void PMQuadTree::insert ( GIMS_Geometry *geom ) {
-    AVLTree<long, GIMS_Geometry *> *aux = new AVLTree<long, GIMS_Geometry *>(cmp, getKey);
-    aux->insert(geom);
+    list<GIMS_Geometry *> *aux = new list<GIMS_Geometry *>();
+    aux->push_back(geom);
     this->root->insert(aux);
     delete aux;
+}
+
+void PMQuadTree::insert ( list<GIMS_Geometry *> *geom ){
+    this->root->insert(geom);
 }
 
 void PMQuadTree::remove (GIMS_Geometry *geom){
@@ -696,59 +876,17 @@ void *PMQuadTree::search (GIMS_Geometry *geom){
     return this->root->search(geom);
 }
 
+DE9IM *PMQuadTree::topologicalSearch( GIMS_Geometry *query, int(*filter)(GIMS_Geometry *) ){
+    DE9IM *resultset = new DE9IM(query);
 
-
-/*Follow the operations between the data structure and a given geometry*/
-bool PMQuadTree::contains(GIMS_Geometry* container, GIMS_Geometry* contained){
-    if(container->type == POLYGON && contained->type == POINT){
-        list<Node *> *l = (list<Node *> *)(this->search(contained));
-        bool res = l->front()->polygonContainsPoint((GIMS_Polygon *)container, (GIMS_Point *)contained);
-        delete l;
-        return res;
+    if( query->type == POLYGON || query->type == MULTIPOLYGON ){
+        this->root->activeInteriorSearch(resultset, (GIMS_Polygon *)query, filter);
+    }else{
+        this->root->activeSearch(resultset, query, filter);
     }
-    return false;
-}
 
-AVLTree<long, GIMS_Geometry *> *PMQuadTree::activeSearch(GIMS_Geometry *g,
-                                                         int(*filter)(Node *, GIMS_Geometry *, GIMS_Geometry *)){
-    AVLTree<long, GIMS_Geometry *> *resultset = new AVLTree<long, GIMS_Geometry *>(cmp, getKey);     
-    this->root->activeSearch(resultset, g, filter);
     return resultset;
 }
-
-AVLTree<long, GIMS_Geometry *> *PMQuadTree::getRelated(GIMS_Geometry *g,
-                                              int(*intersectedFilter)(Node *, GIMS_Geometry *, GIMS_Geometry *),
-                                              int(*containedFilter)(GIMS_Geometry *)){
-    if(g->type == POLYGON){
-        return this->root->activeInteriorSearch((GIMS_Polygon *)g, intersectedFilter, containedFilter);
-    }
-    return NULL;
-}
-
-RelStatus PMQuadTree::intersects_g  ( GIMS_Geometry *result, GIMS_Geometry *geom){
-    return UNDECIDED_RELATIONSHIP;
-}
-
-RelStatus PMQuadTree::meets_g       ( GIMS_Geometry *result, GIMS_Geometry *geom){
-    return UNDECIDED_RELATIONSHIP;
-}
-
-RelStatus PMQuadTree::contains_g    ( GIMS_Geometry *result, GIMS_Geometry *geom){
-    return UNDECIDED_RELATIONSHIP;
-}
-
-RelStatus PMQuadTree::isContained_g ( GIMS_Geometry *result, GIMS_Geometry *geom){
-    return UNDECIDED_RELATIONSHIP;
-}
-
-
-
-/*Retrieve all geometry elements that are partially or totally contained
-  in a given bounding box*/
-RelStatus PMQuadTree::isBoundedBy ( GIMS_Geometry *result, GIMS_BoundingBox *box){
-    return UNDECIDED_RELATIONSHIP;
-}
-
 
 
 
@@ -833,7 +971,7 @@ void PMQuadTree::renderLeafNode (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
         return;
 
     if (n->type == BLACK) { //the WHITE type stands for empty node, thus we ignore it.
-        for( AVLTree<long, GIMS_Geometry *>::iterator it = n->dictionary->begin();
+        for( list<GIMS_Geometry *>::iterator it = n->dictionary->begin();
             it != n->dictionary->end(); it++ ) {
                 if((*it)->type != POINT)
                 renderer->renderGeometry( cr, *it );
