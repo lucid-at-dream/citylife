@@ -9,15 +9,21 @@
 using namespace std;
 using namespace GIMS_GEOMETRY;
 
-enum IntersectionType {
-    INTERSECT = 1<<0, /*geometries that intersect the query geometry*/
-    II        = 1<<1, /*geometries whose interior intersects query's interior*/
-    EI        = 1<<2, /*geometries whose interior intersects query's exterior*/
-    IE        = 1<<3, /*geometries whose exterior intersects query's interior*/
-    EB        = 1<<4, /*geometries whose boundary intersects query's exterior*/
-    BE        = 1<<5, /*geometries whose exterior intersects query's boundary*/
-};
+#define DIM_INTERSECT(x) (((((x) & INTERSECT) >> 0)-1))
+#define DIM_II(x)        (((((x) & II       ) >> 2)-1))
+#define DIM_EI(x)        (((((x) & EI       ) >> 4)-1))
+#define DIM_IE(x)        (((((x) & IE       ) >> 6)-1))
+#define DIM_EB(x)        (((((x) & EB       ) >> 8)-1))
+#define DIM_BE(x)        (((((x) & BE       ) >> 10)-1))
 
+enum IntersectionType {
+    INTERSECT = 3<<0, /*geometries that intersect the query geometry*/
+    II        = 3<<2, /*geometries whose interior intersects query's interior*/
+    EI        = 3<<4, /*geometries whose interior intersects query's exterior*/
+    IE        = 3<<6, /*geometries whose exterior intersects query's interior*/
+    EB        = 3<<8, /*geometries whose boundary intersects query's exterior*/
+    BE        = 3<<10, /*geometries whose exterior intersects query's boundary*/
+};
 
 class DE9IM{
 

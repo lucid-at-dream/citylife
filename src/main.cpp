@@ -330,7 +330,7 @@ void demo2(){
     renderer->setTranslation( -extent->minx(), -extent->maxy() );
     renderer->renderCallback = tree;
     renderer->renderSvg("demo2.svg", 400, 400);
-    
+
     char *argv[] = {"gims", "demo2"};
     int argc = 2;
     renderer->mainloop(argc, argv);

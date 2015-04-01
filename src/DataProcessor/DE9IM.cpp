@@ -1,14 +1,11 @@
 #include "DE9IM.hpp"
 
-TODO(leave this initialization to the user since sometimes not all checks are needed)
-
 DE9IM::DE9IM(GIMS_Geometry *query){
     this->query = query;
     matrix = map<long long int, unsigned int>();
 }
 
 DE9IM::~DE9IM(){}
-
 
 int dim(GIMS_Geometry *g){
     if(g->type == POINT || g->type == MULTIPOINT)
@@ -213,26 +210,31 @@ list<long> DE9IM::crosses(){
     }
     return resultset;
 }
+*/
 
+TODO(be able to get the original geometry from the id in order to assess the dimension)
+/*
 list<long> DE9IM::overlaps(){
 
     int dim_a = dim(query), dim_b;
 
     list<long> resultset = list<long>();
-    for(AVLTree::iterator it = II->begin(); it != II->end(); it++){
-        dim_b = dim(*it);
+    for(map<long long int, unsigned int>::iterator it = matrix.begin(); it != matrix.end(); it++){
+        dim_b = ???
+        unsigned int mask = it->second;
 
         if( dim_a == dim_b ){
             if(dim_a == 0 || dim_a == 2){
                 //II && IE && EI
-                if(IE->find((*it)->id) != NULL &&
-                   EI->find((*it)->id) != NULL   )
+                if( mask & II &&
+                    mask & IE &&
+                    mask & EI )
                     resultset.push_back((*it)->id);
             }else{
                 //II == 1 && IE && EI
-TODO(DE9IM::OVERLAPS | MAJOR! | check if the dimension of the intersection is indeed 1)
-                if(IE->find((*it)->id) != NULL &&
-                   EI->find((*it)->id) != NULL   )
+                if( DIM_II(mask) == 1 &&
+                    mask & IE         &&
+                    mask & EI          )
                     resultset.push_back((*it)->id);
             }
         }

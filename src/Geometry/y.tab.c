@@ -62,7 +62,7 @@
 
 
 /* Copy the first part of user declarations.  */
-#line 1 "src/Geometry/wkt.y" /* yacc.c:339  */
+#line 1 "wkt.y" /* yacc.c:339  */
 
     #include <stdio.h>
     #include <string.h>
@@ -83,7 +83,7 @@
 
     GIMS_Geometry *geom; // final geometry
 
-#line 87 "src/Geometry/y.tab.c" /* yacc.c:339  */
+#line 87 "y.tab.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -103,8 +103,8 @@
 
 /* In a future release of Bison, this section will be replaced
    by #include "y.tab.h".  */
-#ifndef YY_YY_SRC_GEOMETRY_Y_TAB_H_INCLUDED
-# define YY_YY_SRC_GEOMETRY_Y_TAB_H_INCLUDED
+#ifndef YY_YY_Y_TAB_H_INCLUDED
+# define YY_YY_Y_TAB_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
@@ -149,7 +149,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 35 "src/Geometry/wkt.y" /* yacc.c:355  */
+#line 35 "wkt.y" /* yacc.c:355  */
 
     double numberlit;
     GIMS_Geometry *g;
@@ -161,7 +161,7 @@ union YYSTYPE
     GIMS_MultiPolygon *mpol;
     GIMS_GeometryCollection *gc;
 
-#line 165 "src/Geometry/y.tab.c" /* yacc.c:355  */
+#line 165 "y.tab.c" /* yacc.c:355  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -174,11 +174,11 @@ extern YYSTYPE yylval;
 
 int yyparse (void);
 
-#endif /* !YY_YY_SRC_GEOMETRY_Y_TAB_H_INCLUDED  */
+#endif /* !YY_YY_Y_TAB_H_INCLUDED  */
 
 /* Copy the second part of user declarations.  */
 
-#line 182 "src/Geometry/y.tab.c" /* yacc.c:358  */
+#line 182 "y.tab.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -1308,249 +1308,249 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 60 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 60 "wkt.y" /* yacc.c:1646  */
     {geom = (yyvsp[-1].pt);}
-#line 1314 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1314 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 3:
-#line 61 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 61 "wkt.y" /* yacc.c:1646  */
     {geom = (yyvsp[-1].ls);}
-#line 1320 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1320 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 4:
-#line 62 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 62 "wkt.y" /* yacc.c:1646  */
     {geom = (yyvsp[-1].pol);}
-#line 1326 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1326 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 5:
-#line 63 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 63 "wkt.y" /* yacc.c:1646  */
     {geom = (yyvsp[-1].mpt);}
-#line 1332 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1332 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 6:
-#line 64 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 64 "wkt.y" /* yacc.c:1646  */
     {geom = (yyvsp[-1].mls);}
-#line 1338 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1338 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 7:
-#line 65 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 65 "wkt.y" /* yacc.c:1646  */
     {geom = (yyvsp[-1].mpol);}
-#line 1344 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1344 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 8:
-#line 66 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 66 "wkt.y" /* yacc.c:1646  */
     {geom = (yyvsp[-1].gc);}
-#line 1350 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1350 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 9:
-#line 69 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 69 "wkt.y" /* yacc.c:1646  */
     { (yyval.pt) = new GIMS_Point((yyvsp[-1].numberlit), (yyvsp[0].numberlit)); }
-#line 1356 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1356 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 10:
-#line 72 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 72 "wkt.y" /* yacc.c:1646  */
     {
                     GIMS_LineString *ls = new GIMS_LineString(2); 
                     ls->appendPoint((yyvsp[-2].pt));
                     ls->appendPoint((yyvsp[0].pt));
                     (yyval.ls)=ls;
                 }
-#line 1367 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1367 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 11:
-#line 78 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 78 "wkt.y" /* yacc.c:1646  */
     { 
                     (yyvsp[-2].ls)->appendPoint((yyvsp[0].pt));
                     (yyval.ls)=(yyvsp[-2].ls);
                 }
-#line 1376 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1376 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 12:
-#line 84 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 84 "wkt.y" /* yacc.c:1646  */
     {
                   GIMS_MultiLineString *exterior = new GIMS_MultiLineString(1);
                   (yyvsp[-3].ls)->appendPoint((yyvsp[-1].pt));
                   exterior->append((yyvsp[-3].ls));
                   (yyval.pol) = new GIMS_Polygon(exterior, NULL);
               }
-#line 1387 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1387 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 13:
-#line 90 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 90 "wkt.y" /* yacc.c:1646  */
     {
                   GIMS_MultiLineString *exterior = new GIMS_MultiLineString(1);
                   (yyvsp[-5].ls)->appendPoint((yyvsp[-3].pt));
                   exterior->append((yyvsp[-5].ls));
                   (yyval.pol) = new GIMS_Polygon(exterior, (yyvsp[0].mls));
               }
-#line 1398 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1398 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 14:
-#line 98 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 98 "wkt.y" /* yacc.c:1646  */
     {
                   GIMS_MultiLineString *interior = new GIMS_MultiLineString(1);
                   (yyvsp[-3].ls)->appendPoint((yyvsp[-1].pt));
                   interior->append((yyvsp[-3].ls));
                   (yyval.mls) = interior;
               }
-#line 1409 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1409 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 15:
-#line 104 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 104 "wkt.y" /* yacc.c:1646  */
     {
                   (yyvsp[-3].ls)->appendPoint((yyvsp[-1].pt));
                   (yyvsp[-6].mls)->append((yyvsp[-3].ls));
                   (yyval.mls) = (yyvsp[-6].mls);
               }
-#line 1419 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1419 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 16:
-#line 111 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 111 "wkt.y" /* yacc.c:1646  */
     {
                     GIMS_MultiPoint *mp = new GIMS_MultiPoint(1);
                     mp->append((yyvsp[0].pt));
                     (yyval.mpt) = mp;
                 }
-#line 1429 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1429 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 17:
-#line 116 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 116 "wkt.y" /* yacc.c:1646  */
     {
                     GIMS_MultiPoint *mp = new GIMS_MultiPoint(1);
                     mp->append((yyvsp[-1].pt));
                     (yyval.mpt) = mp;
                 }
-#line 1439 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1439 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 18:
-#line 121 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 121 "wkt.y" /* yacc.c:1646  */
     {
                     (yyvsp[-2].mpt)->append((yyvsp[0].pt));
                     (yyval.mpt) = (yyvsp[-2].mpt);
                 }
-#line 1448 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1448 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 19:
-#line 125 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 125 "wkt.y" /* yacc.c:1646  */
     {
                     (yyvsp[-4].mpt)->append((yyvsp[-1].pt));
                     (yyval.mpt) = (yyvsp[-4].mpt);
                 }
-#line 1457 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1457 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 20:
-#line 131 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 131 "wkt.y" /* yacc.c:1646  */
     {
                          GIMS_MultiLineString *mls = new GIMS_MultiLineString(1);
                          mls->append((yyvsp[-1].ls));
                          (yyval.mls) = mls;
                      }
-#line 1467 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1467 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 21:
-#line 136 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 136 "wkt.y" /* yacc.c:1646  */
     {
                          (yyvsp[-4].mls)->append((yyvsp[-1].ls));
                          (yyval.mls) = (yyvsp[-4].mls);
                      }
-#line 1476 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1476 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 22:
-#line 142 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 142 "wkt.y" /* yacc.c:1646  */
     {
                       GIMS_MultiPolygon *mp = new GIMS_MultiPolygon(1);
                       mp->append((yyvsp[-1].pol));
                       (yyval.mpol) = mp;
                   }
-#line 1486 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1486 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 23:
-#line 147 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 147 "wkt.y" /* yacc.c:1646  */
     {
                       (yyvsp[-4].mpol)->append((yyvsp[-1].pol));
                       (yyval.mpol) = (yyvsp[-4].mpol);
                   }
-#line 1495 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1495 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 24:
-#line 153 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 153 "wkt.y" /* yacc.c:1646  */
     {(yyval.g) = (yyvsp[-1].pt);}
-#line 1501 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1501 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 25:
-#line 154 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 154 "wkt.y" /* yacc.c:1646  */
     {(yyval.g) = (yyvsp[-1].ls);}
-#line 1507 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1507 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 26:
-#line 155 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 155 "wkt.y" /* yacc.c:1646  */
     {(yyval.g) = (yyvsp[-1].pol);}
-#line 1513 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1513 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 27:
-#line 156 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 156 "wkt.y" /* yacc.c:1646  */
     {(yyval.g) = (yyvsp[-1].mpt);}
-#line 1519 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1519 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 28:
-#line 157 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 157 "wkt.y" /* yacc.c:1646  */
     {(yyval.g) = (yyvsp[-1].mls);}
-#line 1525 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1525 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 29:
-#line 158 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 158 "wkt.y" /* yacc.c:1646  */
     {(yyval.g) = (yyvsp[-1].mpol);}
-#line 1531 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1531 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 30:
-#line 161 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 161 "wkt.y" /* yacc.c:1646  */
     {
                     GIMS_GeometryCollection *c = new GIMS_GeometryCollection(1);
                     c->append((yyvsp[0].g));
                     (yyval.gc) = c;
                 }
-#line 1541 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1541 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 31:
-#line 166 "src/Geometry/wkt.y" /* yacc.c:1646  */
+#line 166 "wkt.y" /* yacc.c:1646  */
     {
                     (yyvsp[0].gc)->append((yyvsp[-2].g));
                     (yyval.gc) = (yyvsp[0].gc);
                 }
-#line 1550 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1550 "y.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 1554 "src/Geometry/y.tab.c" /* yacc.c:1646  */
+#line 1554 "y.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1778,7 +1778,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 172 "src/Geometry/wkt.y" /* yacc.c:1906  */
+#line 172 "wkt.y" /* yacc.c:1906  */
 
 
 void yyerror (char *s) {

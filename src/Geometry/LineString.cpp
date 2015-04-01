@@ -1,5 +1,11 @@
 #include "Geometry.hpp"
 
+bool GIMS_LineSegment::operator==(const GIMS_LineSegment &other) const {
+    if( this->p1->equals(other.p1) && this->p2->equals(other.p2) )
+        return true;
+    return false;
+}
+
 int GIMS_LineSegment::getPointCount(){
     return 2;
 }
@@ -185,6 +191,213 @@ GIMS_Point GIMS_LineSegment::closestPointWithinRange(GIMS_BoundingBox *range, GI
 
     clipped = GIMS_LineSegment(&p1, &p2);
     return pt->getClosestPoint(&clipped);
+}
+
+GIMS_Geometry *GIMS_LineSegment::intersects(GIMS_LineSegment *other){
+    
+    double int_x, int_y;
+
+    //if this is a vertical line
+    if( this->p1->x == this->p2->x ){
+        int_x = this->p1->x;
+
+        //if other is vertical
+        if( other->p1->x == other->p2->x ){
+            
+            if( other->p1->x != this->p1->x )
+                return NULL;
+
+            //Is there an overlap in the y axis?
+            double top_this     = MAX(this->p1->y, this->p2->y),
+                   bottom_this  = MIN(this->p1->y, this->p2->y),
+                   top_other    = MAX(other->p1->y, other->p2->y),
+                   bottom_other = MIN(other->p1->y, other->p2->y);
+
+            //the linesegments simply touch
+            if( top_other < bottom_this + ERR_MARGIN && top_other > bottom_this - ERR_MARGIN)
+                return new GIMS_Point(int_x, bottom_this);
+            if( top_this < bottom_other + ERR_MARGIN && top_this > bottom_other - ERR_MARGIN)
+                return new GIMS_Point(int_x, bottom_other);
+
+            //if there's no overlap
+            if( top_this < bottom_other - ERR_MARGIN || top_other < bottom_this - ERR_MARGIN )
+                return NULL;
+            else
+                return new GIMS_LineSegment( new GIMS_Point(int_x, MIN(top_this, top_other)),
+                                             new GIMS_Point(int_x, MAX(bottom_this, bottom_other)) );
+
+        }
+
+        //if other is horizontal
+        else if( other->p1->y == other->p2->y ){
+            int_y = other->p1->y;
+
+            if( int_x <= MAX( other->p1->x, other->p2->x ) + ERR_MARGIN &&
+                int_x >= MIN( other->p1->x, other->p2->x ) - ERR_MARGIN &&
+                int_y <= MAX( this->p1->y, this->p2->y ) + ERR_MARGIN &&
+                int_y >= MIN( this->p1->y, this->p2->y ) - ERR_MARGIN )
+                return new GIMS_Point( int_x, int_y );
+            return NULL;
+        }
+
+        //if other is neither vertical nor horizontal
+        else{
+            double m = (other->p2->y - other->p1->y) / (other->p2->x - other->p1->x),
+                   b = other->p1->y - m * other->p1->x;
+
+            int_y = m * int_x + b;
+
+            if( int_x <= MAX( other->p1->x, other->p2->x ) + ERR_MARGIN &&
+                int_x >= MIN( other->p1->x, other->p2->x ) - ERR_MARGIN &&
+                int_y <= MAX( this->p1->y, this->p2->y ) + ERR_MARGIN &&
+                int_y >= MIN( this->p1->y, this->p2->y ) - ERR_MARGIN )
+                return new GIMS_Point( int_x, int_y );
+            return NULL;
+        }
+    }
+
+    //if this line is horizontal
+    if( this->p1->y == this->p2->y ){
+        int_y = this->p1->y;
+        
+        //if other is vertical
+        if( other->p1->x == other->p2->x ){
+            int_x = other->p1->x;
+
+            if( int_x <= MAX( this->p1->x, this->p2->x ) + ERR_MARGIN &&
+                int_x >= MIN( this->p1->x, this->p2->x ) - ERR_MARGIN &&
+                int_y <= MAX( other->p1->y, other->p2->y ) + ERR_MARGIN &&
+                int_y >= MIN( other->p1->y, other->p2->y ) - ERR_MARGIN )
+                return new GIMS_Point( int_x, int_y );
+            return NULL;
+
+        }
+
+        //if other is horizontal
+        else if( other->p1->y == other->p2->y ){
+
+            if( other->p1->y != this->p1->y )
+                return NULL;
+
+            //Is there an overlap in the y axis?
+            double right_this  = MAX(this->p1->x, this->p2->x),
+                   left_this   = MIN(this->p1->x, this->p2->x),
+                   right_other = MAX(other->p1->x, other->p2->x),
+                   left_other  = MIN(other->p1->x, other->p2->x);
+
+            //the linesegments simply touch
+            if( right_other < left_this + ERR_MARGIN && right_other > left_this - ERR_MARGIN )
+                return new GIMS_Point(left_this, int_y);
+            if( right_this < left_other + ERR_MARGIN && right_this > left_other - ERR_MARGIN )
+                return new GIMS_Point(left_other, int_y);
+
+            //if there's no overlap
+            if( right_this < left_other + ERR_MARGIN || right_other < left_this + ERR_MARGIN )
+                return NULL;
+            else
+                return new GIMS_LineSegment( new GIMS_Point(MIN(right_this, right_other), int_y),
+                                             new GIMS_Point(MAX(left_this, left_other), int_y) );
+
+        }
+
+        //if other is neither vertical nor horizontal
+        else{
+            double m = (other->p2->y - other->p1->y) / (other->p2->x - other->p1->x),
+                   b = other->p1->y - m * other->p1->x;
+
+            int_x = (int_y - b) / m;
+
+            if( int_x <= MAX( other->p1->x, other->p2->x ) + ERR_MARGIN &&
+                int_x >= MIN( other->p1->x, other->p2->x ) - ERR_MARGIN &&
+                int_x <= MAX( this->p1->x, this->p2->x ) + ERR_MARGIN &&
+                int_x >= MIN( this->p1->x, this->p2->x ) - ERR_MARGIN ){
+                return new GIMS_Point( int_x, int_y );
+            }
+            return NULL;
+        }
+    }
+
+    //if the other line is vertical and this is neither vertical nor horizontal
+    if( other->p1->x == other->p2->x ){
+        int_x = other->p1->x;
+
+        double m = (this->p2->y - this->p1->y) / (this->p2->x - this->p1->x),
+               b = this->p1->y - m * this->p1->x;
+
+        int_y = m * int_x + b;
+
+        if( int_x <= MAX( this->p1->x, this->p2->x ) + ERR_MARGIN &&
+            int_x >= MIN( this->p1->x, this->p2->x ) - ERR_MARGIN &&
+            int_y <= MAX( other->p1->y, other->p2->y ) + ERR_MARGIN &&
+            int_y >= MIN( other->p1->y, other->p2->y ) - ERR_MARGIN )
+            return new GIMS_Point( int_x, int_y );
+        return NULL;
+    }
+
+    //if the other line is horizontal and this is neither vertical nor horizontal
+    if( other->p1->y == other->p2->y ){
+        int_y = other->p1->y;
+
+        double m = (this->p2->y - this->p1->y) / (this->p2->x - this->p1->x),
+               b = this->p1->y - m * this->p1->x;
+
+        int_x = (int_y - b) / m;
+
+        if( int_x <= MAX( this->p1->x, this->p2->x ) + ERR_MARGIN &&
+            int_x >= MIN( this->p1->x, this->p2->x ) - ERR_MARGIN &&
+            int_x <= MAX( other->p1->x, other->p2->x ) + ERR_MARGIN &&
+            int_x >= MIN( other->p1->x, other->p2->x ) - ERR_MARGIN ){
+            return new GIMS_Point( int_x, int_y );
+        }else{
+            return NULL;
+        }
+    }
+
+    //if both lines are neither horizontal nor vertical
+    double m1 = (this->p2->y - this->p1->y) / (this->p2->x - this->p1->x),
+           b1 = this->p1->y - m1 * this->p1->x;
+    
+    double m2 = (other->p2->y - other->p1->y) / (other->p2->x - other->p1->x),
+           b2 = other->p1->y - m2 * other->p1->x;
+
+    //if the lines are parallel
+    if(m1 == m2){
+        //if these are segments from the same line
+        if(b1 == b2){
+            //Is there an overlap in the x axis?
+            double right_this  = MAX(this->p1->x, this->p2->x),
+                   left_this   = MIN(this->p1->x, this->p2->x),
+                   right_other = MAX(other->p1->x, other->p2->x),
+                   left_other  = MIN(other->p1->x, other->p2->x);
+
+            //the linesegments simply touch
+            if( right_other < left_this + ERR_MARGIN && right_other > left_this - ERR_MARGIN )
+                return new GIMS_Point(left_this, m1 * left_this + b1);
+            if( right_this < left_other + ERR_MARGIN && right_this > left_other - ERR_MARGIN )
+                return new GIMS_Point(left_other, m1 * left_other + b1);
+
+            //if there's no overlap
+            if( right_this < left_other + ERR_MARGIN || right_other < left_this + ERR_MARGIN )
+                return NULL;
+            else{
+                double xi = MAX(left_this, left_other),
+                       xf = MIN(right_this, right_other);
+                return new GIMS_LineSegment( new GIMS_Point(xi, m1 * xi + b1),
+                                             new GIMS_Point(xf, m1 * xf + b1) );
+            }
+        }
+    }
+
+    int_x = (b2-b1) / (m1-m2);
+    int_y = m1 * int_x + b1;
+
+    if( int_x <= MIN( MAX(this->p1->x, this->p2->x), MAX(other->p1->x, other->p2->x) ) + ERR_MARGIN &&
+        int_x >= MAX( MIN(this->p1->x, this->p2->x), MIN(other->p1->x, other->p2->x) ) - ERR_MARGIN &&
+        int_y <= MIN( MAX(this->p1->y, this->p2->y), MAX(other->p1->y, other->p2->y) ) + ERR_MARGIN &&
+        int_y >= MAX( MIN(this->p1->y, this->p2->y), MIN(other->p1->y, other->p2->y) ) - ERR_MARGIN )
+        return new GIMS_Point(int_x, int_y);
+
+    return NULL;
 }
 
 GIMS_Geometry *GIMS_LineSegment::clipToBox ( GIMS_BoundingBox *box ){
@@ -380,6 +593,88 @@ GIMS_Ring::GIMS_Ring(){
     this->list = NULL;
     this->id = 0;
 }
+
+
+
+
+
+
+
+GIMS_Geometry *GIMS_MultiLineSegment::clipToBox(GIMS_BoundingBox *){
+    return NULL;
+}
+
+
+GIMS_Geometry *GIMS_MultiLineSegment::clone(){
+    return NULL;
+}
+
+int GIMS_MultiLineSegment::getPointCount(){
+    return size * 2;
+}
+
+string GIMS_MultiLineSegment::toWkt(){
+    string wkt = string("MULTILINESTRING(");
+    char buff[100];
+    
+    for(int i=0; i<this->size; i++){
+        sprintf(buff, "(%lf %lf, %lf %lf)", 
+                      this->list[i]->p1->x,
+                      this->list[i]->p1->y,
+                      this->list[i]->p2->x,
+                      this->list[i]->p2->y);
+        wkt += string(buff);
+        wkt += i < this->size - 1 ? "," : ")";
+    }
+
+    return wkt;
+}
+
+void GIMS_MultiLineSegment::deleteClipped(){
+    for(int i=0; i<size; i++)
+        list[i]->deleteClipped();
+    delete this;
+}
+void GIMS_MultiLineSegment::deepDelete(){
+    for(int i=0; i<size; i++)
+        list[i]->deepDelete();
+    delete this;
+}
+
+void GIMS_MultiLineSegment::append(GIMS_LineSegment *l){
+    this->size += 1;
+    if(this->size > this->allocatedSize){
+        this->list = (GIMS_LineSegment **)realloc(this->list, this->size*sizeof(GIMS_LineSegment *));
+        this->allocatedSize = size;
+    }
+    this->list[this->size-1] = l;
+}
+
+GIMS_MultiLineSegment::GIMS_MultiLineSegment(int size){
+    this->type = MULTILINESTRING;
+    this->size = 0;
+    this->allocatedSize = size;
+    this->list = (GIMS_LineSegment **)malloc(size * sizeof(GIMS_LineSegment *));   
+    this->id = 0;
+}
+
+GIMS_MultiLineSegment::GIMS_MultiLineSegment(){
+    this->type = MULTILINESTRING;
+    this->size = this->allocatedSize = 0;
+    this->list = NULL;
+    this->id = 0;
+}
+
+GIMS_MultiLineSegment::~GIMS_MultiLineSegment(){
+    if(list != NULL)
+        free(list);
+}
+
+
+
+
+
+
 
 
 

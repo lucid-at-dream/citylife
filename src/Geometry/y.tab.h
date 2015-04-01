@@ -30,8 +30,8 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
-#ifndef YY_YY_SRC_GEOMETRY_Y_TAB_H_INCLUDED
-# define YY_YY_SRC_GEOMETRY_Y_TAB_H_INCLUDED
+#ifndef YY_YY_Y_TAB_H_INCLUDED
+# define YY_YY_Y_TAB_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
@@ -76,7 +76,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 35 "src/Geometry/wkt.y" /* yacc.c:1909  */
+#line 35 "wkt.y" /* yacc.c:1909  */
 
     double numberlit;
     GIMS_Geometry *g;
@@ -88,7 +88,7 @@ union YYSTYPE
     GIMS_MultiPolygon *mpol;
     GIMS_GeometryCollection *gc;
 
-#line 92 "src/Geometry/y.tab.h" /* yacc.c:1909  */
+#line 92 "y.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -101,4 +101,4 @@ extern YYSTYPE yylval;
 
 int yyparse (void);
 
-#endif /* !YY_YY_SRC_GEOMETRY_Y_TAB_H_INCLUDED  */
+#endif /* !YY_YY_Y_TAB_H_INCLUDED  */

@@ -1,10 +1,13 @@
-LD = -I.. -std=c++11 -g
+LD = -I.. -std=c++11 -g -Wall -lm -pedantic
 
-all: BoundingBox.o GeometryCollection.o GIMSGeometry.o LineString.o Point.o Polygon.o y.tab.o lex.yy.o main.o
+all: BoundingBox.o GeometryCollection.o GIMSGeometry.o LineString.o Point.o Polygon.o y.tab.o lex.yy.o BentleySolver.o main.o
 	g++ $^ -o t -ly ${LD} 
 
-main.o: main.c
-	g++ -c main.c ${LD}
+main.o: main.cpp
+	g++ -c main.cpp ${LD}
+
+BentleySolver.o: BentleySolver.cpp BentleySolver.hpp
+	g++ -c BentleySolver.cpp ${LD}
 
 y.tab.o: lex.yy.c y.tab.c
 	g++ -c y.tab.c ${LD} -ly

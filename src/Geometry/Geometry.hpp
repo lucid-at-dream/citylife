@@ -107,7 +107,9 @@ namespace GIMS_GEOMETRY {
         GIMS_Point *p1,
                    *p2;
 
+        bool operator==(const GIMS_LineSegment &other) const;
         bool              coversPoint            (GIMS_Point *pt);
+        GIMS_Geometry    *intersects             (GIMS_LineSegment *);
         string            toWkt                  ();
         GIMS_LineSegment *clone                  ();
         GIMS_Geometry    *clipToBox              (GIMS_BoundingBox *);
@@ -145,6 +147,24 @@ namespace GIMS_GEOMETRY {
       public:
         GIMS_Ring(int size);
         GIMS_Ring();
+    };
+
+    class GIMS_MultiLineSegment : public GIMS_Geometry {
+      public:
+        GIMS_LineSegment **list;
+        int                size;
+        int                allocatedSize;
+
+        GIMS_Geometry *clipToBox             (GIMS_BoundingBox *);
+        GIMS_Geometry *clone                 ();
+        int            getPointCount         ();
+        string         toWkt                 ();
+        void           deleteClipped         ();
+        void           deepDelete            ();
+        void           append                (GIMS_LineSegment *);
+                       GIMS_MultiLineSegment (int size);
+                       GIMS_MultiLineSegment ();
+                      ~GIMS_MultiLineSegment ();
     };
 
     class GIMS_MultiLineString : public GIMS_Geometry {
