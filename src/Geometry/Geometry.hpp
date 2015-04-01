@@ -275,5 +275,7 @@ double cosine3p(GIMS_Point *p1, GIMS_Point *p2, GIMS_Point *p3);
 double distToSegmentSquared(GIMS_Point *p, GIMS_LineSegment *e);
 GIMS_Geometry *fromWkt(char *wkt);
 GIMS_Geometry *lyWktParse(char *wkt);
+int dim(GIMS_Geometry *g);
+int borderDim(GIMS_Geometry *g);
 
 #endif

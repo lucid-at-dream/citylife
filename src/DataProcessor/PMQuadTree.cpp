@@ -23,6 +23,9 @@ list<GIMS_Geometry *> *redRenderQueue = new list<GIMS_Geometry *>();
 
 
 
+
+
+
 /*
 -->Polygonal Map QuadTree Node
 */
@@ -294,13 +297,13 @@ void Node::unconstrainedActiveSearch(DE9IM *resultset, int(*filter)(GIMS_Geometr
             for(list<GIMS_Geometry *>::iterator it = dictionary->begin(); it != dictionary->end(); it++){
                 if(filter(*it)){
                     
-                    resultset->setIntersect((*it)->id); //we trivially now know that query and *it intersect
-                    resultset->setII((*it)->id); //we trivially now know that query's interior and *it's interior intersect 
+                    resultset->setIntersect((*it)->id, dim(*it)); //we trivially now know that query and *it intersect
+                    resultset->setII((*it)->id, dim(*it)); //we trivially now know that query's interior and *it's interior intersect 
                     
                     /*since *it border intersects this node which is contained in the query,
                     we can assume that there's at least a portion of *it's exterior intersecting
                     query's interior.*/
-                    resultset->setIE((*it)->id);
+                    resultset->setIE((*it)->id, dim(*it));
 
                     /*since part of *it's border is inside the polygon, we know that, unless *it's
                       contained border is solely a polygon's interior ring, *it's exterior intersects query's border*/
@@ -311,7 +314,7 @@ void Node::unconstrainedActiveSearch(DE9IM *resultset, int(*filter)(GIMS_Geometr
                            ( ((GIMS_Polygon *)(*it))->externalRing != NULL && ((GIMS_Polygon *)(*it))->externalRing->size > 0 ) )
                         ){
                         //then we can conclude the previous statement (just above the if clause)
-                        resultset->setBE((*it)->id);
+                        resultset->setBE((*it)->id, MIN(borderDim(resultset->query), dim(*it)));
                     }
                 }
             }
@@ -669,20 +672,20 @@ void Node::buildIM (DE9IM *resultset, GIMS_Geometry *query, GIMS_Geometry *other
 void Node::buildIM_polygon(DE9IM *resultset, GIMS_Polygon *query, GIMS_Geometry *other){
     if(other->type == POINT){
 
-        resultset->setIE(other->id);
-        resultset->setBE(other->id);
+        resultset->setIE(other->id, 0);
+        resultset->setBE(other->id, 0);
 
         //if the polygon lies inside or on the polygon's border
         if(this->polygonContainsPoint(query, (GIMS_Point *)other)){
-            resultset->setIntersect(other->id);
+            resultset->setIntersect(other->id, 0);
             //if the point doesn't lie on the polygon's border
             if( ( query->externalRing == NULL  || !query->externalRing->coversPoint((GIMS_Point *)other) ) &&
                 ( query->internalRings == NULL || !query->internalRings->coversPoint((GIMS_Point *)other) )){
-                resultset->setII(other->id);
+                resultset->setII(other->id, 0);
             }
         }else{
-            resultset->setEI(other->id);
-            resultset->setEB(other->id);
+            resultset->setEI(other->id, 0);
+            resultset->setEB(other->id, 0);
         }
 
     }else if(other->type == LINESTRING){
@@ -706,25 +709,25 @@ TODO(BUILD_IM: polygon vs polygon)
 void Node::buildIM_linestring(DE9IM *resultset, GIMS_LineString *query, GIMS_Geometry *other){
     if(other->type == POINT){
 
-        resultset->setIE(other->id);
-        resultset->setBE(other->id);
+        resultset->setIE(other->id, 0);
+        resultset->setBE(other->id, 0);
 
         GIMS_Point *point = (GIMS_Point *)other;  
 
         /*if the point is contained in the linestring then they intersect*/
         bool contained = query->coversPoint(point);
         if( contained ){
-            resultset->setIntersect(other->id);
+            resultset->setIntersect(other->id, 0);
 
             /*if the point is contained in the linestring and the point is different 
               from the line string endpoints, then their interiors intersect.*/
             if( !point->equals(query->list[0]) && !point->equals(query->list[query->size-1]) )
-                resultset->setII(other->id);
+                resultset->setII(other->id, 0);
 
         }else{
             /*at this point we known that the point and line string don't intersect*/
-            resultset->setEI(other->id);
-            resultset->setEB(other->id);
+            resultset->setEI(other->id, 0);
+            resultset->setEB(other->id, 0);
         }
 
     }else if(other->type == LINESTRING){
@@ -739,42 +742,42 @@ TODO(BUILD_IM: linestring vs polygon)
 void Node::buildIM_point(DE9IM *resultset, GIMS_Point *query, GIMS_Geometry *other){
     if( other->type == POINT ){
         if( query->equals((GIMS_Point *)other)  ){
-            resultset->setIntersect(other->id);
-            resultset->setII(other->id);
+            resultset->setIntersect(other->id, 0);
+            resultset->setII(other->id, 0);
         }else{
-            resultset->setIE(other->id);
-            resultset->setBE(other->id);
-            resultset->setEI(other->id);
-            resultset->setEB(other->id);
+            resultset->setIE(other->id, 0);
+            resultset->setBE(other->id, 0);
+            resultset->setEI(other->id, 0);
+            resultset->setEB(other->id, 0);
         }
 
     }else if( other->type == LINESTRING ){
 
-        resultset->setEI(other->id);
-        resultset->setEB(other->id);
+        resultset->setEI(other->id, 0);
+        resultset->setEB(other->id, 0);
 
         GIMS_LineString *ls = (GIMS_LineString *)other;  
 
         /*if the point is contained in the linestring then they intersect*/
         bool contained = ls->coversPoint(query);
         if( contained ){
-            resultset->setIntersect(other->id);
+            resultset->setIntersect(other->id, 0);
 
             /*if the point is contained in the linestring and the point is different 
               from the line string endpoints, then their interiors intersect.*/
             if( !query->equals(ls->list[0]) && !query->equals(ls->list[ls->size-1]) )
-                resultset->setII(other->id);
+                resultset->setII(other->id, 0);
 
         }else{
             /*at this point we known that the point and line string don't intersect*/
-            resultset->setIE(other->id);
-            resultset->setBE(other->id);
+            resultset->setIE(other->id, 0);
+            resultset->setBE(other->id, 0);
         }
 
     }else if( other->type == MULTILINESTRING ){
 
-        resultset->setEI(other->id);
-        resultset->setEB(other->id);
+        resultset->setEI(other->id, 0);
+        resultset->setEB(other->id, 0);
 
         GIMS_MultiLineString *mls = (GIMS_MultiLineString *)other;
 
@@ -782,40 +785,40 @@ void Node::buildIM_point(DE9IM *resultset, GIMS_Point *query, GIMS_Geometry *oth
         for(int i=0; i<mls->size; i++){
             contained = mls->list[i]->coversPoint(query);
             if( contained ){
-                resultset->setIntersect(other->id);
+                resultset->setIntersect(other->id, 0);
 
                 /*if the point is contained in the linestring and the point is different 
                   from the line string endpoints, then their interiors intersect.*/
 TODO(is this a clipped linestring? if so we may be mistaking the border and the interior)
                 if( !query->equals(mls->list[i]->list[0]) && !query->equals(mls->list[i]->list[mls->list[i]->size-1]) )
-                    resultset->setII(other->id);
+                    resultset->setII(other->id, 0);
                 break;
             }
         }
 
         if(!contained){
             /*at this point we known that the point and line string don't intersect*/
-            resultset->setIE(other->id);
-            resultset->setBE(other->id);
+            resultset->setIE(other->id, 0);
+            resultset->setBE(other->id, 0);
         }
 
     }else if( other->type == POLYGON ){
 
-        resultset->setEI(other->id);
-        resultset->setEB(other->id);
+        resultset->setEI(other->id, 0);
+        resultset->setEB(other->id, 0);
 
         //if the polygon lies inside or on the polygon's border
         if(this->polygonContainsPoint((GIMS_Polygon *)other, (GIMS_Point *)query)){
-            resultset->setIntersect(other->id);
+            resultset->setIntersect(other->id, 0);
             //if the point doesn't lie on the polygon's border
 
             if( ( ((GIMS_Polygon *)other)->externalRing == NULL  || !((GIMS_Polygon *)other)->externalRing->coversPoint((GIMS_Point *)other) ) &&
                 ( ((GIMS_Polygon *)other)->internalRings == NULL || !((GIMS_Polygon *)other)->internalRings->coversPoint((GIMS_Point *)other) )){
-                resultset->setII(other->id);
+                resultset->setII(other->id, 0);
             }
         }else{
-            resultset->setIE(other->id);
-            resultset->setBE(other->id);
+            resultset->setIE(other->id, 0);
+            resultset->setBE(other->id, 0);
         }
 
     }else{

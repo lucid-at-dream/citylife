@@ -4,6 +4,60 @@ using namespace GIMS_GEOMETRY;
 
 GIMS_Geometry::~GIMS_Geometry (){}
 
+/*helper function*/
+int dim(GIMS_Geometry *g){
+    switch(g->type){
+        case POINT:
+        case MULTIPOINT:
+            return 0;
+        case LINESTRING:
+        case LINESEGMENT:
+        case RING:
+        case MULTILINESTRING:
+            return 1;
+        case POLYGON:
+        case MULTIPOLYGON:
+        case BOUNDINGBOX:
+            return 2;
+        case GEOMETRYCOLLECTION:
+            GIMS_GeometryCollection *gc = (GIMS_GeometryCollection *)g;
+            int max = -1, aux;
+            for(int i=0; i<gc->size && max < 2; i++){
+                if( (aux = dim(gc->list[i])) > max )
+                    max = aux;
+            }
+            return max;
+    }
+    return -1;
+}
+
+int borderDim(GIMS_Geometry *g){
+    switch(g->type){
+        case RING: // a ring has no border
+            return -1;
+        case POINT:
+        case MULTIPOINT:
+            return 0;
+        case LINESTRING:
+        case LINESEGMENT:
+        case MULTILINESTRING:
+            return 0;
+        case POLYGON:
+        case MULTIPOLYGON:
+        case BOUNDINGBOX:
+            return 1;
+        case GEOMETRYCOLLECTION:
+            GIMS_GeometryCollection *gc = (GIMS_GeometryCollection *)g;
+            int max = -1, aux;
+            for(int i=0; i<gc->size && max < 1; i++){
+                if( (aux = dim(gc->list[i])) > max )
+                    max = aux;
+            }
+            return max;
+    }
+    return -1;
+}
+
 GIMS_Geometry *fromWkt(char *wkt){
     return lyWktParse(wkt);
 }

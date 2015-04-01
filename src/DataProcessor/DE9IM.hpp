@@ -34,12 +34,12 @@ class DE9IM{
     DE9IM(GIMS_Geometry *query);
     ~DE9IM();
     
-    void setIntersect(long long int id);
-    void setII(long long int id);
-    void setEI(long long int id);
-    void setIE(long long int id);
-    void setEB(long long int id);
-    void setBE(long long int id);
+    void setIntersect(long long int id, unsigned int dim);
+    void setII(long long int id, unsigned int dim);
+    void setEI(long long int id, unsigned int dim);
+    void setIE(long long int id, unsigned int dim);
+    void setEB(long long int id, unsigned int dim);
+    void setBE(long long int id, unsigned int dim);
 
     list<long> equals();
     list<long> disjoint();

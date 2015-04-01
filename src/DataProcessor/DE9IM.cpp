@@ -7,63 +7,58 @@ DE9IM::DE9IM(GIMS_Geometry *query){
 
 DE9IM::~DE9IM(){}
 
-int dim(GIMS_Geometry *g){
-    if(g->type == POINT || g->type == MULTIPOINT)
-        return 0;
-    if(g->type == LINESTRING || g->type == MULTILINESTRING)
-        return 1;
-    if(g->type == POLYGON || g->type == MULTIPOLYGON)
-        return 2;
-    perror("unkown type of geometry passed to the 9IM model class\n");
-    return -1;
+void DE9IM::setIntersect(long long int id, unsigned int dim){
+    dim += 1;
+    map<long long int, unsigned int>::iterator it;
+    if( (it = matrix.find(id)) != matrix.end() ){
+        it->second |= MAX( it->second & INTERSECT, dim << 0);
+    }else
+        matrix[id] = dim << 0;
 }
 
-void DE9IM::setIntersect(long long int id){
+void DE9IM::setII(long long int id, unsigned int dim){
+    dim += 1;
     map<long long int, unsigned int>::iterator it;
     if( (it = matrix.find(id)) != matrix.end() )
-        it->second |= INTERSECT;
+        it->second |= MAX( it->second & II, dim << 2 );
     else
-        matrix[id] = INTERSECT;
+        matrix[id] = dim << 2;
 }
 
-void DE9IM::setII(long long int id){
+void DE9IM::setEI(long long int id, unsigned int dim){
+    dim += 1;
     map<long long int, unsigned int>::iterator it;
     if( (it = matrix.find(id)) != matrix.end() )
-        it->second |= II;
+        it->second |= MAX( it->second & EI, dim << 4 );
     else
-        matrix[id] = II;
+        matrix[id] = dim << 4;
 }
 
-void DE9IM::setEI(long long int id){
+void DE9IM::setIE(long long int id, unsigned int dim){
+    dim += 1;
     map<long long int, unsigned int>::iterator it;
     if( (it = matrix.find(id)) != matrix.end() )
-        it->second |= EI;
+        it->second |= MAX( it->second & IE, dim << 6 );
     else
-        matrix[id] = EI;
+        matrix[id] = dim << 6;
 }
 
-void DE9IM::setIE(long long int id){
+void DE9IM::setEB(long long int id, unsigned int dim){
+    dim += 1;
     map<long long int, unsigned int>::iterator it;
     if( (it = matrix.find(id)) != matrix.end() )
-        it->second |= IE;
+        it->second |= MAX( it->second & EB, dim << 8 );
     else
-        matrix[id] = IE;
+        matrix[id] = dim << 8;
 }
 
-void DE9IM::setEB(long long int id){
+void DE9IM::setBE(long long int id, unsigned int dim){
+    dim += 1;
     map<long long int, unsigned int>::iterator it;
     if( (it = matrix.find(id)) != matrix.end() )
-        it->second |= EB;
+        it->second |= MAX( it->second & BE, dim << 10 );
     else
-        matrix[id] = EB;
-}
-
-void DE9IM::setBE(long long int id){
-    map<long long int, unsigned int>::iterator it;
-    if( (it = matrix.find(id)) != matrix.end() )
-        it->second |= BE;
-    else
-        matrix[id] = BE;
+        matrix[id] = dim << 10;
 }
 
 list<long> DE9IM::equals(){
