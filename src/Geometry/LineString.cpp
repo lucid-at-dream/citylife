@@ -42,6 +42,70 @@ GIMS_LineSegment::GIMS_LineSegment ( GIMS_Point *p1, GIMS_Point *p2 ){
     this->p2 = p2;
 }
 
+bool GIMS_LineSegment::isCoveredBy(std::list<GIMS_LineSegment *> &linesegments){
+
+    for(std::list<GIMS_LineSegment *>::iterator it = linesegments.begin(); it != linesegments.end(); it++){
+
+        bool coversP1 = (*it)->coversPoint(this->p1),
+             coversP2 = (*it)->coversPoint(this->p2);
+
+        if( coversP1 && coversP2 )
+            return true;
+        else if( !coversP1 && !coversP2 ){
+            //in this case either the linesegment is totally contained of totally disjoint
+            if( this->coversPoint( (*it)->p1 ) ){
+                //totally contained
+                double dp1 = distanceSquared2p(this->p1, (*it)->p1),
+                       dp2 = distanceSquared2p(this->p1, (*it)->p2);
+
+                GIMS_LineSegment p1_p1, p2_p2;
+
+                if(dp1 < dp2){
+                    p1_p1 = GIMS_LineSegment(this->p1, (*it)->p1);
+                    p2_p2 = GIMS_LineSegment(this->p2, (*it)->p2);
+                }else{
+                    p1_p1 = GIMS_LineSegment(this->p1, (*it)->p2);
+                    p2_p2 = GIMS_LineSegment(this->p2, (*it)->p1);
+                }
+                return p1_p1.isCoveredBy(linesegments) && p2_p2.isCoveredBy(linesegments);
+            }else{
+                //totally disjoint
+                continue;
+            }
+
+        }else if( coversP1 ){
+
+            double dp1 = distanceSquared2p(this->p2, (*it)->p1),
+                   dp2 = distanceSquared2p(this->p2, (*it)->p2);
+
+            GIMS_LineSegment p2_p2;
+
+            if(dp1 < dp2){
+                p2_p2 = GIMS_LineSegment(this->p2, (*it)->p1);
+            }else{
+                p2_p2 = GIMS_LineSegment(this->p2, (*it)->p2);
+            }
+
+            return p2_p2.isCoveredBy(linesegments);
+
+        }else if( coversP2 ){
+            double dp1 = distanceSquared2p(this->p1, (*it)->p1),
+                   dp2 = distanceSquared2p(this->p1, (*it)->p2);
+
+            GIMS_LineSegment p1_p1;
+
+            if(dp1 < dp2){
+                p1_p1 = GIMS_LineSegment(this->p1, (*it)->p1);
+            }else{
+                p1_p1 = GIMS_LineSegment(this->p1, (*it)->p2);
+            }
+
+            return p1_p1.isCoveredBy(linesegments);
+        }
+    }
+    return false;
+}
+
 bool GIMS_LineSegment::coversPoint(GIMS_Point *pt){
 
    double miny = p2->y < p1->y ? p2->y : p1->y,
@@ -517,6 +581,14 @@ GIMS_LineString *GIMS_LineString::clone (){
     return newList;
 }
 
+bool GIMS_LineString::isCoveredBy(std::list<GIMS_LineSegment *> &linesegments){
+    for(int i=0; i<this->size-1; i++){
+        if( !(this->getLineSegment(i).isCoveredBy(linesegments)) )
+            return false;
+    }
+    return true;
+}
+
 GIMS_Geometry *GIMS_LineString::clipToBox (GIMS_BoundingBox *box){
     GIMS_MultiLineString *clipped = NULL;
     GIMS_LineString *partial = NULL;
@@ -731,6 +803,14 @@ GIMS_MultiLineString *GIMS_MultiLineString::clone(){
     memcpy(fresh->list, this->list, this->size * sizeof(GIMS_LineString *));
     fresh->id = this->id;
     return fresh;
+}
+
+bool GIMS_MultiLineString::isCoveredBy(std::list<GIMS_LineSegment *> &linesegments){
+    for(int i=0; i<this->size; i++){
+        if( !(this->list[i]->isCoveredBy(linesegments)) )
+            return false;
+    }
+    return true;
 }
 
 GIMS_Geometry *GIMS_MultiLineString::clipToBox(GIMS_BoundingBox *box){

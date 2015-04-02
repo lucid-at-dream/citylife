@@ -48,6 +48,7 @@ OBJFILES += ${OBJ_DIR}/Geometry/Point.o
 OBJFILES += ${OBJ_DIR}/Geometry/Polygon.o
 OBJFILES += ${OBJ_DIR}/Geometry/lex.yy.o
 OBJFILES += ${OBJ_DIR}/Geometry/y.tab.o
+OBJFILES += ${OBJ_DIR}/Geometry/BentleySolver.o
 
 #object files for testing source code
 OBJTESTFILES = ${TEST_DIR}/${OBJ_DIR}/pointInPolygonTest.o

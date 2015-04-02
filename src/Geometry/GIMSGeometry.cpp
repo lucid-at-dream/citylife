@@ -4,6 +4,12 @@ using namespace GIMS_GEOMETRY;
 
 GIMS_Geometry::~GIMS_Geometry (){}
 
+bool geometryIdCmp(GIMS_Geometry *A, GIMS_Geometry *B){
+    return A->id < B->id;
+}
+
+idset idIndex(&geometryIdCmp);
+
 /*helper function*/
 int dim(GIMS_Geometry *g){
     switch(g->type){

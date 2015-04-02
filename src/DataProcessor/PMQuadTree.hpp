@@ -4,8 +4,8 @@
 #include "SystemBase.hpp"
 #include "DataStructs.hpp"
 #include "DebRender.hpp"
-#include "avl.hpp"
 #include "DE9IM.hpp"
+#include "BentleySolver.hpp"
 #include <list>
 #include <cmath>
 
@@ -26,7 +26,7 @@ namespace PMQUADTREE {
         Node *sons[4]; //the node's sons. one for each quadrant.
 
         /*Helper functions*/
-        GIMS_Geometry *hasReferenceTo (long id);
+        GIMS_Geometry *hasReferenceTo (long long id);
         Node *goNorth                 (double x);
         void  split                   ();
 

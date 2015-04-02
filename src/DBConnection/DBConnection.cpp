@@ -32,7 +32,7 @@ AVLTree *PGConnection::getGeometry(char *whereClause){
 
     AVLTree *resultset = new AVLTree();
     for(int i=0; i<PQntuples(qres); i++){
-        unsigned long int id = atol(PQgetvalue(qres, i, 0));
+        long long id = atoll(PQgetvalue(qres, i, 0));
         GIMS_Geometry *g = fromWkt(PQgetvalue(qres, i, 1));
         g->id = id;
         resultset->insert(g);
@@ -50,7 +50,7 @@ list<GIMS_Geometry *> *PGConnection::getGeometryAsList(char *whereClause){
 
     list<GIMS_Geometry *> *resultset = new list<GIMS_Geometry*>();
     for(int i=0; i<PQntuples(qres); i++){
-        unsigned long int id = atol(PQgetvalue(qres, i, 0));
+        long long id = atoll(PQgetvalue(qres, i, 0));
         GIMS_Geometry *g = fromWkt(PQgetvalue(qres, i, 1));
         g->id = id;
         resultset->push_back(g);

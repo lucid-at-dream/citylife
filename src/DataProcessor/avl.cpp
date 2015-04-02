@@ -77,7 +77,7 @@ int AVLNode::getBalance(){
 }
 
 //retrieves the data corresponding to the given key
-GIMS_Geometry *AVLNode::find(long key){
+GIMS_Geometry *AVLNode::find(long long key){
     AVLNode *aux = this;
     int compar;
     while(aux != NULL){
@@ -150,7 +150,7 @@ int AVLNode::insert(GIMS_Geometry *item){
 }
 
 /*TODO. height update is buggy!!*/
-AVLNode *AVLNode::remove(long item){
+AVLNode *AVLNode::remove(long long item){
 
     AVLNode *removedNode = NULL;
 
@@ -406,7 +406,7 @@ void AVLTree::merge(AVLTree *tree) {
         this->insert(*it);    
 }
 
-GIMS_Geometry *AVLTree::find(long key){
+GIMS_Geometry *AVLTree::find(long long key){
     if(this->root == NULL)
         return NULL;
     return this->root->find(key);
@@ -424,7 +424,7 @@ void AVLTree::insert(GIMS_Geometry *item){
         this->root = this->root->parent;
 }
 
-AVLNode *AVLTree::remove(long item){
+AVLNode *AVLTree::remove(long long item){
     if(this->root == NULL)
         return NULL;
 

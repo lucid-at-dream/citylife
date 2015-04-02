@@ -6,6 +6,8 @@
 #include <string>
 #include "SystemBase.hpp"
 #include <iostream>
+#include <list>
+#include <set>
 
 using namespace std;
 
@@ -50,7 +52,7 @@ namespace GIMS_GEOMETRY {
     class GIMS_Geometry {
       public:
         GeometryType type;
-        long id; //osm id
+        long long id; //osm id
 
         //returns the subset of geometry components that intersect a given bounding box
         virtual GIMS_Geometry *clipToBox     ( GIMS_BoundingBox * ) = 0;
@@ -109,6 +111,7 @@ namespace GIMS_GEOMETRY {
 
         bool operator==(const GIMS_LineSegment &other) const;
         bool              coversPoint            (GIMS_Point *pt);
+        bool              isCoveredBy            (std::list<GIMS_LineSegment *> &);
         GIMS_Geometry    *intersects             (GIMS_LineSegment *);
         string            toWkt                  ();
         GIMS_LineSegment *clone                  ();
@@ -129,6 +132,7 @@ namespace GIMS_GEOMETRY {
         int          allocatedSize;
 
         string            toWkt           ();
+        bool              isCoveredBy     (std::list<GIMS_LineSegment *> &);
         bool              coversPoint     (GIMS_Point *pt);
         GIMS_LineString  *clone           ();
         GIMS_Geometry    *clipToBox       (GIMS_BoundingBox *);
@@ -174,6 +178,7 @@ namespace GIMS_GEOMETRY {
         int               allocatedSize;
 
         string                toWkt                ();
+        bool                  isCoveredBy           (std::list<GIMS_LineSegment *> &);
         bool                  coversPoint          (GIMS_Point *pt);
         GIMS_MultiLineString *clone                ();
         GIMS_Geometry        *clipToBox            (GIMS_BoundingBox *);
@@ -277,5 +282,9 @@ GIMS_Geometry *fromWkt(char *wkt);
 GIMS_Geometry *lyWktParse(char *wkt);
 int dim(GIMS_Geometry *g);
 int borderDim(GIMS_Geometry *g);
+bool geometryIdCmp(GIMS_Geometry *A, GIMS_Geometry *B);
+
+typedef set<GIMS_Geometry *, decltype(&geometryIdCmp)> idset;
+extern idset idIndex;
 
 #endif

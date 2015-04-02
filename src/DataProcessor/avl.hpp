@@ -34,11 +34,11 @@ class AVLNode{
         //returns the balance factor of the tree rooted at this node
         int getBalance();
         //retrieves the data corresponding to the given key
-        GIMS_Geometry *find(long key);
+        GIMS_Geometry *find(long long key);
         //inserts a given item in the tree
         int insert(GIMS_Geometry *item);
         /*TODO. height update is buggy!!*/
-        AVLNode *remove(long item);
+        AVLNode *remove(long long item);
         void rebalanceAfterRemove();
         void rotateLeft();
         void rotateRight();
@@ -124,9 +124,9 @@ class AVLTree{
                       ~AVLTree    ();
         int            size       ();
         void           merge      (AVLTree *tree);
-        GIMS_Geometry *find       (long key);
+        GIMS_Geometry *find       (long long key);
         void           insert     (GIMS_Geometry *item);
-        AVLNode       *remove     (long item);
+        AVLNode       *remove     (long long item);
 };
 
 
