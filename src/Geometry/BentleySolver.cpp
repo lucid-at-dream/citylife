@@ -3,6 +3,14 @@
 double sweepLineX = 0;
 double sweepLineY = 0;
 
+double nextInc = 0;
+double prevInc_x = 0;
+double prevInc_y = 0;
+
+
+GIMS_Point *prevEvent = NULL;
+GIMS_Point *currEvent = NULL;
+
 double BentleySolver::getYatX(GIMS_LineSegment *l){
 
     if( l->p1->x == l->p2->x ){
@@ -13,6 +21,7 @@ double BentleySolver::getYatX(GIMS_LineSegment *l){
         }else{
             return MAX(l->p1->y, l->p2->y);
         }
+
     }
 
     if( l->p1->y == l->p2->y )
@@ -119,6 +128,14 @@ bool BentleySolver::lscmp(GIMS_LineSegment **ls1, GIMS_LineSegment **ls2){
 GIMS_Point *BentleySolver::report(list<GIMS_Geometry *> &intersections, GIMS_LineSegment *a, GIMS_LineSegment *b){
     GIMS_Geometry *g = a->intersects(b);
 
+#ifdef DEBUG
+    cout << "##### intersection #####\n";
+    cout << "A: " << a->toWkt() << endl;
+    cout << "B: " << b->toWkt() << endl;
+    cout << "I: " << (g != NULL ? g->toWkt() : "NULL") << endl;
+    cout << "##### intersection #####\n";
+#endif
+
     if( g == NULL ){
         return NULL;
     }
@@ -129,7 +146,7 @@ GIMS_Point *BentleySolver::report(list<GIMS_Geometry *> &intersections, GIMS_Lin
         return NULL;
     }
 
-    if( ((GIMS_Point *)g)->x >= sweepLineX - 1e-3 )
+    if( ((GIMS_Point *)g)->x >= sweepLineX - ERR_MARGIN )
         return (GIMS_Point *)g;
     return NULL;
 }
@@ -166,6 +183,43 @@ bool BentleySolver::newIntersectionEvent(evset &eventQueue, GIMS_Point *int_p, G
 }
 
 
+void prevOrder(){
+    if( prevEvent == NULL ){
+        sweepLineX -= 10;
+        sweepLineY -= 10;
+        prevInc_x = 10;
+        prevInc_y = 10;
+
+
+    }else{
+        double distance = currEvent->x - prevEvent->x;
+        if( distance > ERR_MARGIN ){
+            prevInc_x = MIN(distance/2.0, 1e-6);
+            sweepLineX -= prevInc_x;
+        }else{
+            sweepLineX -= prevInc_x;
+        }
+
+        if( currEvent->x == prevEvent->x ){
+            distance = currEvent->y - prevEvent->y;
+            if( distance > ERR_MARGIN ){
+                prevInc_y = MIN(distance/2.0, 1e-6);
+                sweepLineY -= prevInc_y;
+            }else{
+                sweepLineY -= prevInc_y;
+            }
+
+        }else{
+            sweepLineY -= 10;
+            prevInc_y = 10;
+        }
+    }
+}
+
+void restoreOrder(){
+    sweepLineX = currEvent->x;
+    sweepLineY = currEvent->y;
+}
 
 list<GIMS_Geometry *> BentleySolver::solve(GIMS_MultiLineString *A, GIMS_MultiLineString *B){
 
@@ -185,13 +239,6 @@ list<GIMS_Geometry *> BentleySolver::solve(GIMS_MultiLineString *A, GIMS_MultiLi
                 Event a, b;
                 GIMS_LineSegment ls = aux->list[i]->getLineSegment(j);
                 
-                a.pt = ls.p1; b.pt = ls.p2;
-                if( compare(a,b) ){
-                    a.type = 0; b.type = 1;  
-                }else{
-                    a.type = 1; b.type = 0;
-                }
-
                 GIMS_LineSegment *ls_copy = ls.clone();
                 ls_copy->id = nextId;
 
@@ -202,6 +249,13 @@ list<GIMS_Geometry *> BentleySolver::solve(GIMS_MultiLineString *A, GIMS_MultiLi
                 mls = new GIMS_MultiLineSegment(1);
                 mls->append(ls_copy);
                 b.ls = mls;
+
+                a.pt = ls.p1; b.pt = ls.p2;
+                if( compare(a,b) ){
+                    a.type = 0; b.type = 1;  
+                }else{
+                    a.type = 1; b.type = 0;
+                }
 
                 eventQueue.insert(a);
                 eventQueue.insert(b);
@@ -215,24 +269,55 @@ list<GIMS_Geometry *> BentleySolver::solve(GIMS_MultiLineString *A, GIMS_MultiLi
     Event event;
     GIMS_Point *int_p;
 
+    double sl_tmp;
+
     while( !eventQueue.empty() ){
 
         //fetch the next event from the queue
         event = *(eventQueue.begin());
         eventQueue.erase(eventQueue.begin());
 
+        prevEvent = currEvent;
+        currEvent = event.pt;
+
         //update the sweeping lines, we need the vertical for vertical line segments.
         sweepLineX = event.pt->x;
         sweepLineY = event.pt->y;
+
+        if( eventQueue.size() > 0 ){
+            nextInc = 1e-4;
+        }else{
+            nextInc = 2;
+        }
+
+#ifdef DEBUG
+        cout << "EVENT(" << (int)(event.type) << "): " << event.pt->toWkt() << " --- " << event.ls->toWkt() << "\n";
+        cout << "===================== EVENT QUEUE =====================\n";
+        for(evset::iterator it = eventQueue.begin(); it != eventQueue.end(); it++)
+            cout << (*it).pt->toWkt() << " --- " << (*it).ls->toWkt() << "\n";
+        cout << "===================== LINES QUEUE =====================\n";
+        for(lsset::iterator it = T.begin(); it != T.end(); it++)
+            cout << (**it)->toWkt() << " --- (" << getYatX(**it) << ")\n";
+        cout << "===================== PREV ORDER  =====================\n";
+        prevOrder();
+        cout << "X: " << sweepLineX << endl;
+        cout << "Y: " << sweepLineY << endl;
+        cout << "inc_x: " << prevInc_x << endl;
+        cout << "inc_y: " << prevInc_y << endl;
+        restoreOrder();
+        cout << "X: " << sweepLineX << endl;
+        cout << "Y: " << sweepLineY << endl;
+        cout << "\n\n\n";
+#endif
 
         //the event refers to a left endpoint
         if(event.type == 0){
             
             GIMS_LineSegment *ls = event.ls->list[0];
 
-            sweepLineX -= 1e-3;
+            prevOrder();
             pair<lsset::iterator, bool> r = T.insert(event.ls->list);
-            sweepLineX += 1e-3;
+            restoreOrder();
 
             lsset::iterator above = r.first; above++;
             lsset::iterator below = r.first;
@@ -259,7 +344,8 @@ list<GIMS_Geometry *> BentleySolver::solve(GIMS_MultiLineString *A, GIMS_MultiLi
 
             GIMS_LineSegment *ls = event.ls->list[0];
 
-            sweepLineX += 1e-3;
+            sl_tmp = sweepLineX;
+            sweepLineX += nextInc;
             lsset::iterator it = T.find(&ls);
             lsset::iterator above = it; above++;
             lsset::iterator below = it;
@@ -268,7 +354,7 @@ list<GIMS_Geometry *> BentleySolver::solve(GIMS_MultiLineString *A, GIMS_MultiLi
             else
                 below--;
             T.erase(it);
-            sweepLineX -= 1e-3;
+            sweepLineX = sl_tmp;
 
             if(above != T.end() && below != T.end()){
                 int_p = report(intersections, **above, **below);
@@ -279,7 +365,6 @@ list<GIMS_Geometry *> BentleySolver::solve(GIMS_MultiLineString *A, GIMS_MultiLi
 
             //free up the memory allocated for the line segment
             event.ls->deepDelete();
-
 
         //the event refers to an intersection point
         }else if( event.type == 2 ){
@@ -292,12 +377,27 @@ list<GIMS_Geometry *> BentleySolver::solve(GIMS_MultiLineString *A, GIMS_MultiLi
                 }
             }
 
-            sweepLineX -= 1e-3;
+            prevOrder();
             //swap positions of s and t in T
             lsset::iterator s = T.end(),
                             t = T.begin(),
                             aux, aux_s, aux_t;
             s--;
+
+#ifdef DEBUG
+            cout << "===================== LINES QUEUE =====================\n";
+            lsset::iterator prev_it = T.end();
+            for(lsset::iterator it = T.begin(); it != T.end(); it++){
+                if( prev_it != T.end() && lscmp( *prev_it, *it ) ){
+                    cout << " -- true\n";
+                }else if( prev_it != T.end() ){
+                    cout << " -- false\n";
+                }
+                cout << (**it)->toWkt() << " --- (" << getYatX(**it) << ")";
+                prev_it = it;
+            }
+            cout << "\n";
+#endif
 
             //find the first and last line segments
             for(int i=0; i<event.ls->size; i++){
@@ -308,11 +408,12 @@ list<GIMS_Geometry *> BentleySolver::solve(GIMS_MultiLineString *A, GIMS_MultiLi
                 if( lscmp(*t, *aux) )
                     t = aux;
             }
-            sweepLineX += 1e-3;
+
+            restoreOrder();
 
             //reverse their order
-            aux_s = s; aux_t = t;
             GIMS_LineSegment *auxls;
+            aux_s = s; aux_t = t;
             int count = 0;
             while(count < event.ls->size/2){
                 count++;
@@ -321,25 +422,6 @@ list<GIMS_Geometry *> BentleySolver::solve(GIMS_MultiLineString *A, GIMS_MultiLi
                 **aux_s = auxls;
                 aux_t--; aux_s++;
             }
-
-            //ensure order. if a line segment intersects two overlaping line segments 
-            //(in the overlaping section), the reversing process might break the wanted order. 
-            sweepLineX += 1e-3;
-            bool sorted = false;
-            while(!sorted){
-                sorted = true;
-                aux_s = s;
-                aux_t = s; aux_t++;
-                for(; aux_s != t; aux_s++,aux_t++){
-                    if( !lscmp(*aux_s, *aux_t) ){
-                        auxls = **aux_t;
-                        **aux_t = **aux_s;
-                        **aux_s = auxls;
-                        sorted = false;
-                    }
-                }
-            }
-            sweepLineX -= 1e-3;
 
             //find the above and below line segments
             lsset::iterator above = t; above++;

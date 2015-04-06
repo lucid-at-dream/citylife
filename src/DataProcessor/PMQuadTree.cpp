@@ -105,7 +105,7 @@ GIMS_Geometry *Node::hasReferenceTo( long long id ){
 }
 
 /*Returns true if a polygon "pol" that intersects the node contains point "pt".*/
-bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
+char Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
     /*Explanation:
       According to the paper where pmqtrees are proposed, the procedure to label
       a point is as follows:
@@ -121,23 +121,25 @@ bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
         the point lies and report accordingly.*/
 
     /*find the first node in the north direction than intersects polygon pol*/
+    if( !pt->isInsideBox( &(pol->bbox) ) )
+        return 0;
+
     Node *n = this;
     GIMS_Geometry *first;
 
     while( (first = n->hasReferenceTo( pol->id )) == NULL ){
         n = n->goNorth( pt->x );
         if( n == NULL ){
-            return false;
+            return 0;
         }
     }
 
     //set up the query point
     GIMS_Point qp;
-    if(this == n)
+    if( pt->isInsideBox(n->square) )
         qp = *pt;
-    else{
+    else
         qp = GIMS_Point(pt->x, n->square->lowerLeft->y);
-    }
 
     //The first portion of the polygon "pol" that we found going in the north direction
     GIMS_Polygon *p = (GIMS_Polygon *)first;
@@ -168,15 +170,11 @@ bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
                     closest = curr;
                     closestPoint = tmp_point;
                     isEdgeFromExtRing = (ring == p->externalRing);
+                    if( minDist < ERR_MARGIN )
+                        return 2;
                 }
             }
         }
-    }
-
-    if( renderEdge ){
-        printf("%lf\n", minDist);
-        renderQueue->push_back(closestPoint.clone());
-        redRenderQueue->push_back(qp.clone());
     }
 
     /*if the closest line segment shares the node with an adjacent line segment,
@@ -220,22 +218,22 @@ bool Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
             auxls = angle1 < angle2 ? other : closest;
             closest = angle1 < angle2 ? closest : other;
 
-            if(renderEdge){
-                redRenderQueue->push_back(auxls.clone());
-            }
         }else{
             //in this case the vertex sharing edge is in another node
         }
     }
 
-    if(renderEdge)
-        renderQueue->push_back(closest.clone());
-
     /*Finally we check to which side of "closest" "pt" lies and report.*/
-    if( isEdgeFromExtRing )
-        return (qp.sideOf(&closest) != LEFT) ? true : false;
-    else
-        return (qp.sideOf(&closest) == RIGHT) ? true : false;
+    GIMS_Side side = pt->sideOf(&closest);
+
+    switch(side){
+        case LEFT:
+            return 0;
+        case RIGHT:
+            return 1;
+        default:
+            return 2;
+    }
 }
 
 /*Returns all nodes that intersect a given poligon "pol", including the 
@@ -258,7 +256,7 @@ void *Node::searchInterior (GIMS_Polygon *pol){
             //fetch all components of the polygon that intersect the son's square
             GIMS_Polygon *clipped = (GIMS_Polygon *)(pol->clipToBox(sons[q]->square));
 
-            bool contained = false;
+            char contained = 0;
             if( clipped == NULL ){
                 /*if there are no intersections, then either the node is stricly contained or
                  *strictly outside of the polygon. Since the father center point belongs to
@@ -297,13 +295,13 @@ void Node::unconstrainedActiveSearch(DE9IM *resultset, int(*filter)(GIMS_Geometr
             for(list<GIMS_Geometry *>::iterator it = dictionary->begin(); it != dictionary->end(); it++){
                 if(filter(*it)){
                     
-                    resultset->setIntersect((*it)->id, dim(*it)); //we trivially now know that query and *it intersect
-                    resultset->setII((*it)->id, dim(*it)); //we trivially now know that query's interior and *it's interior intersect 
+                    matrix_t::iterator m_it = resultset->setIntersect((*it)->id, dim(*it)); //we trivially now know that query and *it intersect
+                    resultset->setII(m_it, dim(*it)); //we trivially now know that query's interior and *it's interior intersect 
                     
                     /*since *it border intersects this node which is contained in the query,
                     we can assume that there's at least a portion of *it's exterior intersecting
                     query's interior.*/
-                    resultset->setIE((*it)->id, dim(*it));
+                    resultset->setIE(m_it, dim(*it));
 
                     /*since part of *it's border is inside the polygon, we know that, unless *it's
                       contained border is solely a polygon's interior ring, *it's exterior intersects query's border*/
@@ -314,7 +312,7 @@ void Node::unconstrainedActiveSearch(DE9IM *resultset, int(*filter)(GIMS_Geometr
                            ( ((GIMS_Polygon *)(*it))->externalRing != NULL && ((GIMS_Polygon *)(*it))->externalRing->size > 0 ) )
                         ){
                         //then we can conclude the previous statement (just above the if clause)
-                        resultset->setBE((*it)->id, MIN(borderDim(resultset->query), dim(*it)));
+                        resultset->setBE(m_it, MIN(borderDim(resultset->query), dim(*it)));
                     }
                 }
             }
@@ -347,7 +345,7 @@ void Node::activeInteriorSearch( DE9IM *resultset, GIMS_Polygon *query, int(*fil
             //fetch all components of the polygon that intersect the son's square
             GIMS_Polygon *clipped = (GIMS_Polygon *)(query->clipToBox(sons[q]->square));
 
-            bool contained = false;
+            char contained = 0;
             if( clipped == NULL ){
                 /*if there are no intersections, then either the node is stricly contained or
                  *strictly outside of the polygon. Since the father center point belongs to
@@ -381,10 +379,29 @@ void Node::activeSearch(DE9IM *resultset, GIMS_Geometry *query, int(*filter)(GIM
         for( Quadrant q : quadrantList )
             sons[q]->activeSearch(resultset, clipped, filter);
     }else{
+        //build the intersection matrix
         for(list<GIMS_Geometry *>::iterator it = this->dictionary->begin();
             it != this->dictionary->end(); it++){
             if(filter(*it)){
                 this->buildIM(resultset, query, *it);
+            }
+        }
+
+        //since polygons might have topological relationships even though they're not in the same
+        //node, we need to go in a line in search for polygons.
+        if( query->type == POINT ){
+            Node *n = this;
+            while( (n = n->goNorth(((GIMS_Point *)query)->x)) != NULL ){
+                
+                if( n->dictionary == NULL )
+                    continue;
+
+                for(list<GIMS_Geometry *>::iterator it = n->dictionary->begin(); it != n->dictionary->end(); it++ ){
+                    if( (*it)->type == POLYGON && filter(*it) ){
+                        n->buildIM_point(resultset, ((GIMS_Point *)query), *it);
+                    }
+                }
+
             }
         }
     }
@@ -658,10 +675,19 @@ Node::~Node(){
 void Node::buildIM (DE9IM *resultset, GIMS_Geometry *query, GIMS_Geometry *other){
     if(query->type == POINT){
         buildIM_point(resultset, (GIMS_Point *)query, other);
+
     }else if(query->type == LINESTRING){
-        buildIM_linestring(resultset, (GIMS_LineString *)query, other);
+        GIMS_MultiLineString aux;
+        aux.append((GIMS_LineString *)query);
+        aux.id = query->id;
+        buildIM_linestring(resultset, &aux, other);
+
+    }else if(query->type == MULTILINESTRING){
+        buildIM_linestring(resultset, (GIMS_MultiLineString *)query, other);
+
     }else if(query->type == POLYGON){
         buildIM_polygon(resultset, (GIMS_Polygon *)query, other);
+
     }else{
         perror("unsuported: topologicalSearch called on a multi geometry.");
     }
@@ -670,20 +696,19 @@ void Node::buildIM (DE9IM *resultset, GIMS_Geometry *query, GIMS_Geometry *other
 void Node::buildIM_polygon(DE9IM *resultset, GIMS_Polygon *query, GIMS_Geometry *other){
     if(other->type == POINT){
 
-        resultset->setIE(other->id, 0);
-        resultset->setBE(other->id, 0);
+        matrix_t::iterator it = resultset->setIE(other->id, 2);
+        resultset->setBE(it, 1);
 
         //if the polygon lies inside or on the polygon's border
-        if(this->polygonContainsPoint(query, (GIMS_Point *)other)){
-            resultset->setIntersect(other->id, 0);
+        char cnt;
+        if( (cnt = this->polygonContainsPoint(query, (GIMS_Point *)other)) ){
+            resultset->setIntersect(it, 0);
             //if the point doesn't lie on the polygon's border
-            if( ( query->externalRing == NULL  || !query->externalRing->coversPoint((GIMS_Point *)other) ) &&
-                ( query->internalRings == NULL || !query->internalRings->coversPoint((GIMS_Point *)other) )){
-                resultset->setII(other->id, 0);
-            }
+            if(cnt == 1)
+                resultset->setII(it, 0);
         }else{
-            resultset->setEI(other->id, 0);
-            resultset->setEB(other->id, 0);
+            resultset->setEI(it, 0);
+            resultset->setEB(it, 0);
         }
 
     }else if(other->type == LINESTRING){
@@ -705,38 +730,53 @@ TODO(BUILD_IM: polygon vs polygon)
 }
 
 //helper functions for the linestring intersection matrix construction
-void DE9IM_ls_ls(DE9IM *resultset, GIMS_LineString *query, GIMS_LineString *other){
+void DE9IM_mls_ls(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_LineString *other){
     BentleySolver bs;
-
-    GIMS_MultiLineString *query_mls = new GIMS_MultiLineString(1);
-    query_mls->append(query);
 
     GIMS_MultiLineString *other_mls = new GIMS_MultiLineString(1);
     other_mls->append(other);
 
-    list<GIMS_Geometry *> intersections = bs.solve(query_mls, other_mls);
+    list<GIMS_Geometry *> intersections = bs.solve(query, other_mls);
 
-    delete query_mls;
     delete other_mls;
 
-    GIMS_LineString *original = (GIMS_LineString *)(*(idIndex.find(other)));
-    GIMS_Point *otherBorder[2] = {original->list[0], original->list[original->size-1]};
-    GIMS_Point *queryBorder[2] = {query->list[0], query->list[query->size-1]};
+    GIMS_LineString *other_original = (GIMS_LineString *)(*(idIndex.find(other)));
+    GIMS_Point *otherBorder[2] = {other_original->list[0], other_original->list[other_original->size-1]};
+    
+    GIMS_Geometry *query_original = (GIMS_LineString *)(*(idIndex.find(query)));
+    GIMS_MultiPoint queryBorder;
+
+    if( query_original->type == LINESTRING){
+        GIMS_LineString *aux_ls = (GIMS_LineString *)query_original;
+        queryBorder.append( aux_ls->list[0] );
+        queryBorder.append( aux_ls->list[ aux_ls->size-1 ] );
+    }else if( query_original->type == MULTILINESTRING ){
+        GIMS_MultiLineString *aux_mls = (GIMS_MultiLineString *)query_original;
+        for(int i=0; i<aux_mls->size; i++){
+            queryBorder.append( aux_mls->list[i]->list[0] );
+            queryBorder.append( aux_mls->list[i]->list[ aux_mls->list[i]->size - 1 ] );
+        }
+    }
 
     int intersectedBorders = 0;
 
     list<GIMS_LineSegment *> linesegments;
+
+    int shift_inc = queryBorder.size;
 
     for(list<GIMS_Geometry *>::iterator it = intersections.begin(); it != intersections.end(); it++){
         if( (*it)->type == LINESEGMENT ){
             
             linesegments.push_back((GIMS_LineSegment *)(*it));
 
-            for( int i=0; i<2; i++ ){
-                if( ((GIMS_LineSegment *)(*it))->coversPoint( queryBorder[i] ) )
+            for(int i=0; i<queryBorder.size; i++){
+                if( ((GIMS_LineSegment *)(*it))->coversPoint( queryBorder.list[i] ) )
                     intersectedBorders |= 1 << i;
+            }
+
+            for( int i=0; i<2; i++ ){
                 if( ((GIMS_LineSegment *)(*it))->coversPoint( otherBorder[i] ) )
-                    intersectedBorders |= 1 << (2+i);
+                    intersectedBorders |= 1 << (shift_inc+i);
             }
 
             resultset->setIntersect(other->id, 1);
@@ -746,13 +786,15 @@ void DE9IM_ls_ls(DE9IM *resultset, GIMS_LineString *query, GIMS_LineString *othe
             resultset->setIntersect(other->id, 0);
 
             bool isBorder = false;
-            for( int i=0; i<2; i++ ){
-                if( ((GIMS_Point *)(*it))->equals(queryBorder[i]) ){
+            for(int i=0; i<queryBorder.size; i++){
+                if( ((GIMS_Point *)(*it))->equals(queryBorder.list[i]) ){
                     intersectedBorders |= 1 << i;
                     isBorder = true;
                 }
+            }
+            for( int i=0; i<2; i++ ){
                 if( ((GIMS_Point *)(*it))->equals(otherBorder[i]) ){
-                    intersectedBorders |= 1 << (2+i);
+                    intersectedBorders |= 1 << (shift_inc+i);
                     isBorder = true;
                 }
             }
@@ -762,12 +804,15 @@ void DE9IM_ls_ls(DE9IM *resultset, GIMS_LineString *query, GIMS_LineString *othe
     }
 
     /*Here we check intersections of Borders with exteriors*/
-    if( (intersectedBorders & (1 << 2)) == 0 || (intersectedBorders & (1 << 3)) == 0 ){
+    if( (intersectedBorders & (1 << shift_inc)) == 0 || (intersectedBorders & (1 << (shift_inc+1))) == 0 ){
         resultset->setEB(other->id, 0);
     }
 
-    if( (intersectedBorders & (1 << 0)) == 0 || (intersectedBorders & (1 << 1)) == 0 ){
-        resultset->setBE(other->id, 0);
+    for(int i=0; i<queryBorder.size; i++){
+        if( (intersectedBorders & (1 << i)) == 0 ){
+            resultset->setBE(other->id, 0);
+            break;
+        }
     }
 
 
@@ -797,16 +842,11 @@ void DE9IM_ls_ls(DE9IM *resultset, GIMS_LineString *query, GIMS_LineString *othe
 
 
 
-void DE9IM_ls_mls(DE9IM *resultset, GIMS_LineString *query, GIMS_MultiLineString *other){
-    BentleySolver bs;
+void DE9IM_mls_mls(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_MultiLineString *other){
+    BentleySolver bs; 
+    list<GIMS_Geometry *> intersections = bs.solve(query, other);
     
-    GIMS_MultiLineString *query_mls = new GIMS_MultiLineString(1);
-    query_mls->append(query);
-    
-    list<GIMS_Geometry *> intersections = bs.solve(query_mls, other);
-    
-    delete query_mls;
-
+    //retrieve other's border
     GIMS_Geometry *original = (*(idIndex.find(other)));
     GIMS_MultiPoint otherBorder;
     if(original->type == LINESTRING){
@@ -821,24 +861,40 @@ void DE9IM_ls_mls(DE9IM *resultset, GIMS_LineString *query, GIMS_MultiLineString
             otherBorder.append(orig_mls->list[i]->list[orig_mls->list[i]->size-1]);
         }
     }
-    GIMS_Point *queryBorder[2] = {query->list[0], query->list[query->size-1]};
 
+    //retrieve query's border
+    original = (*(idIndex.find(query)));
+    GIMS_MultiPoint queryBorder;
+    if(original->type == LINESTRING){
+        GIMS_LineString *orig_ls = (GIMS_LineString *)original;
+        queryBorder.append(orig_ls->list[0]);
+        queryBorder.append(orig_ls->list[orig_ls->size-1]);
+
+    }else if(original->type == MULTILINESTRING){
+        GIMS_MultiLineString *orig_mls = (GIMS_MultiLineString *)original;
+        for(int i=0; i<orig_mls->size; i++){
+            queryBorder.append(orig_mls->list[i]->list[0]);
+            queryBorder.append(orig_mls->list[i]->list[orig_mls->list[i]->size-1]);
+        }
+    }
 
     int intersectedBorders = 0;
     list<GIMS_LineSegment *> linesegments;
+
+    int shift_inc = queryBorder.size;
 
     for(list<GIMS_Geometry *>::iterator it = intersections.begin(); it != intersections.end(); it++){
         if( (*it)->type == LINESEGMENT ){
             
             linesegments.push_back((GIMS_LineSegment *)(*it));
 
-            for( int i=0; i<2; i++ ){
-                if( ((GIMS_LineSegment *)(*it))->coversPoint( queryBorder[i] ) )
+            for( int i=0; i<queryBorder.size; i++ ){
+                if( ((GIMS_LineSegment *)(*it))->coversPoint( queryBorder.list[i] ) )
                     intersectedBorders |= 1 << i;
             }
             for( int i=0; i<otherBorder.size; i++ ){
                 if( ((GIMS_LineSegment *)(*it))->coversPoint( otherBorder.list[i] ) )
-                    intersectedBorders |= 1 << (2+i);
+                    intersectedBorders |= 1 << (shift_inc+i);
             }
 
             resultset->setIntersect(other->id, 1);
@@ -848,15 +904,15 @@ void DE9IM_ls_mls(DE9IM *resultset, GIMS_LineString *query, GIMS_MultiLineString
             resultset->setIntersect(other->id, 0);
 
             bool isBorder = false;
-            for( int i=0; i<2; i++ ){
-                if( ((GIMS_Point *)(*it))->equals(queryBorder[i]) ){
+            for( int i=0; i<queryBorder.size; i++ ){
+                if( ((GIMS_Point *)(*it))->equals(queryBorder.list[i]) ){
                     intersectedBorders |= 1 << i;
                     isBorder = true;
                 }
             }
             for( int i=0; i<otherBorder.size; i++ ){
                 if( ((GIMS_Point *)(*it))->equals(otherBorder.list[i]) ){
-                    intersectedBorders |= 1 << (2+i);
+                    intersectedBorders |= 1 << (shift_inc+i);
                     isBorder = true;
                 }
             }
@@ -868,16 +924,18 @@ void DE9IM_ls_mls(DE9IM *resultset, GIMS_LineString *query, GIMS_MultiLineString
 
     /*Here we check intersections of Borders with exteriors*/
     for(int i=0; i<otherBorder.size; i++){
-        if( (intersectedBorders & (1 << (2+i))) == 0 ){
+        if( (intersectedBorders & (1 << (shift_inc+i))) == 0 ){
             resultset->setEB(other->id, 0);
-            break;    
+            break;
         }
     }
 
-    if( (intersectedBorders & (1 << 0)) == 0 || (intersectedBorders & (1 << 1)) == 0 ){
-        resultset->setBE(other->id, 0);
+    for(int i=0; i<queryBorder.size; i++){
+        if( (intersectedBorders & (1 << i)) == 0 ){
+            resultset->setBE(other->id, 0);
+            break;
+        }
     }
-
 
     /*Here we check intersections of exteriors with interiors*/
     bool queryContained = false,
@@ -909,13 +967,28 @@ void DE9IM_ls_mls(DE9IM *resultset, GIMS_LineString *query, GIMS_MultiLineString
 
 
 
-void Node::buildIM_linestring(DE9IM *resultset, GIMS_LineString *query, GIMS_Geometry *other){
+void Node::buildIM_linestring(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_Geometry *other){
     if(other->type == POINT){
 
         resultset->setIE(other->id, 0);
         resultset->setBE(other->id, 0);
 
         GIMS_Point *point = (GIMS_Point *)other;  
+
+        GIMS_Geometry *original = (GIMS_LineString *)(*(idIndex.find(query)));
+        GIMS_MultiPoint queryBorder;
+
+        if( original->type == LINESTRING){
+            GIMS_LineString *aux_ls = (GIMS_LineString *)original;
+            queryBorder.append( aux_ls->list[0] );
+            queryBorder.append( aux_ls->list[ aux_ls->size-1 ] );
+        }else if( original->type == MULTILINESTRING ){
+            GIMS_MultiLineString *aux_mls = (GIMS_MultiLineString *)original;
+            for(int i=0; i<aux_mls->size; i++){
+                queryBorder.append( aux_mls->list[i]->list[0] );
+                queryBorder.append( aux_mls->list[i]->list[ aux_mls->list[i]->size - 1 ] );
+            }
+        }
 
         /*if the point is contained in the linestring then they intersect*/
         bool contained = query->coversPoint(point);
@@ -924,7 +997,14 @@ void Node::buildIM_linestring(DE9IM *resultset, GIMS_LineString *query, GIMS_Geo
 
             /*if the point is contained in the linestring and the point is different 
               from the line string endpoints, then their interiors intersect.*/
-            if( !point->equals(query->list[0]) && !point->equals(query->list[query->size-1]) )
+            bool isBorder = false;
+            for(int i=0; i<queryBorder.size; i++){
+                if( point->equals(queryBorder.list[0]) ){
+                    isBorder = true;
+                    break;
+                }
+            }
+            if( !isBorder )
                 resultset->setII(other->id, 0);
 
         }else{
@@ -934,9 +1014,9 @@ void Node::buildIM_linestring(DE9IM *resultset, GIMS_LineString *query, GIMS_Geo
         }
 
     }else if(other->type == LINESTRING){
-        DE9IM_ls_ls(resultset, query, (GIMS_LineString *)other);
+        DE9IM_mls_ls(resultset, query, (GIMS_LineString *)other);
     }else if(other->type == MULTILINESTRING){
-        DE9IM_ls_mls(resultset, query, (GIMS_MultiLineString *)other);
+        DE9IM_mls_mls(resultset, query, (GIMS_MultiLineString *)other);
 
     }else if(other->type == POLYGON){
 TODO(BUILD_IM: linestring vs polygon)
@@ -944,6 +1024,9 @@ TODO(BUILD_IM: linestring vs polygon)
 }
 
 void Node::buildIM_point(DE9IM *resultset, GIMS_Point *query, GIMS_Geometry *other){
+    if( resultset->matrix.find(other->id) != resultset->matrix.end() )
+        return;
+
     if( other->type == POINT ){
         if( query->equals((GIMS_Point *)other)  ){
             resultset->setIntersect(other->id, 0);
@@ -1026,23 +1109,40 @@ void Node::buildIM_point(DE9IM *resultset, GIMS_Point *query, GIMS_Geometry *oth
 
     }else if( other->type == POLYGON ){
 
+        matrix_t::iterator it = resultset->setEI(other->id, 2);
+        resultset->setEB(it, 1);
+
+        //if the point lies inside or on the polygon's border
+        char cnt;
+        if( (cnt = this->polygonContainsPoint((GIMS_Polygon *)other, query)) ){
+            resultset->setIntersect(it, 0);
+            //if the point doesn't lie on the polygon's border
+            if( cnt == 1 )
+                resultset->setII(it, 0);
+        }else{
+            resultset->setIE(it, 0);
+            resultset->setBE(it, 0);
+        }
+
+    }else if( other->type == MULTIPOLYGON ){
+        GIMS_MultiPolygon *mp = (GIMS_MultiPolygon *)other;
+
         resultset->setEI(other->id, 0);
         resultset->setEB(other->id, 0);
 
         //if the polygon lies inside or on the polygon's border
-        if(this->polygonContainsPoint((GIMS_Polygon *)other, (GIMS_Point *)query)){
+        GIMS_Polygon pol; pol.id = mp->id;
+        char cnt;
+        if( (cnt = this->polygonContainsPoint(&pol, (GIMS_Point *)query)) ){
             resultset->setIntersect(other->id, 0);
             //if the point doesn't lie on the polygon's border
 
-            if( ( ((GIMS_Polygon *)other)->externalRing == NULL  || !((GIMS_Polygon *)other)->externalRing->coversPoint((GIMS_Point *)other) ) &&
-                ( ((GIMS_Polygon *)other)->internalRings == NULL || !((GIMS_Polygon *)other)->internalRings->coversPoint((GIMS_Point *)other) )){
+            if(cnt == 1)
                 resultset->setII(other->id, 0);
-            }
         }else{
             resultset->setIE(other->id, 0);
             resultset->setBE(other->id, 0);
         }
-
     }else{
         perror("someone is trying to build a 9-intersection matrix against a weird geometry type.");
     }
@@ -1154,6 +1254,7 @@ void PMQuadTree::debugRender(Cairo::RefPtr<Cairo::Context> cr){
             renderer->renderFilledBBox( cr, (*i)->square );
             cr->fill();
         }
+        renderer->renderGeometry(cr, query);
     }else{
         printf("null query\n");
     }
@@ -1201,7 +1302,7 @@ void PMQuadTree::renderLeafNode (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
     if (n->type == BLACK) { //the WHITE type stands for empty node, thus we ignore it.
         for( list<GIMS_Geometry *>::iterator it = n->dictionary->begin();
             it != n->dictionary->end(); it++ ) {
-                if((*it)->type != POINT)
+                //if((*it)->type != POINT)
                 renderer->renderGeometry( cr, *it );
         }
     }
@@ -1219,10 +1320,12 @@ void PMQuadTree::onClick( double x, double y){
     renderEdge = true;
     clock_t start = clock();
     Node *n = ((list<Node *> *)(this->root->search(pt)))->front();
+    
     if( n->polygonContainsPoint(pol, pt) )
         renderQueue->push_back(pt);
     else
         redRenderQueue->push_back(pt);
+
     printf("took %.6lf cpu secs to label the point\n", (double)(clock() - start)/(double)CLOCKS_PER_SEC);
     renderEdge = false;
 }

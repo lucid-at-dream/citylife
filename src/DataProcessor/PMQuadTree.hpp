@@ -40,7 +40,7 @@ namespace PMQUADTREE {
         bool  validatePoint           (GIMS_Point *pt, GIMS_Point **sharedPoint);
         bool  validateLineString      (GIMS_LineString *ls, GIMS_Point **sharedPoint); 
         bool  validateLineSegment     (GIMS_LineSegment *l, GIMS_Point **sharedPoint);
-        bool  polygonContainsPoint    (GIMS_Polygon *pol, GIMS_Point *pt);
+        char   polygonContainsPoint    (GIMS_Polygon *pol, GIMS_Point *pt);
 
         /*Node searching functions*/
         void *search                  (GIMS_Geometry *geom);
@@ -58,7 +58,7 @@ namespace PMQUADTREE {
         /*DE9IM matrix construction functions*/
         void buildIM           (DE9IM *resultset, GIMS_Geometry *query, GIMS_Geometry *other);
         void buildIM_point     (DE9IM *resultset, GIMS_Point *query, GIMS_Geometry *other);
-        void buildIM_linestring(DE9IM *resultset, GIMS_LineString *query, GIMS_Geometry *other);
+        void buildIM_linestring(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_Geometry *other);
         void buildIM_polygon   (DE9IM *resultset, GIMS_Polygon *query, GIMS_Geometry *other);
 
         /*Node construction and destruction*/

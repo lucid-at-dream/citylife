@@ -1,5 +1,7 @@
 syntax: glob
 
+results/*
+
 src/main_avltest.cpp
 src/DataProcessor/inpt/*
 src/DataProcessor/autorun.sh

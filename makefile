@@ -1,5 +1,6 @@
 #compiler settings
-CC = /usr/lib/ccache/bin/g++
+#CC = /usr/lib/ccache/bin/g++
+CC = g++
 LDLIBS = -lm -lpq -g -Wall
 COPT = -march=native -O2 -pipe -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2
 CFLAGS = -std=c++11 ${LDLIBS} ${COPT}

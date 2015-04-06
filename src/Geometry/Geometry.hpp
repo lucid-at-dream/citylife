@@ -70,6 +70,7 @@ namespace GIMS_GEOMETRY {
                    *upperRight;
 
         string            toWkt            ();
+        bool              isInside         (GIMS_BoundingBox *);
         int               getPointCount    ();
         GIMS_BoundingBox *clone            ();
         GIMS_Point        getCenter        ();
@@ -82,6 +83,7 @@ namespace GIMS_GEOMETRY {
         GIMS_Geometry    *clipToBox        (GIMS_BoundingBox *);
         void              deleteClipped    ();
         void              deepDelete       ();
+                          GIMS_BoundingBox ();
                           GIMS_BoundingBox (GIMS_Point *lowerLeft, GIMS_Point *upperRight);
                          ~GIMS_BoundingBox ();
     };
@@ -237,16 +239,20 @@ namespace GIMS_GEOMETRY {
         GIMS_MultiLineString *externalRing,
                              *internalRings;
 
+        GIMS_BoundingBox bbox;
+        bool isClippedCopy;
+
         string            toWkt             ();
+        void              computeBBox       ();
         GIMS_Polygon     *clone             ();
-        GIMS_BoundingBox *getExtent         ();
+        GIMS_BoundingBox  getExtent         ();
         GIMS_Geometry    *clipToBox         (GIMS_BoundingBox *);
         void              appendExternalRing(GIMS_LineString *);
         void              appendInternalRing(GIMS_LineString *);
         void              deleteClipped     ();
         void              deepDelete        ();
         int               getPointCount     ();
-                          GIMS_Polygon      (GIMS_MultiLineString *, GIMS_MultiLineString *);
+                          GIMS_Polygon      (GIMS_MultiLineString *, GIMS_MultiLineString *, bool computebbox = true);
                           GIMS_Polygon      (int, int);
                           GIMS_Polygon      ();
                          ~GIMS_Polygon      ();

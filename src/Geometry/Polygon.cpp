@@ -22,6 +22,9 @@ void GIMS_Polygon::deepDelete(){
 }
 
 void GIMS_Polygon::deleteClipped(){
+    if( !isClippedCopy )
+        return;
+
     if(this->externalRing != NULL){
         this->externalRing->deleteClipped();
         this->externalRing = NULL;
@@ -33,21 +36,8 @@ void GIMS_Polygon::deleteClipped(){
     delete this;
 }
 
-GIMS_BoundingBox *GIMS_Polygon::getExtent(){
-    double maxx=-1e100, maxy=-1e100, minx=1e100, miny=1e100;
-    
-    for(int i=0; i<this->externalRing->list[0]->size; i++){
-        if(this->externalRing->list[0]->list[i]->x > maxx)
-            maxx = this->externalRing->list[0]->list[i]->x;
-        if(this->externalRing->list[0]->list[i]->y > maxy)
-            maxy = this->externalRing->list[0]->list[i]->y;
-        if(this->externalRing->list[0]->list[i]->x < minx)
-            minx = this->externalRing->list[0]->list[i]->x;
-        if(this->externalRing->list[0]->list[i]->y < miny)
-            miny = this->externalRing->list[0]->list[i]->y;
-    }
-
-    return new GIMS_BoundingBox(new GIMS_Point(minx, miny), new GIMS_Point(maxx, maxy));
+GIMS_BoundingBox GIMS_Polygon::getExtent(){
+    return bbox;
 }
 
 string GIMS_Polygon::toWkt(){
@@ -85,10 +75,14 @@ string GIMS_Polygon::toWkt(){
 GIMS_Polygon *GIMS_Polygon::clone(){
     GIMS_Polygon *fresh = new GIMS_Polygon(this->externalRing->clone(),this->internalRings->clone());
     fresh->id = this->id;
+    fresh->bbox = this->bbox;
     return fresh;
 }
 
 GIMS_Geometry *GIMS_Polygon::clipToBox(GIMS_BoundingBox *box){
+    if( this->bbox.isInside(box) )
+        return this;
+
     GIMS_MultiLineString *exterior = NULL,
                          *interior = NULL;
     
@@ -99,7 +93,9 @@ GIMS_Geometry *GIMS_Polygon::clipToBox(GIMS_BoundingBox *box){
         interior = (GIMS_MultiLineString *)(this->internalRings->clipToBox(box));
 
     if(exterior != NULL || interior != NULL){
-        GIMS_Polygon *clipped = new GIMS_Polygon( exterior, interior );
+        GIMS_Polygon *clipped = new GIMS_Polygon( exterior, interior, false );
+        clipped->bbox = this->bbox;
+        clipped->isClippedCopy = true;
         clipped->id = this->id;
         return clipped;
     }else
@@ -118,23 +114,57 @@ void GIMS_Polygon::appendInternalRing(GIMS_LineString *ir){
     this->internalRings->append(ir);
 }
 
-GIMS_Polygon::GIMS_Polygon(GIMS_MultiLineString *externalRing, GIMS_MultiLineString *internalRings){
+void GIMS_Polygon::computeBBox(){
+    double maxx = -1e100, minx = 1e100,
+           maxy = -1e100, miny = 1e100;
+
+    for(int i=0; i<externalRing->size; i++){
+        for(int j=0; j<externalRing->list[i]->size; j++){
+            GIMS_Point *p = externalRing->list[i]->list[j];
+            if( p->x > maxx )
+                maxx = p->x;
+            if( p->x < minx )
+                minx = p->x;
+            if( p->y > maxy )
+                maxy = p->y;
+            if( p->y < miny )
+                miny = p->y;
+        }
+    }
+
+    this->bbox.lowerLeft  = new GIMS_Point( minx, miny );
+    this->bbox.upperRight = new GIMS_Point( maxx, maxy );
+}
+
+GIMS_Polygon::GIMS_Polygon(GIMS_MultiLineString *externalRing, GIMS_MultiLineString *internalRings, bool computebbox){
     this->type = POLYGON;
+    this->isClippedCopy = false;
     this->externalRing = externalRing;
     this->internalRings = internalRings;
+    if( computebbox )
+        this->computeBBox();
 }
 
 GIMS_Polygon::GIMS_Polygon(int ext_alloc, int int_alloc){
     this->id = 0;
     this->type = POLYGON;
+    this->isClippedCopy = false;
     this->externalRing = new GIMS_MultiLineString(ext_alloc);
     this->internalRings = new GIMS_MultiLineString(int_alloc);
+
+    this->bbox.lowerLeft  = new GIMS_Point( 1e100, 1e100 );
+    this->bbox.upperRight = new GIMS_Point( -1e100, -1e100 );
+
 }
 
 GIMS_Polygon::GIMS_Polygon(){
     this->id = 0;
     this->type = POLYGON;
+    this->isClippedCopy = false;
     this->externalRing = this->internalRings = NULL;
+
+    this->bbox.lowerLeft  = new GIMS_Point( 1e100, 1e100 );
+    this->bbox.upperRight = new GIMS_Point( -1e100, -1e100 );
 }
 
 GIMS_Polygon::~GIMS_Polygon(){

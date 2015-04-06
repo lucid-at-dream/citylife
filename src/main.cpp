@@ -13,10 +13,17 @@ using namespace GIMS_GEOMETRY;
 int total = 0;
 unsigned long int incId = 1;
 
+int pointFilter(GIMS_Geometry *geom){
+    if(geom->type == POINT)
+        return 1;
+    return 0;
+}
+
 void demo1();
 void demo2();
 void demo3();
 void demo4();
+void demo5();
 
 int main (int argc, char *argv[]) {
 
@@ -30,12 +37,16 @@ int main (int argc, char *argv[]) {
         cout << "==== FINISHED DEMO 2 ====\n";
     }else if( argc > 1 && strcmp(argv[1], "demo3") == 0 ){
         cout << "==== STARTING DEMO 3 ====\n";
-        //demo3();
+        demo3();
         cout << "==== FINISHED DEMO 3 ====\n";
     }else if( argc > 1 && strcmp(argv[1], "demo4") == 0 ){
         cout << "==== STARTING DEMO 4 ====\n";
-        //demo4();
+        demo4();
         cout << "==== FINISHED DEMO 4 ====\n";
+    }else if( argc > 1 && strcmp(argv[1], "demo5") == 0 ){
+        cout << "==== STARTING DEMO 5 ====\n";
+        demo5();
+        cout << "==== FINISHED DEMO 5 ====\n";
     }else{
 
         PGConnection conn = PGConnection();
@@ -111,6 +122,251 @@ int main (int argc, char *argv[]) {
 
     return 0;
 }
+
+void demo5(){
+    clock_t start, stop;
+
+    start = clock();
+    PGConnection conn = PGConnection();
+    conn.connect();
+    stop = clock();
+
+    cout << "took ";
+    cout << (stop - start)/(double)CLOCKS_PER_SEC;
+    cout << " seconds to connect to the database" << endl;
+
+    /*retrieve layers extent*/
+    GIMS_BoundingBox *extent = conn.getOverallExtent();
+
+    /*create an empty pmqtree bounded by the computed extent*/
+    PMQuadTree *tree = new PMQuadTree( extent );
+
+    start = clock();
+    list<GIMS_Geometry *> *polygons = conn.getGeometryAsList("from planet_osm_polygon"); /*4532 points*/
+    list<GIMS_Geometry *> *points   = conn.getGeometryAsList("from planet_osm_point"); /*152675 points*/
+    conn.disconnect();
+    stop = clock();
+
+    cout << "took ";
+    cout << (stop - start)/(double)CLOCKS_PER_SEC;
+    cout << " seconds to fetch all the data" << endl;
+
+    start = clock();
+    tree->insert(polygons);
+    tree->insert(points);
+    stop = clock();
+
+    cout << "took ";
+    cout << (stop - start)/(double)CLOCKS_PER_SEC;
+    cout << " seconds to insert the 1 polygon" << endl;
+
+    int count;
+    for(int topcount=0; topcount<25001; topcount+=250){
+        
+        count = 0;
+
+        list<GIMS_Geometry *>::iterator it;
+        start = clock();
+        for( it = polygons->begin(); it != polygons->end(); it++){        
+            DE9IM *results = tree->topologicalSearch(*it, pointFilter);
+            list<long> covered_pts = results->covers();
+
+            //for(list<long>::iterator j = covered_pts.begin(); j != covered_pts.end(); j++){
+            //    cout << (*it)->id << " | " << *j << endl;
+            //}
+
+            delete results;
+
+            count++;
+            if( count >= topcount )
+                break;
+        }
+        stop = clock();
+
+        cout << "N: " << count << endl;
+        cout << "took: " << (stop - start)/(double)CLOCKS_PER_SEC << " seconds" << endl;
+
+        if( it == polygons->end() )
+            break;
+    }
+}
+
+int polygonFilter(GIMS_Geometry *geom){
+    if(geom->type == POLYGON || geom->type == MULTIPOLYGON)
+        return 1;
+    return 0;
+}
+
+void demo4(){
+    clock_t start, stop;
+
+    start = clock();
+    PGConnection conn = PGConnection();
+    conn.connect();
+    stop = clock();
+
+    cout << "took ";
+    cout << (stop - start)/(double)CLOCKS_PER_SEC;
+    cout << " seconds to connect to the database" << endl;
+
+    /*retrieve layers extent*/
+    GIMS_BoundingBox *extent = conn.getOverallExtent();
+
+    /*create an empty pmqtree bounded by the computed extent*/
+    PMQuadTree *tree = new PMQuadTree( extent );
+
+    start = clock();
+    list<GIMS_Geometry *> *polygons = conn.getGeometryAsList("from planet_osm_polygon"); /*4532 points*/
+    list<GIMS_Geometry *> *points   = conn.getGeometryAsList("from planet_osm_point"); /*152675 points*/
+    conn.disconnect();
+    stop = clock();
+
+    cout << "took ";
+    cout << (stop - start)/(double)CLOCKS_PER_SEC;
+    cout << " seconds to fetch all the data" << endl;
+
+    start = clock();
+    tree->insert(polygons);
+    tree->insert(points);
+    stop = clock();
+
+    cout << "took ";
+    cout << (stop - start)/(double)CLOCKS_PER_SEC;
+    cout << " seconds to insert the " << polygons->size() << " polygons";
+    cout << " and the " << points->size() << " points" << endl;
+
+    int count;
+    for(int counttop = 0; counttop < 160000; counttop += 250){
+        
+        count = 0;
+        list<GIMS_Geometry *>::iterator it;
+        start = clock();
+        for(it = points->begin(); it != points->end(); it++){
+            DE9IM *results = tree->topologicalSearch(*it, polygonFilter);
+            list<long> covered_pts = results->coveredBy();
+
+            //for(list<long>::iterator j = covered_pts.begin(); j != covered_pts.end(); j++){
+            //    cout << (*it)->id << " | " << *j << endl;
+            //}
+
+            delete results;
+            count++;
+
+            if(count >= counttop)
+                break;
+        }
+        stop = clock();
+
+        cout << "N: " << count << endl;
+        cout << "took: " << (stop - start)/(double)CLOCKS_PER_SEC << "seconds" << endl;
+
+        if( it == points->end() )
+            break;
+    }
+
+    renderer = new DebRenderer();
+    renderer->setScale(400.0/extent->xlength(), -400.0/extent->ylength());
+    renderer->setTranslation( -extent->minx(), -extent->maxy() );
+    renderer->renderCallback = tree;
+    renderer->renderSvg("demo4.svg", 400, 400);
+
+    char *argv[] = {"gims", "demo4"};
+    int argc = 2;
+    renderer->mainloop(argc, argv);
+    
+    delete renderer;
+
+
+    delete tree;
+    for(list<GIMS_Geometry *>::iterator it = polygons->begin(); it!=polygons->end(); it++)
+        (*it)->deepDelete();
+    for(list<GIMS_Geometry *>::iterator it = points->begin(); it!=points->end(); it++)
+        (*it)->deepDelete();
+    delete polygons;
+    delete points;    
+}
+
+int lsFilter(GIMS_Geometry *geom){
+    if(geom->type == LINESTRING || geom->type == MULTILINESTRING)
+        return 1;
+    return 0;
+}
+
+void demo3(){
+    clock_t start, stop;
+
+    start = clock();
+    PGConnection conn = PGConnection();
+    conn.connect();
+    stop = clock();
+
+    cout << "took ";
+    cout << (stop - start)/(double)CLOCKS_PER_SEC;
+    cout << " seconds to connect to the database" << endl;
+
+    /*retrieve layers extent*/
+    GIMS_BoundingBox *extent = conn.getOverallExtent();
+
+    /*create an empty pmqtree bounded by the computed extent*/
+    PMQuadTree *tree = new PMQuadTree( extent );
+
+    start = clock();
+    list<GIMS_Geometry *> *lines = conn.getGeometryAsList("from planet_osm_line");
+    conn.disconnect();
+    stop = clock();
+
+    cout << "took ";
+    cout << (stop - start)/(double)CLOCKS_PER_SEC;
+    cout << " seconds to fetch all the data" << endl;
+
+    start = clock();
+    tree->insert(lines);
+    stop = clock();
+
+    cout << "took ";
+    cout << (stop - start)/(double)CLOCKS_PER_SEC;
+    cout << " seconds to insert the " << lines->size() << " linestrings" << endl;
+
+    start = clock();
+    GIMS_LineString query;
+    query.id = 2954258;
+    DE9IM *results = tree->topologicalSearch(*(idIndex.find(&query)), lsFilter);
+    stop = clock();
+
+    cout << "took ";
+    cout << (stop - start)/(double)CLOCKS_PER_SEC;
+    cout << " seconds to find all the related linestrings" << endl;
+
+    list<long> intersected = results->intersects();
+    cout << intersected.size() << " lines intersect the given line" << endl;
+
+    for(list<long>::iterator it=intersected.begin(); it != intersected.end(); it++){
+        query.id = *it;
+        GIMS_Geometry *result = *(idIndex.find(&query));
+        tree->renderRed(result);
+        cout << *it << endl;
+    }
+
+    tree->query = NULL;
+    renderer = new DebRenderer();
+    renderer->setScale(400.0/extent->xlength(), -400.0/extent->ylength());
+    renderer->setTranslation( -extent->minx(), -extent->maxy() );
+    renderer->renderCallback = tree;
+    renderer->renderSvg("demo3.svg", 400, 400);
+
+    char *argv[] = {"gims", "demo3"};
+    int argc = 2;
+    renderer->mainloop(argc, argv);
+    
+    delete renderer;
+    delete results;
+
+    delete tree;
+    for(list<GIMS_Geometry *>::iterator it = lines->begin(); it!=lines->end(); it++)
+        (*it)->deepDelete();
+    delete lines;
+}
+
 /*
 void demo4(){
     clock_t start, stop;
@@ -263,12 +519,6 @@ void demo3(){
 }
 */
 
-int pointFilter(GIMS_Geometry *geom){
-    if(geom->type == POINT)
-        return 1;
-    return 0;
-}
-
 void demo2(){
     clock_t start, stop;
 
@@ -288,7 +538,7 @@ void demo2(){
     PMQuadTree *tree = new PMQuadTree( extent );
 
     start = clock();
-    list<GIMS_Geometry *> *polygons = conn.getGeometryAsList("from planet_osm_polygon where osm_id=-1715038"); /*4532 points*/
+    list<GIMS_Geometry *> *polygons = conn.getGeometryAsList("from planet_osm_polygon"); /*4532 points*/
     list<GIMS_Geometry *> *points   = conn.getGeometryAsList("from planet_osm_point"); /*152675 points*/
     conn.disconnect();
     stop = clock();
@@ -306,8 +556,11 @@ void demo2(){
     cout << (stop - start)/(double)CLOCKS_PER_SEC;
     cout << " seconds to insert the 1 polygon" << endl;
 
+    GIMS_Polygon query; query.id = -1715038;
+    GIMS_Geometry *found = *(idIndex.find(&query));
+
     start = clock();
-    DE9IM *results = tree->topologicalSearch(polygons->front(), pointFilter);
+    DE9IM *results = tree->topologicalSearch(found, pointFilter);
     stop = clock();
 
     cout << "took ";
@@ -402,6 +655,12 @@ void demo1(){
     renderer->setTranslation( -extent->minx(), -extent->maxy() );
     renderer->renderCallback = tree;
     renderer->renderSvg("demo1.svg", 400, 400);
+
+    tree->query = polygons->front();
+    char *argv[] = {"gims", "demo2"};
+    int argc = 2;
+    renderer->mainloop(argc, argv);
+
     delete renderer;
 
     delete tree;

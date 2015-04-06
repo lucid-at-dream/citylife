@@ -25,21 +25,30 @@ enum IntersectionType {
     BE        = 3<<10, /*geometries whose exterior intersects query's boundary*/
 };
 
+typedef map<long long, unsigned int> matrix_t;
+
 class DE9IM{
 
   public:
     GIMS_Geometry *query;
-    map<long long, unsigned int> matrix;
+    matrix_t matrix;
 
     DE9IM(GIMS_Geometry *query);
     ~DE9IM();
     
-    void setIntersect(long long id, unsigned int dim);
-    void setII(long long id, unsigned int dim);
-    void setEI(long long id, unsigned int dim);
-    void setIE(long long id, unsigned int dim);
-    void setEB(long long id, unsigned int dim);
-    void setBE(long long id, unsigned int dim);
+    matrix_t::iterator setIntersect(long long id, unsigned int dim);
+    matrix_t::iterator setII(long long id, unsigned int dim);
+    matrix_t::iterator setEI(long long id, unsigned int dim);
+    matrix_t::iterator setIE(long long id, unsigned int dim);
+    matrix_t::iterator setEB(long long id, unsigned int dim);
+    matrix_t::iterator setBE(long long id, unsigned int dim);
+
+    void setIntersect(matrix_t::iterator &, unsigned int dim);
+    void setII(matrix_t::iterator &, unsigned int dim);
+    void setEI(matrix_t::iterator &, unsigned int dim);
+    void setIE(matrix_t::iterator &, unsigned int dim);
+    void setEB(matrix_t::iterator &, unsigned int dim);
+    void setBE(matrix_t::iterator &, unsigned int dim);
 
     list<long> equals();
     list<long> disjoint();

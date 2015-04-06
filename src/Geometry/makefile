@@ -41,5 +41,9 @@ Point.o: Point.cpp Geometry.hpp
 Polygon.o: Polygon.cpp Geometry.hpp
 	g++ -c Polygon.cpp ${LD}
 
+debug: setdebug all
+setdebug:
+	$(eval LD += -DDEBUG)
+
 clean:
 	rm y.tab.c lex.yy.c y.tab.h y.output *.o *.gch

@@ -53,6 +53,10 @@ list<GIMS_Geometry *> *PGConnection::getGeometryAsList(char *whereClause){
         long long id = atoll(PQgetvalue(qres, i, 0));
         GIMS_Geometry *g = fromWkt(PQgetvalue(qres, i, 1));
         g->id = id;
+        if(g->type == MULTIPOLYGON){
+            g->deepDelete();
+            continue;
+        }
         resultset->push_back(g);
     }
 
