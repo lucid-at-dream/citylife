@@ -139,7 +139,7 @@ void demo5(){
     GIMS_BoundingBox *extent = conn.getOverallExtent();
 
     /*create an empty pmqtree bounded by the computed extent*/
-    PMQuadTree *tree = new PMQuadTree( extent );
+    PMQuadTree tree = PMQuadTree( extent );
 
     start = clock();
     list<GIMS_Geometry *> *polygons = conn.getGeometryAsList("from planet_osm_polygon"); /*4532 points*/
@@ -152,8 +152,8 @@ void demo5(){
     cout << " seconds to fetch all the data" << endl;
 
     start = clock();
-    tree->insert(polygons);
-    tree->insert(points);
+    tree.insert(polygons);
+    tree.insert(points);
     stop = clock();
 
     cout << "took ";
@@ -161,14 +161,14 @@ void demo5(){
     cout << " seconds to insert the 1 polygon" << endl;
 
     int count;
-    for(int topcount=0; topcount<25001; topcount+=250){
+    for(int topcount=0; topcount<350001; topcount+=3500){
         
         count = 0;
 
         list<GIMS_Geometry *>::iterator it;
         start = clock();
         for( it = polygons->begin(); it != polygons->end(); it++){        
-            DE9IM *results = tree->topologicalSearch(*it, pointFilter);
+            DE9IM *results = tree.topologicalSearch(*it, pointFilter);
             list<long> covered_pts = results->covers();
 
             //for(list<long>::iterator j = covered_pts.begin(); j != covered_pts.end(); j++){
@@ -236,7 +236,7 @@ void demo4(){
     cout << " and the " << points->size() << " points" << endl;
 
     int count;
-    for(int counttop = 0; counttop < 160000; counttop += 250){
+    for(int counttop = 0; counttop < 150001; counttop += 1500){
         
         count = 0;
         list<GIMS_Geometry *>::iterator it;

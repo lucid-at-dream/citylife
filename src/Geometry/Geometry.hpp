@@ -71,6 +71,7 @@ namespace GIMS_GEOMETRY {
 
         string            toWkt            ();
         bool              isInside         (GIMS_BoundingBox *);
+        bool              isDisjoint       (GIMS_BoundingBox *);
         int               getPointCount    ();
         GIMS_BoundingBox *clone            ();
         GIMS_Point        getCenter        ();

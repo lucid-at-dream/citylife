@@ -5,8 +5,8 @@ using namespace GIMS_GEOMETRY;
 
 void PGConnection::connect(){
 
-    char *keywords[4] = KEYWORDS;
-    char *values[4] = VALUES;
+    const char *keywords[4] = KEYWORDS;
+    const char *values[4] = VALUES;
 
     this->connection = PQconnectdbParams(keywords, values, 0);
 

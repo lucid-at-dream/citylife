@@ -83,6 +83,9 @@ GIMS_Geometry *GIMS_Polygon::clipToBox(GIMS_BoundingBox *box){
     if( this->bbox.isInside(box) )
         return this;
 
+    if( this->bbox.isDisjoint(box) )
+        return NULL;
+
     GIMS_MultiLineString *exterior = NULL,
                          *interior = NULL;
     

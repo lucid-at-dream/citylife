@@ -1,6 +1,7 @@
 syntax: glob
 
 results/*
+agl_res/*
 
 src/main_avltest.cpp
 src/DataProcessor/inpt/*
