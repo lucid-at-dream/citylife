@@ -1,38 +1,38 @@
 #include "DebRender.hpp"
 
 bool on_drag_begin(GdkEventButton* event) {
-    renderer->dragBegin ( );
+    renderer.dragBegin ( );
     return false;
 }
 
 bool on_drag_end(GdkEventButton *event) {
-    double prev_panx = renderer->panx,
-           prev_pany = renderer->pany;
-    renderer->dragEnd( );
-    if( prev_panx == renderer->panx && prev_pany == renderer->pany )
-        renderer->clickEvent();
+    double prev_panx = renderer.panx,
+           prev_pany = renderer.pany;
+    renderer.dragEnd( );
+    if( prev_panx == renderer.panx && prev_pany == renderer.pany )
+        renderer.clickEvent();
     
-    renderer->scheduleRedraw();
+    renderer.scheduleRedraw();
     return false;
 }
 
 bool on_scroll_event(GdkEventScroll* event) {
-    double zinc = fabs( 0.1 * renderer->zoom );
+    double zinc = fabs( 0.1 * renderer.zoom );
     if( event->direction == GDK_SCROLL_UP ) {
-        renderer->zoom += zinc;
+        renderer.zoom += zinc;
     } else if ( event->direction == GDK_SCROLL_DOWN ) {
-        renderer->zoom -= zinc;
+        renderer.zoom -= zinc;
     }
-    renderer->scheduleRedraw();
+    renderer.scheduleRedraw();
     return false;
 }
 
 bool on_draw_event(const ::Cairo::RefPtr< ::Cairo::Context> &cr) {
-    cr->translate( -200 * (renderer->zoom-1), -200 * (renderer->zoom-1) );
-    cr->scale( renderer->zoom, renderer->zoom );
-    cr->translate( renderer->panx, renderer->pany );
+    cr->translate( -200 * (renderer.zoom-1), -200 * (renderer.zoom-1) );
+    cr->scale( renderer.zoom, renderer.zoom );
+    cr->translate( renderer.panx, renderer.pany );
 
-    renderer->render(cr);
+    renderer.render(cr);
     return false;
 }
 
@@ -48,8 +48,8 @@ void DebRenderer::dragEnd (){
     darea->get_pointer ( x, y );
     int relx = x - dragx,
         rely = y - dragy;
-    panx += relx / renderer->zoom;
-    pany += rely / renderer->zoom;
+    panx += relx / renderer.zoom;
+    pany += rely / renderer.zoom;
 }
 
 void DebRenderer::clickEvent(){
@@ -275,4 +275,4 @@ DebRenderer::DebRenderer(){
 DebRenderer::~DebRenderer(){
 }
 
-DebRenderer *renderer = NULL;
+DebRenderer renderer;

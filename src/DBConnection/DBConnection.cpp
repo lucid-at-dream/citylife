@@ -1,5 +1,7 @@
 #include "DBConnection.hpp"
 
+long long _gims_id_ = 1;
+
 using namespace std;
 using namespace GIMS_GEOMETRY;
 
@@ -25,17 +27,18 @@ PGresult *PGConnection::execQuery(char *query){
     return PQexec(this->connection, query);
 }
 
-AVLTree *PGConnection::getGeometry(char *whereClause){
+AVLTree PGConnection::getGeometry(char *whereClause){
     char buff[1000];
     sprintf(buff, "Select osm_id, st_asText(st_transform(way, %d)) %s", SRID, whereClause);
     PGresult *qres = this->execQuery(buff);
 
-    AVLTree *resultset = new AVLTree();
+    AVLTree resultset = AVLTree();
     for(int i=0; i<PQntuples(qres); i++){
         long long id = atoll(PQgetvalue(qres, i, 0));
         GIMS_Geometry *g = fromWkt(PQgetvalue(qres, i, 1));
-        g->id = id;
-        resultset->insert(g);
+        g->id = _gims_id_++;
+        g->osm_id = id;
+        resultset.insert(g);
     }
 
     PQclear(qres);
@@ -43,21 +46,22 @@ AVLTree *PGConnection::getGeometry(char *whereClause){
     return resultset;
 }
 
-list<GIMS_Geometry *> *PGConnection::getGeometryAsList(char *whereClause){
+list<GIMS_Geometry *> PGConnection::getGeometryAsList(char *whereClause){
     char buff[1000];
     sprintf(buff, "Select osm_id, st_asText(st_transform(way, %d)) %s", SRID, whereClause);
     PGresult *qres = this->execQuery(buff);
 
-    list<GIMS_Geometry *> *resultset = new list<GIMS_Geometry*>();
+    list<GIMS_Geometry *> resultset = list<GIMS_Geometry*>();
     for(int i=0; i<PQntuples(qres); i++){
         long long id = atoll(PQgetvalue(qres, i, 0));
         GIMS_Geometry *g = fromWkt(PQgetvalue(qres, i, 1));
-        g->id = id;
+        g->id = _gims_id_++;
+        g->osm_id = id;
         if(g->type == MULTIPOLYGON){
             g->deepDelete();
             continue;
         }
-        resultset->push_back(g);
+        resultset.push_back(g);
     }
 
     PQclear(qres);

@@ -40,7 +40,7 @@ namespace PMQUADTREE {
         bool  validatePoint           (GIMS_Point *pt, GIMS_Point **sharedPoint);
         bool  validateLineString      (GIMS_LineString *ls, GIMS_Point **sharedPoint); 
         bool  validateLineSegment     (GIMS_LineSegment *l, GIMS_Point **sharedPoint);
-        char   polygonContainsPoint    (GIMS_Polygon *pol, GIMS_Point *pt);
+        char  polygonContainsPoint    (GIMS_Polygon *pol, GIMS_Point *pt);
 
         /*Node searching functions*/
         void *search                  (GIMS_Geometry *geom);
@@ -79,6 +79,7 @@ namespace PMQUADTREE {
         /*Inherited Functions*/
         /*Functions that take care of the construction and maintenance of the structure*/
         void  insert (list<GIMS_Geometry *> *geom);
+        void  insert (list<GIMS_Geometry *> &geom);
         void  insert (GIMS_Geometry *);
         void  remove (GIMS_Geometry *);
         void *search (GIMS_Geometry *);
@@ -90,10 +91,16 @@ namespace PMQUADTREE {
         /*debugging functions*/
         void renderRed      ( GIMS_Geometry * );
         void renderGreen    ( GIMS_Geometry * );
+        void renderBlack    ( GIMS_Geometry * );
         void onClick        ( double, double );
         void debugRender    ( Cairo::RefPtr<Cairo::Context> );
         void renderTree     ( Cairo::RefPtr<Cairo::Context>, Node *n );
         void renderLeafNode ( Cairo::RefPtr<Cairo::Context>, Node *n );
+
+        /*fur levita*/
+        void dumpLevita();
+        void dumpLevita_r(Node *n);
+        void dumpLevita_leaf(Node *n);
 
         /*statistics functions*/
         int getNumNodes();
@@ -105,5 +112,6 @@ extern PMQUADTREE::Quadrant quadrantList[4];
 extern char quadrantLabels[4][3];
 extern double xmultiplier[4];
 extern double ymultiplier[4];
+extern unsigned long long pointcount;
 
 #endif

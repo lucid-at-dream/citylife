@@ -68,6 +68,14 @@ GIMS_Geometry *fromWkt(char *wkt){
     return lyWktParse(wkt);
 }
 
+bool collinear_3p(GIMS_Point *a, GIMS_Point *b, GIMS_Point *c){
+    double s = (b->x - a->x) * (c->y - a->y) -
+               (b->y - a->y) * (c->x - a->x);
+    if( fabs(s) < ERR_MARGIN )
+        return true;
+    return false;
+}
+
 /*returns the squared distance between two points*/
 double distanceSquared2p(GIMS_Point *p1, GIMS_Point *p2){
     return (p2->x - p1->x) * (p2->x - p1->x)+

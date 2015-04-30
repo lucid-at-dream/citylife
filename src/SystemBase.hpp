@@ -14,7 +14,7 @@
 #endif
 
 /*define the error margin (comparations will use this value)*/
-#define ERR_MARGIN 0.000001
+#define ERR_MARGIN 1e-9
 
 #define MAX(a,b)( ((a)>(b) ? (a) : (b)) )
 #define MIN(a,b)( ((a)<(b) ? (a) : (b)) )

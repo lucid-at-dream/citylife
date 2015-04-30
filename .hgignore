@@ -1,7 +1,15 @@
 syntax: glob
 
+2ls_test/*
+gims_out
+ls_test/*
+src/Geometry/main.cpp
+stats.sh
+lev/*
 results/*
 agl_res/*
+stats/*
+testes/*
 
 src/main_avltest.cpp
 src/DataProcessor/inpt/*

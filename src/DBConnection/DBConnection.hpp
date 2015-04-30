@@ -17,8 +17,8 @@ class PGConnection{
     void connect();
     void disconnect();
     PGresult *execQuery(char *query);
-    list<GIMS_Geometry *> *getGeometryAsList(char *whereClause);
-    AVLTree *getGeometry(char *whereClause);
+    list<GIMS_Geometry *> getGeometryAsList(char *whereClause);
+    AVLTree getGeometry(char *whereClause);
     GIMS_BoundingBox *getOverallExtent();
 };
 

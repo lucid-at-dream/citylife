@@ -1,6 +1,6 @@
 #include "PMQuadTree.hpp"
 
-#define POINTS_PER_NODE 50
+#define POINTS_PER_NODE 512
 
 using namespace GIMS_GEOMETRY;
 using namespace PMQUADTREE;
@@ -15,9 +15,12 @@ double ymultiplier[4] =  {0.5, 0.5, 0.0, 0.0};
 /*auxiliar variables for statistics*/
 int depth = 0, maxDepth = 0, nnodes = 1;
 
+unsigned long long pointcount = 0;
+
 /*auxiliar variables for the debug rendering process.*/
 bool renderEdge = false;
 list<GIMS_Geometry *> *renderQueue = new list<GIMS_Geometry *>();
+list<GIMS_Geometry *> *blackRenderQueue = new list<GIMS_Geometry *>();
 list<GIMS_Geometry *> *redRenderQueue = new list<GIMS_Geometry *>();
 
 
@@ -210,21 +213,26 @@ char Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
         }
 
         GIMS_LineSegment auxls;
-        if( unshared2 != NULL ){
-            //compute and compare angles
-            double angle1 = angle3p(unshared1, shpoint, &qp),
-                   angle2 = angle3p(unshared2, shpoint, &qp);
+        //compute and compare angles
+        double angle1 = angle3p(unshared1, shpoint, &qp),
+               angle2 = angle3p(unshared2, shpoint, &qp);
 
-            auxls = angle1 < angle2 ? other : closest;
-            closest = angle1 < angle2 ? closest : other;
+        auxls = angle1 < angle2 ? other : closest;
+        closest = angle1 < angle2 ? closest : other;
 
-        }else{
-            //in this case the vertex sharing edge is in another node
+        if(renderEdge){
+            redRenderQueue->push_back(auxls.clone());
+            renderQueue->push_back(closest.clone());
+            blackRenderQueue->push_back(qp.clone());
         }
+
+    }else if( renderEdge ){
+        renderQueue->push_back(closest.clone());
+        blackRenderQueue->push_back(qp.clone());
     }
 
     /*Finally we check to which side of "closest" "pt" lies and report.*/
-    GIMS_Side side = pt->sideOf(&closest);
+    GIMS_Side side = qp.sideOf(&closest);
 
     switch(side){
         case LEFT:
@@ -382,7 +390,7 @@ void Node::activeSearch(DE9IM *resultset, GIMS_Geometry *query, int(*filter)(GIM
         //build the intersection matrix
         for(list<GIMS_Geometry *>::iterator it = this->dictionary->begin();
             it != this->dictionary->end(); it++){
-            if(filter(*it)){
+            if(filter(*it) && (*it)->id != query->id){
                 this->buildIM(resultset, query, *it);
             }
         }
@@ -827,17 +835,23 @@ void DE9IM_mls_ls(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_LineString
 
     if( linesegments.size() >= (unsigned)(other->size) ){
         //check if linesegments cover the other geometry entirely
-        otherContained = other->isCoveredBy(linesegments);
+        otherContained = other->isCoveredBy(linesegments, false);
     }
 
     if( !queryContained && !otherContained ){
         resultset->setEI(other->id, 1);
         resultset->setIE(other->id, 1);
     }else if( !queryContained && otherContained ){
+        cout << other->osm_id << " is contained by " << query->osm_id << endl;
         resultset->setIE(other->id, 1);
     }else if( queryContained && !otherContained ){
+        cout << query->osm_id << " is contained by " << other->osm_id << endl;
         resultset->setEI(other->id, 1);
     }
+
+    for(list<GIMS_Geometry *>::iterator it = intersections.begin(); it != intersections.end(); it++)
+        (*it)->deepDelete();
+
 }
 
 
@@ -952,7 +966,7 @@ void DE9IM_mls_mls(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_MultiLine
 
     if( linesegments.size() >= (unsigned)(total) ){
         //check if linesegments cover the other geometry entirely
-        otherContained = other->isCoveredBy(linesegments);
+        otherContained = other->isCoveredBy(linesegments, false);
     }
 
     if( !queryContained && !otherContained ){
@@ -963,6 +977,10 @@ void DE9IM_mls_mls(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_MultiLine
     }else if( queryContained && !otherContained ){
         resultset->setEI(other->id, 1);
     }
+
+    for(list<GIMS_Geometry *>::iterator it = intersections.begin(); it != intersections.end(); it++)
+        (*it)->deepDelete();
+
 }
 
 
@@ -1188,6 +1206,13 @@ void PMQuadTree::insert ( GIMS_Geometry *geom ) {
     delete aux;
 }
 
+void PMQuadTree::insert (list<GIMS_Geometry *> &geom){
+    for(list<GIMS_Geometry *>::iterator it = geom.begin(); it != geom.end(); it++)
+        idIndex.insert(*it);
+    
+    this->root->insert(&geom);
+}
+
 void PMQuadTree::insert ( list<GIMS_Geometry *> *geom ){    
     for(list<GIMS_Geometry *>::iterator it = geom->begin(); it != geom->end(); it++)
         idIndex.insert(*it);
@@ -1225,8 +1250,46 @@ DE9IM *PMQuadTree::topologicalSearch( GIMS_Geometry *query, int(*filter)(GIMS_Ge
 
 
 /* Functions for debug renderization module */
+void PMQuadTree::dumpLevita(){
+    this->dumpLevita_r(this->root);
+}
+
+void PMQuadTree::dumpLevita_r(Node *n){
+    /*if it is a leaf node*/
+    if (n->type != GRAY) {
+        this->dumpLevita_leaf(n);
+    } else {
+        for (Quadrant q : quadrantList) {
+            this->dumpLevita_r(n->sons[q]);
+        }
+    }
+}
+
+void PMQuadTree::dumpLevita_leaf(Node *n){
+
+    GIMS_Point ll = *(n->square->lowerLeft),
+          ur = *(n->square->upperRight);
+    
+    GIMS_Point ul = GIMS_Point(ll.x, ur.y),
+          lr = GIMS_Point(ur.x, ll.y);
+
+    printf("PMQT_P: %llu %lf %lf q\n", pointcount++, ll.x, ll.y);
+    printf("PMQT_P: %llu %lf %lf q\n", pointcount++, ul.x, ul.y);
+    printf("PMQT_P: %llu %lf %lf q\n", pointcount++, ur.x, ur.y);
+    printf("PMQT_P: %llu %lf %lf q\n", pointcount++, lr.x, lr.y);
+
+    printf("PMQT_L: %llu %llu q\n", pointcount - 4, pointcount - 3);
+    printf("PMQT_L: %llu %llu q\n", pointcount - 3, pointcount - 2);
+    printf("PMQT_L: %llu %llu q\n", pointcount - 2, pointcount - 1);
+    printf("PMQT_L: %llu %llu q\n", pointcount - 1, pointcount - 4);
+}
+
 void PMQuadTree::renderRed ( GIMS_Geometry *g){
     redRenderQueue->push_back(g);
+}
+
+void PMQuadTree::renderBlack ( GIMS_Geometry *g){
+    blackRenderQueue->push_back(g);
 }
 
 void PMQuadTree::renderGreen ( GIMS_Geometry *g){
@@ -1235,9 +1298,9 @@ void PMQuadTree::renderGreen ( GIMS_Geometry *g){
 
 void PMQuadTree::debugRender(Cairo::RefPtr<Cairo::Context> cr){
 
-    renderer->setScale( 400.0/this->root->square->xlength(),
+    renderer.setScale( 400.0/this->root->square->xlength(),
                         -400.0/this->root->square->ylength() );
-    renderer->setTranslation( -this->root->square->lowerLeft->x,
+    renderer.setTranslation( -this->root->square->lowerLeft->x,
                               -this->root->square->upperRight->y );
     this->renderTree ( cr, this->root );
     printf("rendered the tree\n");
@@ -1251,30 +1314,45 @@ void PMQuadTree::debugRender(Cairo::RefPtr<Cairo::Context> cr){
         cr->stroke();
         cr->set_source_rgba(0.0, 0.19, 0.69, 0.2);
         for( list<Node *>::iterator i = results->begin(); i!= results->end(); i++ ){
-            renderer->renderFilledBBox( cr, (*i)->square );
+            renderer.renderFilledBBox( cr, (*i)->square );
             cr->fill();
         }
-        renderer->renderGeometry(cr, query);
+        cr->stroke();
+        
+        cr->stroke();
+        cr->set_source_rgba(0, 0, 0, 1);
+        renderer.renderGeometry(cr, query);
+        cr->stroke();
+
     }else{
         printf("null query\n");
     }
 
     if( renderQueue->size() > 0 ){
-        cr->stroke();
-        cr->set_source_rgb(0.19, 0.73, 0.12);
         for(list<GIMS_Geometry *>::iterator it = renderQueue->begin(); it != renderQueue->end(); it++){
-            renderer->renderGeometry(cr, *it);
+            cr->stroke();
+            cr->set_source_rgb(0.19, 0.73, 0.12);
+            renderer.renderGeometry(cr, *it);
+            cr->stroke();
         }
-        cr->stroke();
+    }
+
+    if( blackRenderQueue->size() > 0){
+        for(list<GIMS_Geometry *>::iterator it = blackRenderQueue->begin(); it != blackRenderQueue->end(); it++){
+            cr->stroke();
+            cr->set_source_rgb(0.03, 0.19, 0.73);
+            renderer.renderGeometry(cr, *it);
+            cr->stroke();
+        }
     }
 
     if( redRenderQueue->size() > 0){
-        cr->stroke();
-        cr->set_source_rgb(0.73, 0.19, 0.03);
         for(list<GIMS_Geometry *>::iterator it = redRenderQueue->begin(); it != redRenderQueue->end(); it++){
-            renderer->renderGeometry(cr, *it);
+            cr->stroke();
+            cr->set_source_rgb(0.73, 0.19, 0.03);
+            renderer.renderGeometry(cr, *it);
+            cr->stroke();
         }
-        cr->stroke();
     }
 
 }
@@ -1294,7 +1372,7 @@ void PMQuadTree::renderTree (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
 /*Render a leaf node and contained geometries*/
 void PMQuadTree::renderLeafNode (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
 
-    //renderer->renderGeometry(cr, n->square);
+    renderer.renderGeometry(cr, n->square);
 
     if( n->dictionary == NULL )
         return;
@@ -1302,8 +1380,7 @@ void PMQuadTree::renderLeafNode (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
     if (n->type == BLACK) { //the WHITE type stands for empty node, thus we ignore it.
         for( list<GIMS_Geometry *>::iterator it = n->dictionary->begin();
             it != n->dictionary->end(); it++ ) {
-                //if((*it)->type != POINT)
-                renderer->renderGeometry( cr, *it );
+            //renderer.renderGeometry( cr, *it );
         }
     }
 }

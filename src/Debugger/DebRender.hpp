@@ -71,7 +71,7 @@ class DebRenderer {
         ~DebRenderer      ();
 };
 
-extern DebRenderer *renderer;
+extern DebRenderer renderer;
 bool on_draw_event(const ::Cairo::RefPtr< ::Cairo::Context> &);
 bool on_scroll_event(GdkEventScroll* event);
 
