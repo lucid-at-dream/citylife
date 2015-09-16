@@ -2,6 +2,33 @@
 
 #define _BS_PRECISION 1000000
 #define THRESHOLD 20
+#define THRESHOLD2 1000
+
+list<GIMS_Geometry *> BentleySolver::solve(GIMS_MultiLineString *A, GIMS_MultiLineString *B){
+
+    bool disjoint = true;
+    for( int i=0; disjoint && i<A->size; i++ ){
+        for( int j=0; disjoint && j<B->size; j++ ){
+            if( !(A->list[i]->bbox.isDisjoint( &(B->list[j]->bbox) )) )
+                disjoint = false;
+        }
+    }
+
+    if(disjoint)
+        return list<GIMS_Geometry *>();
+
+    int NA = A->getPointCount(),
+        NB = B->getPointCount();
+
+    if( NA < THRESHOLD || NB < THRESHOLD )
+        return this->bruteforce(A, B);
+    
+    else if( NA < THRESHOLD2 || NB < THRESHOLD2 )
+        return linesweep(A, B);
+
+    else
+        return ivbalaban::balaban(A, B);
+}
 
 bool cmp(GIMS_LineSegment a, GIMS_LineSegment b){
     return a.osm_id < b.osm_id;
@@ -126,27 +153,6 @@ double BentleySolver::inputMLS( evset &eventQueue, GIMS_MultiLineString *mls, in
         }
     }
     return max_x;
-}
-
-
-list<GIMS_Geometry *> BentleySolver::solve(GIMS_MultiLineString *A, GIMS_MultiLineString *B){
-
-    bool disjoint = true;
-    for( int i=0; disjoint && i<A->size; i++ ){
-        for( int j=0; disjoint && j<B->size; j++ ){
-            if( !(A->list[i]->bbox.isDisjoint( &(B->list[j]->bbox) )) )
-                disjoint = false;
-        }
-    }
-
-    if(disjoint)
-        return list<GIMS_Geometry *>();
-
-    if( A->getPointCount() < THRESHOLD || B->getPointCount() < THRESHOLD ){
-        return this->bruteforce(A, B);
-    }else{
-        return this->linesweep(A, B);
-    }
 }
 
 GIMS_Point *getrp(GIMS_LineSegment &ls){

@@ -8,6 +8,7 @@
 #include "BentleySolver.hpp"
 #include <list>
 #include <cmath>
+#include "conf.hpp"
 
 using namespace std;
 

@@ -3,7 +3,7 @@ CC = /usr/lib/ccache/bin/g++
 #CC = g++
 LDLIBS = -lm -lpq -g -Wall
 COPT = -march=native -O2 -pipe -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2
-CFLAGS = -std=c++11 ${LDLIBS} ${COPT} -Wwrite-strings
+CFLAGS = -std=c++11 ${LDLIBS} ${COPT}
 CTESTFLAGS = -lgtest -lgtest_main
 
 #directory structure
@@ -36,8 +36,8 @@ INC_DIR += `pkg-config --cflags --libs gtkmm-3.0`
 OBJMAIN = ${OBJ_DIR}/main.o
 
 #object files
-OBJFILES += ${OBJ_DIR}/DataProcessor/avl.o
 OBJFILES += ${OBJ_DIR}/DataProcessor/DE9IM.o
+OBJFILES += ${OBJ_DIR}/conf.o
 OBJFILES += ${OBJ_DIR}/DataProcessor/PMQuadTree.o
 OBJFILES += ${OBJ_DIR}/DBConnection/DBConnection.o
 OBJFILES += ${OBJ_DIR}/Debugger/DebRender.o
@@ -50,6 +50,7 @@ OBJFILES += ${OBJ_DIR}/Geometry/Polygon.o
 OBJFILES += ${OBJ_DIR}/Geometry/lex.yy.o
 OBJFILES += ${OBJ_DIR}/Geometry/y.tab.o
 OBJFILES += ${OBJ_DIR}/Geometry/BentleySolver.o
+OBJFILES += ${OBJ_DIR}/Geometry/Balaban.o
 
 #object files for testing source code
 OBJTESTFILES = ${TEST_DIR}/${OBJ_DIR}/pointInPolygonTest.o

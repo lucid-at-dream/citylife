@@ -3,6 +3,8 @@
 
 #include "Geometry.hpp"
 #include "SystemBase.hpp"
+#include "DE9IM.hpp"
+#include "Balaban.hpp"
 #include <set>
 #include <iostream>
 #include <list>
@@ -26,10 +28,12 @@ typedef priority_queue<Event, vector<Event>,decltype(&compare)> evset;
 
 class BentleySolver{
   public:
-    double                 inputMLS  (evset &, GIMS_MultiLineString *, int);
-    list<GIMS_Geometry *>  bruteforce(GIMS_MultiLineString *, GIMS_MultiLineString *);
-    list<GIMS_Geometry *>  linesweep (GIMS_MultiLineString *, GIMS_MultiLineString *);
-    list<GIMS_Geometry *>  solve     (GIMS_MultiLineString *, GIMS_MultiLineString *);
+    double                 inputMLS       (evset &, GIMS_MultiLineString *, int);
+    list<GIMS_Geometry *>  bruteforce     (GIMS_MultiLineString *, GIMS_MultiLineString *);
+    list<GIMS_Geometry *>  linesweep      (GIMS_MultiLineString *, GIMS_MultiLineString *);
+    list<GIMS_Geometry *>  bentley        (GIMS_MultiLineString *A, GIMS_MultiLineString *B);
+    list<GIMS_Geometry *>  solve          (GIMS_MultiLineString *, GIMS_MultiLineString *);
+    void                   polygon_polygon(DE9IM *resultset, GIMS_Polygon *query, GIMS_Geometry *other);
 };
 
 extern long long int bruteforce_count,

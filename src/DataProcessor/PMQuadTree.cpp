@@ -1,7 +1,5 @@
 #include "PMQuadTree.hpp"
 
-#define POINTS_PER_NODE 512
-
 using namespace GIMS_GEOMETRY;
 using namespace PMQUADTREE;
 using namespace std;
@@ -107,7 +105,8 @@ GIMS_Geometry *Node::hasReferenceTo( long long id ){
     return NULL;
 }
 
-/*Returns true if a polygon "pol" that intersects the node contains point "pt".*/
+/*Returns 0 if the point is outside the polygon, 
+  1 if it lies inside and 2 if it lies on the polygon's border.*/
 char Node::polygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
     /*Explanation:
       According to the paper where pmqtrees are proposed, the procedure to label
@@ -394,24 +393,6 @@ void Node::activeSearch(DE9IM *resultset, GIMS_Geometry *query, int(*filter)(GIM
                 this->buildIM(resultset, query, *it);
             }
         }
-
-        //since polygons might have topological relationships even though they're not in the same
-        //node, we need to go in a line in search for polygons.
-        if( query->type == POINT ){
-            Node *n = this;
-            while( (n = n->goNorth(((GIMS_Point *)query)->x)) != NULL ){
-                
-                if( n->dictionary == NULL )
-                    continue;
-
-                for(list<GIMS_Geometry *>::iterator it = n->dictionary->begin(); it != n->dictionary->end(); it++ ){
-                    if( (*it)->type == POLYGON && filter(*it) ){
-                        n->buildIM_point(resultset, ((GIMS_Point *)query), *it);
-                    }
-                }
-
-            }
-        }
     }
     
     clipped->deleteClipped();
@@ -467,7 +448,7 @@ void Node::insert ( list<GIMS_Geometry *> *geom ) {
         }
 
         //if ( this->validate(clipped) ) {
-        if(this->numPoints(clipped) <= POINTS_PER_NODE) {
+        if(this->numPoints(clipped) <= configuration.max_points_per_node) {
             //if the geometry is a valid node geometry we insert it into the node
             this->dictionary = clipped;
             this->type = BLACK;
@@ -732,8 +713,77 @@ TODO(BUILD_IM: polygon vs linestring)
 TODO(BUILD_IM: polygon vs multilinestring)
 
     }else if(other->type == POLYGON){
-TODO(BUILD_IM: polygon vs polygon)
+        /*
+        GIMS_Polygon *pol = (GIMS_Polygon *)other;
+        if( pol->bbox.isDisjoint( query->bbox ) )
+            return;
 
+        BentleySolver bs;
+        bs.polygon_polygon(resulset, query, pol);
+
+        list<GIMS_Geometry *> ExtExt = bs.solve( query->externalRing , pol->externalRing  );
+        //list<GIMS_Geometry *> ExtInt = bs.solve( query->externalRing , pol->internalRings );
+        //list<GIMS_Geometry *> IntExt = bs.solve( query->internalRings, pol->externalRing  );
+        //list<GIMS_Geometry *> IntInt = bs.solve( query->internalRings, pol->internalRings );
+
+        //handle exterior ring vs. exterior ring intersections
+        for( list<GIMS_Geometry *>::iterator it = ExtExt.begin(); it != ExtExt.end(); it++ ){
+            if( (*it)->type == POINT ){
+        
+                int qind = query->externalRing->indexOf( (GIMS_Point *)(*it) ),
+                    oind = other->externalRing->indexOf( (GIMS_Point *)(*it) )
+
+                if( qind > -1 || oind > -1 ){
+                    //if the intersection point belongs to one of the borders, we can conclude that
+                    //their borders intersect with dim = 0 at this point.
+
+                    GIMS_Point *o_p1 = other->externalRing->getPrevPoint(oind),
+                               *o_p2 = (GIMS_Point *)(*it);
+                               *o_p3 = other->externalRing->getNextPoint(oind);
+                    if( o_p1 == NULL || o_p3 == NULL )
+                        continue; //then this intersection will be handled in another node
+
+                    GIMS_Point *q_p1 = query->externalRing->getPrevPoint(qind),
+                               *q_p2 = (GIMS_Point *)(*it);
+                               *q_p3 = query->externalRing->getNextPoint(qind);
+                    if( q_p1 == NULL || q_p3 == NULL )
+                        continue; //then this intersection will be handled in another node
+
+
+                    //if one of o_p1 or o_p3 lie to the left side of both LINESEG( q_p1,q_p2 ) and LINESEG( q_p2,q_p3 )
+                    GIMS_LineSegment ls1 = GIMS_LineSegment(q_p1, q_p2),
+                                     ls2 = GIMS_LineSegment(q_p2, q_p3);
+
+TODO(what if were looking at overlaping borders??)
+                    
+                    if( (o_p1->sideOf(&ls1) == LEFT && o_p1->sizeOf(&ls2) == LEFT) ||
+                        (o_p2->sideOf(&ls1) == LEFT && o_p2->sizeOf(&ls2) == LEFT) ){
+                        //if the lines associated with the point 
+                        //lie to the internal side of the query polygon, then:
+                        matrix_t::iterator matrix = resultset->setIntersect(other->id, 2);
+                        resultset->setII(matrix, 2);
+                        resultset->setIE(matrix, 2);
+                        resultset->setBE(matrix, 1);
+                    }else{
+                        matrix_t::iterator matrix = resultset->setIntersect(other->id, 0);
+                        resultset->setEI(matrix, 2);
+                        resultset->setIE(matrix, 2);
+                        resultset->setBE(matrix, 1);
+                        resultset->setEB(matrix, 1);
+                    }
+                }else{
+                    matrix_t::iterator matrix = resultset->setIntersect(other->id, 2);
+                    resultset->setII(matrix, 2);
+                    resultset->setEI(matrix, 2);
+                    resultset->setIE(matrix, 2);
+                    resultset->setBE(matrix, 1);
+                    resultset->setEB(matrix, 1);
+                }
+            }else{ //it's a line segment
+                //borders intersect with dimension 1
+            }
+        }
+*/
     }
 }
 
@@ -1236,6 +1286,59 @@ DE9IM *PMQuadTree::topologicalSearch( GIMS_Geometry *query, int(*filter)(GIMS_Ge
         this->root->activeInteriorSearch(resultset, (GIMS_Polygon *)query, filter);
     }else{
         this->root->activeSearch(resultset, query, filter);
+    }
+
+    if(false){
+        //since polygons might have topological relationships even though they're not in the same
+        //node (containment), we need to point label at least one of the points in the query set.
+        GIMS_Point *pt;
+        switch(query->type){
+        case POINT:
+            pt = (GIMS_Point *)query; break;
+        case LINESTRING:
+        case RING:
+            pt = ((GIMS_LineString *)query)->list[0]; break;
+        case POLYGON:
+            pt = ((GIMS_Polygon *)query)->externalRing->list[0]->list[0]; break;
+        case MULTILINESTRING:
+            pt = ((GIMS_MultiLineString *)query)->list[0]->list[0]; break;
+        case MULTIPOLYGON:
+            pt = ((GIMS_MultiPolygon *)query)->list[0]->externalRing->list[0]->list[0]; break;
+        default:
+            fprintf(stderr, "unsupported geometry was passed on to the topologicalSearch function.\n" );
+            return resultset;
+        }
+
+        list<Node *> *nodes = (list<Node *> *)(this->search(pt));
+        Node *n = nodes->front();
+        delete nodes;
+
+        while( (n = n->goNorth(pt->x)) != NULL ){
+            
+            if( n->dictionary == NULL )
+                continue;
+
+            for(list<GIMS_Geometry *>::iterator it = n->dictionary->begin(); it != n->dictionary->end(); it++ ){
+                if( (*it)->type == POLYGON && filter(*it) ){
+                    
+                    //if the polygon has already been considered, ignore it.
+                    if( resultset->matrix.find((*it)->id) != resultset->matrix.end() )
+                        continue;
+                    
+                    matrix_t::iterator matrix = resultset->setEI((*it)->id, 2);
+                    resultset->setEB(matrix, 1);
+
+                    //if the point lies inside the polygon
+                    if( n->polygonContainsPoint((GIMS_Polygon *)(*it), pt) > 0 ){
+                        resultset->setIntersect(matrix, dim(query));
+                        resultset->setII(matrix, dim(query));
+                    }else{
+                        resultset->setIE(matrix, dim(query));
+                        resultset->setBE(matrix, borderDim(query));
+                    }
+                }
+            }
+        }
     }
 
     return resultset;

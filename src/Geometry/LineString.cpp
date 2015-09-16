@@ -268,6 +268,11 @@ GIMS_Point GIMS_LineSegment::closestPointWithinRange(GIMS_BoundingBox *range, GI
 
 GIMS_Geometry *GIMS_LineSegment::intersects(const GIMS_LineSegment *other){
     
+    if( this->p1 == NULL || this->p2 == NULL ){
+        printf("got NULL points\n");
+        return NULL;
+    }
+
     double int_x, int_y;
 
     //if this is a vertical line
@@ -601,6 +606,14 @@ GIMS_LineString::~GIMS_LineString (){
     delete this->bbox.upperRight;
 }
 
+int GIMS_LineString::indexOf( GIMS_Point *p ){
+    for(int i=0; i<this->size; i++){
+        if( p->equals(this->list[i]) )
+            return i;
+    }
+    return -1;
+}
+
 string GIMS_LineString::toWkt(){
     string wkt = string("LINESTRING(");
     char buff[100];
@@ -860,6 +873,53 @@ bool GIMS_MultiLineString::isCoveredBy(std::list<GIMS_LineSegment *> &linesegmen
             return false;
     }
     return true;
+}
+
+int GIMS_MultiLineString::indexOf( GIMS_Point *p ){
+    int index = 0, rel;
+    for(int i=0; i<this->size; i++){
+        if( (rel = this->list[i]->indexOf(p)) > -1 )
+            return index + rel;
+        else
+            index += this->list[i]->size;
+    }
+    return -1;
+}
+
+GIMS_Point *GIMS_MultiLineString::getPoint(int index){
+    for(int i=0; i<this->size; i++){
+        if( index < this->list[i]->size )
+            return this->list[i]->list[index];
+        else
+            index -= this->list[i]->size;
+    }
+    return NULL;
+}
+
+GIMS_Point *GIMS_MultiLineString::getNextPoint(int index){
+    for(int i=0; i<this->size; i++){
+        if( index < this->list[i]->size )
+            if( index + 1 < this->list[i]->size  )
+                return this->list[i]->list[index + 1];
+            else
+                return NULL;
+        else
+            index -= this->list[i]->size;
+    }
+    return NULL;
+}
+
+GIMS_Point *GIMS_MultiLineString::getPrevPoint(int index){
+    for(int i=0; i<this->size; i++){
+        if( index < this->list[i]->size )
+            if( index - 1 > 0  )
+                return this->list[i]->list[index - 1];
+            else
+                return NULL;
+        else
+            index -= this->list[i]->size;
+    }
+    return NULL;
 }
 
 GIMS_Geometry *GIMS_MultiLineString::clipToBox(GIMS_BoundingBox *box){

@@ -142,7 +142,8 @@ namespace GIMS_GEOMETRY {
         GIMS_LineString  *clone           ();
         GIMS_Geometry    *clipToBox       (GIMS_BoundingBox *);
         GIMS_LineSegment  getLineSegment  (int index);
-        void              appendPoint     (GIMS_Point *p);
+        int               indexOf         (GIMS_Point *);
+        void              appendPoint     (GIMS_Point *);
         void              deleteClipped   ();
         int               getPointCount   ();
         void              deepDelete      ();
@@ -183,6 +184,10 @@ namespace GIMS_GEOMETRY {
         int               allocatedSize;
 
         string                toWkt                ();
+        int                   indexOf              (GIMS_Point *);
+        GIMS_Point           *getPoint             (int);
+        GIMS_Point           *getPrevPoint         (int index);
+        GIMS_Point           *getNextPoint         (int index);
         bool                  isCoveredBy          (std::list<GIMS_LineSegment *> &, bool copy = true);
         bool                  coversPoint          (GIMS_Point *pt);
         GIMS_MultiLineString *clone                ();

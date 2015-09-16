@@ -7,15 +7,29 @@ using namespace GIMS_GEOMETRY;
 
 void PGConnection::connect(){
 
-    const char *keywords[4] = KEYWORDS;
-    const char *values[4] = VALUES;
+    int argc = configuration.db_confs.size();
+
+    const char *keywords[argc+1];
+    const char *values[argc+1];
+
+    keywords[argc] = values[argc] = NULL;
+
+    int i=0;
+    for(list<conf::db_conf>::iterator it = configuration.db_confs.begin(); it != configuration.db_confs.end(); it++){
+        keywords[i] = it->keyword;
+        values[i]   = it->value;
+        i++;
+    }
+
+    for(i=0; i<argc; i++)
+        cout << keywords[i] << ": " << values[i] << endl;
 
     this->connection = PQconnectdbParams(keywords, values, 0);
 
-    if( PQstatus(this->connection) == CONNECTION_MADE ){
-        printf("connected to the database\n");
+    if( PQstatus(this->connection) == CONNECTION_OK ){
+        printf("Connection to database suceeded.\n");
     }else{
-        printf("failed to connect\n");
+        cout << "Database connection error: " << PQerrorMessage(this->connection) << endl;
     }
 }
 
@@ -27,28 +41,9 @@ PGresult *PGConnection::execQuery(char *query){
     return PQexec(this->connection, query);
 }
 
-AVLTree PGConnection::getGeometry(char *whereClause){
-    char buff[1000];
-    sprintf(buff, "Select osm_id, st_asText(st_transform(way, %d)) %s", SRID, whereClause);
-    PGresult *qres = this->execQuery(buff);
-
-    AVLTree resultset = AVLTree();
-    for(int i=0; i<PQntuples(qres); i++){
-        long long id = atoll(PQgetvalue(qres, i, 0));
-        GIMS_Geometry *g = fromWkt(PQgetvalue(qres, i, 1));
-        g->id = _gims_id_++;
-        g->osm_id = id;
-        resultset.insert(g);
-    }
-
-    PQclear(qres);
-
-    return resultset;
-}
-
 list<GIMS_Geometry *> PGConnection::getGeometryAsList(char *whereClause){
     char buff[1000];
-    sprintf(buff, "Select osm_id, st_asText(st_transform(way, %d)) %s", SRID, whereClause);
+    sprintf(buff, "Select osm_id, st_asText(st_transform(way, %d)) %s", configuration.projection_srid, whereClause);
     PGresult *qres = this->execQuery(buff);
 
     list<GIMS_Geometry *> resultset = list<GIMS_Geometry*>();
