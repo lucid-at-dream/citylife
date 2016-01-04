@@ -37,14 +37,10 @@ INC_DIR += `pkg-config --cflags --libs gtkmm-3.0`
 OBJMAIN = ${OBJ_DIR}/main.o
 
 #object files
-OBJFILES += ${OBJ_DIR}/DataProcessor/DCEL.o
-OBJFILES += ${OBJ_DIR}/DataProcessor/PolygonIntersection.o
-OBJFILES += ${OBJ_DIR}/DataProcessor/LineIntersection.o
-OBJFILES += ${OBJ_DIR}/DataProcessor/DE9IM.o
-OBJFILES += ${OBJ_DIR}/conf.o
-OBJFILES += ${OBJ_DIR}/DataProcessor/PMQuadTree.o
 OBJFILES += ${OBJ_DIR}/DBConnection/DBConnection.o
 OBJFILES += ${OBJ_DIR}/Debugger/DebRender.o
+OBJFILES += ${OBJ_DIR}/conf.o
+
 OBJFILES += ${OBJ_DIR}/Geometry/BoundingBox.o
 OBJFILES += ${OBJ_DIR}/Geometry/GIMSGeometry.o
 OBJFILES += ${OBJ_DIR}/Geometry/GeometryCollection.o
@@ -53,8 +49,14 @@ OBJFILES += ${OBJ_DIR}/Geometry/Point.o
 OBJFILES += ${OBJ_DIR}/Geometry/Polygon.o
 OBJFILES += ${OBJ_DIR}/Geometry/lex.yy.o
 OBJFILES += ${OBJ_DIR}/Geometry/y.tab.o
-OBJFILES += ${OBJ_DIR}/Geometry/BentleySolver.o
-OBJFILES += ${OBJ_DIR}/Geometry/Balaban.o
+
+OBJFILES += ${OBJ_DIR}/DataProcessor/PMQuadTree.o
+OBJFILES += ${OBJ_DIR}/DataProcessor/DCEL.o
+OBJFILES += ${OBJ_DIR}/DataProcessor/PolygonIntersection.o
+OBJFILES += ${OBJ_DIR}/DataProcessor/LineIntersection.o
+OBJFILES += ${OBJ_DIR}/DataProcessor/DE9IM.o
+OBJFILES += ${OBJ_DIR}/DataProcessor/BentleySolver.o
+OBJFILES += ${OBJ_DIR}/DataProcessor/Balaban.o
 
 #object files for testing source code
 OBJTESTFILES = ${TEST_DIR}/${OBJ_DIR}/pointInPolygonTest.o
