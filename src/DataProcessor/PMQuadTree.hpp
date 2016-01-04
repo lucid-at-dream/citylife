@@ -2,16 +2,17 @@
 #define PMQUADTREE_HPP
 
 #include "SystemBase.hpp"
-#include "DataStructs.hpp"
+#include "Geometry.hpp"
 #include "DebRender.hpp"
 #include "DE9IM.hpp"
 #include "BentleySolver.hpp"
-#include <list>
-#include <cmath>
 #include "conf.hpp"
 #include "DCEL.hpp"
 #include "LineIntersection.hpp"
 #include "PolygonIntersection.hpp"
+
+#include <list>
+#include <cmath>
 
 using namespace std;
 
@@ -71,7 +72,7 @@ namespace PMQUADTREE {
              ~Node                    ();
     };
 
-    class PMQuadTree : public GIMS_DataStruct, public DebugRenderable {
+    class PMQuadTree : public DebugRenderable {
       public:
         Node *root;
         GIMS_Geometry *query;
@@ -100,11 +101,6 @@ namespace PMQUADTREE {
         void debugRender    ( Cairo::RefPtr<Cairo::Context> );
         void renderTree     ( Cairo::RefPtr<Cairo::Context>, Node *n );
         void renderLeafNode ( Cairo::RefPtr<Cairo::Context>, Node *n );
-
-        /*fur levita*/
-        void dumpLevita();
-        void dumpLevita_r(Node *n);
-        void dumpLevita_leaf(Node *n);
 
         /*statistics functions*/
         int getNumNodes();
