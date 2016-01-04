@@ -139,6 +139,94 @@ void GIMS_Polygon::computeBBox(){
     this->bbox.upperRight = new GIMS_Point( maxx, maxy );
 }
 
+/*Returns 0 if the point is outside the polygon, 
+  1 if it lies inside and 2 if it lies on the polygon's border.*/
+char GIMS_Polygon::containsPointWithinDomain(GIMS_Point *querypoint, GIMS_BoundingBox *domain){
+
+    //keep track whether the closest edge is from an internal ring or the external
+    //ring, as it will affect the side the point should be on to be contained.
+    bool isEdgeFromExtRing = false;
+    double minDist = 1e100;
+    double tmp;
+
+    GIMS_LineSegment closest;
+    GIMS_Point closestPoint;
+
+    //iterate over the edges from the polygon rings
+    GIMS_MultiLineString *prings[2] = {this->externalRing, this->internalRings};
+
+    for(GIMS_MultiLineString *ring : prings){
+        for(int i=0; ring != NULL && i<ring->size; i++){
+            for(int j=0; j<ring->list[i]->size-1; j++){
+                GIMS_LineSegment curr = ring->list[i]->getLineSegment(j);
+                GIMS_Point tmp_point = curr.closestPointWithinRange(domain, querypoint);
+
+                if( (tmp = querypoint->distanceSquared(&tmp_point)) < minDist ){
+                    minDist = tmp;
+                    closest = curr;
+                    closestPoint = tmp_point;
+                    isEdgeFromExtRing = (ring == this->externalRing);
+                    if( minDist < ERR_MARGIN )
+                        return 2;
+                }
+            }
+        }
+    }
+
+    /*if the closest line segment shares the node with an adjacent line segment,
+      we must get the 2nd edge that shares the same endpoint.
+      We can call the shared enpoint pt2.
+      Given this convention, we must now check which of the two line segments 
+      forms the smallest angle with the linesegment pt---pt2. We then check to 
+      with side of that line pt lies.*/
+
+    if( closestPoint.equals(closest.p1) || closestPoint.equals(closest.p2) ){
+
+        GIMS_MultiLineString *src = isEdgeFromExtRing ? this->externalRing : this->internalRings;
+
+        GIMS_Point *shpoint   = closestPoint.equals(closest.p1) ? closest.p1 : closest.p2;
+        GIMS_Point *unshared1 = closestPoint.equals(closest.p1) ? closest.p2 : closest.p1;
+        GIMS_Point *unshared2 = NULL;
+        GIMS_LineSegment other;
+
+        //find the edge that shares the endpoint with current "closest"
+        bool found = false;
+        int i,j;
+        for(i=0; i<src->size && !found; i++){
+            for(j=0; j<src->list[i]->size-1 && !found; j++){
+                other = src->list[i]->getLineSegment(j);
+                if( other.p1->equals(shpoint) && !other.p2->equals(unshared1) ){
+                    unshared2 = other.p2;
+                    found = true;
+                }else if( other.p2->equals(shpoint) && !other.p1->equals(unshared1) ){
+                    unshared2 = other.p1;
+                    found = true;
+                }
+            }
+        }
+
+        GIMS_LineSegment auxls;
+        //compute and compare angles
+        double angle1 = angle3p(unshared1, shpoint, querypoint),
+               angle2 = angle3p(unshared2, shpoint, querypoint);
+
+        auxls = angle1 < angle2 ? other : closest;
+        closest = angle1 < angle2 ? closest : other;
+    }
+
+    /*Finally we check to which side of "closest" "pt" lies and report.*/
+    GIMS_Side side = querypoint->sideOf(&closest);
+
+    switch(side){
+        case LEFT:
+            return 0;
+        case RIGHT:
+            return 1;
+        default:
+            return 2;
+    }
+}
+
 GIMS_Polygon::GIMS_Polygon(GIMS_MultiLineString *externalRing, GIMS_MultiLineString *internalRings, bool computebbox){
     this->type = POLYGON;
     this->isClippedCopy = false;

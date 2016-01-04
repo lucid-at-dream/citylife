@@ -1,6 +1,17 @@
 #include "conf.hpp"
 
-conf::config_t configuration; 
+conf::config_t configuration;
+
+void printUsage(){
+    std::cout << 
+    "ToQueMidaS - Topological Querying Middleware System" << std::endl <<
+    std::endl <<
+    "Usage: toquemidas [options]" << std::endl << 
+    std::endl << 
+    "Options:" << std::endl << 
+    "  -h, --help                    display this help message and exit" << std::endl <<
+    "  -c FILE, --config-file=FILE   load configurations from FILE" << std::endl;
+}
 
 bool blankLine(char *line){
     int i=0;
@@ -33,8 +44,36 @@ void conf::printCurrentConfiguration(){
     std::cout << "==== END Current Configuration ====" << std::endl;
 }
 
-int conf::readConfigurationFiles(){
+int conf::readConfigurationFiles(int argc, char **argv){
+
+    //verify if an help message was requested
+    for(int i=1; i<argc; i++){
+        if( strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0 ){
+            printUsage();
+            exit(0);
+        }
+    }
     
+    //verify if another file location is provided via command line argument
+    for(int i=1; i<argc; i++){
+        if( strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--config-file") == 0 ){
+            if( argc > i+1 ){
+                char *fname = argv[i+1];
+                if( verifyFileExistance(fname)){
+                    std::cout << "Configuration loaded from: " << fname << std::endl;
+                    loadConfigurationFile(fname);
+                    return 0;
+                }else{
+                    std::cout << "Configuration file " << fname << " does not exist." << std::endl;
+                    return 1;
+                }    
+            }else{
+                std::cout << "No filename provided after option -c" << std::endl;
+            }
+        }
+    }
+
+    //set up default file location list
     char filelist[3][50] = {
         "gims.conf"
         "$HOME/.conf/gims.conf",
@@ -125,9 +164,4 @@ void conf::parseCfgLine(char *line){
     }else{
         std::cout << "unknown keyword in configuration file: " << line << std::endl;
     }
-
-}
-
-int conf::readArgs(int argc, char **argv){
-    return 0;
 }

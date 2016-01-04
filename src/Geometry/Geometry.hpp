@@ -206,21 +206,22 @@ namespace GIMS_GEOMETRY {
       public:
         double x, y;
 
-        string         toWkt          ();
-        double         distance       (GIMS_Point *);
-        double         distanceSquared(GIMS_Point *);
-        GIMS_Point     getClosestPoint(GIMS_LineSegment *);
-        bool           equals         (GIMS_Point *cmp);
-        GIMS_Point    *clone          ();
-        GIMS_Geometry *clipToBox      (GIMS_BoundingBox *);
-        bool           isInsideBox    (GIMS_BoundingBox *box);
-        GIMS_Side      sideOf         (GIMS_LineSegment *edge);
-        void           deleteClipped  ();
-        void           deepDelete     ();
-        int            getPointCount  ();
-                       GIMS_Point     ();
-                       GIMS_Point     (double x, double y);
-                      ~GIMS_Point     ();
+        string         toWkt           ();
+        double         distance        (GIMS_Point *);
+        double         distanceSquared (GIMS_Point *);
+        GIMS_Point     getClosestPoint (GIMS_LineSegment *);
+        bool           equals          (GIMS_Point *cmp);
+        GIMS_Point    *clone           ();
+        GIMS_Geometry *clipToBox       (GIMS_BoundingBox *);
+        bool           isInsideBox     (GIMS_BoundingBox *box);
+        bool           isContainedInBox(GIMS_BoundingBox *box);
+        GIMS_Side      sideOf          (GIMS_LineSegment *edge);
+        void           deleteClipped   ();
+        void           deepDelete      ();
+        int            getPointCount   ();
+                       GIMS_Point      ();
+                       GIMS_Point      (double x, double y);
+                      ~GIMS_Point      ();
     };
 
     class GIMS_MultiPoint : public GIMS_Geometry {
@@ -260,6 +261,7 @@ namespace GIMS_GEOMETRY {
         void              deleteClipped     ();
         void              deepDelete        ();
         int               getPointCount     ();
+        char              containsPointWithinDomain (GIMS_Point *querypoint, GIMS_BoundingBox *domain);
                           GIMS_Polygon      (GIMS_MultiLineString *, GIMS_MultiLineString *, bool computebbox = true);
                           GIMS_Polygon      (int, int);
                           GIMS_Polygon      ();

@@ -30,10 +30,42 @@ int lsFilter(GIMS_Geometry *geom){
 }
 
 int main(int argc, char **argv){
+
+    char line[4096];
+    int status;
+    
+    status = scanf("%[^\n]", line); getchar();
+    if( status == EOF ) return -1;
+    GIMS_Polygon *p1 = (GIMS_Polygon *)fromWkt(line);
+
+    status = scanf("%[^\n]", line); getchar();
+    if( status == EOF ) return -1;
+    GIMS_Polygon *p2 = (GIMS_Polygon *)fromWkt(line);
+
+    status = scanf("%[^\n]", line); getchar();
+    if( status == EOF ) return -1;
+    GIMS_Point *lowerLeft = (GIMS_Point *)fromWkt(line);
+
+    status = scanf("%[^\n]", line); getchar();
+    if( status == EOF ) return -1;
+    GIMS_Point *upperRight = (GIMS_Point *)fromWkt(line);
+
+    GIMS_BoundingBox *domain = new GIMS_BoundingBox(lowerLeft, upperRight);
+
+    GIMS_Polygon *clipped1  = (GIMS_Polygon *)(p1->clipToBox( domain ));
+    GIMS_Polygon *clipped2 = (GIMS_Polygon *)(p2->clipToBox( domain ));
+
+    buildPlanarGraph(clipped1, clipped2, domain);
+
+    return 0;
+}
+
+/*
+int main(int argc, char **argv){
     
     //1. read and load configurations
-    if( conf::readConfigurationFiles() != 0 );
-        return -1; 
+    if( conf::readConfigurationFiles(argc, argv) != 0 )
+        return -1;
     conf::printCurrentConfiguration();
 
     //2. load data from data sources
@@ -45,10 +77,10 @@ int main(int argc, char **argv){
     stop = clock();
     cout << "DBCONN: " << (stop - start)/(double)CLOCKS_PER_SEC << " seconds" << endl;
 
-    /*retrieve layers extent*/
+    //retrieve layers extent
     GIMS_BoundingBox *extent = conn.getOverallExtent();
 
-    /*create an empty pmqtree bounded by the computed extent*/
+    //create an empty pmqtree bounded by the computed extent
     PMQuadTree tree = PMQuadTree( extent );
 
     char fromClause[512];
@@ -80,3 +112,4 @@ int main(int argc, char **argv){
 
     //5. clean exit
 }
+*/

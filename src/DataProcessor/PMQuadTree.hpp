@@ -9,6 +9,7 @@
 #include <list>
 #include <cmath>
 #include "conf.hpp"
+#include "DCEL.hpp"
 
 using namespace std;
 
@@ -34,14 +35,14 @@ namespace PMQUADTREE {
         /*dictionary related functions*/
         list<GIMS_Geometry *> *clipDict(list<GIMS_Geometry *> *dict);
         /*dictionary validation functions*/
-        int   numPoints               (list<GIMS_Geometry *> *);
-        bool  validate                (list<GIMS_Geometry *> *);
-        bool  validateGeometry        (GIMS_Geometry *p, GIMS_Point **sharedPoint);
-        bool  validatePolygon         (GIMS_Polygon *p, GIMS_Point **sharedPoint);
-        bool  validatePoint           (GIMS_Point *pt, GIMS_Point **sharedPoint);
-        bool  validateLineString      (GIMS_LineString *ls, GIMS_Point **sharedPoint); 
-        bool  validateLineSegment     (GIMS_LineSegment *l, GIMS_Point **sharedPoint);
-        char  polygonContainsPoint    (GIMS_Polygon *pol, GIMS_Point *pt);
+        int   numPoints                  (list<GIMS_Geometry *> *);
+        bool  validate                   (list<GIMS_Geometry *> *);
+        bool  validateGeometry           (GIMS_Geometry *p, GIMS_Point **sharedPoint);
+        bool  validatePolygon            (GIMS_Polygon *p, GIMS_Point **sharedPoint);
+        bool  validatePoint              (GIMS_Point *pt, GIMS_Point **sharedPoint);
+        bool  validateLineString         (GIMS_LineString *ls, GIMS_Point **sharedPoint); 
+        bool  validateLineSegment        (GIMS_LineSegment *l, GIMS_Point **sharedPoint);
+        char  indexedPolygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt);
 
         /*Node searching functions*/
         void *search                  (GIMS_Geometry *geom);
@@ -108,6 +109,10 @@ namespace PMQUADTREE {
         int getMaxDepth();
     };
 }
+
+DCEL polygonAndDomainAsPlanarGraph(GIMS_Polygon *P, GIMS_BoundingBox *domain);
+GIMS_Polygon *clipPolygonInDCEL(DCEL planargraph);
+DCEL buildPlanarGraph(GIMS_Polygon *polygonA, GIMS_Polygon *polygonB, GIMS_BoundingBox *domain);
 
 extern PMQUADTREE::Quadrant quadrantList[4];
 extern char quadrantLabels[4][3];

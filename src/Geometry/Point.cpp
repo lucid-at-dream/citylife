@@ -53,8 +53,17 @@ GIMS_Point GIMS_Point::getClosestPoint(GIMS_LineSegment *e){
 }
 
 GIMS_Point *GIMS_Point::clone() {
+
+    printf(">>boas %lf %lf\n", this->x, this->y);
+
     GIMS_Point *fresh = new GIMS_Point(this->x, this->y);
+
+    printf(">>boas %lf %lf\n", this->x, this->y);
+
     fresh->id = this->id;
+
+    printf(">>boas %lf %lf\n", this->x, this->y);
+    
     return fresh;
 }
 
@@ -70,6 +79,18 @@ bool GIMS_Point::isInsideBox ( GIMS_BoundingBox *box ) {
          this->x >= box->lowerLeft->x  - ERR_MARGIN &&  //xmin
          this->y <= box->upperRight->y + ERR_MARGIN &&  //ymax
          this->y >= box->lowerLeft->y  - ERR_MARGIN     //ymin
+       ) {
+        return true;
+    }
+    return false;
+}
+
+/*Returns true if the point lies inside the parameter bounding box*/
+bool GIMS_Point::isContainedInBox ( GIMS_BoundingBox *box ) {
+    if ( this->x < box->upperRight->x - ERR_MARGIN &&  //xmax
+         this->x > box->lowerLeft->x  + ERR_MARGIN &&  //xmin
+         this->y < box->upperRight->y - ERR_MARGIN &&  //ymax
+         this->y > box->lowerLeft->y  + ERR_MARGIN     //ymin
        ) {
         return true;
     }

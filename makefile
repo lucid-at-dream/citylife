@@ -1,8 +1,9 @@
 #compiler settings
 CC = /usr/lib/ccache/bin/g++
-#CC = g++
+CC = g++
 LDLIBS = -lm -lpq -g -Wall
 COPT = -march=native -O2 -pipe -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2
+COPT = 
 CFLAGS = -std=c++11 ${LDLIBS} ${COPT}
 CTESTFLAGS = -lgtest -lgtest_main
 
@@ -36,6 +37,7 @@ INC_DIR += `pkg-config --cflags --libs gtkmm-3.0`
 OBJMAIN = ${OBJ_DIR}/main.o
 
 #object files
+OBJFILES += ${OBJ_DIR}/DataProcessor/DCEL.o
 OBJFILES += ${OBJ_DIR}/DataProcessor/DE9IM.o
 OBJFILES += ${OBJ_DIR}/conf.o
 OBJFILES += ${OBJ_DIR}/DataProcessor/PMQuadTree.o
@@ -75,29 +77,40 @@ test: ${BIN_DIR}/${OTESTFILE}
 
 #make an executable for the unit tests
 ${BIN_DIR}/${OTESTFILE}: ${OBJTESTFILES} ${OBJFILES} | ${BIN_DIR}
-	${CC} ${CFLAGS} $^ -o $@ ${INC_DIR} ${CTESTFLAGS}
+	${CC} $^ -o $@ ${INC_DIR} ${CTESTFLAGS} ${CFLAGS}
+	$(info )
+	$(info )
 
 #create object files for the unit tests
 ${TEST_DIR}/${OBJ_DIR}/%.o: ${TEST_DIR}/%.cpp | ${TEST_DIR}/${OBJ_DIR}/
-	${CC} ${CFLAGS} -c $< -o $@ ${INC_DIR} ${CTESTFLAGS}
-
+	${CC} -c $< -o $@ ${INC_DIR} ${CTESTFLAGS} ${CFLAGS}
+	$(info )
+	$(info )
 
 .SECONDEXPANSION:
 #create the executable
 ${BIN_DIR}/${OFILE}: ${OBJFILES} ${OBJMAIN} | ${BIN_DIR}
-	${CC} ${CFLAGS} $^ -o $@ ${INC_DIR}
+	${CC} $^ -o $@ ${INC_DIR} ${CFLAGS}
+	$(info )
+	$(info )
 
 #compile the object files
 ${OBJ_DIR}/%.o: ${SRC_DIR}/%.cpp | $$(@D)/
-	${CC} ${CFLAGS} -c $< -o $@ ${INC_DIR}
+	${CC} -c $< -o $@ ${INC_DIR} ${CFLAGS}
+	$(info )
+	$(info )
 
 #begin
 #targets for the yacc and lex generated files
 ${OBJ_DIR}/Geometry/lex.yy.o: ${SRC_DIR}/Geometry/lex.yy.c ${SRC_DIR}/Geometry/y.tab.c | $$(@D)/
-	${CC} ${CFLAGS} -c ${SRC_DIR}/Geometry/lex.yy.c -o $@ ${INC_DIR} -ly
+	${CC} -c ${SRC_DIR}/Geometry/lex.yy.c -o $@ ${INC_DIR} -ly ${CFLAGS}
+	$(info )
+	$(info )
 
 ${OBJ_DIR}/Geometry/y.tab.o: ${SRC_DIR}/Geometry/y.tab.c | $$(@D)/
-	${CC} ${CFLAGS} -c $< -o $@ ${INC_DIR} -ly
+	${CC} -c $< -o $@ ${INC_DIR} -ly ${CFLAGS}
+	$(info )
+	$(info )
 #end
 
 #create directories

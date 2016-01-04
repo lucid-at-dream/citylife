@@ -6,6 +6,13 @@ DE9IM::DE9IM(GIMS_Geometry *query){
 
 DE9IM::~DE9IM(){}
 
+matrix_t::iterator DE9IM::getMatrixIndex(long long id){
+    matrix_t::iterator it = matrix.find(id);
+    if( it == matrix.end() )
+        it = (matrix.insert(pair<long long, unsigned int>(id, 0))).first;
+    return it;
+}
+
 matrix_t::iterator DE9IM::setIntersect(long long id, unsigned int dim){
     dim += 1;
     matrix_t::iterator it;

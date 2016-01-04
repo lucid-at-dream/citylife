@@ -23,15 +23,15 @@ namespace conf{
     }db_conf;
 
     typedef struct _config_t{
-        unsigned int max_points_per_node;
-        unsigned int projection_srid;
+        int max_points_per_node;
+        int projection_srid;
         std::list<db_conf> db_confs;
         std::list<char *> db_layers;
     }config_t;
 
     void printCurrentConfiguration();
 
-    int readConfigurationFiles();
+    int readConfigurationFiles(int argc, char **argv);
     int loadConfigurationFile(char *fname);
     void parseCfgLine(char *line);
     int readArgs(int argc, char **argv);

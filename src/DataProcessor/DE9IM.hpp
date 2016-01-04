@@ -36,6 +36,8 @@ class DE9IM{
     DE9IM(GIMS_Geometry *query);
     ~DE9IM();
     
+    matrix_t::iterator getMatrixIndex(long long id);
+
     matrix_t::iterator setIntersect(long long id, unsigned int dim);
     matrix_t::iterator setII(long long id, unsigned int dim);
     matrix_t::iterator setEI(long long id, unsigned int dim);
