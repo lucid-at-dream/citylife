@@ -58,101 +58,6 @@ void *Node::search (GIMS_Geometry *geom){
     return retlist;
 }
 
-/*Returns a neighboor node in the north direction. Chooses the neighboor node 
-  that intersects the vertical line defined by x = <param:x>. If two northen 
-  neighboors are intersected, returns one of the two without criterion.*/
-Node *Node::goNorth( double x ){
-    if( this->father == NULL )
-        return NULL;
-
-    //we simply create a point out of the node, a little upper and search for it.
-    GIMS_Point pt = GIMS_Point(x, this->square->upperRight->y);
-    pt.y += ERR_MARGIN * 2;
-
-    //we first get the first node above this that contains the created point.
-    Node *cNode = this->father;
-    while( !pt.isInsideBox(cNode->square) ){
-        if(cNode->father != NULL){
-            //since the lower node didn't contain pt, we go higher
-            cNode = cNode->father;
-        }else{
-            //we can't go higher, which means that the point is out of the map
-            return NULL;
-        }
-    }
-
-    /*we then search for the point in the found node to get the containing leaf node.
-    even tough there's no guarantee that only one node will be returned, there's a guarantee
-    that all the retrieved nodes intersect the vertical line that goes through x*/
-    list<Node *> *nodes = (list<Node *> *)(cNode->search( &pt ));
-    Node *northern = nodes->front();
-    delete nodes;
-    return northern;
-}
-
-/*if node has reference to a geometry labeled with id, returns the geometry's 
-  reference, else returns NULL*/
-GIMS_Geometry *Node::hasReferenceTo( long long id ){
-    if( this->dictionary == NULL )
-        return NULL;
-
-    for(list<GIMS_Geometry *>::iterator it = this->dictionary->begin();
-        it != this->dictionary->end(); it++){
-        if((*it)->id == id)
-            return *it;
-    }
-
-    return NULL;
-}
-
-/*Returns 0 if the point is outside the polygon, 
-  1 if it lies inside and 2 if it lies on the polygon's border.*/
-char Node::indexedPolygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
-    /*Explanation:
-      According to the paper where pmqtrees are proposed, the procedure to label
-      a point is as follows:
-        >from the node containing the point go straight in one direction until a
-      node containing edges is found.
-        >from the edges contained in such a node choose the one that is closest
-      to query point.
-        >if such an edge does not share a vertex that is inside the node, then
-      check to which side of the edge the query point lies and report accordingly.
-        >otherwise, from the edges sharing the vertex inside the node, choose
-        the one that forms the smallest angle with the hipotetical edge that goes 
-        from the query point to the vertex, check to which side of the chosen edge
-        the point lies and report accordingly.*/
-
-    /*find the first node in the north direction than intersects polygon pol*/
-    if( !pt->isInsideBox( &(pol->bbox) ) )
-        return 0;
-
-    Node *n = this;
-    GIMS_Geometry *first;
-
-    while( (first = n->hasReferenceTo( pol->id )) == NULL ){
-        n = n->goNorth( pt->x );
-        if( n == NULL ){
-            return 0;
-        }
-    }
-
-    //set up the query point
-    GIMS_Point qp;
-    if( pt->isInsideBox(n->square) )
-        qp = *pt;
-    else
-        qp = GIMS_Point(pt->x, n->square->lowerLeft->y);
-
-    //The first portion of the polygon "pol" that we found going in the north direction
-    GIMS_Polygon *p = (GIMS_Polygon *)first;
-
-    /*from all the line segments that belong to polygon pol and that intersect 
-      the node we just found, find out which one is closest to point pt.*/
-
-    return p->containsPointWithinDomain(&qp, n->square);
-
-}
-
 /*Returns all nodes that intersect a given poligon "pol", including the 
   polygon's interior. This means that this function returns all tree nodes that
   are strictly contained in the polygon.*/
@@ -308,7 +213,86 @@ void Node::activeSearch(DE9IM *resultset, GIMS_Geometry *query, int(*filter)(GIM
     clipped->deleteClipped();
 }
 
+/*Returns a neighboor node in the north direction. Chooses the neighboor node 
+  that intersects the vertical line defined by x = <param:x>. If two northen 
+  neighboors are intersected, returns one of the two without criterion.*/
+Node *Node::goNorth( double x ){
+    if( this->father == NULL )
+        return NULL;
 
+    //we simply create a point out of the node, a little upper and search for it.
+    GIMS_Point pt = GIMS_Point(x, this->square->upperRight->y);
+    pt.y += ERR_MARGIN * 2;
+
+    //we first get the first node above this that contains the created point.
+    Node *cNode = this->father;
+    while( !pt.isInsideBox(cNode->square) ){
+        if(cNode->father != NULL){
+            //since the lower node didn't contain pt, we go higher
+            cNode = cNode->father;
+        }else{
+            //we can't go higher, which means that the point is out of the map
+            return NULL;
+        }
+    }
+
+    /*we then search for the point in the found node to get the containing leaf node.
+    even tough there's no guarantee that only one node will be returned, there's a guarantee
+    that all the retrieved nodes intersect the vertical line that goes through x*/
+    list<Node *> *nodes = (list<Node *> *)(cNode->search( &pt ));
+    Node *northern = nodes->front();
+    delete nodes;
+    return northern;
+}
+
+/*if node has reference to a geometry labeled with id, returns the geometry's 
+  reference, else returns NULL*/
+GIMS_Geometry *Node::hasReferenceTo( long long id ){
+    if( this->dictionary == NULL )
+        return NULL;
+
+    for(list<GIMS_Geometry *>::iterator it = this->dictionary->begin();
+        it != this->dictionary->end(); it++){
+        if((*it)->id == id)
+            return *it;
+    }
+
+    return NULL;
+}
+
+/*Returns 0 if the point is outside the polygon, 
+  1 if it lies inside and 2 if it lies on the polygon's border.*/
+char Node::indexedPolygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
+
+    /*find the first node in the north direction than intersects polygon pol*/
+    if( !pt->isInsideBox( &(pol->bbox) ) )
+        return 0;
+
+    Node *n = this;
+    GIMS_Geometry *first;
+
+    while( (first = n->hasReferenceTo( pol->id )) == NULL ){
+        n = n->goNorth( pt->x );
+        if( n == NULL ){
+            return 0;
+        }
+    }
+
+    //set up the query point
+    GIMS_Point qp;
+    if( pt->isInsideBox(n->square) )
+        qp = *pt;
+    else
+        qp = GIMS_Point(pt->x, n->square->lowerLeft->y);
+
+    //The first portion of the polygon "pol" that we found going in the north direction
+    GIMS_Polygon *p = (GIMS_Polygon *)first;
+
+    /*from all the line segments that belong to polygon pol and that intersect 
+      the node we just found, find out which one is closest to point pt.*/
+
+    return p->containsPointWithinDomain(&qp, n->square);
+}
 
 list<GIMS_Geometry *> *Node::clipDict(list<GIMS_Geometry *> *dict){
     list<GIMS_Geometry *> *clipped = NULL;
@@ -326,7 +310,7 @@ list<GIMS_Geometry *> *Node::clipDict(list<GIMS_Geometry *> *dict){
 }
 
 void Node::remove (GIMS_Geometry *geom){
-    /*TODO: implement remotion*/
+    TODO(implement remotion)
 }
 
 /*Inserts geometry "geom" in the tree*/
@@ -567,9 +551,6 @@ Node::~Node(){
     }
 }
 
-
-
-
 /*9 intersection model building functions*/
 void Node::buildIM (DE9IM *resultset, GIMS_Geometry *query, GIMS_Geometry *other){
     if(query->type == POINT){
@@ -588,11 +569,9 @@ void Node::buildIM (DE9IM *resultset, GIMS_Geometry *query, GIMS_Geometry *other
         buildIM_polygon(resultset, (GIMS_Polygon *)query, other);
 
     }else{
-        perror("unsuported: topologicalSearch called on a multi geometry.");
+        perror("unsupported: topologicalSearch called on a multi geometry.");
     }
 }
-
-void DE9IM_pol_pol(DE9IM *resultset, GIMS_Polygon *A, GIMS_Polygon *B, GIMS_BoundingBox *domain);
 
 void Node::buildIM_polygon(DE9IM *resultset, GIMS_Polygon *query, GIMS_Geometry *other){
     if(other->type == POINT){
@@ -614,12 +593,6 @@ void Node::buildIM_polygon(DE9IM *resultset, GIMS_Polygon *query, GIMS_Geometry 
 
     }else if(other->type == LINESTRING){
 TODO(BUILD_IM: polygon vs linestring)
-        /*check if query intersects other*/
-        /*check if query's interior intersects other's interior*/
-        /*check if query's exterior intersects other's interior*/
-        /*check if query's interior intersects other's exterior*/
-        /*check if query's exterior intersects other's boundary*/
-        /*check if query's boundary intersects other's exterior*/
 
     }else if(other->type == MULTILINESTRING){
 TODO(BUILD_IM: polygon vs multilinestring)
@@ -627,855 +600,8 @@ TODO(BUILD_IM: polygon vs multilinestring)
     }else if(other->type == POLYGON){
 
         DE9IM_pol_pol(resultset, query, (GIMS_Polygon *)other, this->square);
-
-        /*
-        GIMS_Polygon *pol = (GIMS_Polygon *)other;
-        if( pol->bbox.isDisjoint( query->bbox ) )
-            return;
-
-        BentleySolver bs;
-        bs.polygon_polygon(resulset, query, pol);
-
-        list<GIMS_Geometry *> ExtExt = bs.solve( query->externalRing , pol->externalRing  );
-        //list<GIMS_Geometry *> ExtInt = bs.solve( query->externalRing , pol->internalRings );
-        //list<GIMS_Geometry *> IntExt = bs.solve( query->internalRings, pol->externalRing  );
-        //list<GIMS_Geometry *> IntInt = bs.solve( query->internalRings, pol->internalRings );
-
-        //handle exterior ring vs. exterior ring intersections
-        for( list<GIMS_Geometry *>::iterator it = ExtExt.begin(); it != ExtExt.end(); it++ ){
-            if( (*it)->type == POINT ){
-        
-                int qind = query->externalRing->indexOf( (GIMS_Point *)(*it) ),
-                    oind = other->externalRing->indexOf( (GIMS_Point *)(*it) )
-
-                if( qind > -1 || oind > -1 ){
-                    //if the intersection point belongs to one of the borders, we can conclude that
-                    //their borders intersect with dim = 0 at this point.
-
-                    GIMS_Point *o_p1 = other->externalRing->getPrevPoint(oind),
-                               *o_p2 = (GIMS_Point *)(*it);
-                               *o_p3 = other->externalRing->getNextPoint(oind);
-                    if( o_p1 == NULL || o_p3 == NULL )
-                        continue; //then this intersection will be handled in another node
-
-                    GIMS_Point *q_p1 = query->externalRing->getPrevPoint(qind),
-                               *q_p2 = (GIMS_Point *)(*it);
-                               *q_p3 = query->externalRing->getNextPoint(qind);
-                    if( q_p1 == NULL || q_p3 == NULL )
-                        continue; //then this intersection will be handled in another node
-
-
-                    //if one of o_p1 or o_p3 lie to the left side of both LINESEG( q_p1,q_p2 ) and LINESEG( q_p2,q_p3 )
-                    GIMS_LineSegment ls1 = GIMS_LineSegment(q_p1, q_p2),
-                                     ls2 = GIMS_LineSegment(q_p2, q_p3);
-
-TODO(what if were looking at overlaping borders??)
-                    
-                    if( (o_p1->sideOf(&ls1) == LEFT && o_p1->sizeOf(&ls2) == LEFT) ||
-                        (o_p2->sideOf(&ls1) == LEFT && o_p2->sizeOf(&ls2) == LEFT) ){
-                        //if the lines associated with the point 
-                        //lie to the internal side of the query polygon, then:
-                        matrix_t::iterator matrix = resultset->setIntersect(other->id, 2);
-                        resultset->setII(matrix, 2);
-                        resultset->setIE(matrix, 2);
-                        resultset->setBE(matrix, 1);
-                    }else{
-                        matrix_t::iterator matrix = resultset->setIntersect(other->id, 0);
-                        resultset->setEI(matrix, 2);
-                        resultset->setIE(matrix, 2);
-                        resultset->setBE(matrix, 1);
-                        resultset->setEB(matrix, 1);
-                    }
-                }else{
-                    matrix_t::iterator matrix = resultset->setIntersect(other->id, 2);
-                    resultset->setII(matrix, 2);
-                    resultset->setEI(matrix, 2);
-                    resultset->setIE(matrix, 2);
-                    resultset->setBE(matrix, 1);
-                    resultset->setEB(matrix, 1);
-                }
-            }else{ //it's a line segment
-                //borders intersect with dimension 1
-            }
-        }
-*/
     }
 }
-
-
-typedef struct _pointlist{
-    int nnodes, allocated;
-    GIMS_Point *nodes;
-}pointlist;
-
-typedef struct _pointmatrix{
-    int nrows, allocated;
-    pointlist *matrix;
-}pointmatrix;
-
-pointmatrix newPointMatrix(){
-    pointmatrix matrix = {0,0,NULL};
-    return matrix;
-}
-
-void addListToPointMatrix(pointmatrix &matrix, pointlist &ptlist){
-    if( matrix.nrows + 1 > matrix.allocated ){
-        matrix.matrix = (pointlist *)realloc(matrix.matrix, sizeof(pointlist) * (matrix.allocated+2));
-        matrix.allocated += 2;
-    }
-    matrix.matrix[matrix.nrows++] = ptlist;
-}
-
-pointlist newPointList(){
-    pointlist ptlist = {0,0,NULL};
-    return ptlist;
-}
-
-void addPointToPointList(pointlist &ptlist, GIMS_Point *p){
-    if(ptlist.nnodes + 1 > ptlist.allocated){
-        ptlist.nodes = (GIMS_Point *)realloc(ptlist.nodes, sizeof(GIMS_Point) * (ptlist.allocated+3));
-        ptlist.allocated+=3;
-    }
-    ptlist.nodes[ptlist.nnodes++] = *p;
-}
-
-GIMS_Point *__ptlist_cmp__reference__;
-
-int __plist_cmp__(const void *_a, const void *_b){
-    GIMS_Point *a = (GIMS_Point *)_a,
-               *b = (GIMS_Point *)_b;
-    double d1 = distanceSquared2p(a, __ptlist_cmp__reference__),
-           d2 = distanceSquared2p(b, __ptlist_cmp__reference__);
-
-    return d1 < d2 ? -1 : d1 > d2 ? 1 : 0;
-}
-
-void sortPointListWithRegardToFirst(pointlist &ptlist){
-    __ptlist_cmp__reference__ = ptlist.nodes;
-    qsort(ptlist.nodes+1, ptlist.nnodes-1, sizeof(GIMS_Point), __plist_cmp__);
-}
-
-void removeRepeatedPoints(pointlist &ptlist){
-    GIMS_Point *prev = ptlist.nodes;
-    int cur_ind = 1;
-
-    int initialNumNodes = ptlist.nnodes;
-
-    for(int i=1; i<initialNumNodes; i++){
-        if( !prev->equals(ptlist.nodes+i) ){
-            //printf("diff: %.2lf %.2lf - %.2lf %.2lf\n", prev->x, prev->y, ptlist.nodes[i].x, ptlist.nodes[i].y);
-            ptlist.nodes[cur_ind] = ptlist.nodes[i];
-            cur_ind++;
-        }else{
-            //printf("equal: %.2lf %.2lf - %.2lf %.2lf\n", prev->x, prev->y, ptlist.nodes[i].x, ptlist.nodes[i].y);
-            ptlist.nnodes--;
-        }
-        prev = ptlist.nodes+i;
-    }
-}
-
-void mergePointList(pointlist &keeper, pointlist &other){
-    
-    bool addFirst;
-    if( keeper.nnodes > 0 )
-        addFirst = !keeper.nodes[keeper.nnodes-1].equals( other.nodes );
-    else
-        addFirst = true;
-
-    int total = keeper.nnodes + other.nnodes;
-    if(!addFirst)
-        total -= 1;
-
-    keeper.nodes = (GIMS_Point *)realloc(keeper.nodes, sizeof(GIMS_Point) * total);
-
-    int j;
-    for(int i=keeper.nnodes; i<total; i++){
-        j=i-keeper.nnodes;
-        if(!addFirst)
-            j+=1;
-        keeper.nodes[i] = other.nodes[j];
-    }
-
-    keeper.nnodes = total;
-}
-
-
-/* Creates a dcel representation of a planar graph considering the argument polygon and domain.*/
-DCEL polygonAndDomainAsPlanarGraph(GIMS_Polygon *P, GIMS_BoundingBox *domain){
-
-    GIMS_Point *uL = new GIMS_Point(domain->lowerLeft->x , domain->upperRight->y),
-               *uR = new GIMS_Point(domain->upperRight->x, domain->upperRight->y),
-               *lR = new GIMS_Point(domain->upperRight->x, domain->lowerLeft->y),
-               *lL = new GIMS_Point(domain->lowerLeft->x , domain->lowerLeft->y);
-
-    GIMS_LineSegment *clipPolygon[] = {
-        new GIMS_LineSegment(uL, uR),
-        new GIMS_LineSegment(uR, lR),
-        new GIMS_LineSegment(lR, lL),
-        new GIMS_LineSegment(lL, uL)
-    };
-
-    /*create a pointlist for each line segment of the clip square*/
-    pointlist clipPolNodes[] = { newPointList(), newPointList(), newPointList(), newPointList() };
-
-    /*add the first point of each segment to each pointlist*/
-    for(int i=0; i<4; i++){
-        addPointToPointList( clipPolNodes[i], clipPolygon[i]->p1 );
-        addPointToPointList( clipPolNodes[i], clipPolygon[i]->p2 );
-    }
-
-    /* First step is to identify the graph nodes of the polygon and their connectivity. 
-     * At the same time we keep track of the domain boundary nodes and their connectivity.
-     * This will result in two sets of nodes, which will then have to be merged in order to
-     * build the planar graph. After this we'll build a DCEL structure that represents the 
-     * worked out planar graph and we will evaluate which faces are covered by both geometric
-     * figures and which are not, resulting in the final polygon clipping, represented as a
-     * planar graph stored using a DCEL structure. phew, that was long!*/
-    pointmatrix pslgSequences = newPointMatrix();
-
-    for(int ring = 0; ring < P->externalRing->size; ring++){
-        GIMS_LineString *border = P->externalRing->list[ring];
-        pointlist connectedSequence = newPointList();
-
-        for(int l = 0; l < border->size-1; l++){
-
-            GIMS_LineSegment ls = border->getLineSegment(l);
-            pointlist intersections = newPointList();
-
-            addPointToPointList( intersections, border->list[l] );
-            for(int l2 = 0; l2 < 4; l2++){
-                
-                GIMS_LineSegment *edge = clipPolygon[l2];
-
-                GIMS_Geometry *it = ls.intersects(edge);
-                /*if there is an intersection*/
-                if(it != NULL){
-                    /*consider the case where the intersection is a point*/
-                    if(it->type == POINT){
-                        addPointToPointList( intersections, (GIMS_Point *)it );
-                        addPointToPointList( clipPolNodes[l2], (GIMS_Point *)it );
-                    /*consider the case where the intersection is a line segment*/
-                    }else{
-                        addPointToPointList( intersections, ((GIMS_LineSegment *)it)->p1 );
-                        addPointToPointList( intersections, ((GIMS_LineSegment *)it)->p2 );
-                        addPointToPointList( clipPolNodes[l2], ((GIMS_LineSegment *)it)->p1 );
-                        addPointToPointList( clipPolNodes[l2], ((GIMS_LineSegment *)it)->p2 );
-                    }
-                }
-            }
-            addPointToPointList( intersections, border->list[l+1] );
-
-            /* Now that we know all intersection points that this edge of the polygon has 
-             * with the domain boundary, we can sort them and the order will give us the 
-             * adjacency between nodes.*/
-            sortPointListWithRegardToFirst(intersections);
-            removeRepeatedPoints( intersections );
-            
-            /* Now that we known all the graph nodes that lie on this edge of the polygon 
-             * and the respective order, we need to merge this info with the rest of it 
-             * in order to build a meaningful sequence for the entire polygon*/
-            mergePointList(connectedSequence, intersections);
-        }
-
-        /* The planar graph of the polygon and the domain boundary may have several 
-         * connected sequences, therefore we need to keep track of them in separate 
-         * lists, given that the order is what identifies connectivity between nodes
-         * and two connected sequences are disconnected from one another.*/
-        addListToPointMatrix( pslgSequences, connectedSequence );
-    }
-
-    /*now we create the planar graph cycle for the clip polygon*/
-    pointlist clipPolCycle = newPointList();
-    for(int i=0; i<4; i++){
-        sortPointListWithRegardToFirst(clipPolNodes[i]);
-        removeRepeatedPoints( clipPolNodes[i] );
-        mergePointList(clipPolCycle, clipPolNodes[i]);
-    }
-
-    /* With the gathered information we now have two planar graphs:
-     * 1. A planar graph representing the polygon and its intersections with the clip polygon 
-     * 2. A planar graph representing the clip polygon and its intersections with the polygon.
-     * The combination of these two graphs gives us the whole planar graph, which can then be
-     * represented using a DCEL. Therefore, the next steps of the algorithm take care of 
-     * merging these two graphs in a DCEL data structure, which will have enough information
-     * to create a clipping with enough information for building the DE-9IM.*/
-
-    /* To do this merging we first start by finding the set of unique vertexes that compose 
-     * the DCEL, associating with each vertex information about whether it belongs to the 
-     * clip polygon or to the polygon being clipped.
-     * Next, for each edge we create two directed halfedges. It is possible to know to which
-     * geometric figure the edges belong to by using the related information on the vertexes.
-     * Finally, we find the faces present in the planar subdivision and keep only enough 
-     * information in the DCEL so that only the faces enclosed by both geometries are kept.*/
-
-    /* Side note to self: 
-     * - It's in moments like this, when you think you've got it all figured out, that you get screwed up the most!
-     * - That's just life Bob...*/
-
-    DCEL dcel;
-    for(int i=0; i<pslgSequences.nrows; i++){
-        for(int j=0; j<pslgSequences.matrix[i].nnodes; j++){
-            GIMS_Point *p = pslgSequences.matrix[i].nodes+j;
-            
-            vertex *v = new vertex(); 
-            v->pt = p;
-
-            vertex *it = dcel.findVertex(v);
-            if( it != NULL ){
-                it->data |= 1;
-                delete v;
-            }else{
-                dcel.addVertex(v);
-            }
-        }
-    }
-
-    for(int i=0; i<clipPolCycle.nnodes; i++){
-        GIMS_Point *p = clipPolCycle.nodes+i;
-
-        vertex *v = new vertex();
-        v->pt = p;
-
-        vertex *it = dcel.findVertex(v);
-        if( it != NULL ){
-            it->data |= 2;
-            delete v;
-        }else
-            dcel.addVertex(v);
-    }
-
-    /*now that we have the list of vertexes, we need to find the set of halfedges of the DCEL*/
-    for(int i=0; i<pslgSequences.nrows; i++){
-        for(int j=0; j<pslgSequences.matrix[i].nnodes-1; j++){
-            GIMS_Point *p1 = pslgSequences.matrix[i].nodes+j;
-            GIMS_Point *p2 = pslgSequences.matrix[i].nodes+j+1;
-            
-            vertex *it_v1 = dcel.findVertex(p1);
-            vertex *it_v2 = dcel.findVertex(p2);
-
-            /*since there aren't repeated edges within the same graph, we can add them right away.*/
-            halfedge *cw  = new halfedge();
-            halfedge *ccw = new halfedge();
-
-            cw->twin  = ccw;
-            cw->tail  = it_v1;
-            cw->data |= 2;
-            it_v1->incidentEdges.push_back(cw);
-
-            ccw->twin  = cw;
-            ccw->tail  = it_v2;
-            ccw->data |= 1;
-            it_v2->incidentEdges.push_back(ccw);
-
-            dcel.addHalfedge(cw);
-            dcel.addHalfedge(ccw);
-        }
-    }
-
-    for(int i=0; i<clipPolCycle.nnodes-1; i++){
-        GIMS_Point *p1 = clipPolCycle.nodes+i;
-        GIMS_Point *p2 = clipPolCycle.nodes+i+1;
-
-        vertex *it_v1 = dcel.findVertex(p1);
-        vertex *it_v2 = dcel.findVertex(p2);
-
-        halfedge *cw  = new halfedge();
-        halfedge *ccw = new halfedge();
-
-        cw->twin  = ccw;
-        cw->tail  = it_v1;
-        cw->data |= 8;
-
-        ccw->twin  = cw;
-        ccw->tail  = it_v2;
-        ccw->data |= 4;
-
-        halfedge *it1 = dcel.findHalfedge(cw);
-        halfedge *it2 = dcel.findHalfedge(ccw);
-        
-        /*if the edge also belongs to the polygon being clipped...*/
-        if( it1 != NULL ){
-            it1->data |= 8;
-            delete cw;
-        }else{
-            dcel.addHalfedge(cw);
-            it_v1->incidentEdges.push_back(cw);
-        }
-
-        if( it2 != NULL ){
-            it2->data |= 4;
-            delete ccw;
-        }else{
-            dcel.addHalfedge(ccw);
-            it_v2->incidentEdges.push_back(ccw);
-        }
-    }
-
-    /* for each vertex, sort the incident edges clockwise. For each pair of incident edges 
-     * e1,e2 in clockwise order, assign e1->twin->next = e2 and e2->prev = e1->twin */
-    for( vertexlist::iterator it = dcel.vertexes.begin(); it != dcel.vertexes.end(); it++ ){
-        (*it)->incidentEdges.sort( sort_clockwise_cmp_ );
-
-        list<halfedge *>::iterator prev_halfedge, next_halfedge;
-
-        for( prev_halfedge = (*it)->incidentEdges.begin();
-             prev_halfedge != (*it)->incidentEdges.end();
-             prev_halfedge++ ){
-    
-            /* given that prev_halfedge stands for the previously discussed "e1", we must now
-             * get "e2", which is the halfedge following "e2". Note that we also want to link the
-             * last halfedge with the first halfedge.*/
-            next_halfedge = list<halfedge *>::iterator( prev_halfedge );
-            next_halfedge++;
-
-            if( next_halfedge == (*it)->incidentEdges.end() )
-                next_halfedge = (*it)->incidentEdges.begin();
-
-            (*prev_halfedge)->twin->next = *next_halfedge;
-            (*next_halfedge)->prev = (*prev_halfedge)->twin;            
-        }
-    }
-
-    /* finally, given that the list of vertexes and edges has been created, we can now 
-     * use the calculateFaces function from the DCEL class to compute the DCEL's faces.*/
-    dcel.calculateFaces();
-
-    /* Now that we have the planar graph represented as a DCEL, for each face we verify
-       which parts of the two geometries cover it */
-    for(facelist::iterator it = dcel.faces.begin(); it != dcel.faces.end(); it++){
-
-        face *f = *it;
-        
-        halfedge *e   = f->boundary;
-        halfedge *aux = e->next;
-
-        /* associate the data of the bounding edges with the face's data*/
-        f->data |= e->data;
-        while(aux != e){
-            f->data |= aux->data;
-            aux = aux->next;
-        }
-
-        /* if at this point we don't have information about the face's intersection with either
-         * the polygon or the domain, further processing has to be done to determine it.*/
-        if( !(f->data & (8+4)) ){
-            aux = aux->next;
-            while(aux != e){
-                double x = aux->tail->pt->x + (aux->twin->tail->pt->x - aux->tail->pt->x) / 2.0,
-                       y = aux->tail->pt->y + (aux->twin->tail->pt->y - aux->tail->pt->y) / 2.0;
-                GIMS_Point middlepoint = GIMS_Point(x,y);
-
-                if( middlepoint.isContainedInBox( domain ) ){
-                    f->data |= 8;
-                    break;
-                }
-                aux = aux->next;
-            }
-
-            /*if not inside, it's outside.*/
-            if( !(f->data & 8) )
-                f->data |= 4;
-        }
-
-        if( !(f->data & (2+1)) ){
-            aux = aux->next;
-            while(aux != e){
-                double x = aux->tail->pt->x + (aux->twin->tail->pt->x - aux->tail->pt->x) / 2.0,
-                       y = aux->tail->pt->y + (aux->twin->tail->pt->y - aux->tail->pt->y) / 2.0;
-                GIMS_Point middlepoint = GIMS_Point(x,y);
-                
-                if( P->containsPointWithinDomain(&middlepoint, domain) ){
-                    f->data |= 2;
-                    break;
-                }
-                aux = aux->next;
-            }
-
-            /*if not inside, it's outside.*/
-            if( !(f->data & 2) )
-                f->data |= 1;
-        }
-    }
-
-    return dcel;
-}
-
-GIMS_Polygon *clipPolygonInDCEL(DCEL planargraph){
-
-    printf("==== POLYGON ====\n");
-
-    GIMS_Polygon *clippedPolygon = new GIMS_Polygon();
-
-    for(facelist::iterator it = planargraph.faces.begin(); it != planargraph.faces.end(); it++){
-        face *f = *it;
-
-        //if the face is covered by both the polygon and the domain
-        if( f->data & 8 && f->data & 2 ){
-            printf("---- face ----\n");
-
-            halfedge *e   = f->boundary;
-            halfedge *aux = e->next;
-
-            GIMS_LineString *ring = new GIMS_LineString();
-            ring->appendPoint( e->tail->pt );
-            e->tail->pt->id = e->data & 2 ? 0 : 1;
-
-            printf("%lf %lf (%d), ", e->tail->pt->x, e->tail->pt->y, e->tail->pt->id);
-
-            while(aux != e){
-                aux->tail->pt->id = aux->data & 2 ? 0 : 1;
-                printf("%lf %lf (%d), ", aux->tail->pt->x, aux->tail->pt->y, aux->tail->pt->id);
-                ring->appendPoint( aux->tail->pt );
-                aux = aux->next;
-            }
-
-            GIMS_Point *lclone = new GIMS_Point(e->tail->pt->x, e->tail->pt->y);
-            ring->appendPoint( lclone );
-            clippedPolygon->appendExternalRing(ring);
-            printf("\n");
-        }
-    }
-
-    return clippedPolygon;
-}
-
-typedef set<vertex *, vertex_cmp> vertexlist;
-typedef set<halfedge *, halfedge_cmp> halfedgelist;
-
-/*returns a DCEL representing a planar graph of A and B bounded to the argument domain.*/
-DCEL buildPlanarGraph(GIMS_Polygon *polygonA, GIMS_Polygon *polygonB, GIMS_BoundingBox *domain){
-
-    DCEL planargraph;
-
-    /*1. clip polygons to domain*/
-    GIMS_Polygon *clippedA = clipPolygonInDCEL( polygonAndDomainAsPlanarGraph(polygonA, domain) ),
-                 *clippedB = clipPolygonInDCEL( polygonAndDomainAsPlanarGraph(polygonB, domain) );
-
-    /*2. create a PSLG of the two polygons*/
-
-    return planargraph;
-}
-
-void DE9IM_pol_pol(DE9IM *resultset, GIMS_Polygon *A, GIMS_Polygon *B, GIMS_BoundingBox *domain){
-    
-
-    DCEL planarStraightLineGraph = buildPlanarGraph(A, B, domain);
-
-    /* With the calculated planar graph, it is now possible to draw conclusions about the
-     * intersection matrix of the polygons. */
-    bool hasCommonFace = false,
-         hasCommonEdges = false,
-         hasCommonVertexes = false,
-         edgeOfPolygonACrossesPolygonB = false,
-         edgeOfPolygonBCrossesPolygonA = false,
-         polygonAUniquelyEnclosesAFace = false,
-         polygonBUniquelyEnclosesAFace = false;
-
-    for( facelist::iterator it = planarStraightLineGraph.faces.begin(); 
-         it != planarStraightLineGraph.faces.end(); it++ ){
-        face *f = *it;
-        if( f->data & 2  && f->data & 8 )
-            hasCommonFace = true;
-        else if( f->data & 2  )
-            polygonAUniquelyEnclosesAFace = true;
-        else if( f->data & 8 )
-            polygonBUniquelyEnclosesAFace = true;
-    }
-
-    for( vertexlist::iterator it = planarStraightLineGraph.vertexes.begin();
-         it != planarStraightLineGraph.vertexes.end(); it++ ){
-        vertex *v = *it;
-        if( v->data & 1 && v->data & 2 )
-            hasCommonVertexes = true;
-    }
-
-    for( halfedgelist::iterator it = planarStraightLineGraph.halfedges.begin();
-         it != planarStraightLineGraph.halfedges.end(); it++ ){
-        halfedge *he = *it;
-
-        if( (he->data & (2+1)) && (he->data & (8+4)) ){
-            hasCommonEdges = true;
-
-        }else if( (he->data & (2+1)) ){
-            if( (he->left->data & 8) && (he->twin->left->data & 8) )
-                edgeOfPolygonACrossesPolygonB = true;
-
-        }else if( (he->data & (8+4)) ){
-            if( (he->left->data & 2) && (he->twin->left->data & 2) )
-                edgeOfPolygonBCrossesPolygonA = true;
-        }
-    }
-
-    matrix_t::iterator matrix_index = resultset->getMatrixIndex(B->id);
-    
-    if( hasCommonFace ){
-        resultset->setII(matrix_index, 2);
-        resultset->setIntersect(matrix_index, 2);
-    }else{
-        if( edgeOfPolygonACrossesPolygonB || edgeOfPolygonBCrossesPolygonA || hasCommonEdges )
-            resultset->setIntersect(matrix_index, 1);
-        else if( hasCommonVertexes )
-            resultset->setIntersect(matrix_index, 0);
-    }
-
-    if( polygonAUniquelyEnclosesAFace ){
-        resultset->setIE(matrix_index, 2);
-        resultset->setBE(matrix_index, 1);
-    }
-
-    if( polygonBUniquelyEnclosesAFace ){
-        resultset->setEI(matrix_index, 2);
-        resultset->setEB(matrix_index, 1);
-    }
-}
-
-//helper functions for the linestring intersection matrix construction
-void DE9IM_mls_ls(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_LineString *other){
-    BentleySolver bs;
-
-    GIMS_MultiLineString *other_mls = new GIMS_MultiLineString(1);
-    other_mls->append(other);
-
-    list<GIMS_Geometry *> intersections = bs.solve(query, other_mls);
-
-    delete other_mls;
-
-    GIMS_LineString *other_original = (GIMS_LineString *)(*(idIndex.find(other)));
-    GIMS_Point *otherBorder[2] = {other_original->list[0], other_original->list[other_original->size-1]};
-    
-    GIMS_Geometry *query_original = (GIMS_LineString *)(*(idIndex.find(query)));
-    GIMS_MultiPoint queryBorder;
-
-    if( query_original->type == LINESTRING){
-        GIMS_LineString *aux_ls = (GIMS_LineString *)query_original;
-        queryBorder.append( aux_ls->list[0] );
-        queryBorder.append( aux_ls->list[ aux_ls->size-1 ] );
-    }else if( query_original->type == MULTILINESTRING ){
-        GIMS_MultiLineString *aux_mls = (GIMS_MultiLineString *)query_original;
-        for(int i=0; i<aux_mls->size; i++){
-            queryBorder.append( aux_mls->list[i]->list[0] );
-            queryBorder.append( aux_mls->list[i]->list[ aux_mls->list[i]->size - 1 ] );
-        }
-    }
-
-    int intersectedBorders = 0;
-
-    list<GIMS_LineSegment *> linesegments;
-
-    int shift_inc = queryBorder.size;
-
-    for(list<GIMS_Geometry *>::iterator it = intersections.begin(); it != intersections.end(); it++){
-        if( (*it)->type == LINESEGMENT ){
-            
-            linesegments.push_back((GIMS_LineSegment *)(*it));
-
-            for(int i=0; i<queryBorder.size; i++){
-                if( ((GIMS_LineSegment *)(*it))->coversPoint( queryBorder.list[i] ) )
-                    intersectedBorders |= 1 << i;
-            }
-
-            for( int i=0; i<2; i++ ){
-                if( ((GIMS_LineSegment *)(*it))->coversPoint( otherBorder[i] ) )
-                    intersectedBorders |= 1 << (shift_inc+i);
-            }
-
-            resultset->setIntersect(other->id, 1);
-            resultset->setII(other->id, 1);
-        
-        }else{
-            resultset->setIntersect(other->id, 0);
-
-            bool isBorder = false;
-            for(int i=0; i<queryBorder.size; i++){
-                if( ((GIMS_Point *)(*it))->equals(queryBorder.list[i]) ){
-                    intersectedBorders |= 1 << i;
-                    isBorder = true;
-                }
-            }
-            for( int i=0; i<2; i++ ){
-                if( ((GIMS_Point *)(*it))->equals(otherBorder[i]) ){
-                    intersectedBorders |= 1 << (shift_inc+i);
-                    isBorder = true;
-                }
-            }
-            if( !isBorder )
-                resultset->setII(other->id, 0);
-        }
-    }
-
-    /*Here we check intersections of Borders with exteriors*/
-    if( (intersectedBorders & (1 << shift_inc)) == 0 || (intersectedBorders & (1 << (shift_inc+1))) == 0 ){
-        resultset->setEB(other->id, 0);
-    }
-
-    for(int i=0; i<queryBorder.size; i++){
-        if( (intersectedBorders & (1 << i)) == 0 ){
-            resultset->setBE(other->id, 0);
-            break;
-        }
-    }
-
-
-    /*Here we check intersections of exteriors with interiors*/
-    bool queryContained = false,
-         otherContained = false;
-
-    if( linesegments.size() >= (unsigned)(query->size) ){
-        //check if linesegments cover the query geometry entirely
-        queryContained = query->isCoveredBy(linesegments);
-    }
-
-    if( linesegments.size() >= (unsigned)(other->size) ){
-        //check if linesegments cover the other geometry entirely
-        otherContained = other->isCoveredBy(linesegments, false);
-    }
-
-    if( !queryContained && !otherContained ){
-        resultset->setEI(other->id, 1);
-        resultset->setIE(other->id, 1);
-    }else if( !queryContained && otherContained ){
-        cout << other->osm_id << " is contained by " << query->osm_id << endl;
-        resultset->setIE(other->id, 1);
-    }else if( queryContained && !otherContained ){
-        cout << query->osm_id << " is contained by " << other->osm_id << endl;
-        resultset->setEI(other->id, 1);
-    }
-
-    for(list<GIMS_Geometry *>::iterator it = intersections.begin(); it != intersections.end(); it++)
-        (*it)->deepDelete();
-
-}
-
-
-
-void DE9IM_mls_mls(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_MultiLineString *other){
-    BentleySolver bs; 
-    list<GIMS_Geometry *> intersections = bs.solve(query, other);
-    
-    //retrieve other's border
-    GIMS_Geometry *original = (*(idIndex.find(other)));
-    GIMS_MultiPoint otherBorder;
-    if(original->type == LINESTRING){
-        GIMS_LineString *orig_ls = (GIMS_LineString *)original;
-        otherBorder.append(orig_ls->list[0]);
-        otherBorder.append(orig_ls->list[orig_ls->size-1]);
-
-    }else if(original->type == MULTILINESTRING){
-        GIMS_MultiLineString *orig_mls = (GIMS_MultiLineString *)original;
-        for(int i=0; i<orig_mls->size; i++){
-            otherBorder.append(orig_mls->list[i]->list[0]);
-            otherBorder.append(orig_mls->list[i]->list[orig_mls->list[i]->size-1]);
-        }
-    }
-
-    //retrieve query's border
-    original = (*(idIndex.find(query)));
-    GIMS_MultiPoint queryBorder;
-    if(original->type == LINESTRING){
-        GIMS_LineString *orig_ls = (GIMS_LineString *)original;
-        queryBorder.append(orig_ls->list[0]);
-        queryBorder.append(orig_ls->list[orig_ls->size-1]);
-
-    }else if(original->type == MULTILINESTRING){
-        GIMS_MultiLineString *orig_mls = (GIMS_MultiLineString *)original;
-        for(int i=0; i<orig_mls->size; i++){
-            queryBorder.append(orig_mls->list[i]->list[0]);
-            queryBorder.append(orig_mls->list[i]->list[orig_mls->list[i]->size-1]);
-        }
-    }
-
-    int intersectedBorders = 0;
-    list<GIMS_LineSegment *> linesegments;
-
-    int shift_inc = queryBorder.size;
-
-    for(list<GIMS_Geometry *>::iterator it = intersections.begin(); it != intersections.end(); it++){
-        if( (*it)->type == LINESEGMENT ){
-            
-            linesegments.push_back((GIMS_LineSegment *)(*it));
-
-            for( int i=0; i<queryBorder.size; i++ ){
-                if( ((GIMS_LineSegment *)(*it))->coversPoint( queryBorder.list[i] ) )
-                    intersectedBorders |= 1 << i;
-            }
-            for( int i=0; i<otherBorder.size; i++ ){
-                if( ((GIMS_LineSegment *)(*it))->coversPoint( otherBorder.list[i] ) )
-                    intersectedBorders |= 1 << (shift_inc+i);
-            }
-
-            resultset->setIntersect(other->id, 1);
-            resultset->setII(other->id, 1);
-        
-        }else{
-            resultset->setIntersect(other->id, 0);
-
-            bool isBorder = false;
-            for( int i=0; i<queryBorder.size; i++ ){
-                if( ((GIMS_Point *)(*it))->equals(queryBorder.list[i]) ){
-                    intersectedBorders |= 1 << i;
-                    isBorder = true;
-                }
-            }
-            for( int i=0; i<otherBorder.size; i++ ){
-                if( ((GIMS_Point *)(*it))->equals(otherBorder.list[i]) ){
-                    intersectedBorders |= 1 << (shift_inc+i);
-                    isBorder = true;
-                }
-            }
-
-            if( !isBorder )
-                resultset->setII(other->id, 0);
-        }
-    }
-
-    /*Here we check intersections of Borders with exteriors*/
-    for(int i=0; i<otherBorder.size; i++){
-        if( (intersectedBorders & (1 << (shift_inc+i))) == 0 ){
-            resultset->setEB(other->id, 0);
-            break;
-        }
-    }
-
-    for(int i=0; i<queryBorder.size; i++){
-        if( (intersectedBorders & (1 << i)) == 0 ){
-            resultset->setBE(other->id, 0);
-            break;
-        }
-    }
-
-    /*Here we check intersections of exteriors with interiors*/
-    bool queryContained = false,
-         otherContained = false;
-
-    if( linesegments.size() >= (unsigned)(query->size) ){
-        //check if linesegments cover the query geometry entirely
-        queryContained = query->isCoveredBy(linesegments);
-    }
-
-    int total = 0;
-    for(int i=0; i<other->size; i++)
-        total += other->list[i]->size;
-
-    if( linesegments.size() >= (unsigned)(total) ){
-        //check if linesegments cover the other geometry entirely
-        otherContained = other->isCoveredBy(linesegments, false);
-    }
-
-    if( !queryContained && !otherContained ){
-        resultset->setEI(other->id, 1);
-        resultset->setIE(other->id, 1);
-    }else if( !queryContained && otherContained ){
-        resultset->setIE(other->id, 1);
-    }else if( queryContained && !otherContained ){
-        resultset->setEI(other->id, 1);
-    }
-
-    for(list<GIMS_Geometry *>::iterator it = intersections.begin(); it != intersections.end(); it++)
-        (*it)->deepDelete();
-
-}
-
-
 
 void Node::buildIM_linestring(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_Geometry *other){
     if(other->type == POINT){
@@ -1660,15 +786,10 @@ void Node::buildIM_point(DE9IM *resultset, GIMS_Point *query, GIMS_Geometry *oth
 
 
 
-
-
-
-
-
-
 /*
 Polygonal Map QuadTree Node<--
 */
+
 
 
 
@@ -1688,7 +809,6 @@ int PMQuadTree::getNumNodes(){
 int PMQuadTree::getMaxDepth(){
     return maxDepth;
 }
-
 
 /*Functions that take care of the construction and maintenance of the structure*/
 void PMQuadTree::insert ( GIMS_Geometry *geom ) {
@@ -1790,44 +910,11 @@ DE9IM *PMQuadTree::topologicalSearch( GIMS_Geometry *query, int(*filter)(GIMS_Ge
 
 
 
+/*rendering*/
 
 
 
 
-/* Functions for debug renderization module */
-void PMQuadTree::dumpLevita(){
-    this->dumpLevita_r(this->root);
-}
-
-void PMQuadTree::dumpLevita_r(Node *n){
-    /*if it is a leaf node*/
-    if (n->type != GRAY) {
-        this->dumpLevita_leaf(n);
-    } else {
-        for (Quadrant q : quadrantList) {
-            this->dumpLevita_r(n->sons[q]);
-        }
-    }
-}
-
-void PMQuadTree::dumpLevita_leaf(Node *n){
-
-    GIMS_Point ll = *(n->square->lowerLeft),
-          ur = *(n->square->upperRight);
-    
-    GIMS_Point ul = GIMS_Point(ll.x, ur.y),
-          lr = GIMS_Point(ur.x, ll.y);
-
-    printf("PMQT_P: %llu %lf %lf q\n", pointcount++, ll.x, ll.y);
-    printf("PMQT_P: %llu %lf %lf q\n", pointcount++, ul.x, ul.y);
-    printf("PMQT_P: %llu %lf %lf q\n", pointcount++, ur.x, ur.y);
-    printf("PMQT_P: %llu %lf %lf q\n", pointcount++, lr.x, lr.y);
-
-    printf("PMQT_L: %llu %llu q\n", pointcount - 4, pointcount - 3);
-    printf("PMQT_L: %llu %llu q\n", pointcount - 3, pointcount - 2);
-    printf("PMQT_L: %llu %llu q\n", pointcount - 2, pointcount - 1);
-    printf("PMQT_L: %llu %llu q\n", pointcount - 1, pointcount - 4);
-}
 
 void PMQuadTree::renderRed ( GIMS_Geometry *g){
     redRenderQueue->push_back(g);
@@ -1929,7 +1016,6 @@ void PMQuadTree::renderLeafNode (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
         }
     }
 }
-
 
 void PMQuadTree::onClick( double x, double y){
     printf("begin click event at %lf %lf\n", x, y);

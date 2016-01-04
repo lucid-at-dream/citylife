@@ -38,6 +38,8 @@ OBJMAIN = ${OBJ_DIR}/main.o
 
 #object files
 OBJFILES += ${OBJ_DIR}/DataProcessor/DCEL.o
+OBJFILES += ${OBJ_DIR}/DataProcessor/PolygonIntersection.o
+OBJFILES += ${OBJ_DIR}/DataProcessor/LineIntersection.o
 OBJFILES += ${OBJ_DIR}/DataProcessor/DE9IM.o
 OBJFILES += ${OBJ_DIR}/conf.o
 OBJFILES += ${OBJ_DIR}/DataProcessor/PMQuadTree.o

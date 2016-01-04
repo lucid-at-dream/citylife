@@ -10,6 +10,8 @@
 #include <cmath>
 #include "conf.hpp"
 #include "DCEL.hpp"
+#include "LineIntersection.hpp"
+#include "PolygonIntersection.hpp"
 
 using namespace std;
 

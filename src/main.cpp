@@ -7,6 +7,7 @@
 #include "PMQuadTree.hpp"
 #include "DebRender.hpp"
 #include "conf.hpp"
+#include "PolygonIntersection.hpp"
 
 using namespace PMQUADTREE;
 using namespace GIMS_GEOMETRY;

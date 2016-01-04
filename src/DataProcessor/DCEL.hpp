@@ -1,3 +1,6 @@
+#ifndef _DCEL_HPP_
+#define _DCEL_HPP_
+
 #include "Geometry.hpp"
 #include <set>
 #include <math.h>
@@ -91,3 +94,5 @@ class DCEL{
 };
 
 bool sort_clockwise_cmp_(const halfedge *a, const halfedge *b);
+
+#endif
