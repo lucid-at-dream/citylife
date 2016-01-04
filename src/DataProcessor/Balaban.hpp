@@ -35,7 +35,7 @@ namespace ivbalaban{
     bool ls_set_cmp(const GIMS_LineSegment &a, const GIMS_LineSegment &b);   
     int endpt_cmp( const void *_a, const void *_b );
 
-    //set tipes: ordered set, unordered set, intersection set.
+    //set types: ordered set, unordered set, intersection set.
     typedef multiset<GIMS_LineSegment, decltype(&ls_cmp)> oset;
     typedef multiset<GIMS_LineSegment, decltype(&ls_set_cmp)> uset;
     typedef set<GIMS_Geometry *, decltype(&geom_set_cmp)> iset;

@@ -351,6 +351,24 @@ DCEL buildPlanarGraph(GIMS_Polygon *polygonA, GIMS_Polygon *polygonB, GIMS_Bound
                  *clippedB = clipPolygonInDCEL( polygonAndDomainAsPlanarGraph(polygonB, domain) );
 
     /*2. create a PSLG of the two polygons*/
+    
+    //2.1 find the intersections points of every edge of each polygon
+    intersectionset iset = findIntersections(clippedA, clippedB);
+
+    for(intersectionset::iterator i = iset.begin(); i != iset.end(); i++){
+        printf("%lf %lf --- %lf %lf\n", i->first.p1->x, i->first.p1->y, i->first.p2->x, i->first.p2->y);
+        for(list<GIMS_Point *>::iterator j = i->second.begin(); j != i->second.end(); j++){
+            printf("%lf %lf\n", (*j)->x, (*j)->y);
+        }
+    }
+
+
+    //2.2 for every polygon vertex and intersection point create a vertex in the DCEL
+
+    //2.3 for every edge create two halfedges and sort them accordingly
+
+    //2.4 calculate the faces
+    planargraph.calculateFaces();
 
     return planargraph;
 }
@@ -466,6 +484,12 @@ void addPointToPointList(pointlist &ptlist, GIMS_Point *p){
     ptlist.nodes[ptlist.nnodes++] = *p;
 }
 
+bool __ptlist_cmp__stdlist__(GIMS_Point *a, GIMS_Point *b){
+    double d1 = distanceSquared2p(a, __ptlist_cmp__reference__),
+           d2 = distanceSquared2p(b, __ptlist_cmp__reference__);
+    return d1 < d2;
+}
+
 int __plist_cmp__(const void *_a, const void *_b){
     GIMS_Point *a = (GIMS_Point *)_a,
                *b = (GIMS_Point *)_b;
@@ -521,5 +545,242 @@ void mergePointList(pointlist &keeper, pointlist &other){
 
     keeper.nnodes = total;
 }
+
+bool event_cmp(PolygonIntersectionEvent a, PolygonIntersectionEvent b){
+    if(a.pt->x < b.pt->x - ERR_MARGIN ){
+        return false;
+    }else if(a.pt->x < b.pt->x + ERR_MARGIN && a.pt->x > b.pt->x - ERR_MARGIN ){
+
+        if( a.pt->y < b.pt->y - ERR_MARGIN )
+            return false;
+        else if( a.pt->y < b.pt->y + ERR_MARGIN && a.pt->y > b.pt->y - ERR_MARGIN ){
+            
+            //if x and y are equal, differentiate by PolygonIntersectionevent type
+            if( a.type < b.type )
+                return false;
+            else if( b.type < a.type )
+                return true;
+
+            //if both x and y are equal and the PolygonIntersectionevent type is equal
+            //differentiate by the given ID
+            else if( a.ls.id < b.ls.id )
+                return false;
+            
+            //finally, we must distinguish line segments that start at the same point and
+            //are in the same set.
+            else
+                return ls_cmp(a.ls, b.ls);
+
+        }else
+            return true;
+    }else 
+        return true;
+}
+
+bool ls_cmp(const GIMS_LineSegment &a, const GIMS_LineSegment &b){
+
+    if( a.p1->x < b.p1->x )
+        return true;
+    else if(a.p1->x == b.p1->x){
+        if(a.p1->y < b.p1->y)
+            return true;
+        else if(a.p1->y > b.p1->y)
+            return false;
+    }else
+        return false;
+
+    //at this point we know that a.p1 equals b.p1 
+    if( a.p2->x < b.p2->x )
+        return true;
+    else if(a.p2->x == b.p2->x){
+        if(a.p2->y < b.p2->y)
+            return true;
+        else if(a.p2->y > b.p2->y)
+            return false;
+    }else
+        return false;
+
+    //if this point is reached, the line segments are equal
+    return false;
+}
+
+double eventQueueFromMultiLineString( evset &eventQueue, GIMS_MultiLineString *mls, int id){
+    double max_x = -1e100;
+    int count = 1;
+    for(int i=0; i<mls->size; i++){
+        for(int j=0; j<mls->list[i]->size-1; j++){
+            PolygonIntersectionEvent a, b;
+            GIMS_LineSegment ls = mls->list[i]->getLineSegment(j);
+            ls.id = id;
+            ls.osm_id = count++;
+
+            a.ls = ls;
+            b.ls = ls;
+            a.type = 0; b.type = 1;
+            
+            if( ls.p1->x < ls.p2->x ){
+                a.pt = ls.p1; b.pt = ls.p2;
+            }else if(ls.p1->x > ls.p2->x){
+                a.pt = ls.p2; b.pt = ls.p1;
+            }else{
+                if( ls.p1->y < ls.p2->y ){
+                    a.pt = ls.p1; b.pt = ls.p2;
+                }else{
+                    a.pt = ls.p2; b.pt = ls.p1;
+                }
+            }
+
+            if( ls.p1->x > max_x )
+                max_x = ls.p1->x;
+            if( ls.p2->x > max_x )
+                max_x = ls.p2->x;
+
+            eventQueue.push(a);
+            eventQueue.push(b);
+        }
+    }
+    return max_x;
+}
+
+GIMS_Point *getRightMostPoint(GIMS_LineSegment &ls){
+    if(ls.p1->x < ls.p2->x)
+        return ls.p2;
+    else if( ls.p1->x > ls.p2->x )
+        return ls.p1;
+    else{
+        if(ls.p1->y < ls.p2->y)
+            return ls.p2;
+        else if( ls.p1->y > ls.p2->y )
+            return ls.p1;
+    }
+    return 0;
+}
+
+bool compareByRightmostPoint(GIMS_LineSegment &a, GIMS_LineSegment &b){
+    GIMS_Point *arp = getRightMostPoint(a),
+               *brp = getRightMostPoint(b);
+
+    if(arp->x < brp->x)
+        return true;
+    else if( arp->x > brp->x )
+        return false;
+    else{
+        if(arp->y < brp->y)
+            return true;
+        else if( arp->y > brp->y )
+            return false;
+    }
+    return false;
+}
+
+void insertToActiveSet(lsset &l, GIMS_LineSegment &ls){
+    for(lsset::iterator it = l.begin(); it != l.end(); it++){
+        if( !compareByRightmostPoint(*it, ls) ){
+            l.insert(it, ls);
+            return;
+        }
+    }
+    l.push_back(ls);
+}
+
+void addIntersection(intersectionset &iset, GIMS_LineSegment &A, GIMS_LineSegment &B, GIMS_Geometry *intersection){
+    if( intersection == NULL )
+        return;
+
+    if( intersection->type == POINT ){
+        iset[A].push_back((GIMS_Point *)intersection);
+        iset[B].push_back((GIMS_Point *)intersection);
+    }else{
+        iset[A].push_back(((GIMS_LineSegment *)intersection)->p1);
+        iset[A].push_back(((GIMS_LineSegment *)intersection)->p2);
+        iset[B].push_back(((GIMS_LineSegment *)intersection)->p1);
+        iset[B].push_back(((GIMS_LineSegment *)intersection)->p2);
+    }   
+}
+
+void sortIntersections(intersectionset &iset){
+    for(intersectionset::iterator it = iset.begin(); it != iset.end(); it++){
+        __ptlist_cmp__reference__ = it->first.p1;
+        it->second.sort(__ptlist_cmp__stdlist__);
+
+        list<GIMS_Point *>::iterator prev = it->second.begin();
+        list<GIMS_Point *>::iterator next = list<GIMS_Point *>::iterator(prev);
+        next++;
+
+        while(next != it->second.end()){
+            if( (*next)->equals(*prev) ){
+                it->second.erase(next);
+                next = list<GIMS_Point *>::iterator(prev);
+                next++;
+            }else{
+                prev++;
+                next++;
+            }
+        }
+    }
+}
+
+intersectionset findIntersections(GIMS_Polygon *polygonA, GIMS_Polygon *polygonB){
+
+    GIMS_MultiLineString *A = polygonA->externalRing,
+                         *B = polygonB->externalRing;
+
+    intersectionset intersections(&ls_cmp);
+    evset eventQueue(&event_cmp);
+
+    double last_x_A = eventQueueFromMultiLineString(eventQueue, A, 1);
+    double last_x_B = eventQueueFromMultiLineString(eventQueue, B, 2);
+    double last_x = MIN(last_x_A, last_x_B); //after this value of X, no intersections happen.
+    
+    lsset red, blue;
+
+    PolygonIntersectionEvent event;
+    while( !eventQueue.empty() ){
+        
+        event = eventQueue.top();
+        eventQueue.pop();
+        if( event.pt->x > last_x )
+            break;
+
+        if( event.type == 0 ){
+            if( event.ls.id == 1 ){ //red
+                for(lsset::iterator it = blue.begin(); it != blue.end(); it++){
+                    GIMS_Geometry *g = event.ls.intersects( (&(*it)) );
+                    addIntersection(intersections, event.ls, *it, g);
+                }
+                insertToActiveSet(red, event.ls);
+            }else{ //blue
+                for(lsset::iterator it = red.begin(); it != red.end(); it++){
+                    GIMS_Geometry *g = event.ls.intersects( (&(*it)) );
+                    addIntersection(intersections, event.ls, *it, g);
+                }
+                insertToActiveSet(blue, event.ls);
+            }
+        }
+
+        else if( event.type == 1 ){
+            if( event.ls.id == 1 ){ //red
+                for(lsset::iterator it = red.begin(); it != red.end(); it++){
+                    if( ls_cmp( *it, event.ls) == 0 ){
+                        red.erase(it);
+                        break;
+                    }
+                }
+            }else{ //blue
+                for(lsset::iterator it = blue.begin(); it != blue.end(); it++){
+                    if( ls_cmp( *it, event.ls) == 0 ){
+                        blue.erase(it);
+                        break;
+                    }
+                }
+            }
+            //event.ls.deepDelete();
+        }
+    }
+
+    sortIntersections(intersections);
+    return intersections;
+}
+
 
 
