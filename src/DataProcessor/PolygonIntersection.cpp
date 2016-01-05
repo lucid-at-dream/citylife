@@ -304,7 +304,9 @@ DCEL polygonAndDomainAsPlanarGraph(GIMS_Polygon *P, GIMS_BoundingBox *domain){
 
 GIMS_Polygon *clipPolygonInDCEL(DCEL planargraph){
 
+#ifdef DEBUG
     printf("==== POLYGON ====\n");
+#endif
 
     GIMS_Polygon *clippedPolygon = new GIMS_Polygon();
 
@@ -313,8 +315,9 @@ GIMS_Polygon *clipPolygonInDCEL(DCEL planargraph){
 
         //if the face is covered by both the polygon and the domain
         if( f->data & 8 && f->data & 2 ){
+#ifdef DEBUG
             printf("---- face ----\n");
-
+#endif
             halfedge *e   = f->boundary;
             halfedge *aux = e->next;
 
@@ -322,11 +325,15 @@ GIMS_Polygon *clipPolygonInDCEL(DCEL planargraph){
             ring->appendPoint( e->tail->pt );
             e->tail->pt->id = e->data & 2 ? 0 : 1;
 
+#ifdef DEBUG
             printf("%lf %lf (%d), ", e->tail->pt->x, e->tail->pt->y, e->tail->pt->id);
+#endif
 
             while(aux != e){
                 aux->tail->pt->id = aux->data & 2 ? 0 : 1;
+#ifdef DEBUG
                 printf("%lf %lf (%d), ", aux->tail->pt->x, aux->tail->pt->y, aux->tail->pt->id);
+#endif
                 ring->appendPoint( aux->tail->pt );
                 aux = aux->next;
             }
@@ -334,11 +341,132 @@ GIMS_Polygon *clipPolygonInDCEL(DCEL planargraph){
             GIMS_Point *lclone = new GIMS_Point(e->tail->pt->x, e->tail->pt->y);
             ring->appendPoint( lclone );
             clippedPolygon->appendExternalRing(ring);
+#ifdef DEBUG
             printf("\n");
+#endif
         }
     }
 
     return clippedPolygon;
+}
+
+void insertPolygonVertexes(DCEL &dcel, GIMS_Polygon *p, int id){
+    for(int i=0; i<p->externalRing->size; i++){
+        for(int j=0; j<p->externalRing->list[i]->size; j++){
+            vertex *v = new vertex();
+            v->pt = p->externalRing->list[i]->list[j];
+            v->data = id;
+
+            vertex *it = dcel.findVertex(v);
+            if( it != NULL ){
+                it->data |= id;
+                delete v;
+            }else{
+                dcel.addVertex(v);
+            }
+        }
+    }
+}
+
+void insertVertexesFromList(DCEL &dcel, list<GIMS_Point *> &ptlist, int id){
+    for(list<GIMS_Point *>::iterator i = ptlist.begin(); i != ptlist.end(); i++){
+        vertex *v = new vertex();
+        v->pt = *i;
+        v->data = id;
+
+        vertex *it = dcel.findVertex(v);
+        if( it != NULL ){
+            it->data |= id;
+            delete v;
+        }else{
+            dcel.addVertex(v);
+        }
+    }
+}
+
+void insertPolygonHalfedges(DCEL &dcel, intersectionset &iset){
+    
+    int clockwise_data, counterclockwise_data;
+
+    for(intersectionset::iterator it = iset.begin(); it != iset.end(); it++){
+        GIMS_LineSegment edge = it->first;
+        list<GIMS_Point *> intersectionPoints = it->second;
+    
+        counterclockwise_data = edge.id == 1 ? 1 : 4;
+        clockwise_data = edge.id == 1 ? 2 : 8;
+
+        list<GIMS_Point *>::iterator prev = intersectionPoints.begin();
+        list<GIMS_Point *>::iterator next = list<GIMS_Point *>::iterator(prev);
+        next++;
+
+        while(next != intersectionPoints.end()){
+            GIMS_Point *p1 = *prev,
+                       *p2 = *next;
+
+            vertex *it_v1 = dcel.findVertex(p1);
+            vertex *it_v2 = dcel.findVertex(p2);
+
+            halfedge *cw  = new halfedge();
+            halfedge *ccw = new halfedge();
+
+            cw->twin  = ccw;
+            cw->tail  = it_v1;
+            cw->data |= clockwise_data;
+
+            ccw->twin  = cw;
+            ccw->tail  = it_v2;
+            ccw->data |= counterclockwise_data;
+
+            halfedge *it1 = dcel.findHalfedge(cw);
+            halfedge *it2 = dcel.findHalfedge(ccw);
+            
+            if( it1 != NULL ){
+                it1->data |= clockwise_data;
+                delete cw;
+            }else{
+                dcel.addHalfedge(cw);
+                it_v1->incidentEdges.push_back(cw);
+            }
+
+            if( it2 != NULL ){
+                it2->data |= counterclockwise_data;
+                delete ccw;
+            }else{
+                dcel.addHalfedge(ccw);
+                it_v2->incidentEdges.push_back(ccw);
+            }
+
+            prev++;
+            next++;
+        }
+    }
+}
+
+void connectHalfedges(DCEL &dcel){
+    /* for each vertex, sort the incident edges clockwise. For each pair of incident edges 
+     * e1,e2 in clockwise order, assign e1->twin->next = e2 and e2->prev = e1->twin */
+    for( vertexlist::iterator it = dcel.vertexes.begin(); it != dcel.vertexes.end(); it++ ){
+        (*it)->incidentEdges.sort( sort_clockwise_cmp_ );
+
+        list<halfedge *>::iterator prev_halfedge, next_halfedge;
+
+        for( prev_halfedge = (*it)->incidentEdges.begin();
+             prev_halfedge != (*it)->incidentEdges.end();
+             prev_halfedge++ ){
+    
+            /* given that prev_halfedge stands for the previously discussed "e1", we must now
+             * get "e2", which is the halfedge following "e2". Note that we also want to link the
+             * last halfedge with the first halfedge.*/
+            next_halfedge = list<halfedge *>::iterator( prev_halfedge );
+            next_halfedge++;
+
+            if( next_halfedge == (*it)->incidentEdges.end() )
+                next_halfedge = (*it)->incidentEdges.begin();
+
+            (*prev_halfedge)->twin->next = *next_halfedge;
+            (*next_halfedge)->prev = (*prev_halfedge)->twin;            
+        }
+    }
 }
 
 /*returns a DCEL representing a planar graph of A and B bounded to the argument domain.*/
@@ -355,20 +483,41 @@ DCEL buildPlanarGraph(GIMS_Polygon *polygonA, GIMS_Polygon *polygonB, GIMS_Bound
     //2.1 find the intersections points of every edge of each polygon
     intersectionset iset = findIntersections(clippedA, clippedB);
 
-    for(intersectionset::iterator i = iset.begin(); i != iset.end(); i++){
-        printf("%lf %lf --- %lf %lf\n", i->first.p1->x, i->first.p1->y, i->first.p2->x, i->first.p2->y);
-        for(list<GIMS_Point *>::iterator j = i->second.begin(); j != i->second.end(); j++){
-            printf("%lf %lf\n", (*j)->x, (*j)->y);
-        }
+#ifdef DEBUG
+    for(intersectionset::iterator it = iset.begin(); it != iset.end(); it++){
+        printf("%lf %lf --- %lf %lf\n", it->first.p1->x, it->first.p1->y, it->first.p2->x, it->first.p2->y);
+        for(list<GIMS_Point *>::iterator pt = it->second.begin(); pt != it->second.end(); pt++)
+            printf("%lf %lf\n", (*pt)->x, (*pt)->y);
     }
-
+#endif
 
     //2.2 for every polygon vertex and intersection point create a vertex in the DCEL
+    for(intersectionset::iterator it = iset.begin(); it != iset.end(); it++)
+        insertVertexesFromList(planargraph, it->second, it->first.id);
 
-    //2.3 for every edge create two halfedges and sort them accordingly
+    //2.3 for every edge create two halfedges
+    insertPolygonHalfedges(planargraph, iset);
 
-    //2.4 calculate the faces
+    //2.4 calculate the connectivity of the halfedges
+    connectHalfedges(planargraph);
+
+    //2.5 calculate the faces
     planargraph.calculateFaces();
+
+    for( facelist::iterator it = planargraph.faces.begin(); it != planargraph.faces.end(); it++ ){
+
+        halfedge *he = (*it)->boundary;
+        halfedge *aux = he->next;
+
+        printf("=== FACE ===\n");
+
+        printf("%lf %lf\n", he->tail->pt->x, he->tail->pt->y);
+        while(aux != he){
+            printf("%lf %lf\n", aux->tail->pt->x, aux->tail->pt->y);
+            aux = aux->next;
+        }
+
+    }
 
     return planargraph;
 }
@@ -604,7 +753,7 @@ bool ls_cmp(const GIMS_LineSegment &a, const GIMS_LineSegment &b){
     return false;
 }
 
-double eventQueueFromMultiLineString( evset &eventQueue, GIMS_MultiLineString *mls, int id){
+double eventQueueFromMultiLineString( eventset &eventQueue, GIMS_MultiLineString *mls, int id){
     double max_x = -1e100;
     int count = 1;
     for(int i=0; i<mls->size; i++){
@@ -726,7 +875,7 @@ intersectionset findIntersections(GIMS_Polygon *polygonA, GIMS_Polygon *polygonB
                          *B = polygonB->externalRing;
 
     intersectionset intersections(&ls_cmp);
-    evset eventQueue(&event_cmp);
+    eventset eventQueue(&event_cmp);
 
     double last_x_A = eventQueueFromMultiLineString(eventQueue, A, 1);
     double last_x_B = eventQueueFromMultiLineString(eventQueue, B, 2);
@@ -759,6 +908,10 @@ intersectionset findIntersections(GIMS_Polygon *polygonA, GIMS_Polygon *polygonB
         }
 
         else if( event.type == 1 ){
+
+            intersections[event.ls].push_back( event.ls.p1 );
+            intersections[event.ls].push_back( event.ls.p2 );
+
             if( event.ls.id == 1 ){ //red
                 for(lsset::iterator it = red.begin(); it != red.end(); it++){
                     if( ls_cmp( *it, event.ls) == 0 ){

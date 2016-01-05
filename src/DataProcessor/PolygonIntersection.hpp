@@ -53,7 +53,7 @@ bool event_cmp(PolygonIntersectionEvent a, PolygonIntersectionEvent b);
 bool ls_cmp(const GIMS_LineSegment &a, const GIMS_LineSegment &b);
 
 typedef list<GIMS_LineSegment> lsset;
-typedef priority_queue<PolygonIntersectionEvent, vector<PolygonIntersectionEvent>,decltype(&event_cmp)> evset;
+typedef priority_queue<PolygonIntersectionEvent, vector<PolygonIntersectionEvent>,decltype(&event_cmp)> eventset;
 typedef map<GIMS_LineSegment, list<GIMS_Point *>, decltype(&ls_cmp)> intersectionset;
 
 intersectionset findIntersections(GIMS_Polygon *polygonA, GIMS_Polygon *polygonB);
