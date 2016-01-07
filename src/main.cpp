@@ -30,6 +30,7 @@ int lsFilter(GIMS_Geometry *geom){
     return 0;
 }
 
+/*
 int main(int argc, char **argv){
 
     char line[4096];
@@ -53,15 +54,21 @@ int main(int argc, char **argv){
 
     GIMS_BoundingBox *domain = new GIMS_BoundingBox(lowerLeft, upperRight);
 
-    GIMS_Polygon *clipped1  = (GIMS_Polygon *)(p1->clipToBox( domain ));
-    GIMS_Polygon *clipped2 = (GIMS_Polygon *)(p2->clipToBox( domain ));
+    //GIMS_Polygon *clipped1  = (GIMS_Polygon *)(p1->clipToBox( domain ));
+    //GIMS_Polygon *clipped2 = (GIMS_Polygon *)(p2->clipToBox( domain ));
 
-    buildPlanarGraph(clipped1, clipped2, domain);
+    //buildPlanarGraph(clipped1, clipped2, domain);
+
+    p1->id = 4231;
+    p2->id = 12321;
+    DE9IM *resultset = new DE9IM(p1);
+
+    DE9IM_pol_pol(resultset, p1, p2, domain);
 
     return 0;
 }
+*/
 
-/*
 int main(int argc, char **argv){
     
     //1. read and load configurations
@@ -103,6 +110,28 @@ int main(int argc, char **argv){
 
     //3. start server for querying
 
+
+    GIMS_Polygon *query = (GIMS_Polygon *)*(idIndex.begin());
+    printf("results for id = %lu\n", query->osm_id);
+
+    start = clock();
+         
+    DE9IM *results = tree.topologicalSearch(query, polygonFilter);
+    list<long> intersected = results->intersects();
+    
+    for( list<long>::iterator k = intersected.begin(); k != intersected.end(); k++ ){
+        GIMS_LineString related; related.id = *k;
+        cout <<  query->osm_id << " | " << (*(idIndex.find(&related)))->osm_id << endl;
+    }
+
+    delete results;
+
+    stop = clock();
+
+    cout << "took ";
+    cout << (stop - start)/(double)CLOCKS_PER_SEC;
+    cout << " seconds to process" << endl;
+
     //4. [Optional]render
     if( 0 ){
         renderer = DebRenderer(&tree);
@@ -113,4 +142,3 @@ int main(int argc, char **argv){
 
     //5. clean exit
 }
-*/

@@ -29,7 +29,7 @@ typedef struct _pointmatrix{
 pointmatrix newPointMatrix();
 void addListToPointMatrix(pointmatrix &matrix, pointlist &ptlist);
 pointlist newPointList();
-void addPointToPointList(pointlist &ptlist, GIMS_Point *p);
+void addPointToPointList(pointlist &ptlist, GIMS_Point *p, int data);
 int __plist_cmp__(const void *_a, const void *_b);
 void sortPointListWithRegardToFirst(pointlist &ptlist);
 void removeRepeatedPoints(pointlist &ptlist);

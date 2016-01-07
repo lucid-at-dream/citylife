@@ -74,6 +74,7 @@ void DCEL::calculateFaces(){
          * the cycle and assigning them with a common face.*/
         face *f = new face();
         f->boundary = auxedge;
+        auxedge->left = f;
         this->addFace(f);
 
         edge = auxedge;

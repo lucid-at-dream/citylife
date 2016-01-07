@@ -598,7 +598,6 @@ TODO(BUILD_IM: polygon vs linestring)
 TODO(BUILD_IM: polygon vs multilinestring)
 
     }else if(other->type == POLYGON){
-
         DE9IM_pol_pol(resultset, query, (GIMS_Polygon *)other, this->square);
     }
 }

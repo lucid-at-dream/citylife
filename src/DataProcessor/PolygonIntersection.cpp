@@ -20,10 +20,10 @@ DCEL polygonAndDomainAsPlanarGraph(GIMS_Polygon *P, GIMS_BoundingBox *domain){
     /*create a pointlist for each line segment of the clip square*/
     pointlist clipPolNodes[] = { newPointList(), newPointList(), newPointList(), newPointList() };
 
-    /*add the first point of each segment to each pointlist*/
+    /*add the points of each segment to each pointlist*/
     for(int i=0; i<4; i++){
-        addPointToPointList( clipPolNodes[i], clipPolygon[i]->p1 );
-        addPointToPointList( clipPolNodes[i], clipPolygon[i]->p2 );
+        addPointToPointList( clipPolNodes[i], clipPolygon[i]->p1, 0 );
+        addPointToPointList( clipPolNodes[i], clipPolygon[i]->p2, 0 );
     }
 
     /* First step is to identify the graph nodes of the polygon and their connectivity. 
@@ -34,7 +34,6 @@ DCEL polygonAndDomainAsPlanarGraph(GIMS_Polygon *P, GIMS_BoundingBox *domain){
      * figures and which are not, resulting in the final polygon clipping, represented as a
      * planar graph stored using a DCEL structure. phew, that was long!*/
     pointmatrix pslgSequences = newPointMatrix();
-
     for(int ring = 0; ring < P->externalRing->size; ring++){
         GIMS_LineString *border = P->externalRing->list[ring];
         pointlist connectedSequence = newPointList();
@@ -44,7 +43,7 @@ DCEL polygonAndDomainAsPlanarGraph(GIMS_Polygon *P, GIMS_BoundingBox *domain){
             GIMS_LineSegment ls = border->getLineSegment(l);
             pointlist intersections = newPointList();
 
-            addPointToPointList( intersections, border->list[l] );
+            addPointToPointList( intersections, border->list[l], 4 );
             for(int l2 = 0; l2 < 4; l2++){
                 
                 GIMS_LineSegment *edge = clipPolygon[l2];
@@ -54,18 +53,18 @@ DCEL polygonAndDomainAsPlanarGraph(GIMS_Polygon *P, GIMS_BoundingBox *domain){
                 if(it != NULL){
                     /*consider the case where the intersection is a point*/
                     if(it->type == POINT){
-                        addPointToPointList( intersections, (GIMS_Point *)it );
-                        addPointToPointList( clipPolNodes[l2], (GIMS_Point *)it );
+                        addPointToPointList( intersections, (GIMS_Point *)it, 0 );
+                        addPointToPointList( clipPolNodes[l2], (GIMS_Point *)it, 0 );
                     /*consider the case where the intersection is a line segment*/
                     }else{
-                        addPointToPointList( intersections, ((GIMS_LineSegment *)it)->p1 );
-                        addPointToPointList( intersections, ((GIMS_LineSegment *)it)->p2 );
-                        addPointToPointList( clipPolNodes[l2], ((GIMS_LineSegment *)it)->p1 );
-                        addPointToPointList( clipPolNodes[l2], ((GIMS_LineSegment *)it)->p2 );
+                        addPointToPointList( intersections, ((GIMS_LineSegment *)it)->p1, 0 );
+                        addPointToPointList( intersections, ((GIMS_LineSegment *)it)->p2, 0 );
+                        addPointToPointList( clipPolNodes[l2], ((GIMS_LineSegment *)it)->p1, 0 );
+                        addPointToPointList( clipPolNodes[l2], ((GIMS_LineSegment *)it)->p2, 0 );
                     }
                 }
             }
-            addPointToPointList( intersections, border->list[l+1] );
+            addPointToPointList( intersections, border->list[l+1], 4 );
 
             /* Now that we know all intersection points that this edge of the polygon has 
              * with the domain boundary, we can sort them and the order will give us the 
@@ -121,10 +120,11 @@ DCEL polygonAndDomainAsPlanarGraph(GIMS_Polygon *P, GIMS_BoundingBox *domain){
             
             vertex *v = new vertex(); 
             v->pt = p;
+            v->data = 1 | p->id;
 
             vertex *it = dcel.findVertex(v);
             if( it != NULL ){
-                it->data |= 1;
+                it->data |= 1 | p->id;
                 delete v;
             }else{
                 dcel.addVertex(v);
@@ -137,10 +137,11 @@ DCEL polygonAndDomainAsPlanarGraph(GIMS_Polygon *P, GIMS_BoundingBox *domain){
 
         vertex *v = new vertex();
         v->pt = p;
+        v->data = 2 | p->id;
 
         vertex *it = dcel.findVertex(v);
         if( it != NULL ){
-            it->data |= 2;
+            it->data |= 2 | p->id;
             delete v;
         }else
             dcel.addVertex(v);
@@ -323,22 +324,24 @@ GIMS_Polygon *clipPolygonInDCEL(DCEL planargraph){
 
             GIMS_LineString *ring = new GIMS_LineString();
             ring->appendPoint( e->tail->pt );
-            e->tail->pt->id = e->data & 2 ? 0 : 1;
+            e->tail->pt->id |= e->data & 2 ? 0 : 1;
 
 #ifdef DEBUG
             printf("%lf %lf (%d), ", e->tail->pt->x, e->tail->pt->y, e->tail->pt->id);
 #endif
 
             while(aux != e){
-                aux->tail->pt->id = aux->data & 2 ? 0 : 1;
+
 #ifdef DEBUG
                 printf("%lf %lf (%d), ", aux->tail->pt->x, aux->tail->pt->y, aux->tail->pt->id);
 #endif
                 ring->appendPoint( aux->tail->pt );
+                aux->tail->pt->id |= aux->data & 2 ? 0 : 1;
                 aux = aux->next;
             }
 
             GIMS_Point *lclone = new GIMS_Point(e->tail->pt->x, e->tail->pt->y);
+            lclone->id = e->tail->pt->id;
             ring->appendPoint( lclone );
             clippedPolygon->appendExternalRing(ring);
 #ifdef DEBUG
@@ -373,10 +376,11 @@ void insertVertexesFromList(DCEL &dcel, list<GIMS_Point *> &ptlist, int id){
         vertex *v = new vertex();
         v->pt = *i;
         v->data = id;
-
+        v->data |= (v->pt->id & 4) ? (4 << (id-1)) : 0;
+        
         vertex *it = dcel.findVertex(v);
         if( it != NULL ){
-            it->data |= id;
+            it->data |= v->data;
             delete v;
         }else{
             dcel.addVertex(v);
@@ -387,13 +391,17 @@ void insertVertexesFromList(DCEL &dcel, list<GIMS_Point *> &ptlist, int id){
 void insertPolygonHalfedges(DCEL &dcel, intersectionset &iset){
     
     int clockwise_data, counterclockwise_data;
+    int internalEdge;
 
     for(intersectionset::iterator it = iset.begin(); it != iset.end(); it++){
         GIMS_LineSegment edge = it->first;
         list<GIMS_Point *> intersectionPoints = it->second;
     
-        counterclockwise_data = edge.id == 1 ? 1 : 4;
-        clockwise_data = edge.id == 1 ? 2 : 8;
+        counterclockwise_data = (edge.id == 1 ? 1 : 4);
+        clockwise_data = (edge.id == 1 ? 2 : 8);
+        internalEdge = (edge.id == 1 ? (edge.p1->id & 1 ? 16 : 0) : (edge.p1->id & 1 ? 32 : 0));
+        counterclockwise_data |= internalEdge;
+        clockwise_data |= internalEdge;
 
         list<GIMS_Point *>::iterator prev = intersectionPoints.begin();
         list<GIMS_Point *>::iterator next = list<GIMS_Point *>::iterator(prev);
@@ -469,6 +477,118 @@ void connectHalfedges(DCEL &dcel){
     }
 }
 
+void printData(int d){
+    for(int i=0; i<6; i++){
+        printf("%c", d%2 ? '1' : '0');
+        d /= 2;
+    }
+}
+
+void calculateFaceData(DCEL &dcel, GIMS_Polygon *polygonA, GIMS_Polygon *polygonB, GIMS_BoundingBox *domain){
+    for(facelist::iterator it = dcel.faces.begin(); it != dcel.faces.end(); it++){
+
+        face *f = *it;
+        
+        halfedge *e   = f->boundary;
+        halfedge *aux = e->next;
+
+        /* associate the data of the bounding edges with the face's data*/
+        f->data |= e->data;
+        while(aux != e){
+            f->data |= aux->data;
+            aux = aux->next;
+        }
+
+        /* if at this point we don't have information about the face's intersection with either
+         * the polygon or the domain, further processing has to be done to determine it.*/
+        if( !(f->data & (8+4)) ){
+            aux = aux->next;
+            while(aux != e){
+                double x = aux->tail->pt->x + (aux->twin->tail->pt->x - aux->tail->pt->x) / 2.0,
+                       y = aux->tail->pt->y + (aux->twin->tail->pt->y - aux->tail->pt->y) / 2.0;
+                GIMS_Point middlepoint = GIMS_Point(x,y);
+
+                if( polygonA->containsPointWithinDomain(&middlepoint, domain) ){
+                    f->data |= 8;
+                    break;
+                }
+                aux = aux->next;
+            }
+
+            /*if not inside, it's outside.*/
+            if( !(f->data & 8) )
+                f->data |= 4;
+        }
+
+        if( !(f->data & (2+1)) ){
+            aux = aux->next;
+            while(aux != e){
+                double x = aux->tail->pt->x + (aux->twin->tail->pt->x - aux->tail->pt->x) / 2.0,
+                       y = aux->tail->pt->y + (aux->twin->tail->pt->y - aux->tail->pt->y) / 2.0;
+                GIMS_Point middlepoint = GIMS_Point(x,y);
+                
+                if( polygonB->containsPointWithinDomain(&middlepoint, domain) ){
+                    f->data |= 2;
+                    break;
+                }
+                aux = aux->next;
+            }
+
+            /*if not inside, it's outside.*/
+            if( !(f->data & 2) )
+                f->data |= 1;
+        }
+    }
+}
+
+int isRealVertexOfA(vertex *v){
+    return v->data & 4;
+}
+
+int isRealVertexOfB(vertex *v){
+    return v->data & 8;
+}
+
+int isVertexOfA(vertex *v){
+    return v->data & 1;
+}
+
+int isVertexOfB(vertex *v){
+    return v->data & 2;
+}
+
+int isEdgeOfA(halfedge *edge){
+    return edge->data & (1|2);
+}
+
+int isEdgeOfB(halfedge *edge){
+    return edge->data & (4|8);
+}
+
+int isInteriorEdgeOfA(halfedge *edge){
+    return edge->data & 16;
+}
+
+int isInteriorEdgeOfB(halfedge *edge){
+    return edge->data & 32;
+}
+
+int isExteriorEdgeOfA(halfedge *edge){
+    return isEdgeOfA(edge) && !isInteriorEdgeOfA(edge);
+}
+
+int isExteriorEdgeOfB(halfedge *edge){
+    return isEdgeOfB(edge) && !isInteriorEdgeOfB(edge);
+}
+
+int isFaceOfA(face *f){
+    return f->data & 2;
+}
+
+int isFaceOfB(face *f){
+    return f->data & 8;
+}
+
 /*returns a DCEL representing a planar graph of A and B bounded to the argument domain.*/
 DCEL buildPlanarGraph(GIMS_Polygon *polygonA, GIMS_Polygon *polygonB, GIMS_BoundingBox *domain){
 
@@ -479,17 +599,21 @@ DCEL buildPlanarGraph(GIMS_Polygon *polygonA, GIMS_Polygon *polygonB, GIMS_Bound
                  *clippedB = clipPolygonInDCEL( polygonAndDomainAsPlanarGraph(polygonB, domain) );
 
     /*2. create a PSLG of the two polygons*/
-    
-    //2.1 find the intersections points of every edge of each polygon
-    intersectionset iset = findIntersections(clippedA, clippedB);
 
 #ifdef DEBUG
-    for(intersectionset::iterator it = iset.begin(); it != iset.end(); it++){
-        printf("%lf %lf --- %lf %lf\n", it->first.p1->x, it->first.p1->y, it->first.p2->x, it->first.p2->y);
-        for(list<GIMS_Point *>::iterator pt = it->second.begin(); pt != it->second.end(); pt++)
-            printf("%lf %lf\n", (*pt)->x, (*pt)->y);
+    printf("=== poli A ===\n");    
+    for(int i=0; i<clippedA->externalRing->list[0]->size; i++){
+        printf("%lf %lf (%d)\n", clippedA->externalRing->list[0]->list[i]->x, clippedA->externalRing->list[0]->list[i]->y, clippedA->externalRing->list[0]->list[i]->id);
+    }
+
+    printf("=== poli B ===\n");
+    for(int i=0; i<clippedB->externalRing->list[0]->size; i++){
+        printf("%lf %lf (%d)\n", clippedB->externalRing->list[0]->list[i]->x, clippedB->externalRing->list[0]->list[i]->y, clippedB->externalRing->list[0]->list[i]->id);
     }
 #endif
+
+    //2.1 find the intersections points of every edge of each polygon
+    intersectionset iset = findIntersections(clippedA, clippedB);
 
     //2.2 for every polygon vertex and intersection point create a vertex in the DCEL
     for(intersectionset::iterator it = iset.begin(); it != iset.end(); it++)
@@ -501,23 +625,37 @@ DCEL buildPlanarGraph(GIMS_Polygon *polygonA, GIMS_Polygon *polygonB, GIMS_Bound
     //2.4 calculate the connectivity of the halfedges
     connectHalfedges(planargraph);
 
+#ifdef DEBUG
+    for( halfedgelist::iterator it = planargraph.halfedges.begin(); it != planargraph.halfedges.end(); it++ ){
+        halfedge *e = *it;
+        printf("%lf %lf --- %lf %lf: ", e->tail->pt->x, e->tail->pt->y, e->twin->tail->pt->x, e->twin->tail->pt->y );
+        printData(e->data);
+        printf("\n");
+    }
+#endif
+
     //2.5 calculate the faces
     planargraph.calculateFaces();
 
-    for( facelist::iterator it = planargraph.faces.begin(); it != planargraph.faces.end(); it++ ){
+    //2.6 calculate face data
+    calculateFaceData(planargraph, polygonA, polygonB, domain);
 
+#ifdef DEBUG
+    for( facelist::iterator it = planargraph.faces.begin(); it != planargraph.faces.end(); it++ ){
         halfedge *he = (*it)->boundary;
         halfedge *aux = he->next;
 
-        printf("=== FACE ===\n");
+        printf("=== FACE (");
+        printData((*it)->data);
+        printf(") ===\n");
 
         printf("%lf %lf\n", he->tail->pt->x, he->tail->pt->y);
         while(aux != he){
             printf("%lf %lf\n", aux->tail->pt->x, aux->tail->pt->y);
             aux = aux->next;
         }
-
     }
+#endif
 
     return planargraph;
 }
@@ -537,7 +675,7 @@ void DE9IM_pol_pol(DE9IM *resultset, GIMS_Polygon *A, GIMS_Polygon *B, GIMS_Boun
         EE: EE=2
     */
 
-    DCEL planarStraightLineGraph = buildPlanarGraph(A, B, domain);
+    DCEL planargraph = buildPlanarGraph(A, B, domain);
 
     /* With the calculated planar graph, it is now possible to draw conclusions about the
      * intersection matrix of the polygons. */
@@ -546,43 +684,52 @@ void DE9IM_pol_pol(DE9IM *resultset, GIMS_Polygon *A, GIMS_Polygon *B, GIMS_Boun
          hasCommonVertexes = false,
          edgeOfPolygonACrossesPolygonB = false,
          edgeOfPolygonBCrossesPolygonA = false,
-         polygonAUniquelyEnclosesAFace = false,
-         polygonBUniquelyEnclosesAFace = false;
+         polygonAUniquelyEnclosesFace = false,
+         polygonBUniquelyEnclosesFace = false;
 
-    for( facelist::iterator it = planarStraightLineGraph.faces.begin(); 
-         it != planarStraightLineGraph.faces.end(); it++ ){
+    for( facelist::iterator it = planargraph.faces.begin(); it != planargraph.faces.end(); it++ ){
         face *f = *it;
-        if( f->data & 2  && f->data & 8 )
+        if( isFaceOfA(f) && isFaceOfB(f) )
             hasCommonFace = true;
-        else if( f->data & 2  )
-            polygonAUniquelyEnclosesAFace = true;
-        else if( f->data & 8 )
-            polygonBUniquelyEnclosesAFace = true;
+        else if( isFaceOfA(f) )
+            polygonAUniquelyEnclosesFace = true;
+        else if( isFaceOfB(f) )
+            polygonBUniquelyEnclosesFace = true;
     }
 
-    for( vertexlist::iterator it = planarStraightLineGraph.vertexes.begin();
-         it != planarStraightLineGraph.vertexes.end(); it++ ){
+    for( vertexlist::iterator it = planargraph.vertexes.begin(); it != planargraph.vertexes.end(); it++ ){
         vertex *v = *it;
-        if( v->data & 1 && v->data & 2 )
+        if( isRealVertexOfA(v) && isRealVertexOfB(v) ){
+            printf("cv: %lf %lf\n", v->pt->x, v->pt->y);
             hasCommonVertexes = true;
+        }
     }
 
-    for( halfedgelist::iterator it = planarStraightLineGraph.halfedges.begin();
-         it != planarStraightLineGraph.halfedges.end(); it++ ){
+    for( halfedgelist::iterator it = planargraph.halfedges.begin(); it != planargraph.halfedges.end(); it++ ){
         halfedge *he = *it;
 
-        if( (he->data & (2+1)) && (he->data & (8+4)) ){
+        if( isExteriorEdgeOfA(he) && isExteriorEdgeOfB(he) ){
             hasCommonEdges = true;
 
-        }else if( (he->data & (2+1)) ){
-            if( (he->left->data & 8) && (he->twin->left->data & 8) )
+        }else if( isExteriorEdgeOfA(he) ){
+            if( isFaceOfB(he->left) && isFaceOfB(he->twin->left) )
                 edgeOfPolygonACrossesPolygonB = true;
 
-        }else if( (he->data & (8+4)) ){
-            if( (he->left->data & 2) && (he->twin->left->data & 2) )
+        }else if( isExteriorEdgeOfB(he) ){
+            if( isFaceOfA(he->left) && isFaceOfA(he->twin->left) )
                 edgeOfPolygonBCrossesPolygonA = true;
         }
     }
+
+#ifdef DEBUG
+    printf("hasCommonFace:                 %s\n", hasCommonFace ? "true" : "false");
+    printf("hasCommonEdges:                %s\n", hasCommonEdges ? "true" : "false");
+    printf("hasCommonVertexes:             %s\n", hasCommonVertexes ? "true" : "false");
+    printf("edgeOfPolygonACrossesPolygonB: %s\n", edgeOfPolygonACrossesPolygonB ? "true" : "false");
+    printf("edgeOfPolygonBCrossesPolygonA: %s\n", edgeOfPolygonBCrossesPolygonA ? "true" : "false");
+    printf("polygonAUniquelyEnclosesFace:  %s\n", polygonAUniquelyEnclosesFace ? "true" : "false");
+    printf("polygonBUniquelyEnclosesFace:  %s\n", polygonBUniquelyEnclosesFace ? "true" : "false");
+#endif
 
     matrix_t::iterator matrix_index = resultset->getMatrixIndex(B->id);
     
@@ -596,12 +743,12 @@ void DE9IM_pol_pol(DE9IM *resultset, GIMS_Polygon *A, GIMS_Polygon *B, GIMS_Boun
             resultset->setIntersect(matrix_index, 0);
     }
 
-    if( polygonAUniquelyEnclosesAFace ){
+    if( polygonAUniquelyEnclosesFace ){
         resultset->setIE(matrix_index, 2);
         resultset->setBE(matrix_index, 1);
     }
 
-    if( polygonBUniquelyEnclosesAFace ){
+    if( polygonBUniquelyEnclosesFace ){
         resultset->setEI(matrix_index, 2);
         resultset->setEB(matrix_index, 1);
     }
@@ -625,12 +772,13 @@ pointlist newPointList(){
     return ptlist;
 }
 
-void addPointToPointList(pointlist &ptlist, GIMS_Point *p){
+void addPointToPointList(pointlist &ptlist, GIMS_Point *p, int data){
     if(ptlist.nnodes + 1 > ptlist.allocated){
         ptlist.nodes = (GIMS_Point *)realloc(ptlist.nodes, sizeof(GIMS_Point) * (ptlist.allocated+3));
         ptlist.allocated+=3;
     }
-    ptlist.nodes[ptlist.nnodes++] = *p;
+    ptlist.nodes[ptlist.nnodes] = *p;
+    ptlist.nodes[ptlist.nnodes++].id |= data;
 }
 
 bool __ptlist_cmp__stdlist__(GIMS_Point *a, GIMS_Point *b){
@@ -658,12 +806,12 @@ void removeRepeatedPoints(pointlist &ptlist){
     int cur_ind = 1;
 
     int initialNumNodes = ptlist.nnodes;
-
     for(int i=1; i<initialNumNodes; i++){
         if( !prev->equals(ptlist.nodes+i) ){
             ptlist.nodes[cur_ind] = ptlist.nodes[i];
             cur_ind++;
         }else{
+            prev->id |= ptlist.nodes[i].id;
             ptlist.nnodes--;
         }
         prev = ptlist.nodes+i;
@@ -837,9 +985,12 @@ void addIntersection(intersectionset &iset, GIMS_LineSegment &A, GIMS_LineSegmen
         return;
 
     if( intersection->type == POINT ){
+        intersection->id = 0;
         iset[A].push_back((GIMS_Point *)intersection);
         iset[B].push_back((GIMS_Point *)intersection);
     }else{
+        ((GIMS_LineSegment *)intersection)->p1->id = 0;
+        ((GIMS_LineSegment *)intersection)->p2->id = 0;
         iset[A].push_back(((GIMS_LineSegment *)intersection)->p1);
         iset[A].push_back(((GIMS_LineSegment *)intersection)->p2);
         iset[B].push_back(((GIMS_LineSegment *)intersection)->p1);
@@ -858,6 +1009,7 @@ void sortIntersections(intersectionset &iset){
 
         while(next != it->second.end()){
             if( (*next)->equals(*prev) ){
+                (*prev)->id |= (*next)->id;
                 it->second.erase(next);
                 next = list<GIMS_Point *>::iterator(prev);
                 next++;
@@ -869,6 +1021,17 @@ void sortIntersections(intersectionset &iset){
     }
 }
 
+void addEndpointsToIntersectionSet(intersectionset &iset, GIMS_MultiLineString *mls, int id){
+    for(int i=0; i<mls->size; i++){
+        for(int j=0; j<mls->list[i]->size-1; j++){
+            GIMS_LineSegment ls = mls->list[i]->getLineSegment(j);
+            ls.id = id;
+            iset[ls].push_back(ls.p1);
+            iset[ls].push_back(ls.p2);
+        }
+    }
+}
+
 intersectionset findIntersections(GIMS_Polygon *polygonA, GIMS_Polygon *polygonB){
 
     GIMS_MultiLineString *A = polygonA->externalRing,
@@ -876,6 +1039,9 @@ intersectionset findIntersections(GIMS_Polygon *polygonA, GIMS_Polygon *polygonB
 
     intersectionset intersections(&ls_cmp);
     eventset eventQueue(&event_cmp);
+
+    addEndpointsToIntersectionSet(intersections, A, 1);
+    addEndpointsToIntersectionSet(intersections, B, 2);
 
     double last_x_A = eventQueueFromMultiLineString(eventQueue, A, 1);
     double last_x_B = eventQueueFromMultiLineString(eventQueue, B, 2);
@@ -908,9 +1074,6 @@ intersectionset findIntersections(GIMS_Polygon *polygonA, GIMS_Polygon *polygonB
         }
 
         else if( event.type == 1 ){
-
-            intersections[event.ls].push_back( event.ls.p1 );
-            intersections[event.ls].push_back( event.ls.p2 );
 
             if( event.ls.id == 1 ){ //red
                 for(lsset::iterator it = red.begin(); it != red.end(); it++){
