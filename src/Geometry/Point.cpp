@@ -115,8 +115,15 @@ GIMS_Geometry *GIMS_Point::clipToBox ( GIMS_BoundingBox *box ){
 
 /*returns true if the coordinates of both points are the same. false otherwise.*/
 bool GIMS_Point::equals ( GIMS_Point *cmp ) {
-    if( this->x <= cmp->x + ERR_MARGIN && this->x >= cmp->x - ERR_MARGIN &&
-        this->y <= cmp->y + ERR_MARGIN && this->y >= cmp->y - ERR_MARGIN ){
+    long long int ax = this->x * 1000000000.0,
+                  ay = this->y * 1000000000.0,
+                  bx = cmp->x * 1000000000.0,
+                  by = cmp->y * 1000000000.0;
+
+    long long int err = ERR_MARGIN * 1000000000.0;
+
+    if( ax <= bx + err && ax >= bx - err &&
+        ay <= by + err && ay >= by - err ){
         return true;
     }
     return false;

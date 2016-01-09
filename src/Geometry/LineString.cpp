@@ -467,35 +467,38 @@ GIMS_Geometry *GIMS_LineSegment::intersects(const GIMS_LineSegment *other){
         return NULL;
     }
 
-#define PRECISION 100000.0
+#define PRECISION 10000000.0
 
-    long long int this_p1_x = this->p1->x * PRECISION,
-                  this_p1_y = this->p1->y * PRECISION,
-                  this_p2_x = this->p2->x * PRECISION,
-                  this_p2_y = this->p2->y * PRECISION,
-                  other_p1_x = other->p1->x * PRECISION,
-                  other_p1_y = other->p1->y * PRECISION,
-                  other_p2_x = other->p2->x * PRECISION,
-                  other_p2_y = other->p2->y * PRECISION;
+    mpf_class this_p1_x  = this->p1->x,
+             this_p1_y  = this->p1->y,
+             this_p2_x  = this->p2->x,
+             this_p2_y  = this->p2->y,
+             other_p1_x = other->p1->x,
+             other_p1_y = other->p1->y,
+             other_p2_x = other->p2->x,
+             other_p2_y = other->p2->y;
 
-
-    long long int s1_x, s1_y, s2_x, s2_y;
+    mpf_class s1_x, s1_y, s2_x, s2_y;
     s1_x = this_p2_x - this_p1_x;
     s1_y = this_p2_y - this_p1_y;
     s2_x = other_p2_x - other_p1_x;
     s2_y = other_p2_y - other_p1_y;
 
-    long long int s_den = (-s2_x * s1_y + s1_x * s2_y), 
-                  s_num = (-s1_y * (this_p1_x - other_p1_x) + s1_x * (this_p1_y - other_p1_y)),
-                  t_den = (-s2_x * s1_y + s1_x * s2_y),
-                  t_num = ( s2_x * (this_p1_y - other_p1_y) - s2_y * (this_p1_x - other_p1_x));
+    mpf_class s_den = (-s2_x * s1_y + s1_x * s2_y), 
+             s_num = (-s1_y * (this_p1_x - other_p1_x) + s1_x * (this_p1_y - other_p1_y)),
+             t_den = (-s2_x * s1_y + s1_x * s2_y),
+             t_num = ( s2_x * (this_p1_y - other_p1_y) - s2_y * (this_p1_x - other_p1_x));
 
-    long long int s = s_num / (s_den / PRECISION),
-                  t = t_num / (t_den / PRECISION);
+    mpf_class s = (s_num / s_den),
+              t = (t_num / t_den);
 
-    if (s >= 0 && s <= PRECISION && t >= 0 && t <= PRECISION){
-        int_x = this->p1->x + (t/PRECISION * (s1_x/PRECISION));
-        int_y = this->p1->y + (t/PRECISION * (s1_y/PRECISION));
+    if (s >= 0 && s <= 1 && t >= 0 && t <= 1){
+        mpf_class fx = this->p1->x + (t * s1_x),
+                  fy = this->p1->y + (t * s1_y);
+
+        int_x = fx.get_d();
+        int_y = fy.get_d();
+
         return new GIMS_Point(int_x, int_y);
     }
     return NULL;    

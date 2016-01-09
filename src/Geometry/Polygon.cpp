@@ -100,6 +100,7 @@ GIMS_Geometry *GIMS_Polygon::clipToBox(GIMS_BoundingBox *box){
         clipped->bbox = this->bbox;
         clipped->isClippedCopy = true;
         clipped->id = this->id;
+        clipped->osm_id = this->osm_id;
         return clipped;
     }else
         return NULL;

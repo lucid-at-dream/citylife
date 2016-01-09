@@ -33,7 +33,7 @@ int lsFilter(GIMS_Geometry *geom){
 /*
 int main(int argc, char **argv){
 
-    char line[4096];
+    char line[200000];
     int status;
     
     status = scanf("%[^\n]", line); getchar();
@@ -64,6 +64,17 @@ int main(int argc, char **argv){
     DE9IM *resultset = new DE9IM(p1);
 
     DE9IM_pol_pol(resultset, p1, p2, domain);
+
+    if( conf::readConfigurationFiles(argc, argv) != 0 )
+        return -1;
+    conf::printCurrentConfiguration();
+
+    PMQuadTree tree = PMQuadTree( domain );
+    tree.insert(p1); tree.insert(p2);
+    renderer = DebRenderer(&tree);
+    renderer.setScale(400.0/domain->xlength(), -400.0/domain->ylength());
+    renderer.setTranslation( -domain->minx(), -domain->maxy() );
+    renderer.mainloop(argc, argv);
 
     return 0;
 }
@@ -117,7 +128,7 @@ int main(int argc, char **argv){
     start = clock();
          
     DE9IM *results = tree.topologicalSearch(query, polygonFilter);
-    list<long> intersected = results->intersects();
+    list<long> intersected = results->meets();
     
     for( list<long>::iterator k = intersected.begin(); k != intersected.end(); k++ ){
         GIMS_LineString related; related.id = *k;
@@ -133,7 +144,7 @@ int main(int argc, char **argv){
     cout << " seconds to process" << endl;
 
     //4. [Optional]render
-    if( 0 ){
+    if( 1 ){
         renderer = DebRenderer(&tree);
         renderer.setScale(400.0/extent->xlength(), -400.0/extent->ylength());
         renderer.setTranslation( -extent->minx(), -extent->maxy() );

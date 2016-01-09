@@ -1011,7 +1011,7 @@ void PMQuadTree::renderLeafNode (Cairo::RefPtr<Cairo::Context> cr, Node *n) {
     if (n->type == BLACK) { //the WHITE type stands for empty node, thus we ignore it.
         for( list<GIMS_Geometry *>::iterator it = n->dictionary->begin();
             it != n->dictionary->end(); it++ ) {
-            //renderer.renderGeometry( cr, *it );
+            renderer.renderGeometry( cr, *it );
         }
     }
 }

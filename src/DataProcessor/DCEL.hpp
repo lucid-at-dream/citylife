@@ -18,13 +18,20 @@ class vertex{
     vertex();
 
     static int compare(const vertex &a, const vertex &b){
-        if( a.pt->x < b.pt->x )
+        long long int ax = a.pt->x * 100000000.0,
+                      ay = a.pt->y * 100000000.0,
+                      bx = b.pt->x * 100000000.0,
+                      by = b.pt->y * 100000000.0;
+
+        ax /= 100; ay /= 100; bx /= 100; by /= 100;
+
+        if( ax < bx)
             return 1;
-        else if(a.pt->x > b.pt->x)
+        else if(ax > bx)
             return -1;
-        else if( a.pt->y < b.pt->y )
+        else if( ay < by)
             return 1;
-        else if(a.pt->y > b.pt->y)
+        else if(ay > by)
             return -1;
         return 0;
     }

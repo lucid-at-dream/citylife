@@ -8,6 +8,7 @@
 #include <iostream>
 #include <list>
 #include <set>
+#include <gmpxx.h>
 
 using namespace std;
 
