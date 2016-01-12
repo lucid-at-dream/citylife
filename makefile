@@ -41,6 +41,7 @@ OBJFILES += ${OBJ_DIR}/DBConnection/DBConnection.o
 OBJFILES += ${OBJ_DIR}/Debugger/DebRender.o
 OBJFILES += ${OBJ_DIR}/conf.o
 
+OBJFILES += ${OBJ_DIR}/Geometry/Approximation.o
 OBJFILES += ${OBJ_DIR}/Geometry/BoundingBox.o
 OBJFILES += ${OBJ_DIR}/Geometry/GIMSGeometry.o
 OBJFILES += ${OBJ_DIR}/Geometry/GeometryCollection.o

@@ -9,6 +9,33 @@ halfedge::halfedge(){
     this->count = 0;
 }
 
+double face::getArea(){
+    halfedge *edge = this->boundary;
+    halfedge *aux  = edge->next;
+
+    GIMS_Point *p1 = NULL,
+               *p2 = edge->tail->pt;
+
+    double area = 0;
+    while(1){
+
+
+        p1 = p2;
+        p2 = aux->tail->pt;
+        area += p1->x * p2->y - p2->x * p1->y;
+
+        printf("face: %lf %lf\n", p1->x, p1->y);
+
+        if( aux == edge )
+            break;
+        aux = aux->next;
+    }
+
+    area = fabs( area / 2.0 );
+
+    return area;
+}
+
 face::face(){
     this->data = 0;
 }

@@ -8,6 +8,7 @@
 #include "DebRender.hpp"
 #include "conf.hpp"
 #include "PolygonIntersection.hpp"
+#include "BentleySolver.hpp"
 
 using namespace PMQUADTREE;
 using namespace GIMS_GEOMETRY;
@@ -30,7 +31,9 @@ int lsFilter(GIMS_Geometry *geom){
     return 0;
 }
 
-/*
+int lsint_algo;
+
+
 int main(int argc, char **argv){
 
     char line[200000];
@@ -40,17 +43,25 @@ int main(int argc, char **argv){
     if( status == EOF ) return -1;
     GIMS_Polygon *p1 = (GIMS_Polygon *)fromWkt(line);
 
+    printf("p1\n");
+
     status = scanf("%[^\n]", line); getchar();
     if( status == EOF ) return -1;
     GIMS_Polygon *p2 = (GIMS_Polygon *)fromWkt(line);
+
+    printf("p2\n");
 
     status = scanf("%[^\n]", line); getchar();
     if( status == EOF ) return -1;
     GIMS_Point *lowerLeft = (GIMS_Point *)fromWkt(line);
 
+    printf("p1\n");
+
     status = scanf("%[^\n]", line); getchar();
     if( status == EOF ) return -1;
     GIMS_Point *upperRight = (GIMS_Point *)fromWkt(line);
+
+    printf("p2\n");
 
     GIMS_BoundingBox *domain = new GIMS_BoundingBox(lowerLeft, upperRight);
 
@@ -59,29 +70,46 @@ int main(int argc, char **argv){
 
     //buildPlanarGraph(clipped1, clipped2, domain);
 
-    p1->id = 4231;
-    p2->id = 12321;
-    DE9IM *resultset = new DE9IM(p1);
+    p1->id = p1->osm_id = 4231;
+    p2->id = p2->osm_id = 1232;
 
-    DE9IM_pol_pol(resultset, p1, p2, domain);
+    //DE9IM *resultset = new DE9IM(p1);
+    //DE9IM_pol_pol(resultset, p1, p2, domain);
 
-    if( conf::readConfigurationFiles(argc, argv) != 0 )
-        return -1;
-    conf::printCurrentConfiguration();
+    GIMS_ConvexHullAproximation a = GIMS_ConvexHullAproximation(p1),
+                                b = GIMS_ConvexHullAproximation(p2);
 
-    PMQuadTree tree = PMQuadTree( domain );
-    tree.insert(p1); tree.insert(p2);
-    renderer = DebRenderer(&tree);
-    renderer.setScale(400.0/domain->xlength(), -400.0/domain->ylength());
-    renderer.setTranslation( -domain->minx(), -domain->maxy() );
-    renderer.mainloop(argc, argv);
+    appr_intersection its = a.intersection(&b, domain);
+
+    printf("intersects? %s\narea: %lf\n", its.intersects ? "yes" : "no", its.area);
+
+    if( strcmp(argv[1], "render") == 0 ){
+        if( conf::readConfigurationFiles(argc, argv) != 0 )
+            return -1;
+        conf::printCurrentConfiguration();
+
+        PMQuadTree tree = PMQuadTree( domain );
+        tree.insert(p1); tree.insert(p2);
+        renderer = DebRenderer(&tree);
+        renderer.setScale(400.0/domain->xlength(), -400.0/domain->ylength());
+        renderer.setTranslation( -domain->minx(), -domain->maxy() );
+        renderer.mainloop(argc, argv);
+    }
 
     return 0;
 }
-*/
 
+
+/*
 int main(int argc, char **argv){
     
+#ifdef GET_LSINT_TIME
+    lsint_algo = atoi(argv[1]);
+
+    printf("algo: %s", argv[1]);
+
+#endif
+
     //1. read and load configurations
     if( conf::readConfigurationFiles(argc, argv) != 0 )
         return -1;
@@ -121,28 +149,34 @@ int main(int argc, char **argv){
 
     //3. start server for querying
 
-
-    GIMS_Polygon *query = (GIMS_Polygon *)*(idIndex.begin());
+    /*
+    GIMS_LineString *query;
     printf("results for id = %lu\n", query->osm_id);
 
+    for(idset::iterator it = idIndex.begin(); it != idIndex.end(); it++){
+        query = (GIMS_LineString *)(*it);
+        DE9IM *results = tree.topologicalSearch(query, lsFilter);
+    }
+    */
+
+    /*
     start = clock();
-         
-    DE9IM *results = tree.topologicalSearch(query, polygonFilter);
-    list<long> intersected = results->meets();
     
+    list<long> intersected = results->intersects();
+
     for( list<long>::iterator k = intersected.begin(); k != intersected.end(); k++ ){
         GIMS_LineString related; related.id = *k;
         cout <<  query->osm_id << " | " << (*(idIndex.find(&related)))->osm_id << endl;
     }
 
     delete results;
-
     stop = clock();
 
     cout << "took ";
     cout << (stop - start)/(double)CLOCKS_PER_SEC;
     cout << " seconds to process" << endl;
-
+    */
+/*
     //4. [Optional]render
     if( 1 ){
         renderer = DebRenderer(&tree);
@@ -153,3 +187,4 @@ int main(int argc, char **argv){
 
     //5. clean exit
 }
+*/

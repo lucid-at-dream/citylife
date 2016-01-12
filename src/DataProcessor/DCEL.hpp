@@ -74,6 +74,7 @@ class face{
   public:
     face();
 
+    double getArea();
     halfedge *boundary;
     int data;
 };
@@ -101,5 +102,19 @@ class DCEL{
 };
 
 bool sort_clockwise_cmp_(const halfedge *a, const halfedge *b);
+
+int isRealVertexOfA(vertex *v);
+int isRealVertexOfB(vertex *v);
+int isVertexOfA(vertex *v);
+int isVertexOfB(vertex *v);
+int isEdgeOfA(halfedge *edge);
+int isEdgeOfB(halfedge *edge);
+int isInteriorEdgeOfA(halfedge *edge);
+int isInteriorEdgeOfB(halfedge *edge);
+int isExteriorEdgeOfA(halfedge *edge);
+int isExteriorEdgeOfB(halfedge *edge);
+int isFaceOfA(face *f);
+int isFaceOfB(face *f);
+
 
 #endif

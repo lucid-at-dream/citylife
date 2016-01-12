@@ -52,6 +52,7 @@ class DebRenderer {
     void render           ( Cairo::RefPtr<Cairo::Context>  );
     void renderSvg        (const char *filename, double width, double height);
 
+    void renderApproximation      (Cairo::RefPtr<Cairo::Context>, GIMS_Approximation *appr);
     void renderGeometry           (Cairo::RefPtr<Cairo::Context>, GIMS_Geometry *);
     void renderBBox               (Cairo::RefPtr<Cairo::Context>, GIMS_BoundingBox *);
     void renderPoint              (Cairo::RefPtr<Cairo::Context>, GIMS_Point *);

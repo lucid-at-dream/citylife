@@ -53,17 +53,8 @@ GIMS_Point GIMS_Point::getClosestPoint(GIMS_LineSegment *e){
 }
 
 GIMS_Point *GIMS_Point::clone() {
-
-    printf(">>boas %lf %lf\n", this->x, this->y);
-
     GIMS_Point *fresh = new GIMS_Point(this->x, this->y);
-
-    printf(">>boas %lf %lf\n", this->x, this->y);
-
     fresh->id = this->id;
-
-    printf(">>boas %lf %lf\n", this->x, this->y);
-    
     return fresh;
 }
 

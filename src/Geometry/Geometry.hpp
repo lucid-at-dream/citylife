@@ -2,6 +2,7 @@
 #define _GIMS_GEOMETRY_HPP_
 
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
 #include <string>
 #include "SystemBase.hpp"
@@ -64,6 +65,38 @@ namespace GIMS_GEOMETRY {
         virtual string         toWkt         () = 0;
         virtual void           deleteClipped () = 0;
         virtual void           deepDelete    () = 0;
+    };
+
+    typedef struct _appr_intersection{
+        bool intersects;
+        double area;
+    }appr_intersection;
+
+    class GIMS_Approximation {
+      private:
+        double falsearea;
+      public:
+        virtual bool isDisjoint(GIMS_BoundingBox *) = 0;
+        virtual bool isInside(GIMS_BoundingBox *) = 0;
+        virtual appr_intersection intersection(GIMS_Approximation *other, GIMS_BoundingBox *domain) = 0;
+    };
+
+    class GIMS_ConvexHullAproximation : public GIMS_Approximation{
+      private:
+        double falsearea;
+      public:
+        int N;
+        GIMS_Point **convexHull;
+
+        bool isDisjoint(GIMS_BoundingBox *);
+        bool isInside(GIMS_BoundingBox *);
+        appr_intersection intersection(GIMS_Approximation *other, GIMS_BoundingBox *domain);
+
+        double getArea();
+        double getFalseArea();
+
+        GIMS_ConvexHullAproximation(GIMS_Polygon *);
+        ~GIMS_ConvexHullAproximation();
     };
 
     class GIMS_BoundingBox : public GIMS_Geometry {
@@ -253,6 +286,7 @@ namespace GIMS_GEOMETRY {
         bool isClippedCopy;
 
         string            toWkt             ();
+        double            area              ();
         void              computeBBox       ();
         GIMS_Polygon     *clone             ();
         GIMS_BoundingBox  getExtent         ();

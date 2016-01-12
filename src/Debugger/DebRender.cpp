@@ -176,6 +176,20 @@ void DebRenderer::renderRing(Cairo::RefPtr<Cairo::Context> cr, GIMS_Ring *ring){
     cr->line_to((ring->list[0]->x + translatex)*scalex, (ring->list[0]->y + translatey)*scaley);
 }
 
+void DebRenderer::renderApproximation(Cairo::RefPtr<Cairo::Context> cr, GIMS_Approximation *appr){
+    if( appr == NULL) return;
+
+    GIMS_ConvexHullAproximation *hull = (GIMS_ConvexHullAproximation *)appr;
+    if( hull->N <= 1 ) return;
+
+    cr->set_source_rgb(255, 0, 0);
+    cr->move_to((hull->convexHull[0]->x + translatex)*scalex, (hull->convexHull[0]->y + translatey)*scaley);
+    for(int i=1; i < hull->N; i++)
+        cr->line_to((hull->convexHull[i]->x + translatex)*scalex, (hull->convexHull[i]->y + translatey)*scaley);
+    cr->stroke();
+    cr->set_source_rgb(0, 0, 0);
+}
+
 void DebRenderer::renderPolygon(Cairo::RefPtr<Cairo::Context> cr, GIMS_Polygon *g){
     if( g == NULL) return;
     this->renderMultiLineString(cr, g->externalRing);

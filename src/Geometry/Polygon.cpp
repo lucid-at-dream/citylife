@@ -40,6 +40,46 @@ GIMS_BoundingBox GIMS_Polygon::getExtent(){
     return bbox;
 }
 
+double GIMS_Polygon::area(){
+    double area = 0;
+
+    if( externalRing == NULL )
+        return area;
+
+    /*add the area of each external ring*/
+    for(int i=0; i<externalRing->size; i++){
+        GIMS_Point *p1 = externalRing->list[i]->list[0];
+        double determinant_sum = 0;
+        for(int j=1; j<externalRing->list[i]->size; j++){
+            GIMS_Point *p2 = externalRing->list[i]->list[j];
+            double determinant = p1->x * p2->y - p2->x * p1->y;
+            determinant_sum += determinant;
+            p1 = p2;
+        }
+        double ringarea = fabs( 0.5 * determinant_sum );
+        area += ringarea;
+    }
+
+    if( internalRings == NULL )
+        return area;
+
+    /*subtract the area of each internal ring*/
+    for(int i=0; i<internalRings->size; i++){
+        GIMS_Point *p1 = internalRings->list[i]->list[0];
+        double determinant_sum = 0;
+        for(int j=1; j<internalRings->list[i]->size; j++){
+            GIMS_Point *p2 = internalRings->list[i]->list[j];
+            double determinant = p1->x * p2->y - p2->x * p1->y;
+            determinant_sum += determinant;
+            p1 = p2;
+        }
+        double ringarea = fabs( 0.5 * determinant_sum );
+        area -= ringarea;
+    }
+
+    return area;
+}
+
 string GIMS_Polygon::toWkt(){
     string wkt = string("POLYGON(");
     char buff[100];

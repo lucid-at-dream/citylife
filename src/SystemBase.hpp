@@ -15,6 +15,7 @@
 
 /*define the error margin (comparations will use this value)*/
 #define ERR_MARGIN 1e-6
+#define PI 3.14159265359
 
 #define MAX(a,b)( ((a)>(b) ? (a) : (b)) )
 #define MIN(a,b)( ((a)<(b) ? (a) : (b)) )

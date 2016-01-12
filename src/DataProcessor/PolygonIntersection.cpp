@@ -555,51 +555,51 @@ void calculateFaceData(DCEL &dcel, GIMS_Polygon *polygonA, GIMS_Polygon *polygon
     }
 }
 
-int isRealVertexOfA(vertex *v){
+inline int isRealVertexOfA(vertex *v){
     return v->data & 4;
 }
 
-int isRealVertexOfB(vertex *v){
+inline int isRealVertexOfB(vertex *v){
     return v->data & 8;
 }
 
-int isVertexOfA(vertex *v){
+inline int isVertexOfA(vertex *v){
     return v->data & 1;
 }
 
-int isVertexOfB(vertex *v){
+inline int isVertexOfB(vertex *v){
     return v->data & 2;
 }
 
-int isEdgeOfA(halfedge *edge){
+inline int isEdgeOfA(halfedge *edge){
     return edge->data & (1|2);
 }
 
-int isEdgeOfB(halfedge *edge){
+inline int isEdgeOfB(halfedge *edge){
     return edge->data & (4|8);
 }
 
-int isInteriorEdgeOfA(halfedge *edge){
+inline int isInteriorEdgeOfA(halfedge *edge){
     return edge->data & 16;
 }
 
-int isInteriorEdgeOfB(halfedge *edge){
+inline int isInteriorEdgeOfB(halfedge *edge){
     return edge->data & 32;
 }
 
-int isExteriorEdgeOfA(halfedge *edge){
+inline int isExteriorEdgeOfA(halfedge *edge){
     return isEdgeOfA(edge) && !isInteriorEdgeOfA(edge);
 }
 
-int isExteriorEdgeOfB(halfedge *edge){
+inline int isExteriorEdgeOfB(halfedge *edge){
     return isEdgeOfB(edge) && !isInteriorEdgeOfB(edge);
 }
 
-int isFaceOfA(face *f){
+inline int isFaceOfA(face *f){
     return f->data & 2;
 }
 
-int isFaceOfB(face *f){
+inline int isFaceOfB(face *f){
     return f->data & 8;
 }
 

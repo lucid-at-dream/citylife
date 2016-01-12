@@ -811,6 +811,7 @@ int PMQuadTree::getMaxDepth(){
 
 /*Functions that take care of the construction and maintenance of the structure*/
 void PMQuadTree::insert ( GIMS_Geometry *geom ) {
+    idIndex.insert(geom);
     list<GIMS_Geometry *> *aux = new list<GIMS_Geometry *>();
     aux->push_back(geom);
     this->root->insert(aux);
@@ -935,6 +936,15 @@ void PMQuadTree::debugRender(Cairo::RefPtr<Cairo::Context> cr){
                               -this->root->square->upperRight->y );
     this->renderTree ( cr, this->root );
     printf("rendered the tree\n");
+
+    for(idset::iterator it = idIndex.begin(); it != idIndex.end(); it++){
+        GIMS_Geometry *g = *it;
+        if( g->type == POLYGON ){
+            GIMS_Polygon *p = (GIMS_Polygon *)g;
+            GIMS_ConvexHullAproximation a = GIMS_ConvexHullAproximation(p);
+            renderer.renderApproximation(cr, &a);
+        }
+    }
 
     if(query != NULL){
         list<Node *> *results;
