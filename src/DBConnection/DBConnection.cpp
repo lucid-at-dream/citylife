@@ -41,7 +41,7 @@ PGresult *PGConnection::execQuery(char *query){
     return PQexec(this->connection, query);
 }
 
-list<GIMS_Geometry *> PGConnection::getGeometryAsList(char *whereClause){
+list<GIMS_Geometry *> PGConnection::getGeometryAsList(const char *whereClause){
     char buff[1000];
     sprintf(buff, "Select osm_id, st_asText(st_transform(way, %d)) %s", configuration.projection_srid, whereClause);
     PGresult *qres = this->execQuery(buff);

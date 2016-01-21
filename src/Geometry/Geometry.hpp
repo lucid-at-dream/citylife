@@ -10,6 +10,7 @@
 #include <list>
 #include <set>
 #include <gmpxx.h>
+#include "conf.hpp"
 
 using namespace std;
 
@@ -73,30 +74,75 @@ namespace GIMS_GEOMETRY {
     }appr_intersection;
 
     class GIMS_Approximation {
-      private:
-        double falsearea;
-      public:
-        virtual bool isDisjoint(GIMS_BoundingBox *) = 0;
-        virtual bool isInside(GIMS_BoundingBox *) = 0;
-        virtual appr_intersection intersection(GIMS_Approximation *other, GIMS_BoundingBox *domain) = 0;
-    };
-
-    class GIMS_ConvexHullAproximation : public GIMS_Approximation{
-      private:
-        double falsearea;
       public:
         int N;
-        GIMS_Point **convexHull;
+        double falsearea;
+        GIMS_Point **hull;
 
+        virtual double getArea() = 0;
+        virtual double getFalseArea() = 0;
+
+        virtual bool isDisjoint(GIMS_BoundingBox *) = 0;
+        virtual bool isInside(GIMS_BoundingBox *) = 0;
+        virtual bool containsPoint( GIMS_Point * ) = 0;
+        virtual bool containsApproximation( GIMS_Approximation * ) = 0;
+        virtual bool isDisjointFromApproximation( GIMS_Approximation *other ) = 0;
+        virtual appr_intersection intersection(GIMS_Approximation *other) = 0;
+
+        virtual ~GIMS_Approximation();
+    };
+
+    class GIMS_MBNgon : public GIMS_Approximation{
+      public:
         bool isDisjoint(GIMS_BoundingBox *);
         bool isInside(GIMS_BoundingBox *);
-        appr_intersection intersection(GIMS_Approximation *other, GIMS_BoundingBox *domain);
+        appr_intersection intersection(GIMS_Approximation *other);
 
         double getArea();
         double getFalseArea();
 
+        bool containsPolygon( GIMS_Polygon *p );
+        bool containsPoint( GIMS_Point *pt );
+        bool containsApproximation( GIMS_Approximation * );
+        bool isDisjointFromApproximation( GIMS_Approximation *other );
+
+        GIMS_MBNgon(GIMS_Polygon *);
+        ~GIMS_MBNgon();
+    };
+
+    class GIMS_ConvexHullAproximation : public GIMS_Approximation{
+      public:
+        bool isDisjoint(GIMS_BoundingBox *);
+        bool isInside(GIMS_BoundingBox *);
+        appr_intersection intersection(GIMS_Approximation *other);
+
+        double getArea();
+        double getFalseArea();
+
+        bool containsPolygon( GIMS_Polygon *p );
+        bool containsPoint( GIMS_Point *pt );
+        bool containsApproximation( GIMS_Approximation * );
+        bool isDisjointFromApproximation( GIMS_Approximation *other );
+
         GIMS_ConvexHullAproximation(GIMS_Polygon *);
         ~GIMS_ConvexHullAproximation();
+    };
+
+    class GIMS_MBR : public GIMS_Approximation {
+      public:
+        GIMS_BoundingBox *box;
+
+        double getArea();
+        double getFalseArea();
+        bool isDisjoint(GIMS_BoundingBox *);
+        bool isInside(GIMS_BoundingBox *);
+        bool containsPoint( GIMS_Point * );
+        bool containsApproximation( GIMS_Approximation * );
+        bool isDisjointFromApproximation( GIMS_Approximation *other );
+        appr_intersection intersection(GIMS_Approximation *other);
+
+        GIMS_MBR(GIMS_Polygon *);
+        ~GIMS_MBR();
     };
 
     class GIMS_BoundingBox : public GIMS_Geometry {
@@ -239,6 +285,7 @@ namespace GIMS_GEOMETRY {
     class GIMS_Point : public GIMS_Geometry {
       public:
         double x, y;
+        bool extractedFromDatabase;
 
         string         toWkt           ();
         double         distance        (GIMS_Point *);
@@ -254,7 +301,7 @@ namespace GIMS_GEOMETRY {
         void           deepDelete      ();
         int            getPointCount   ();
                        GIMS_Point      ();
-                       GIMS_Point      (double x, double y);
+                       GIMS_Point      (double x, double y, bool efd = false);
                       ~GIMS_Point      ();
     };
 
@@ -282,14 +329,15 @@ namespace GIMS_GEOMETRY {
         GIMS_MultiLineString *externalRing,
                              *internalRings;
 
-        GIMS_BoundingBox bbox;
+        GIMS_Approximation *approximation;
         bool isClippedCopy;
+        bool hasOwnAppr;
 
         string            toWkt             ();
         double            area              ();
-        void              computeBBox       ();
+        GIMS_BoundingBox *computeBBox       ();
         GIMS_Polygon     *clone             ();
-        GIMS_BoundingBox  getExtent         ();
+        GIMS_BoundingBox *getExtent         ();
         GIMS_Geometry    *clipToBox         (GIMS_BoundingBox *);
         void              appendExternalRing(GIMS_LineString *);
         void              appendInternalRing(GIMS_LineString *);
@@ -335,8 +383,15 @@ int dim(GIMS_Geometry *g);
 int borderDim(GIMS_Geometry *g);
 bool geometryIdCmp(GIMS_Geometry *A, GIMS_Geometry *B);
 bool collinear_3p(GIMS_Point *a, GIMS_Point *b, GIMS_Point *c);
+int graham_scan(GIMS_Point **map, int N);
+int mod(int n, int m);
+double ccw(GIMS_Point *p1, GIMS_Point *p2, GIMS_Point *p3);
+GIMS_Approximation *createPolygonApproximation(GIMS_Polygon *p);
 
 typedef set<GIMS_Geometry *, decltype(&geometryIdCmp)> idset;
+
+/* idIndex is a std::set of GIMS_Geometry* with a custom comparison function that
+ * sorts the geometric objects by their ID. */
 extern idset idIndex;
 
 #endif

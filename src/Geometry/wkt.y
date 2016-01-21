@@ -66,7 +66,7 @@ start: _POINT_           _LPAR_ point_def           _RPAR_ {geom = $3;}
      | _COLLECTION_      _LPAR_ collection_def      _RPAR_ {geom = $3;}
      ;
 
-point_def: _NUMBERLIT_ _NUMBERLIT_ { $$ = new GIMS_Point($1, $2); }
+point_def: _NUMBERLIT_ _NUMBERLIT_ { $$ = new GIMS_Point($1, $2, true); }
          ;
 
 linestring_def: point_def _COMMA_ point_def {

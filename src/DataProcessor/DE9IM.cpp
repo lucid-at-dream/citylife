@@ -226,37 +226,6 @@ list<long> DE9IM::coveredBy(){
     return resultset;
 }
 
-
-/*TODO: be able to get the original geometry from the id in order to assess the dimension
-
-list<long> DE9IM::crosses(){
-    int dim_a = dim(query), dim_b;
-
-    list<long> resultset = list<long>();
-    for(AVLTree::iterator it = II->begin(); it != II->end(); it++){
-        dim_b = dim(*it);
-
-        if(dim_a == 0 || dim_b == 0){
-            //II
-            resultset.push_back((*it)->id);
-        
-        }else if(dim_a < dim_b &&
-                IE->find((*it)->id) != NULL){
-            //II && IE
-            resultset.push_back((*it)->id);
-
-        }else if(dim_b > dim_a && 
-                EI->find((*it)->id) != NULL){
-            //II && EI
-            resultset.push_back((*it)->id);
-        }
-    }
-    return resultset;
-}
-*/
-
-TODO(be able to get the original geometry from the id in order to assess the dimension)
-
 list<long> DE9IM::overlaps(){
 
     int dim_a = dim(query), dim_b;

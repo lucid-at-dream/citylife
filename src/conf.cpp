@@ -31,6 +31,11 @@ void conf::printCurrentConfiguration(){
     std::cout << "projection_srid " << configuration.projection_srid << std::endl;
     std::cout << std::endl;
     
+    std::cout << "Approximations:" << std::endl;
+    std::cout << "type " << configuration.approximationType << std::endl;
+    std::cout << "n-gon size " << configuration.NGON_SIZE << std::endl;
+    std::cout << std::endl;
+
     std::cout << "Database:" << std::endl;
     for(std::list<db_conf>::iterator it = configuration.db_confs.begin(); it != configuration.db_confs.end(); it++){
         std::cout << it->keyword << " " << it->value << std::endl;
@@ -80,6 +85,8 @@ int conf::readConfigurationFiles(int argc, char **argv){
         "/etc/gims/gims.conf",
     };
 
+    setDefaults();
+
     bool loaded = false;
     for(char *fname : filelist){
         if( verifyFileExistance(fname) ){
@@ -99,6 +106,13 @@ int conf::readConfigurationFiles(int argc, char **argv){
     return 0;
 }
 
+void conf::setDefaults(){
+    configuration.max_points_per_node = 1024;
+    configuration.projection_srid = 3395;
+    configuration.approximationType = 2;
+    configuration.NGON_SIZE = 5;
+}
+
 int conf::loadConfigurationFile(char *fname){
     
     FILE *f = fopen(fname, "r");
@@ -116,6 +130,7 @@ int conf::loadConfigurationFile(char *fname){
         }
     }
 
+    free(line);
     fclose(f);
     return 0;
 }
@@ -136,7 +151,12 @@ void conf::parseCfgLine(char *line){
     }else if( strcmp(line, "PROJECTION_SRID") == 0 ){
         configuration.projection_srid = atoi(value);
     
-
+    }else if( strcmp(line, "APPROXIMATION_TYPE") == 0 ){
+        configuration.approximationType = atoi(value);
+    
+    }else if( strcmp(line, "NGON_SIZE") == 0 ){
+        configuration.NGON_SIZE = atoi(value);
+    
     }else if( strcmp(line, "DB_CONF") == 0 ){
         char *db_key = value;
         char *db_val = value;
@@ -164,4 +184,16 @@ void conf::parseCfgLine(char *line){
     }else{
         std::cout << "unknown keyword in configuration file: " << line << std::endl;
     }
+}
+
+void conf::freeConf(){
+    for(std::list<db_conf>::iterator it = configuration.db_confs.begin(); it != configuration.db_confs.end(); it++){
+        free(it->keyword);
+        free(it->value);
+    }
+
+    for( std::list<char *>::iterator it = configuration.db_layers.begin(); it != configuration.db_layers.end(); it++ ){
+        free(*it);
+    }
+
 }

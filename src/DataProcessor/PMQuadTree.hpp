@@ -10,6 +10,8 @@
 #include "DCEL.hpp"
 #include "LineIntersection.hpp"
 #include "PolygonIntersection.hpp"
+#include "LinePolygonIntersection.hpp"
+#include "tunasolver.hpp"
 
 #include <list>
 #include <cmath>
@@ -72,7 +74,7 @@ namespace PMQUADTREE {
              ~Node                    ();
     };
 
-    class PMQuadTree : public DebugRenderable {
+    class PMQuadTree : public spatialIndex {
       public:
         Node *root;
         GIMS_Geometry *query;

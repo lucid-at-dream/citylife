@@ -177,15 +177,20 @@ void DebRenderer::renderRing(Cairo::RefPtr<Cairo::Context> cr, GIMS_Ring *ring){
 }
 
 void DebRenderer::renderApproximation(Cairo::RefPtr<Cairo::Context> cr, GIMS_Approximation *appr){
+
     if( appr == NULL) return;
 
-    GIMS_ConvexHullAproximation *hull = (GIMS_ConvexHullAproximation *)appr;
-    if( hull->N <= 1 ) return;
+    GIMS_Point **hull = appr->hull;
+    int N = appr->N;
+    
+    if( N <= 2 ) return;
 
     cr->set_source_rgb(255, 0, 0);
-    cr->move_to((hull->convexHull[0]->x + translatex)*scalex, (hull->convexHull[0]->y + translatey)*scaley);
-    for(int i=1; i < hull->N; i++)
-        cr->line_to((hull->convexHull[i]->x + translatex)*scalex, (hull->convexHull[i]->y + translatey)*scaley);
+    cr->move_to((hull[0]->x + translatex)*scalex, (hull[0]->y + translatey)*scaley);
+    for(int i=1; i < N; i++){
+        cr->line_to((hull[i]->x + translatex)*scalex, (hull[i]->y + translatey)*scaley);
+    }
+    cr->line_to((hull[0]->x + translatex)*scalex, (hull[0]->y + translatey)*scaley);
     cr->stroke();
     cr->set_source_rgb(0, 0, 0);
 }

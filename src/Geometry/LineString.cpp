@@ -506,8 +506,8 @@ GIMS_Geometry *GIMS_LineSegment::intersects(const GIMS_LineSegment *other){
 
 GIMS_Geometry *GIMS_LineSegment::clipToBox ( GIMS_BoundingBox *box ){
 
-    GIMS_Point upperLeft  = { box->lowerLeft->x , box->upperRight->y },
-               lowerRight = { box->upperRight->x, box->lowerLeft->y  };
+    GIMS_Point upperLeft  = GIMS_Point(box->lowerLeft->x , box->upperRight->y),
+               lowerRight = GIMS_Point(box->upperRight->x, box->lowerLeft->y );
 
     GIMS_Point *squarePoints[] = {&upperLeft, box->upperRight, &lowerRight, box->lowerLeft};
     

@@ -36,8 +36,8 @@ void GIMS_Polygon::deleteClipped(){
     delete this;
 }
 
-GIMS_BoundingBox GIMS_Polygon::getExtent(){
-    return bbox;
+GIMS_BoundingBox *GIMS_Polygon::getExtent(){
+    return this->computeBBox();
 }
 
 double GIMS_Polygon::area(){
@@ -115,16 +115,21 @@ string GIMS_Polygon::toWkt(){
 GIMS_Polygon *GIMS_Polygon::clone(){
     GIMS_Polygon *fresh = new GIMS_Polygon(this->externalRing->clone(),this->internalRings->clone());
     fresh->id = this->id;
-    fresh->bbox = this->bbox;
+    fresh->approximation = this->approximation;
     return fresh;
 }
 
 GIMS_Geometry *GIMS_Polygon::clipToBox(GIMS_BoundingBox *box){
-    if( this->bbox.isInside(box) )
-        return this;
+    
+#ifndef DONTUSEAPPROXIMATIONS
+    if( this->approximation ){
+        if( this->approximation->isInside(box) )
+            return this;
 
-    if( this->bbox.isDisjoint(box) )
-        return NULL;
+        if( this->approximation->isDisjoint(box) )
+            return NULL;
+    }
+#endif
 
     GIMS_MultiLineString *exterior = NULL,
                          *interior = NULL;
@@ -137,7 +142,7 @@ GIMS_Geometry *GIMS_Polygon::clipToBox(GIMS_BoundingBox *box){
 
     if(exterior != NULL || interior != NULL){
         GIMS_Polygon *clipped = new GIMS_Polygon( exterior, interior, false );
-        clipped->bbox = this->bbox;
+        clipped->approximation = this->approximation;
         clipped->isClippedCopy = true;
         clipped->id = this->id;
         clipped->osm_id = this->osm_id;
@@ -158,7 +163,7 @@ void GIMS_Polygon::appendInternalRing(GIMS_LineString *ir){
     this->internalRings->append(ir);
 }
 
-void GIMS_Polygon::computeBBox(){
+GIMS_BoundingBox *GIMS_Polygon::computeBBox(){
     double maxx = -1e100, minx = 1e100,
            maxy = -1e100, miny = 1e100;
 
@@ -175,14 +180,19 @@ void GIMS_Polygon::computeBBox(){
                 miny = p->y;
         }
     }
-
-    this->bbox.lowerLeft  = new GIMS_Point( minx, miny );
-    this->bbox.upperRight = new GIMS_Point( maxx, maxy );
+    GIMS_BoundingBox *bbox = new GIMS_BoundingBox( new GIMS_Point( minx, miny ),
+                                                   new GIMS_Point( maxx, maxy ) );
+    return bbox;
 }
 
 /*Returns 0 if the point is outside the polygon, 
   1 if it lies inside and 2 if it lies on the polygon's border.*/
 char GIMS_Polygon::containsPointWithinDomain(GIMS_Point *querypoint, GIMS_BoundingBox *domain){
+
+#ifndef DONTUSEAPPROXIMATIONS
+    if( this->approximation && !this->approximation->containsPoint(querypoint) )
+        return 0;
+#endif
 
     //keep track whether the closest edge is from an internal ring or the external
     //ring, as it will affect the side the point should be on to be contained.
@@ -268,35 +278,35 @@ char GIMS_Polygon::containsPointWithinDomain(GIMS_Point *querypoint, GIMS_Boundi
     }
 }
 
-GIMS_Polygon::GIMS_Polygon(GIMS_MultiLineString *externalRing, GIMS_MultiLineString *internalRings, bool computebbox){
+GIMS_Polygon::GIMS_Polygon(GIMS_MultiLineString *externalRing, GIMS_MultiLineString *internalRings, bool computeApproximation){
     this->type = POLYGON;
+    this->hasOwnAppr = false;
     this->isClippedCopy = false;
     this->externalRing = externalRing;
     this->internalRings = internalRings;
-    if( computebbox )
-        this->computeBBox();
+    if( computeApproximation ){
+        this->hasOwnAppr = true;
+        this->approximation = createPolygonApproximation(this);
+    }
 }
 
 GIMS_Polygon::GIMS_Polygon(int ext_alloc, int int_alloc){
     this->id = 0;
     this->type = POLYGON;
+    this->hasOwnAppr = false;
     this->isClippedCopy = false;
     this->externalRing = new GIMS_MultiLineString(ext_alloc);
     this->internalRings = new GIMS_MultiLineString(int_alloc);
-
-    this->bbox.lowerLeft  = new GIMS_Point( 1e100, 1e100 );
-    this->bbox.upperRight = new GIMS_Point( -1e100, -1e100 );
-
+    this->approximation = NULL;
 }
 
 GIMS_Polygon::GIMS_Polygon(){
     this->id = 0;
     this->type = POLYGON;
+    this->hasOwnAppr = false;
     this->isClippedCopy = false;
     this->externalRing = this->internalRings = NULL;
-
-    this->bbox.lowerLeft  = new GIMS_Point( 1e100, 1e100 );
-    this->bbox.upperRight = new GIMS_Point( -1e100, -1e100 );
+    this->approximation = NULL;
 }
 
 GIMS_Polygon::~GIMS_Polygon(){
@@ -304,6 +314,8 @@ GIMS_Polygon::~GIMS_Polygon(){
         delete this->externalRing;
     if( this->internalRings )
         delete this->internalRings;
+    if( this->hasOwnAppr && this->approximation )
+        delete this->approximation;
 }
 
 

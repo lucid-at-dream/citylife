@@ -4,10 +4,6 @@
 #define THRESHOLD 20
 #define THRESHOLD2 1000
 
-#ifdef GET_LSINT_TIME
-#include <ctime>
-#endif
-
 list<GIMS_Geometry *> BentleySolver::solve(GIMS_MultiLineString *A, GIMS_MultiLineString *B){
 
     bool disjoint = true;
@@ -24,33 +20,6 @@ list<GIMS_Geometry *> BentleySolver::solve(GIMS_MultiLineString *A, GIMS_MultiLi
     int NA = A->getPointCount(),
         NB = B->getPointCount();
 
-    #ifdef GET_LSINT_TIME
-        clock_t start, stop;
-        start = clock();
-
-        list<GIMS_Geometry *> result;
-
-        if( lsint_algo == 0 )
-            result = this->bruteforce(A,B);
-        else if( lsint_algo == 1 )
-            result = this->linesweep(A, B);
-        else if( lsint_algo == 2 )
-            result = ivbalaban::balaban(A,B);
-        else if( lsint_algo == 3 )
-            result = this->bentley(A, B);
-        else
-            result = this->linesweep(A, B);
-
-        stop = clock();
-
-        double t = (stop - start)/(double)CLOCKS_PER_SEC;
-
-        printf("lsint_data(algo, NA, NB, time): %d %d %d %lf\n", lsint_algo, NA-1, NB-1, t);
-
-        return result;
-    #endif
-
-    #ifndef GET_LSINT_TIME
     if( NA < THRESHOLD || NB < THRESHOLD )
         return this->bruteforce(A, B);
     
@@ -59,7 +28,6 @@ list<GIMS_Geometry *> BentleySolver::solve(GIMS_MultiLineString *A, GIMS_MultiLi
 
     else
         return ivbalaban::balaban(A, B);
-    #endif
 }
 
 bool cmp(GIMS_LineSegment a, GIMS_LineSegment b){

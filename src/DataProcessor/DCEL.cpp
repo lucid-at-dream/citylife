@@ -18,13 +18,9 @@ double face::getArea(){
 
     double area = 0;
     while(1){
-
-
         p1 = p2;
         p2 = aux->tail->pt;
         area += p1->x * p2->y - p2->x * p1->y;
-
-        printf("face: %lf %lf\n", p1->x, p1->y);
 
         if( aux == edge )
             break;
@@ -40,6 +36,18 @@ face::face(){
     this->data = 0;
 }
 
+DCEL::~DCEL(){
+    for( vertexlist::iterator it = vertexes.begin(); it != vertexes.end(); it++ ){
+        delete *it;
+    }
+
+    for( halfedgelist::iterator it = halfedges.begin(); it != halfedges.end(); it++ )
+        delete *it;
+
+    for( facelist::iterator it = faces.begin(); it != faces.end(); it++ )
+        delete *it;
+}
+
 void DCEL::addVertex(vertex *item){
     this->vertexes.insert(item);
 }
@@ -48,6 +56,7 @@ vertex *DCEL::findVertex(GIMS_Point *p){
     vertex v;
     v.pt = p;
     vertexlist::iterator it = vertexes.find(&v);
+    v.pt = NULL;
     if( it != vertexes.end() )
         return *it;
     return NULL;

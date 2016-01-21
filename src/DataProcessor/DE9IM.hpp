@@ -56,13 +56,10 @@ class DE9IM{
     list<long> disjoint();
     list<long> meets();
     list<long> contains();
-    list<long> covers();
-    
+    list<long> covers();    
     list<long> intersects();
     list<long> within();
     list<long> coveredBy();
-
-    list<long> crosses();
     list<long> overlaps();
 };
 

@@ -3,12 +3,26 @@
 using namespace GIMS_GEOMETRY;
 
 GIMS_Geometry::~GIMS_Geometry (){}
+GIMS_Approximation::~GIMS_Approximation (){}
 
 bool geometryIdCmp(GIMS_Geometry *A, GIMS_Geometry *B){
     return A->id < B->id;
 }
 
 idset idIndex(&geometryIdCmp);
+
+GIMS_Approximation *createPolygonApproximation(GIMS_Polygon *p){
+    switch( configuration.approximationType ){
+        case 0:
+            return new GIMS_MBR(p);
+
+        case 1:
+            return new GIMS_ConvexHullAproximation(p);
+
+        default:
+            return new GIMS_MBNgon(p);
+    }
+}
 
 /*helper function*/
 int dim(GIMS_Geometry *g){

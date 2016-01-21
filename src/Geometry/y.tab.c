@@ -1351,7 +1351,7 @@ yyreduce:
 
   case 9:
 #line 69 "src/Geometry/wkt.y" /* yacc.c:1646  */
-    { (yyval.pt) = new GIMS_Point((yyvsp[-1].numberlit), (yyvsp[0].numberlit)); }
+    { (yyval.pt) = new GIMS_Point((yyvsp[-1].numberlit), (yyvsp[0].numberlit), true); }
 #line 1356 "src/Geometry/y.tab.c" /* yacc.c:1646  */
     break;
 

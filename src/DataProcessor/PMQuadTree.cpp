@@ -265,8 +265,10 @@ GIMS_Geometry *Node::hasReferenceTo( long long id ){
 char Node::indexedPolygonContainsPoint(GIMS_Polygon *pol, GIMS_Point *pt){
 
     /*find the first node in the north direction than intersects polygon pol*/
-    if( !pt->isInsideBox( &(pol->bbox) ) )
+#ifndef DONTUSEAPPROXIMATIONS
+    if( !pol->approximation->containsPoint(pt) )
         return 0;
+#endif
 
     Node *n = this;
     GIMS_Geometry *first;
@@ -592,10 +594,12 @@ void Node::buildIM_polygon(DE9IM *resultset, GIMS_Polygon *query, GIMS_Geometry 
         }
 
     }else if(other->type == LINESTRING){
-TODO(BUILD_IM: polygon vs linestring)
+        GIMS_MultiLineString *mls = new GIMS_MultiLineString(1);
+        mls->append( (GIMS_LineString *)other );
+        DE9IM_pol_mls(resultset, query, mls, this->square);
 
     }else if(other->type == MULTILINESTRING){
-TODO(BUILD_IM: polygon vs multilinestring)
+        DE9IM_pol_mls(resultset, query, (GIMS_MultiLineString *)other, this->square);
 
     }else if(other->type == POLYGON){
         DE9IM_pol_pol(resultset, query, (GIMS_Polygon *)other, this->square);
@@ -654,7 +658,7 @@ void Node::buildIM_linestring(DE9IM *resultset, GIMS_MultiLineString *query, GIM
         DE9IM_mls_mls(resultset, query, (GIMS_MultiLineString *)other);
 
     }else if(other->type == POLYGON){
-TODO(BUILD_IM: linestring vs polygon)
+        DE9IM_mls_pol(resultset, query, (GIMS_Polygon *)other, this->square);
     }
 }
 
@@ -907,9 +911,6 @@ DE9IM *PMQuadTree::topologicalSearch( GIMS_Geometry *query, int(*filter)(GIMS_Ge
 }
 
 
-
-
-
 /*rendering*/
 
 
@@ -935,14 +936,12 @@ void PMQuadTree::debugRender(Cairo::RefPtr<Cairo::Context> cr){
     renderer.setTranslation( -this->root->square->lowerLeft->x,
                               -this->root->square->upperRight->y );
     this->renderTree ( cr, this->root );
-    printf("rendered the tree\n");
 
     for(idset::iterator it = idIndex.begin(); it != idIndex.end(); it++){
         GIMS_Geometry *g = *it;
         if( g->type == POLYGON ){
             GIMS_Polygon *p = (GIMS_Polygon *)g;
-            GIMS_ConvexHullAproximation a = GIMS_ConvexHullAproximation(p);
-            renderer.renderApproximation(cr, &a);
+            renderer.renderApproximation(cr, p->approximation);
         }
     }
 
@@ -965,8 +964,6 @@ void PMQuadTree::debugRender(Cairo::RefPtr<Cairo::Context> cr){
         renderer.renderGeometry(cr, query);
         cr->stroke();
 
-    }else{
-        printf("null query\n");
     }
 
     if( renderQueue->size() > 0 ){

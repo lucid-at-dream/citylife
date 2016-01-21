@@ -1,10 +1,11 @@
 #compiler settings
-CC = /usr/lib/ccache/bin/g++
+#CC = /usr/lib/ccache/bin/g++
 CC = g++
-LDLIBS = -lm -lpq -lgmp -lgmpxx -g -Wall
-COPT = -march=native -O2 -pipe -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2
-COPT = 
-CFLAGS = -std=c++11 ${LDLIBS} ${COPT} -ftrapv
+LDLIBS = -lm -lpq -lgmp -lgmpxx
+#COPT = -mtune=native -march=native -O2 
+#-pipe -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2
+COPT = -Wall -g
+CFLAGS = -std=c++11 ${LDLIBS} ${COPT}
 CTESTFLAGS = -lgtest -lgtest_main
 
 #directory structure
@@ -37,11 +38,14 @@ INC_DIR += `pkg-config --cflags --libs gtkmm-3.0`
 OBJMAIN = ${OBJ_DIR}/main.o
 
 #object files
+OBJFILES += ${OBJ_DIR}/./tunasolver.o
 OBJFILES += ${OBJ_DIR}/DBConnection/DBConnection.o
 OBJFILES += ${OBJ_DIR}/Debugger/DebRender.o
 OBJFILES += ${OBJ_DIR}/conf.o
 
 OBJFILES += ${OBJ_DIR}/Geometry/Approximation.o
+OBJFILES += ${OBJ_DIR}/Geometry/MBNgon.o
+OBJFILES += ${OBJ_DIR}/Geometry/MBR.o
 OBJFILES += ${OBJ_DIR}/Geometry/BoundingBox.o
 OBJFILES += ${OBJ_DIR}/Geometry/GIMSGeometry.o
 OBJFILES += ${OBJ_DIR}/Geometry/GeometryCollection.o
@@ -54,6 +58,7 @@ OBJFILES += ${OBJ_DIR}/Geometry/y.tab.o
 OBJFILES += ${OBJ_DIR}/DataProcessor/PMQuadTree.o
 OBJFILES += ${OBJ_DIR}/DataProcessor/DCEL.o
 OBJFILES += ${OBJ_DIR}/DataProcessor/PolygonIntersection.o
+OBJFILES += ${OBJ_DIR}/DataProcessor/LinePolygonIntersection.o
 OBJFILES += ${OBJ_DIR}/DataProcessor/LineIntersection.o
 OBJFILES += ${OBJ_DIR}/DataProcessor/DE9IM.o
 OBJFILES += ${OBJ_DIR}/DataProcessor/BentleySolver.o
@@ -138,6 +143,12 @@ debug: setdebug ${BIN_DIR}/${OFILE}
 #sets a DEBUG flag (as if defined in the source code) for every source file.
 setdebug:
 	$(eval CFLAGS += -DDEBUG)
+
+#compiles with DEBUG flag defined
+noappr: setnoappr ${BIN_DIR}/${OFILE}
+#sets a DEBUG flag (as if defined in the source code) for every source file.
+setnoappr:
+	$(eval CFLAGS += -DDONTUSEAPPROXIMATIONS)
 
 #remove binaries
 clean:

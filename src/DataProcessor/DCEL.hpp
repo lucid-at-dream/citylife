@@ -72,11 +72,11 @@ struct halfedge_cmp {
 
 class face{
   public:
-    face();
-
-    double getArea();
     halfedge *boundary;
     int data;
+    
+    face();
+    double getArea();
 };
 
 typedef set<vertex *, vertex_cmp> vertexlist;
@@ -99,6 +99,8 @@ class DCEL{
 
     void addFace(face *item);
     void calculateFaces();
+
+    ~DCEL();
 };
 
 bool sort_clockwise_cmp_(const halfedge *a, const halfedge *b);

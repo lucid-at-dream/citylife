@@ -2,189 +2,57 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
-#include "Geometry.hpp"
-#include "DBConnection.hpp"
-#include "PMQuadTree.hpp"
-#include "DebRender.hpp"
-#include "conf.hpp"
-#include "PolygonIntersection.hpp"
-#include "BentleySolver.hpp"
+#include <list>
+#include "tunasolver.hpp"
 
-using namespace PMQUADTREE;
-using namespace GIMS_GEOMETRY;
+using namespace std;
 
-int pointFilter(GIMS_Geometry *geom){
-    if(geom->type == POINT)
-        return 1;
-    return 0;
-}
-
-int polygonFilter(GIMS_Geometry *geom){
-    if(geom->type == POLYGON || geom->type == MULTIPOLYGON)
-        return 1;
-    return 0;
-}
-
-int lsFilter(GIMS_Geometry *geom){
-    if(geom->type == LINESTRING || geom->type == MULTILINESTRING)
-        return 1;
-    return 0;
-}
-
-int lsint_algo;
-
+void pointBenchmark();
+void linestringBenchmark();
+void polygonBenchmark();
 
 int main(int argc, char **argv){
 
-    char line[200000];
-    int status;
-    
-    status = scanf("%[^\n]", line); getchar();
-    if( status == EOF ) return -1;
-    GIMS_Polygon *p1 = (GIMS_Polygon *)fromWkt(line);
-
-    printf("p1\n");
-
-    status = scanf("%[^\n]", line); getchar();
-    if( status == EOF ) return -1;
-    GIMS_Polygon *p2 = (GIMS_Polygon *)fromWkt(line);
-
-    printf("p2\n");
-
-    status = scanf("%[^\n]", line); getchar();
-    if( status == EOF ) return -1;
-    GIMS_Point *lowerLeft = (GIMS_Point *)fromWkt(line);
-
-    printf("p1\n");
-
-    status = scanf("%[^\n]", line); getchar();
-    if( status == EOF ) return -1;
-    GIMS_Point *upperRight = (GIMS_Point *)fromWkt(line);
-
-    printf("p2\n");
-
-    GIMS_BoundingBox *domain = new GIMS_BoundingBox(lowerLeft, upperRight);
-
-    //GIMS_Polygon *clipped1  = (GIMS_Polygon *)(p1->clipToBox( domain ));
-    //GIMS_Polygon *clipped2 = (GIMS_Polygon *)(p2->clipToBox( domain ));
-
-    //buildPlanarGraph(clipped1, clipped2, domain);
-
-    p1->id = p1->osm_id = 4231;
-    p2->id = p2->osm_id = 1232;
-
-    //DE9IM *resultset = new DE9IM(p1);
-    //DE9IM_pol_pol(resultset, p1, p2, domain);
-
-    GIMS_ConvexHullAproximation a = GIMS_ConvexHullAproximation(p1),
-                                b = GIMS_ConvexHullAproximation(p2);
-
-    appr_intersection its = a.intersection(&b, domain);
-
-    printf("intersects? %s\narea: %lf\n", its.intersects ? "yes" : "no", its.area);
-
-    if( strcmp(argv[1], "render") == 0 ){
-        if( conf::readConfigurationFiles(argc, argv) != 0 )
-            return -1;
-        conf::printCurrentConfiguration();
-
-        PMQuadTree tree = PMQuadTree( domain );
-        tree.insert(p1); tree.insert(p2);
-        renderer = DebRenderer(&tree);
-        renderer.setScale(400.0/domain->xlength(), -400.0/domain->ylength());
-        renderer.setTranslation( -domain->minx(), -domain->maxy() );
-        renderer.mainloop(argc, argv);
-    }
-
-    return 0;
-}
-
-
-/*
-int main(int argc, char **argv){
-    
-#ifdef GET_LSINT_TIME
-    lsint_algo = atoi(argv[1]);
-
-    printf("algo: %s", argv[1]);
-
-#endif
-
-    //1. read and load configurations
-    if( conf::readConfigurationFiles(argc, argv) != 0 )
+    //1. load configuration
+    if( loadConfiguration(argc, argv) )
         return -1;
-    conf::printCurrentConfiguration();
 
-    //2. load data from data sources
-    clock_t start, stop;
+    //2. connect to database
+    connectToDatabase();
+    GIMS_BoundingBox *extent = dbconnection.getOverallExtent();
 
-    start = clock();
-    PGConnection conn = PGConnection();
-    conn.connect();
-    stop = clock();
-    cout << "DBCONN: " << (stop - start)/(double)CLOCKS_PER_SEC << " seconds" << endl;
+    //3. create an index
+    spatialIndex *index = createSpatialIndex(extent);
 
-    //retrieve layers extent
-    GIMS_BoundingBox *extent = conn.getOverallExtent();
+    //4. load data from db
+    list<GIMS_Geometry *> planet_osm_point   = loadPostgisData("FROM planet_osm_point");
+    list<GIMS_Geometry *> planet_osm_line    = loadPostgisData("FROM planet_osm_line");
+    list<GIMS_Geometry *> planet_osm_polygon = loadPostgisData("FROM planet_osm_polygon");
 
-    //create an empty pmqtree bounded by the computed extent
-    PMQuadTree tree = PMQuadTree( extent );
+    //5. insert the data in the index
+    index->insert(planet_osm_point);
+    index->insert(planet_osm_line);
+    index->insert(planet_osm_polygon);
 
-    char fromClause[512];
-    for( list<char *>::iterator it = configuration.db_layers.begin(); it != configuration.db_layers.end(); it++ ){
-        start = clock();
-        sprintf(fromClause, "FROM %s", *it);
-        list<GIMS_Geometry *> objects = conn.getGeometryAsList(fromClause);
-        stop = clock();
-
-        cout << "DBFETCH: " << *it << ": " << (stop - start)/(double)CLOCKS_PER_SEC << " seconds" << endl;
-
-        start = clock();
-        tree.insert(objects);
-        stop = clock();
-        cout << "PMQTINS: " << *it << ": " << objects.size() << " elements: " << (stop - start)/(double)CLOCKS_PER_SEC << " seconds" << endl;
-
-    }
-    conn.disconnect();
-
-    //3. start server for querying
-
-    /*
-    GIMS_LineString *query;
-    printf("results for id = %lu\n", query->osm_id);
-
-    for(idset::iterator it = idIndex.begin(); it != idIndex.end(); it++){
-        query = (GIMS_LineString *)(*it);
-        DE9IM *results = tree.topologicalSearch(query, lsFilter);
-    }
-    */
-
-    /*
-    start = clock();
+    //6. perform benchmarks
+    pointBenchmark();
+    linestringBenchmark();
+    polygonBenchmark();
     
-    list<long> intersected = results->intersects();
-
-    for( list<long>::iterator k = intersected.begin(); k != intersected.end(); k++ ){
-        GIMS_LineString related; related.id = *k;
-        cout <<  query->osm_id << " | " << (*(idIndex.find(&related)))->osm_id << endl;
-    }
-
-    delete results;
-    stop = clock();
-
-    cout << "took ";
-    cout << (stop - start)/(double)CLOCKS_PER_SEC;
-    cout << " seconds to process" << endl;
-    */
-/*
-    //4. [Optional]render
-    if( 1 ){
-        renderer = DebRenderer(&tree);
-        renderer.setScale(400.0/extent->xlength(), -400.0/extent->ylength());
-        renderer.setTranslation( -extent->minx(), -extent->maxy() );
-        renderer.mainloop(argc, argv);
-    }
-
-    //5. clean exit
+    //renderIndex(index, extent);
+    delete index;
+    shutdownTunaSolver();
 }
-*/
+
+void pointBenchmark(){
+
+}
+
+void linestringBenchmark(){
+
+}
+
+void polygonBenchmark(){
+    
+}
+
