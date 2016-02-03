@@ -256,12 +256,10 @@ char GIMS_Polygon::containsPointWithinDomain(GIMS_Point *querypoint, GIMS_Boundi
             }
         }
 
-        GIMS_LineSegment auxls;
         //compute and compare angles
-        double angle1 = angle3p(unshared1, shpoint, querypoint),
-               angle2 = angle3p(unshared2, shpoint, querypoint);
+        double angle1 = angle3p(unshared1, shpoint, querypoint);
+        double angle2 = (unshared2 != NULL) ? angle3p(unshared2, shpoint, querypoint) : 1e100;
 
-        auxls = angle1 < angle2 ? other : closest;
         closest = angle1 < angle2 ? closest : other;
     }
 

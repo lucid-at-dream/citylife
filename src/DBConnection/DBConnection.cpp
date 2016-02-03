@@ -52,10 +52,12 @@ list<GIMS_Geometry *> PGConnection::getGeometryAsList(const char *whereClause){
         GIMS_Geometry *g = fromWkt(PQgetvalue(qres, i, 1));
         g->id = _gims_id_++;
         g->osm_id = id;
+        
         if(g->type == MULTIPOLYGON){
             g->deepDelete();
             continue;
         }
+
         resultset.push_back(g);
     }
 

@@ -8,8 +8,17 @@ void DE9IM_mls_ls(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_LineString
     other_mls->append(other);
 
     list<GIMS_Geometry *> intersections = bs.solve(query, other_mls);
-
     delete other_mls;
+
+    matrix_t::iterator matrix_index = resultset->getMatrixIndex(other->id);
+    if( intersections.size() == 0 ){
+        //then they're disjoint...
+        resultset->setIE(matrix_index, 1);
+        resultset->setBE(matrix_index, 0);
+        resultset->setEI(matrix_index, 1);
+        resultset->setEB(matrix_index, 0);
+        return;
+    }
 
     GIMS_LineString *other_original = (GIMS_LineString *)(*(idIndex.find(other)));
     GIMS_Point *otherBorder[2] = {other_original->list[0], other_original->list[other_original->size-1]};
@@ -50,11 +59,11 @@ void DE9IM_mls_ls(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_LineString
                     intersectedBorders |= 1 << (shift_inc+i);
             }
 
-            resultset->setIntersect(other->id, 1);
-            resultset->setII(other->id, 1);
+            resultset->setIntersect(matrix_index, 1);
+            resultset->setII(matrix_index, 1);
         
         }else{
-            resultset->setIntersect(other->id, 0);
+            resultset->setIntersect(matrix_index, 0);
 
             bool isBorder = false;
             for(int i=0; i<queryBorder.size; i++){
@@ -70,18 +79,18 @@ void DE9IM_mls_ls(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_LineString
                 }
             }
             if( !isBorder )
-                resultset->setII(other->id, 0);
+                resultset->setII(matrix_index, 0);
         }
     }
 
     /*Here we check intersections of Borders with exteriors*/
     if( (intersectedBorders & (1 << shift_inc)) == 0 || (intersectedBorders & (1 << (shift_inc+1))) == 0 ){
-        resultset->setEB(other->id, 0);
+        resultset->setEB(matrix_index, 0);
     }
 
     for(int i=0; i<queryBorder.size; i++){
         if( (intersectedBorders & (1 << i)) == 0 ){
-            resultset->setBE(other->id, 0);
+            resultset->setBE(matrix_index, 0);
             break;
         }
     }
@@ -102,14 +111,12 @@ void DE9IM_mls_ls(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_LineString
     }
 
     if( !queryContained && !otherContained ){
-        resultset->setEI(other->id, 1);
-        resultset->setIE(other->id, 1);
+        resultset->setEI(matrix_index, 1);
+        resultset->setIE(matrix_index, 1);
     }else if( !queryContained && otherContained ){
-        cout << other->osm_id << " is contained by " << query->osm_id << endl;
-        resultset->setIE(other->id, 1);
+        resultset->setIE(matrix_index, 1);
     }else if( queryContained && !otherContained ){
-        cout << query->osm_id << " is contained by " << other->osm_id << endl;
-        resultset->setEI(other->id, 1);
+        resultset->setEI(matrix_index, 1);
     }
 
     for(list<GIMS_Geometry *>::iterator it = intersections.begin(); it != intersections.end(); it++)
@@ -120,7 +127,17 @@ void DE9IM_mls_ls(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_LineString
 void DE9IM_mls_mls(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_MultiLineString *other){
     BentleySolver bs; 
     list<GIMS_Geometry *> intersections = bs.solve(query, other);
-    
+
+    matrix_t::iterator matrix_index = resultset->getMatrixIndex(other->id);
+    if( intersections.size() == 0 ){
+        //then they're disjoint...
+        resultset->setIE(matrix_index, 1);
+        resultset->setBE(matrix_index, 0);
+        resultset->setEI(matrix_index, 1);
+        resultset->setEB(matrix_index, 0);
+        return;
+    }
+
     //retrieve other's border
     GIMS_Geometry *original = (*(idIndex.find(other)));
     GIMS_MultiPoint otherBorder;
@@ -172,11 +189,11 @@ void DE9IM_mls_mls(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_MultiLine
                     intersectedBorders |= 1 << (shift_inc+i);
             }
 
-            resultset->setIntersect(other->id, 1);
-            resultset->setII(other->id, 1);
+            resultset->setIntersect(matrix_index, 1);
+            resultset->setII(matrix_index, 1);
         
         }else{
-            resultset->setIntersect(other->id, 0);
+            resultset->setIntersect(matrix_index, 0);
 
             bool isBorder = false;
             for( int i=0; i<queryBorder.size; i++ ){
@@ -193,21 +210,21 @@ void DE9IM_mls_mls(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_MultiLine
             }
 
             if( !isBorder )
-                resultset->setII(other->id, 0);
+                resultset->setII(matrix_index, 0);
         }
     }
 
     /*Here we check intersections of Borders with exteriors*/
     for(int i=0; i<otherBorder.size; i++){
         if( (intersectedBorders & (1 << (shift_inc+i))) == 0 ){
-            resultset->setEB(other->id, 0);
+            resultset->setEB(matrix_index, 0);
             break;
         }
     }
 
     for(int i=0; i<queryBorder.size; i++){
         if( (intersectedBorders & (1 << i)) == 0 ){
-            resultset->setBE(other->id, 0);
+            resultset->setBE(matrix_index, 0);
             break;
         }
     }
@@ -231,12 +248,12 @@ void DE9IM_mls_mls(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_MultiLine
     }
 
     if( !queryContained && !otherContained ){
-        resultset->setEI(other->id, 1);
-        resultset->setIE(other->id, 1);
+        resultset->setEI(matrix_index, 1);
+        resultset->setIE(matrix_index, 1);
     }else if( !queryContained && otherContained ){
-        resultset->setIE(other->id, 1);
+        resultset->setIE(matrix_index, 1);
     }else if( queryContained && !otherContained ){
-        resultset->setEI(other->id, 1);
+        resultset->setEI(matrix_index, 1);
     }
 
     for(list<GIMS_Geometry *>::iterator it = intersections.begin(); it != intersections.end(); it++)

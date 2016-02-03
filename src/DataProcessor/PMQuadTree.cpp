@@ -22,9 +22,7 @@ list<GIMS_Geometry *> *blackRenderQueue = new list<GIMS_Geometry *>();
 list<GIMS_Geometry *> *redRenderQueue = new list<GIMS_Geometry *>();
 
 
-
-
-
+bool __PMQT__verifyPolygonContainment__ = true;
 
 
 /*
@@ -854,7 +852,7 @@ DE9IM *PMQuadTree::topologicalSearch( GIMS_Geometry *query, int(*filter)(GIMS_Ge
         this->root->activeSearch(resultset, query, filter);
     }
 
-    if(false){
+    if(__PMQT__verifyPolygonContainment__){
         //since polygons might have topological relationships even though they're not in the same
         //node (containment), we need to point label at least one of the points in the query set.
         GIMS_Point *pt;

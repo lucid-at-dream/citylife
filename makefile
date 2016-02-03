@@ -2,9 +2,9 @@
 #CC = /usr/lib/ccache/bin/g++
 CC = g++
 LDLIBS = -lm -lpq -lgmp -lgmpxx
-#COPT = -mtune=native -march=native -O2 
+COPT = -mtune=native -march=native -O3
 #-pipe -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2
-COPT = -Wall -g
+COPT = -Wall -g -Og
 CFLAGS = -std=c++11 ${LDLIBS} ${COPT}
 CTESTFLAGS = -lgtest -lgtest_main
 

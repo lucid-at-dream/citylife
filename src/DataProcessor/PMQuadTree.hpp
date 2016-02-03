@@ -120,4 +120,6 @@ extern double xmultiplier[4];
 extern double ymultiplier[4];
 extern unsigned long long pointcount;
 
+extern bool __PMQT__verifyPolygonContainment__;
+
 #endif

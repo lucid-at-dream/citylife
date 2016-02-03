@@ -64,14 +64,20 @@ void renderIndex(DebugRenderable *renderable, GIMS_BoundingBox *extent){
 
 /*topological search*/
 list<long> spatialIndex::contains(GIMS_Geometry *query, int(*filter)(GIMS_Geometry *)){
+    
+    __PMQT__verifyPolygonContainment__ = false;
     DE9IM *results = this->topologicalSearch(query, filter);
+    __PMQT__verifyPolygonContainment__ = true;
+
     list<long> ids = results->contains();
     delete results;
     return ids;
 }
 
 list<long> spatialIndex::covers(GIMS_Geometry *query, int(*filter)(GIMS_Geometry *)){
+    __PMQT__verifyPolygonContainment__ = false;
     DE9IM *results = this->topologicalSearch(query, filter);
+    __PMQT__verifyPolygonContainment__ = true;
     list<long> ids = results->covers();
     delete results;
     return ids;
@@ -92,14 +98,18 @@ list<long> spatialIndex::coveredBy(GIMS_Geometry *query, int(*filter)(GIMS_Geome
 }
 
 list<long> spatialIndex::touches(GIMS_Geometry *query, int(*filter)(GIMS_Geometry *)){
+    __PMQT__verifyPolygonContainment__ = false;
     DE9IM *results = this->topologicalSearch(query, filter);
+    __PMQT__verifyPolygonContainment__ = true;
     list<long> ids = results->meets();
     delete results;
     return ids;
 }
 
 list<long> spatialIndex::overlaps(GIMS_Geometry *query, int(*filter)(GIMS_Geometry *)){
+    __PMQT__verifyPolygonContainment__ = false;
     DE9IM *results = this->topologicalSearch(query, filter);
+    __PMQT__verifyPolygonContainment__ = true;
     list<long> ids = results->overlaps();
     delete results;
     return ids;

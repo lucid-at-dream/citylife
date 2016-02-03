@@ -101,12 +101,16 @@ DCEL polygonAndDomainAsPlanarGraph(GIMS_Polygon *P, GIMS_BoundingBox *domain){
                     if(it->type == POINT){
                         addPointToPointList( intersections, (GIMS_Point *)it, 0 );
                         addPointToPointList( clipPolNodes[l2], (GIMS_Point *)it, 0 );
+                        __deleteAfterSearch__.push_back( (GIMS_Point *)it );
                     /*consider the case where the intersection is a line segment*/
                     }else{
                         addPointToPointList( intersections, ((GIMS_LineSegment *)it)->p1, 0 );
                         addPointToPointList( intersections, ((GIMS_LineSegment *)it)->p2, 0 );
                         addPointToPointList( clipPolNodes[l2], ((GIMS_LineSegment *)it)->p1, 0 );
                         addPointToPointList( clipPolNodes[l2], ((GIMS_LineSegment *)it)->p2, 0 );
+                        __deleteAfterSearch__.push_back( ((GIMS_LineSegment *)it)->p1 );
+                        __deleteAfterSearch__.push_back( ((GIMS_LineSegment *)it)->p2 );
+                        delete it;
                     }
                 }
             }
@@ -211,20 +215,43 @@ DCEL polygonAndDomainAsPlanarGraph(GIMS_Polygon *P, GIMS_BoundingBox *domain){
             cw->twin  = ccw;
             cw->tail  = it_v1;
             cw->data |= 2;
-            it_v1->incidentEdges.push_back(cw);
+            //it_v1->incidentEdges.push_back(cw);
 
             ccw->twin  = cw;
             ccw->tail  = it_v2;
             ccw->data |= 1;
-            it_v2->incidentEdges.push_back(ccw);
+            //it_v2->incidentEdges.push_back(ccw);
 
-            dcel.addHalfedge(cw);
-            dcel.addHalfedge(ccw);
+            //dcel.addHalfedge(cw);
+            //dcel.addHalfedge(ccw);
+
+            halfedge *it1 = dcel.findHalfedge(cw);
+            halfedge *it2 = dcel.findHalfedge(ccw);
+            
+            /*if the edge also belongs to the polygon being clipped...*/
+            if( it1 != NULL ){
+                it1->data |= 2;
+                delete cw;
+            }else{
+                dcel.addHalfedge(cw);
+                it_v1->incidentEdges.push_back(cw);
+            }
+
+            if( it2 != NULL ){
+                it2->data |= 1;
+                delete ccw;
+            }else{
+                dcel.addHalfedge(ccw);
+                it_v2->incidentEdges.push_back(ccw);
+            }
         }
     }
 
-    for( int i=0; i<pslgSequences.nrows; i++ )
+    for( int i=0; i<pslgSequences.nrows; i++ ){
+        if( i>0 && pslgSequences.matrix[i] == pslgSequences.matrix[i-1] )
+            continue;
         free(pslgSequences.matrix[i]->nodes);
+    }
     free(pslgSequences.matrix);
 
     for(int i=0; i<clipPolCycle.nnodes-1; i++){
@@ -354,7 +381,10 @@ DCEL polygonAndDomainAsPlanarGraph(GIMS_Polygon *P, GIMS_BoundingBox *domain){
         }
     }
 
-    delete uL; delete uR; delete lR; delete lL;
+    __deleteAfterSearch__.push_back(uL);
+    __deleteAfterSearch__.push_back(uR);
+    __deleteAfterSearch__.push_back(lR);
+    __deleteAfterSearch__.push_back(lL);
     for(int i=0; i<4; i++)
         delete clipPolygon[i];
 

@@ -23,11 +23,9 @@ list<GIMS_Geometry *> BentleySolver::solve(GIMS_MultiLineString *A, GIMS_MultiLi
     if( NA < THRESHOLD || NB < THRESHOLD )
         return this->bruteforce(A, B);
     
-    else if( NA < THRESHOLD2 || NB < THRESHOLD2 )
+    else
         return linesweep(A, B);
 
-    else
-        return ivbalaban::balaban(A, B);
 }
 
 bool cmp(GIMS_LineSegment a, GIMS_LineSegment b){
