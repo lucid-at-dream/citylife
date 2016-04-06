@@ -12,6 +12,18 @@ public class ServiceWrapper implements Runnable{
 
     public ServiceWrapper(Service service){
         this.service = service;
+        this.nDeps = this.nRunningDeps = 0;
+        this.state = ServiceState.STOPPED;
+        this.stopjob = false;
+        this.dependents = new ArrayList();
+    }
+
+    public void addDependent(String service){
+        dependents.add(service);
+    }
+
+    public void setNumDependencies(int n){
+        this.nDeps = n;
     }
 
     public boolean canStart(){
