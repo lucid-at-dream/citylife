@@ -10,4 +10,14 @@ public class ServiceCfg{
         this.name = name;
         this.dependencies = dependencies;
     }
+
+    public static Service instantiateService(String name){
+        Service s = null;
+        try{
+            s = (Service)Class.forName(name).newInstance();
+        }catch(ClassNotFoundException | InstantiationException | IllegalAccessException e){
+            e.printStackTrace();
+        }
+        return s;
+    }
 }

@@ -19,8 +19,8 @@ public class Config{
     * Attempts to parse the configuration file associated with the Config object instance
     * and returns an object describing the services configuration.
     *
-    * @return A collection of ServiceData objects describing each service and dependencies*/
-    public boolean parseConfig(){
+    * @return A collection of ServiceCfg objects describing each service and dependencies*/
+    public ArrayList<ServiceCfg> parseConfig(){
         String content = this.getFileContent();
         return this.parseServices(content);
     }
@@ -76,16 +76,16 @@ public class Config{
     }
 
     /**
-    * Given the contents of the configuration file returns a collection of ServiceData objects
+    * Given the contents of the configuration file returns a collection of ServiceCfg objects
     * describing the services and dependencies.
     *
-    * @return A collection of ServiceData objects describing each service and dependencies*/
-    private ArrayList<ServiceData> parseServices(String content){
+    * @return A collection of ServiceCfg objects describing each service and dependencies*/
+    private ArrayList<ServiceCfg> parseServices(String content){
         String serviceEntryRegex = "[^\\{]*\\{[^\\}]*\\}";
         Pattern pattern = Pattern.compile(serviceEntryRegex);
         Matcher matcher = pattern.matcher(content);
         
-        ArrayList<ServiceData> services = ArrayList();
+        ArrayList<ServiceCfg> services = new ArrayList();
         while( matcher.find() )
             services.add( this.parseService( matcher.group() ) );
         return services;
