@@ -4,78 +4,52 @@ import java.util.HashMap;
 import java.util.ArrayList;
 
 public class Jervicectl{
-    private HashMap<String, ServiceWrapper> services;
+    private ServiceManager serviceMgr;
     private ArrayList<ServiceWrapper> servicesList;
 
     public static void main( String[] args )
     {
-        Jervicectl mgr = new Jervicectl();
-        mgr.init();
-        mgr.startAll();
+        String cfgname = args.length > 0 ? args[0] : "jervicectl.cfg";
+
+        Jervicectl jervicectl = new Jervicectl();
+        jervicectl.init(cfgname);
+        jervicectl.startAll();
     }
 
     public Jervicectl(){
-        this.services = new HashMap();
-        this.servicesList = new ArrayList();
+        this.serviceMgr = new ServiceManager();
     }
 
-    private void loadService(ServiceCfg cfg){
-        ServiceWrapper s = null;
-        if( services.containsKey(cfg.name) ){
-            s = services.get(cfg.name);
-        }else{
-            s = new ServiceWrapper( ServiceCfg.instantiateService(cfg.name) );
-            services.put(cfg.name, s);
-            servicesList.add(s);
-        }
-        s.setNumDependencies(cfg.dependencies.size());
-
-        for( String dependency : cfg.dependencies ){
-            ServiceWrapper dep = null;
-            if( services.containsKey(dependency) ){
-                dep = services.get(dependency);
-            }else{
-                dep = new ServiceWrapper( ServiceCfg.instantiateService(dependency) );
-                services.put(dependency, dep);
-                servicesList.add(dep);
-            }
-            dep.addDependent(cfg.name);
-        }
-    }
-
-    public void init(){
-        Config config = new Config("jervicectl.cfg");
+    public void init(String cfgname){
+        Config config = new Config(cfgname);
         ArrayList<ServiceCfg> servicesConfig = config.parseConfig();
 
         for( ServiceCfg scfg: servicesConfig ){
-            this.loadService(scfg);
+            this.serviceMgr.registerService(scfg.name);
+            for( String dependency : scfg.dependencies )
+                this.serviceMgr.registerDependent(dependency, scfg.name);
         }
     }
 
-    public void loadConfig(){
-
+    public boolean startService(String name){
+        //serviceMgr.startService(name);
+        return true;
     }
 
-    public void startService(){
-
+    public void stopService(String name){
+        //serviceMgr.stopService(name);
     }
 
-    public void stopService(){
-
-    }
-
-    public void getServiceStatus(){
-
+    public ServiceState getServiceStatus(String name){
+        //return serviceMgr.getService(name).getState();
+        return ServiceState.STOPPED;
     }
 
     public void startAll(){
-        for(ServiceWrapper sw : servicesList){
-            Thread t = new Thread(sw);
-            t.start();
-        }
+        serviceMgr.startAll();
     }
 
     public void stopAll(){
-
+        serviceMgr.stopAll();
     }
 }

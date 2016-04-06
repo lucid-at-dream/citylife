@@ -5,56 +5,69 @@ import java.util.ArrayList;
 public class ServiceWrapper implements Runnable{
     
     private Service service;
-    private ArrayList<String> dependents;
-    private int nDeps, nRunningDeps;
+    
+    private ArrayList<ServiceWrapper> dependencies;
+    private ArrayList<ServiceWrapper> dependents;
+
+    public int numDependencies;
+    public int numRunningDependencies;
+    
     private ServiceState state;
-    public Boolean stopjob;
+    private Boolean stopjob;
+    public Thread thread;
 
     public ServiceWrapper(Service service){
         this.service = service;
-        this.nDeps = this.nRunningDeps = 0;
+        this.numDependencies = this.numRunningDependencies = 0;
         this.state = ServiceState.STOPPED;
         this.stopjob = false;
         this.dependents = new ArrayList();
     }
 
-    public void addDependent(String service){
+    public ServiceState getState(){
+        return this.state;
+    }
+
+    public void addDependent(ServiceWrapper service){
         dependents.add(service);
+        service.numDependencies++;
     }
 
     public void setNumDependencies(int n){
-        this.nDeps = n;
+        this.numDependencies = n;
     }
 
     public boolean canStart(){
-        return nDeps - nRunningDeps == 0;
-    }
-
-    public void incRunningDeps(int inc){
-        this.nRunningDeps -= 1;
-        //if(==0) notify someone
-    }
-
-    private void tellDependentsStopped(){
-        for(String sw : dependents){
-            //sw.incRunningDeps(-1);
-        }
-    }
-
-    private void tellDependentsStarted(){
-        for(String sw : dependents){
-            //sw.incRunningDeps(1);
-        }
+        return (numDependencies - numRunningDependencies) == 0;
     }
 
     public void run(){
+
+        while( !this.canStart() ){
+            synchronized( this ){
+                try{
+                    this.wait();
+                }catch(InterruptedException e){
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        this.state = ServiceState.STARTING;
         boolean success = service.start();
 
         if( !success )
             return;
 
-        this.tellDependentsStarted();
         this.state = ServiceState.RUNNING;
+        for( ServiceWrapper dependent : dependents ){
+            
+            synchronized( dependent ){
+                dependent.numRunningDependencies++;
+                dependent.notify();
+            }
+
+        }
 
         while( !stopjob ){
             synchronized( stopjob ){
@@ -66,7 +79,12 @@ public class ServiceWrapper implements Runnable{
             }
         }
         
-        this.tellDependentsStopped();
+        for( ServiceWrapper dependent : dependents ){
+            //dependent.stop()
+            dependent.numRunningDependencies--;
+        }
+        this.state = ServiceState.STOPPED;
         service.stop();
+
     }
 }
