@@ -14,6 +14,15 @@ public class Jervicectl{
         Jervicectl jervicectl = new Jervicectl();
         jervicectl.init(cfgname);
         jervicectl.startAll();
+
+        try{
+            Thread.sleep(8000);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        System.out.println("about to stop service A");
+
+        jervicectl.stopService( "com.feedzai.testServices.ServiceA" );
     }
 
     public Jervicectl(){
@@ -27,7 +36,7 @@ public class Jervicectl{
         for( ServiceCfg scfg: servicesConfig ){
             this.serviceMgr.registerService(scfg.name);
             for( String dependency : scfg.dependencies )
-                this.serviceMgr.registerDependent(dependency, scfg.name);
+                this.serviceMgr.registerDependency(scfg.name, dependency);
         }
     }
 
@@ -37,7 +46,7 @@ public class Jervicectl{
     }
 
     public void stopService(String name){
-        //serviceMgr.stopService(name);
+        serviceMgr.stopService(serviceMgr.registerService(name));
     }
 
     public ServiceState getServiceStatus(String name){

@@ -2,49 +2,93 @@ package com.feedzai.jervicectl;
 
 import java.util.ArrayList;
 
-public class ServiceWrapper implements Runnable{
+public class ServiceWrapper{
     
     private Service service;
     
-    private ArrayList<ServiceWrapper> dependencies;
-    private ArrayList<ServiceWrapper> dependents;
+    public ArrayList<ServiceWrapper> dependencies;
+    public ArrayList<ServiceWrapper> dependents;
 
     public int numDependencies;
     public int numRunningDependencies;
     
-    private ServiceState state;
-    private Boolean stopjob;
-    public Thread thread;
+    public String name;
 
-    public ServiceWrapper(Service service){
+    private volatile ServiceState serviceState;
+    private Boolean stopjob;
+
+    public ServiceWrapper(String name, Service service){
+        this.name = name;
         this.service = service;
-        this.numDependencies = this.numRunningDependencies = 0;
-        this.state = ServiceState.STOPPED;
+        
+        this.numRunningDependencies = 0;
+        this.setServiceState(ServiceState.STOPPED);
         this.stopjob = false;
+        
+        this.dependencies = new ArrayList();
         this.dependents = new ArrayList();
     }
 
-    public ServiceState getState(){
-        return this.state;
+    public boolean hasBeenStarted(){
+        return this.serviceState == ServiceState.RUNNING || 
+               this.serviceState == ServiceState.STARTING || 
+               this.serviceState == ServiceState.WAITING_DEPENDENCIES_START;
     }
 
-    public void addDependent(ServiceWrapper service){
-        dependents.add(service);
-        service.numDependencies++;
+    public void setServiceState(ServiceState state){
+        this.serviceState = state;
     }
 
-    public void setNumDependencies(int n){
-        this.numDependencies = n;
+    public ServiceState getServiceState(){
+        return this.serviceState;
+    }
+
+    public void addDependency(ServiceWrapper service){
+        this.dependencies.add(service);
+        service.dependents.add(this);
     }
 
     public boolean canStart(){
-        return (numDependencies - numRunningDependencies) == 0;
+        return (this.dependencies.size() - numRunningDependencies) == 0;
     }
 
-    public void run(){
+    public boolean canStop(){
+        for( ServiceWrapper sw : this.dependents )
+            if( sw.getServiceState() != ServiceState.STOPPED )
+                return false;
+        return true;
+    }
 
-        while( !this.canStart() ){
-            synchronized( this ){
+
+
+
+
+    public Runnable getStartServiceJob(){
+        return new Runnable() {
+            @Override
+            public void run(){
+                waitForDependenciesToStart();
+                startServiceThread();
+                notifyDependents();
+            }
+        };
+    }
+
+    public Runnable getStopServiceJob(){
+        return new Runnable() {
+            @Override
+            public void run(){
+                waitForDependentsToStop();
+                stopServiceThread();
+                notifyDependencies();
+            }
+        };
+    }
+
+    public void waitForDependenciesToStart(){
+        this.setServiceState(ServiceState.WAITING_DEPENDENCIES_START);
+        synchronized(this){
+            while( !this.canStart() && !this.stopjob ){
                 try{
                     this.wait();
                 }catch(InterruptedException e){
@@ -52,39 +96,48 @@ public class ServiceWrapper implements Runnable{
                 }
             }
         }
+    }
 
-        this.state = ServiceState.STARTING;
-        boolean success = service.start();
+    public void startServiceThread(){
+        this.setServiceState(ServiceState.STARTING);
+        service.start();
+        this.setServiceState(ServiceState.RUNNING);
+    }
 
-        if( !success )
-            return;
-
-        this.state = ServiceState.RUNNING;
+    public void notifyDependents(){
         for( ServiceWrapper dependent : dependents ){
-            
             synchronized( dependent ){
                 dependent.numRunningDependencies++;
                 dependent.notify();
             }
-
         }
+    }
 
-        while( !stopjob ){
-            synchronized( stopjob ){
+    public void waitForDependentsToStop(){
+        this.setServiceState(ServiceState.WAITING_DEPENDENCIES_STOP);
+        synchronized( this ){
+            while( !this.canStop() ){
                 try{
-                    stopjob.wait();
+                    this.wait();
                 }catch(InterruptedException e){
                     e.printStackTrace();
                 }
             }
         }
-        
-        for( ServiceWrapper dependent : dependents ){
-            //dependent.stop()
-            dependent.numRunningDependencies--;
-        }
-        this.state = ServiceState.STOPPED;
-        service.stop();
-
     }
+
+    public void stopServiceThread(){
+        this.setServiceState(ServiceState.STOPPING);
+        service.stop();
+        this.setServiceState(ServiceState.STOPPED);
+    }
+
+    public void notifyDependencies(){
+        for( ServiceWrapper dependency : this.dependencies ){
+            synchronized(dependency){
+                dependency.notify();
+            }
+        }
+    }
+
 }
