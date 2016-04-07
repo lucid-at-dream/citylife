@@ -2,63 +2,87 @@ package com.feedzai.jervicectl;
 
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Jervicectl{
+
     private ServiceManager serviceMgr;
-    private ArrayList<ServiceWrapper> servicesList;
 
     public static void main( String[] args )
     {
-        String cfgname = args.length > 0 ? args[0] : "jervicectl.cfg";
-
         Jervicectl jervicectl = new Jervicectl();
-        jervicectl.init(cfgname);
-        jervicectl.startAll();
 
-        try{
-            Thread.sleep(8000);
-        }catch(Exception e){
-            e.printStackTrace();
+        Scanner stdin = new Scanner(System.in);
+        while(true){
+            try{
+                jervicectl.parseCommand( stdin.nextLine() );
+            }catch(Exception e){
+                stdin = new Scanner(System.in);
+            }
         }
-        System.out.println("about to stop service A");
-
-        jervicectl.stopService( "com.feedzai.testServices.ServiceA" );
     }
 
     public Jervicectl(){
         this.serviceMgr = new ServiceManager();
     }
 
-    public void init(String cfgname){
-        Config config = new Config(cfgname);
-        ArrayList<ServiceCfg> servicesConfig = config.parseConfig();
+    private String getCommand(String line){
+        return line.split(" ")[0].trim();
+    }
 
-        for( ServiceCfg scfg: servicesConfig ){
-            this.serviceMgr.registerService(scfg.name);
-            for( String dependency : scfg.dependencies )
-                this.serviceMgr.registerDependency(scfg.name, dependency);
+    private String getArg(String command, String line){
+        return line.substring(command.length()).trim();
+    }
+
+    void parseCommand(String line){
+        line = line.trim();
+
+        String cmd = getCommand(line);
+        String arg = getArg(cmd, line);
+
+        switch(cmd){
+            case "loadconfig":
+                serviceMgr.loadServicesFromConf( arg );
+                break;
+
+            case "startall":
+                serviceMgr.startAll();
+                break;
+
+            case "stopall":
+                serviceMgr.stopAll();
+                break;
+
+            case "statusall":
+                serviceMgr.logAllStatus();
+                break;
+
+            case "start":
+                serviceMgr.startService( "com.feedzai.testServices.Service" + arg );
+                break;
+
+            case "stop":
+                serviceMgr.stopService( "com.feedzai.testServices.Service" + arg );
+                break;
+
+            case "status":
+                serviceMgr.logServiceStatus( "com.feedzai.testServices.Service" + arg );
+                break;
+
+            case "system":
+                break;
+
+            default:
+                System.out.println(
+                    "loadconfig <fname>\n" +
+                    "startall\n" +
+                    "stopall\n" +
+                    "statusall\n" +
+                    "start <service>\n"+
+                    "stop <service>\n"+
+                    "status <service>\n" +
+                    "system"
+                );
         }
-    }
-
-    public boolean startService(String name){
-        //serviceMgr.startService(name);
-        return true;
-    }
-
-    public void stopService(String name){
-        serviceMgr.stopService(serviceMgr.registerService(name));
-    }
-
-    public ServiceState getServiceStatus(String name){
-        //return serviceMgr.getService(name).getState();
-        return ServiceState.STOPPED;
-    }
-
-    public void startAll(){
-        serviceMgr.startAll();
-    }
-
-    public void stopAll(){
-        serviceMgr.stopAll();
     }
 }

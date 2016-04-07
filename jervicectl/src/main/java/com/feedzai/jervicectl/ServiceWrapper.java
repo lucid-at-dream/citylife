@@ -1,38 +1,67 @@
 package com.feedzai.jervicectl;
 
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class ServiceWrapper{
+public class ServiceWrapper implements Runnable{
     
+    public String name;
     private Service service;
     
     public ArrayList<ServiceWrapper> dependencies;
     public ArrayList<ServiceWrapper> dependents;
-
-    public int numDependencies;
-    public int numRunningDependencies;
     
-    public String name;
-
     private volatile ServiceState serviceState;
-    private Boolean stopjob;
+
+    public volatile boolean isProcessingJobs;
+    public ConcurrentLinkedQueue<Runnable> pendingJobs;
 
     public ServiceWrapper(String name, Service service){
         this.name = name;
         this.service = service;
         
-        this.numRunningDependencies = 0;
         this.setServiceState(ServiceState.STOPPED);
-        this.stopjob = false;
-        
+
         this.dependencies = new ArrayList();
         this.dependents = new ArrayList();
+
+        this.isProcessingJobs = false;
+        this.pendingJobs = new ConcurrentLinkedQueue();
+    }
+
+    public void run(){
+        for(;;){
+            getNextJob().run();
+
+            synchronized(this.pendingJobs){
+                if( !hasPendingJobs() ){
+                    isProcessingJobs = false;
+                    break;
+                }
+            }
+        }
+    }
+
+    public boolean isRunning(){
+        return this.serviceState == ServiceState.RUNNING ||
+               this.serviceState == ServiceState.WAITING_DEPENDENCIES_STOP;
+    }
+
+    public boolean isStopped(){
+        return this.serviceState == ServiceState.STOPPED || 
+               this.serviceState == ServiceState.WAITING_DEPENDENCIES_START;
     }
 
     public boolean hasBeenStarted(){
         return this.serviceState == ServiceState.RUNNING || 
                this.serviceState == ServiceState.STARTING || 
                this.serviceState == ServiceState.WAITING_DEPENDENCIES_START;
+    }
+
+    public boolean hasBeenStopped(){
+        return this.serviceState == ServiceState.STOPPED || 
+               this.serviceState == ServiceState.STOPPING || 
+               this.serviceState == ServiceState.WAITING_DEPENDENCIES_STOP;
     }
 
     public void setServiceState(ServiceState state){
@@ -49,47 +78,62 @@ public class ServiceWrapper{
     }
 
     public boolean canStart(){
-        return (this.dependencies.size() - numRunningDependencies) == 0;
-    }
-
-    public boolean canStop(){
-        for( ServiceWrapper sw : this.dependents )
-            if( sw.getServiceState() != ServiceState.STOPPED )
+        for( ServiceWrapper sw : this.dependencies )
+            if( !sw.isRunning() )
                 return false;
         return true;
     }
 
+    public boolean canStop(){
+        for( ServiceWrapper sw : this.dependents )
+            if( !sw.isStopped() )
+                return false;
+        return true;
+    }
 
+    public boolean hasPendingJobs(){
+        return !pendingJobs.isEmpty();
+    }
 
+    public Runnable getNextJob(){
+        return pendingJobs.poll();
+    }
 
-
-    public Runnable getStartServiceJob(){
-        return new Runnable() {
+    public void addStartServiceJob(){
+        pendingJobs.add( new Runnable() {
             @Override
             public void run(){
+                if( hasBeenStarted() ){
+                    return;
+                }
                 waitForDependenciesToStart();
                 startServiceThread();
                 notifyDependents();
             }
-        };
+        });
     }
 
-    public Runnable getStopServiceJob(){
-        return new Runnable() {
+    public void addStopServiceJob(){
+        pendingJobs.add( new Runnable() {
             @Override
             public void run(){
+                if( hasBeenStopped() ){
+                    return;
+                }
                 waitForDependentsToStop();
                 stopServiceThread();
                 notifyDependencies();
             }
-        };
+        });
     }
 
     public void waitForDependenciesToStart(){
         this.setServiceState(ServiceState.WAITING_DEPENDENCIES_START);
         synchronized(this){
-            while( !this.canStart() && !this.stopjob ){
+            while( !this.canStart() ){
+                System.out.println(name + " waiting for deps to start");
                 try{
+                    System.out.println("waiting on this: " + this);
                     this.wait();
                 }catch(InterruptedException e){
                     e.printStackTrace();
@@ -107,7 +151,6 @@ public class ServiceWrapper{
     public void notifyDependents(){
         for( ServiceWrapper dependent : dependents ){
             synchronized( dependent ){
-                dependent.numRunningDependencies++;
                 dependent.notify();
             }
         }
@@ -117,7 +160,9 @@ public class ServiceWrapper{
         this.setServiceState(ServiceState.WAITING_DEPENDENCIES_STOP);
         synchronized( this ){
             while( !this.canStop() ){
+                System.out.println(name + " waiting for deps to stop");
                 try{
+                    System.out.println("waiting on this: " + this);
                     this.wait();
                 }catch(InterruptedException e){
                     e.printStackTrace();

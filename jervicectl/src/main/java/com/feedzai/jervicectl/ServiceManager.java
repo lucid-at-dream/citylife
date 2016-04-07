@@ -17,28 +17,85 @@ public class ServiceManager{
         pool = Executors.newCachedThreadPool();
     }
 
+    public void loadServicesFromConf(String cfgfile){
+        Config config = new Config(cfgfile);
+        ArrayList<ServiceCfg> servicesConfig = config.parseConfig();
+
+        for( ServiceCfg scfg: servicesConfig ){
+            registerService(scfg.name);
+            for( String dependency : scfg.dependencies )
+                registerDependency(scfg.name, dependency);
+        }
+    }
+
+    public void logAllStatus(){
+        for(ServiceWrapper sw : servicesList){
+            String state = getServiceStateStr( sw.getServiceState() );
+            System.out.println(sw.isRunning() + ":" + sw.isStopped() + " | ["+state+"]  " + sw.name);
+        }
+    }
+
+    public void logServiceStatus(String name){
+        if( services.containsKey( name ) ){
+            ServiceWrapper sw = services.get(name);
+            String state = getServiceStateStr( sw.getServiceState() );
+            System.out.println("["+state+"]  " + sw.name);
+        }
+    }    
+
+    public String getServiceStateStr(ServiceState state){
+        switch(state){
+            case WAITING_DEPENDENCIES_START:
+                return "WAITING_DEPENDENCIES_START";
+            case STARTING:
+                return "STARTING";
+            case RUNNING:
+                return "RUNNING";
+            case WAITING_DEPENDENCIES_STOP:
+                return "WAITING_DEPENDENCIES_STOP";
+            case STOPPING:
+                return "STOPPING";
+            case STOPPED:
+                return "STOPPED";
+        }
+        return "omg - IT'S THE BIT FLIP!! stop messing around stars";
+    }
+
+    public void startService(String serviceName){
+        startService( services.get(serviceName) );
+    }
+
     public void startService(ServiceWrapper wrapper){
-        if( wrapper.hasBeenStarted() )
-            return;
-        wrapper.setServiceState(ServiceState.WAITING_DEPENDENCIES_START);
+        for( ServiceWrapper dependency : wrapper.dependencies )
+            this.startService(dependency);
 
-        if( !wrapper.canStart() )
-            for( ServiceWrapper dependency : wrapper.dependencies )
-                this.startService(dependency);
+        wrapper.addStartServiceJob();
+        synchronized( wrapper.pendingJobs ){
+            if( wrapper.isProcessingJobs )
+                return;
+            else
+                wrapper.isProcessingJobs = true;
+        }
+        pool.execute(wrapper);
+    }
 
-        pool.execute( wrapper.getStartServiceJob() );
+    public void stopService(String serviceName){
+        stopService( services.get(serviceName) );
     }
 
     public void stopService(ServiceWrapper wrapper){
-        if( !wrapper.hasBeenStarted() )
-            return;
-        wrapper.setServiceState(ServiceState.WAITING_DEPENDENCIES_STOP);
 
-        if( !wrapper.canStop() )
-            for( ServiceWrapper dep : wrapper.dependents )
-                this.stopService(dep);
+        for( ServiceWrapper dep : wrapper.dependents )
+            this.stopService(dep);
 
-        pool.execute( wrapper.getStopServiceJob() );
+        wrapper.addStopServiceJob();
+        synchronized( wrapper.pendingJobs ){
+            if( wrapper.isProcessingJobs )
+                return;
+            else
+                wrapper.isProcessingJobs = true;
+        }
+        pool.execute( wrapper );
     }
 
     public void startAll(){
