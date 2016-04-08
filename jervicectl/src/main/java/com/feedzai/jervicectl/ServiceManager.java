@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class ServiceManager{
 
@@ -45,7 +46,9 @@ public class ServiceManager{
     *
     * @param the name of the service to start */
     public void startService(ServiceWrapper wrapper){
-        wrapper.addStartServiceJob();
+        for( ServiceWrapper dependency : wrapper.getDependencies() )
+            startService(dependency);
+        wrapper.setTargetState(ServiceState.RUNNING);
     }
 
     /**
@@ -61,7 +64,9 @@ public class ServiceManager{
     *
     * @param the name of the service to stop */
     public void stopService(ServiceWrapper wrapper){
-        wrapper.addStopServiceJob();
+        for( ServiceWrapper dependent : wrapper.getDependents() )
+            stopService(dependent);
+        wrapper.setTargetState(ServiceState.STOPPED);
     }
 
     /**
@@ -71,10 +76,19 @@ public class ServiceManager{
     public void logServiceStatus(String name){
         if( services.containsKey( name ) ){
             ServiceWrapper sw = services.get(name);
-            String state = getServiceStateStr( sw.getServiceState() );
-            System.out.println("["+state+"]  " + sw.name);
+            logServiceStatus(sw);
         }
     }    
+
+    /**
+    * outputs the service status of the parameter service to the stdout 
+    *
+    * @param the service */
+    public void logServiceStatus(ServiceWrapper service){
+        String state = getServiceStateStr( service.getServiceState() );
+        String target = getServiceStateStr( service.getTargetState() );
+        System.out.println("["+state+" -> " + target + "]  " + service.getName());
+    }
 
     /**
     * starts all known services */
@@ -93,10 +107,18 @@ public class ServiceManager{
     /**
     * outputs the service status of all known services to the stdout */
     public void logAllStatus(){
-        for(ServiceWrapper sw : servicesList){
-            String state = getServiceStateStr( sw.getServiceState() );
-            System.out.println(sw.isRunning() + ":" + sw.isStopped() + " | ["+state+"]  " + sw.name);
-        }
+        for(ServiceWrapper sw : servicesList)
+            logServiceStatus(sw);
+    }
+
+    /**
+    * returns the service corresponding to the argument service name in case it is known.
+    * @param the service name
+    * @return the corresponding service wrapper (possibly null) */
+    public ServiceWrapper getService(String serviceName){
+        if( services.containsKey(serviceName) )
+            return services.get(serviceName);
+        return null;
     }
 
     /**
@@ -121,6 +143,26 @@ public class ServiceManager{
     }
 
     /**
+    * *warning* testing only
+    * waits for all jobs to finish and returns then.
+    *
+    * @return true if successful clean termination, false if timed out */
+    public boolean waitForJobsAndStopAllThreads(int timeout){
+        
+        for( ServiceWrapper sw : this.servicesList ){
+            sw.stopControlThreadWhenDone();
+        }
+
+        pool.shutdown();
+        try{
+            pool.awaitTermination(timeout, TimeUnit.MILLISECONDS);
+        }catch(InterruptedException e){
+            return false;
+        }
+        return true;
+    }
+
+    /**
     * adds the service corresponding to dependencyName as a dependency of serviceName. 
     * Note: if either service is not previously known, it is created and loaded. 
     *
@@ -141,7 +183,7 @@ public class ServiceManager{
     *
     * @param the state that is going to be translated to text
     * @return a descriptive of the argument state */
-    private String getServiceStateStr(ServiceState state){
+    public String getServiceStateStr(ServiceState state){
         switch(state){
             case WAITING_DEPENDENCIES_START:
                 return "WAITING_DEPENDENCIES_START";

@@ -5,17 +5,17 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ServiceWrapper implements Runnable{
     
-    public String name;
+    private String name;
     private Service service;
     
-    public ArrayList<ServiceWrapper> dependencies;
-    public ArrayList<ServiceWrapper> dependents;
+    private ArrayList<ServiceWrapper> dependencies;
+    private ArrayList<ServiceWrapper> dependents;
     
     private volatile ServiceState serviceState;
-    private volatile boolean stop;
+    private volatile boolean stop, softstop;
 
-    private Boolean jobsMonitor;
-    public ConcurrentLinkedQueue<Runnable> pendingJobs;
+    private Boolean targetMonitor;
+    private volatile ServiceState targetState;
 
     public ServiceWrapper(String name, Service service){
         this.name = name;
@@ -23,12 +23,37 @@ public class ServiceWrapper implements Runnable{
         
         this.setServiceState(ServiceState.STOPPED);
         this.stop = false;
+        this.softstop = false;
 
         this.dependencies = new ArrayList();
         this.dependents = new ArrayList();
 
-        this.jobsMonitor = new Boolean(true);
-        this.pendingJobs = new ConcurrentLinkedQueue();
+        this.targetMonitor = new Boolean(true);
+        this.targetState = ServiceState.STOPPED;
+    }
+
+    /**
+    * @return the name of this service */
+    public String getName(){
+        return this.name;
+    }
+
+    /**
+    * @return a list of services that this service depends on */
+    public ArrayList<ServiceWrapper> getDependencies(){
+        return this.dependencies;
+    }
+
+    /**
+    * @return a list of services that depend on this one */
+    public ArrayList<ServiceWrapper> getDependents(){
+        return this.dependents;
+    }
+
+    /**
+    * @return the current target state */
+    public ServiceState getTargetState(){
+        return this.targetState;
     }
 
     /**
@@ -36,13 +61,17 @@ public class ServiceWrapper implements Runnable{
     */
     public void run(){
         for(;!stop;){
-            if( hasPendingJobs() )
+
+            while( targetState != serviceState )
                 getNextJob().run();
 
-            synchronized(this.jobsMonitor){
-                while( !hasPendingJobs() && !stop ){
+            if( softstop )
+                break;
+
+            synchronized(this.targetMonitor){
+                while( targetState == serviceState && !stop && !softstop ){
                     try{
-                        this.jobsMonitor.wait();
+                        this.targetMonitor.wait();
                     }catch(InterruptedException e){
                         return; /*if interrupted finish*/
                     }
@@ -52,12 +81,53 @@ public class ServiceWrapper implements Runnable{
     }
 
     /**
+    * Changes the target state of this service and signals the controlling thread */
+    public void setTargetState(ServiceState state){
+        synchronized( this.targetMonitor ){
+            this.targetState = state;
+            this.targetMonitor.notify();
+        }
+    }
+
+    /**
+    * Notifies the thread waiting on target changes */
+    public void notifyTarget(){
+        synchronized(this.targetMonitor){
+            this.targetMonitor.notify();
+        }
+    }
+
+    /**
     * Signals the service control thread to stop */
     public void stopControlThread(){
-        synchronized(this.jobsMonitor){
+        synchronized(this.targetMonitor){
             this.stop = true;
-            jobsMonitor.notify();
+            targetMonitor.notify();
         }
+    }
+
+    /**
+    * Stops the control thread whenever target state equals the current state
+    */
+    public void stopControlThreadWhenDone(){
+        synchronized(this.targetMonitor){
+            this.softstop = true;
+            targetMonitor.notify();
+        }
+    }
+
+    /**
+    * @param the service to be testes as dependency
+    * @return true if this service depends on the argument service*/
+    public boolean dependsOn(ServiceWrapper other){
+        return this.dependencies.contains( other );
+    }
+
+    /**
+    * @param the service to be testes as dependent
+    * @return true if this service is dependency of the argument service*/
+    public boolean isDependencyOf(ServiceWrapper other){
+        return this.dependents.contains( other );
     }
 
     /**
@@ -135,101 +205,87 @@ public class ServiceWrapper implements Runnable{
         return true;
     }
 
-
     /**
-    * @return returns true if the service has pending jobs on queue.*/
-    public boolean hasPendingJobs(){
-        return !pendingJobs.isEmpty();
+    * @return the service associated with this wrapper */
+    public Service getService(){
+        return this.service;
     }
 
     /**
     * @return returns the next job on queue and removes it.*/
     public Runnable getNextJob(){
-        return pendingJobs.poll();
+        if( targetState != serviceState && targetState == ServiceState.RUNNING )
+            return getStartServiceJob();
+
+        if( targetState != serviceState && targetState == ServiceState.STOPPED )
+            return getStopServiceJob();
+        return null;
     }
 
     /**
     * Adds a job for service starting to the job queue */
-    public void addStartServiceJob(){
-        pendingJobs.add( new Runnable() {
+    public Runnable getStartServiceJob(){
+        return new Runnable() {
             @Override
             public void run(){
-                if( hasBeenStarted() ){
-                    return;
+                if( waitForDependenciesToStart() ){            
+                    startServiceThread();
+                    notifyDependents();
+                }else{
+                    setServiceState(ServiceState.STOPPED);
                 }
-                askDependenciesToStart();
-                waitForDependenciesToStart();
-                startServiceThread();
-                notifyDependents();
             }
-        });
-        synchronized(this.jobsMonitor){
-            jobsMonitor.notify();
-        }
+        };
     }
 
     /**
     * Adds a job for service stopping to the job queue */
-    public void addStopServiceJob(){
-        pendingJobs.add( new Runnable() {
+    public Runnable getStopServiceJob(){
+        return new Runnable() {
             @Override
             public void run(){
-                if( hasBeenStopped() ){
-                    return;
+                if( waitForDependentsToStop() ){
+                    stopServiceThread();
+                    notifyDependencies();
+                }else{
+                    setServiceState(ServiceState.RUNNING);
                 }
-                askDependentsToStop();
-                waitForDependentsToStop();
-                stopServiceThread();
-                notifyDependencies();
             }
-        });
-        synchronized(this.jobsMonitor){
-            jobsMonitor.notify();
-        }
+        };
     }
 
     /**
-    * Adds start service jobs to all dependencies */
-    public void askDependenciesToStart(){
-        for( ServiceWrapper dependency : dependencies )
-            dependency.addStartServiceJob();
-    }
-
-    /**
-    * Adds stop service jobs to all dependent services */
-    public void askDependentsToStop(){
-        for( ServiceWrapper dependency : dependents )
-            dependency.addStopServiceJob();
-    }
-
-    /**
-    * returns when all dependencies have started */
-    public void waitForDependenciesToStart(){
+    * returns when all dependencies have started 
+    * @return returns true if all dependencies started, false if target changed */
+    public boolean waitForDependenciesToStart(){
         this.setServiceState(ServiceState.WAITING_DEPENDENCIES_START);
-        synchronized(this){
-            while( !this.canStart() ){
+        synchronized(this.targetMonitor){
+            while( !this.canStart() && targetState == ServiceState.RUNNING ){
                 try{
-                    this.wait();
+                    this.targetMonitor.wait();
                 }catch(InterruptedException e){
                     e.printStackTrace();
                 }
             }
         }
+        return this.canStart() && targetState == ServiceState.RUNNING;
     }
 
     /**
-    * returns when all dependent services have stopped */
-    public void waitForDependentsToStop(){
+    * returns when all dependent services have stopped 
+    * @return returns true if all dependents stopped, false if target changed */
+    public boolean waitForDependentsToStop(){
         this.setServiceState(ServiceState.WAITING_DEPENDENCIES_STOP);
-        synchronized( this ){
-            while( !this.canStop() ){
+        synchronized( this.targetMonitor ){
+            while( !this.canStop() && targetState == ServiceState.STOPPED ){
                 try{
-                    this.wait();
+                    this.targetMonitor.wait();
                 }catch(InterruptedException e){
                     e.printStackTrace();
                 }
             }
         }
+        return this.canStop() && targetState == ServiceState.STOPPED;
     }
 
     /**
@@ -252,9 +308,7 @@ public class ServiceWrapper implements Runnable{
     * notifies all threads waiting on dependent services objects */
     public void notifyDependents(){
         for( ServiceWrapper dependent : dependents ){
-            synchronized( dependent ){
-                dependent.notify();
-            }
+            dependent.notifyTarget();
         }
     }
 
@@ -262,10 +316,26 @@ public class ServiceWrapper implements Runnable{
     * notifies all threads waiting on dependency services objects */
     public void notifyDependencies(){
         for( ServiceWrapper dependency : this.dependencies ){
-            synchronized(dependency){
-                dependency.notify();
-            }
+            dependency.notifyTarget();
         }
+    }
+
+    private String stateAsStr(ServiceState state){
+        switch(state){
+            case WAITING_DEPENDENCIES_START:
+                return "WAITING_DEPENDENCIES_START";
+            case STARTING:
+                return "STARTING";
+            case RUNNING:
+                return "RUNNING";
+            case WAITING_DEPENDENCIES_STOP:
+                return "WAITING_DEPENDENCIES_STOP";
+            case STOPPING:
+                return "STOPPING";
+            case STOPPED:
+                return "STOPPED";
+        }
+        return "Warning :: Fatal :: BIT FLIP!! - - - - TONIGHT WE PARTY WITH THE STARS. BAAAAM!";
     }
 
 }
