@@ -189,7 +189,7 @@ public class ServiceWrapper implements Runnable{
 
     /**
     * @return true if all dependencies are running, false otherwise */
-    public boolean canStart(){
+    private boolean canStart(){
         for( ServiceWrapper sw : this.dependencies )
             if( !sw.isRunning() )
                 return false;
@@ -198,7 +198,7 @@ public class ServiceWrapper implements Runnable{
 
     /**
     * @return true if all dependents are stopped, false otherwise */
-    public boolean canStop(){
+    private boolean canStop(){
         for( ServiceWrapper sw : this.dependents )
             if( !sw.isStopped() )
                 return false;
@@ -213,7 +213,7 @@ public class ServiceWrapper implements Runnable{
 
     /**
     * @return returns the next job on queue and removes it.*/
-    public Runnable getNextJob(){
+    private Runnable getNextJob(){
         if( targetState != serviceState && targetState == ServiceState.RUNNING )
             return getStartServiceJob();
 
@@ -224,7 +224,7 @@ public class ServiceWrapper implements Runnable{
 
     /**
     * Adds a job for service starting to the job queue */
-    public Runnable getStartServiceJob(){
+    private Runnable getStartServiceJob(){
         return new Runnable() {
             @Override
             public void run(){
@@ -240,7 +240,7 @@ public class ServiceWrapper implements Runnable{
 
     /**
     * Adds a job for service stopping to the job queue */
-    public Runnable getStopServiceJob(){
+    private Runnable getStopServiceJob(){
         return new Runnable() {
             @Override
             public void run(){
@@ -257,7 +257,7 @@ public class ServiceWrapper implements Runnable{
     /**
     * returns when all dependencies have started 
     * @return returns true if all dependencies started, false if target changed */
-    public boolean waitForDependenciesToStart(){
+    private boolean waitForDependenciesToStart(){
         this.setServiceState(ServiceState.WAITING_DEPENDENCIES_START);
         synchronized(this.targetMonitor){
             while( !this.canStart() && targetState == ServiceState.RUNNING ){
@@ -274,7 +274,7 @@ public class ServiceWrapper implements Runnable{
     /**
     * returns when all dependent services have stopped 
     * @return returns true if all dependents stopped, false if target changed */
-    public boolean waitForDependentsToStop(){
+    private boolean waitForDependentsToStop(){
         this.setServiceState(ServiceState.WAITING_DEPENDENCIES_STOP);
         synchronized( this.targetMonitor ){
             while( !this.canStop() && targetState == ServiceState.STOPPED ){
@@ -320,7 +320,7 @@ public class ServiceWrapper implements Runnable{
 
     /**
     * notifies all threads waiting on dependent services objects */
-    public void notifyDependents(){
+    private void notifyDependents(){
         for( ServiceWrapper dependent : dependents ){
             dependent.notifyTarget();
         }
@@ -328,10 +328,9 @@ public class ServiceWrapper implements Runnable{
 
     /**
     * notifies all threads waiting on dependency services objects */
-    public void notifyDependencies(){
+    private void notifyDependencies(){
         for( ServiceWrapper dependency : this.dependencies ){
             dependency.notifyTarget();
         }
     }
-
 }
