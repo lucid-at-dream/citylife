@@ -7,9 +7,8 @@ Allows users to control the lifecycle of java based services
 a.k.a. jabardice control
 
 ##Running
-In order to run jervicectl you can either compile it or download the jar associated with the repository.
 
-After running you will have access to a menu. Clicking <enter> shows an help message, which is probably the best way to start.
+When running jervicectl will have access to a menu. Clicking <enter> shows an help message, which is probably the best way to start.
 
 The best user experience is achieved when you have created the mock services and after you load an interesting configuration file. See section below for details.
 
