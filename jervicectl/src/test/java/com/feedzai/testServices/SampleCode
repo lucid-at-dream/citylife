@@ -1,0 +1,58 @@
+package com.feedzai.testServices;
+
+import com.feedzai.jervicectl.Service;
+import java.util.Random;
+
+public class AnotherService extends AbstractTestService implements Service{
+
+    public double startStartTime;
+    public double startEndTime;
+    public double stopStartTime;
+    public double stopEndTime;
+
+    private int getRandomSleepTime(){
+        return 20;
+    }
+
+    public boolean start(){
+        this.startStartTime = System.currentTimeMillis();
+
+        try{
+            Thread.sleep(getRandomSleepTime());
+        }catch(InterruptedException e){
+            e.printStackTrace();
+        }
+
+        this.startEndTime = System.currentTimeMillis();
+
+    	return true;
+    }
+
+    public void stop(){
+        this.stopStartTime = System.currentTimeMillis();
+
+        try{
+            Thread.sleep(getRandomSleepTime());
+        }catch(InterruptedException e){
+            e.printStackTrace();
+        }
+
+        this.stopEndTime = System.currentTimeMillis();
+    }
+
+    public boolean startedBefore(AbstractTestService s){
+        return this.startEndTime <= s.startStartTime;
+    }
+
+    public boolean startedAfter(AbstractTestService s){
+        return this.startStartTime >= s.startEndTime;
+    }
+
+    public boolean stopedBefore(AbstractTestService s){
+        return this.stopEndTime <= s.stopStartTime;
+    }
+
+    public boolean stopedAfter(AbstractTestService s){
+        return this.stopStartTime >= s.stopEndTime;
+    }
+}
