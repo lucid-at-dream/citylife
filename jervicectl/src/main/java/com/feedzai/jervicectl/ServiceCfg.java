@@ -11,13 +11,16 @@ public class ServiceCfg{
         this.dependencies = dependencies;
     }
 
-    public static Service instantiateService(String name){
-        Service s = null;
+    /**
+    * instantiates the service associated with this service configuration and returns it.
+    *
+    * @return an instance of the service configured by the current object. */
+    public Service instantiateService(){
         try{
-            s = (Service)Class.forName(name).newInstance();
+            return (Service)Class.forName(name).newInstance();
         }catch(ClassNotFoundException | InstantiationException | IllegalAccessException e){
-            e.printStackTrace();
+            System.err.println("Unable to load service " + name);
+            return null;
         }
-        return s;
     }
 }

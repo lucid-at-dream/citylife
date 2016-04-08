@@ -17,6 +17,10 @@ public class ServiceManager{
         pool = Executors.newCachedThreadPool();
     }
 
+    /**
+    * loads the services described in the configuration file passed as parameter
+    *
+    * @param path to configuration file  */
     public void loadServicesFromConf(String cfgfile){
         Config config = new Config(cfgfile);
         ArrayList<ServiceCfg> servicesConfig = config.parseConfig();
@@ -28,13 +32,42 @@ public class ServiceManager{
         }
     }
 
-    public void logAllStatus(){
-        for(ServiceWrapper sw : servicesList){
-            String state = getServiceStateStr( sw.getServiceState() );
-            System.out.println(sw.isRunning() + ":" + sw.isStopped() + " | ["+state+"]  " + sw.name);
-        }
+    /**
+    * Given a service name attempts to start it.
+    *
+    * @param the name of the service to start */
+    public void startService(String serviceName){
+        startService( services.get(serviceName) );
     }
 
+    /**
+    * Given a service attempts to start it.
+    *
+    * @param the name of the service to start */
+    public void startService(ServiceWrapper wrapper){
+        wrapper.addStartServiceJob();
+    }
+
+    /**
+    * Given a service name attempts to stop it.
+    *
+    * @param the name of the service to stop */
+    public void stopService(String serviceName){
+        stopService( services.get(serviceName) );
+    }
+
+    /**
+    * Given a service attempts to stop it.
+    *
+    * @param the name of the service to stop */
+    public void stopService(ServiceWrapper wrapper){
+        wrapper.addStopServiceJob();
+    }
+
+    /**
+    * outputs the service status of the parameter service to the stdout 
+    *
+    * @param the name of the service */
     public void logServiceStatus(String name){
         if( services.containsKey( name ) ){
             ServiceWrapper sw = services.get(name);
@@ -43,7 +76,72 @@ public class ServiceManager{
         }
     }    
 
-    public String getServiceStateStr(ServiceState state){
+    /**
+    * starts all known services */
+    public void startAll(){
+        for( ServiceWrapper sw : servicesList )
+            this.startService(sw);
+    }
+
+    /**
+    * stops all known services */
+    public void stopAll(){
+        for( ServiceWrapper sw : servicesList )
+            this.stopService(sw);
+    }
+
+    /**
+    * outputs the service status of all known services to the stdout */
+    public void logAllStatus(){
+        for(ServiceWrapper sw : servicesList){
+            String state = getServiceStateStr( sw.getServiceState() );
+            System.out.println(sw.isRunning() + ":" + sw.isStopped() + " | ["+state+"]  " + sw.name);
+        }
+    }
+
+    /**
+    * if the reported service is unknown creates a new service.
+    * 
+    * @param the name of the service to register
+    * @return the newly created or existing service */
+    public ServiceWrapper registerService(String serviceName){
+        ServiceWrapper wrapper = null;
+        if( services.containsKey(serviceName) ){
+            wrapper = services.get(serviceName);
+        }else{
+            Service service = new ServiceCfg(serviceName, null).instantiateService();
+            if( service == null )
+                return null;
+            wrapper = new ServiceWrapper( serviceName, service );
+            services.put(serviceName, wrapper);
+            servicesList.add(wrapper);
+            pool.execute(wrapper);
+        }
+        return wrapper;
+    }
+
+    /**
+    * adds the service corresponding to dependencyName as a dependency of serviceName. 
+    * Note: if either service is not previously known, it is created and loaded. 
+    *
+    * @param the name of the service in which to add the dependency
+    * @param the name of the service to be added as a dependency */
+    public void registerDependency(String serviceName, String dependencyName){
+        ServiceWrapper dependency = registerService(dependencyName);
+        ServiceWrapper service = registerService(serviceName);
+
+        if( dependency != null && service != null )
+            service.addDependency(dependency);
+    }
+
+
+
+    /**
+    * Given a service state returns a descriptive string
+    *
+    * @param the state that is going to be translated to text
+    * @return a descriptive of the argument state */
+    private String getServiceStateStr(ServiceState state){
         switch(state){
             case WAITING_DEPENDENCIES_START:
                 return "WAITING_DEPENDENCIES_START";
@@ -58,72 +156,6 @@ public class ServiceManager{
             case STOPPED:
                 return "STOPPED";
         }
-        return "omg - IT'S THE BIT FLIP!! stop messing around stars";
+        return "Warning :: Fatal :: BIT FLIP!! - - - - TONIGHT WE PARTY WITH THE STARS. BAAAAM!";
     }
-
-    public void startService(String serviceName){
-        startService( services.get(serviceName) );
-    }
-
-    public void startService(ServiceWrapper wrapper){
-        for( ServiceWrapper dependency : wrapper.dependencies )
-            this.startService(dependency);
-
-        wrapper.addStartServiceJob();
-        synchronized( wrapper.pendingJobs ){
-            if( wrapper.isProcessingJobs )
-                return;
-            else
-                wrapper.isProcessingJobs = true;
-        }
-        pool.execute(wrapper);
-    }
-
-    public void stopService(String serviceName){
-        stopService( services.get(serviceName) );
-    }
-
-    public void stopService(ServiceWrapper wrapper){
-
-        for( ServiceWrapper dep : wrapper.dependents )
-            this.stopService(dep);
-
-        wrapper.addStopServiceJob();
-        synchronized( wrapper.pendingJobs ){
-            if( wrapper.isProcessingJobs )
-                return;
-            else
-                wrapper.isProcessingJobs = true;
-        }
-        pool.execute( wrapper );
-    }
-
-    public void startAll(){
-        for( ServiceWrapper sw : servicesList )
-            this.startService(sw);
-    }
-
-    public void stopAll(){
-        for( ServiceWrapper sw : servicesList )
-            this.stopService(sw);
-    }
-
-    public ServiceWrapper registerService(String serviceName){
-        ServiceWrapper s = null;
-        if( services.containsKey(serviceName) ){
-            s = services.get(serviceName);
-        }else{
-            s = new ServiceWrapper( serviceName, ServiceCfg.instantiateService(serviceName) );
-            services.put(serviceName, s);
-            servicesList.add(s);
-        }
-        return s;
-    }
-
-    public void registerDependency(String serviceName, String dependencyName){
-        ServiceWrapper dependency = registerService(dependencyName);
-        ServiceWrapper service = registerService(serviceName);
-        service.addDependency(dependency);
-    }
-
 }
