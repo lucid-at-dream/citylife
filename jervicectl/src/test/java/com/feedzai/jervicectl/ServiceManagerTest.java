@@ -10,7 +10,7 @@ public class ServiceManagerTest extends TestCase {
 
     String prefix = "com.feedzai.testServices.Service";
     private ServiceManager serviceMgr;
-    private String[] serviceNames;
+    private String[] serviceSuffixes;
 
     public ServiceManagerTest( String testName )
     {
@@ -24,23 +24,48 @@ public class ServiceManagerTest extends TestCase {
 
     public void setUp(){
         this.serviceMgr = new ServiceManager();
-        
-        String[] suffixes = {"A","B","C","D","E","F",
-                             "G","H","I","J","K","L",
-                             "M","N","O","P","Q","R",
-                             "S","T","U","V","W","X",
-                             "Y","Z"};
-        serviceNames = new String[26];
-        for( int i=0; i<26; i++ )
-            serviceNames[i] = prefix + suffixes[i];
-
-        this.serviceMgr.loadServicesFromConf("testConfigs/big.cfg");
+        this. serviceSuffixes = new String[] {"A","B","C","D","E","F",
+                                              "G","H","I","J","K","L",
+                                              "M","N","O","P","Q","R",
+                                              "S","T","U","V","W","X",
+                                              "Y","Z"};
+        try{
+            this.serviceMgr.loadServicesFromConf("testConfigs/big.cfg");
+        }catch(NoSuchServiceException | NoSuchConfigFileException e){
+            System.err.println("Unable to Setup the Test Environment. You either don't" + 
+                               " have the mock up services or the test config file.");
+        }
     }
 
     public AbstractTestService getAbstractTestServiceFromSuffix(String suffix){
-        return (AbstractTestService)serviceMgr.getService(prefix + suffix).getService();
+        return (AbstractTestService)getServiceFromSuffix(suffix).getService();
     }
 
+    public void startServiceFromSuffix(String suffix){
+        try{
+            this.serviceMgr.startService(prefix+suffix);
+        }catch(NoSuchServiceException e){
+            System.err.println("Don't trust the tests, the mock up services haven't been created. Undefined behavior ahead.");
+        }
+    }
+
+    public void stopServiceFromSuffix(String suffix){
+        try{
+            this.serviceMgr.stopService(prefix+suffix);
+        }catch(NoSuchServiceException e){
+            System.err.println("Don't trust the tests, the mock up services haven't been created. Undefined behavior ahead.");
+        }
+    }
+
+    public ServiceWrapper getServiceFromSuffix(String suffix){
+        try{
+            ServiceWrapper sw = this.serviceMgr.getService(prefix+suffix);
+            return sw;
+        }catch(NoSuchServiceException e){
+            System.err.println("Don't trust the tests, the mock up services haven't been created. Undefined behavior ahead.");
+            return null;
+        }
+    }
 
     /*
     * Le tests ...
@@ -53,17 +78,18 @@ public class ServiceManagerTest extends TestCase {
     */
 
     public void testServicesLoadingFromConfFile(){
-        for(String service : serviceNames)
-            assert( this.serviceMgr.getService( service ) != null );
+        for(String service : serviceSuffixes){
+            assert( getServiceFromSuffix( service ) != null );
+        }
     }
 
     public void testDependenciesLoadingFromConfFile(){
-        ServiceWrapper serviceD = this.serviceMgr.getService(prefix+"D"),
-                       serviceG = this.serviceMgr.getService(prefix+"G"),
-                       serviceK = this.serviceMgr.getService(prefix+"K"),
-                       serviceL = this.serviceMgr.getService(prefix+"L"),
-                       serviceO = this.serviceMgr.getService(prefix+"O"),
-                       serviceP = this.serviceMgr.getService(prefix+"P");
+        ServiceWrapper serviceD = getServiceFromSuffix("D"),
+                       serviceG = getServiceFromSuffix("G"),
+                       serviceK = getServiceFromSuffix("K"),
+                       serviceL = getServiceFromSuffix("L"),
+                       serviceO = getServiceFromSuffix("O"),
+                       serviceP = getServiceFromSuffix("P");
 
         assert( serviceG.dependsOn(serviceD) );
         assert( serviceD.isDependencyOf(serviceG) );
@@ -75,41 +101,67 @@ public class ServiceManagerTest extends TestCase {
         assert( serviceO.isDependencyOf(serviceP) );
     }
 
+    public void testGetNonExistentService(){
+        try{
+            serviceMgr.getService("IWishIDidNotExist");
+            assert(false);
+        }catch(NoSuchServiceException e){
+            assert(true);
+        }
+    }
+
+    public void testStartNonExistentService(){
+        try{
+            serviceMgr.startService(prefix + "IWishIDidNotExist");
+            assert(false);
+        }catch(NoSuchServiceException e){
+            assert(true);
+        }
+    }
+    public void testStopNonExistentService(){
+        try{
+            serviceMgr.stopService(prefix + "IWishIDidNotExist");
+            assert(false);
+        }catch(NoSuchServiceException e){
+            assert(true);
+        }
+    }
+
     public void testServiceStartingWithoutDependencies(){
-        serviceMgr.startService(prefix + "A");
+        startServiceFromSuffix("A");
         serviceMgr.waitForJobsAndStopAllThreads(3000);
 
-        assert( serviceMgr.getService(prefix+"A").getServiceState() == ServiceState.RUNNING );
+        assert( getServiceFromSuffix("A").getServiceState() == ServiceState.RUNNING );
     }
 
     public void testServiceStartingWithOneDependency(){
-        serviceMgr.startService(prefix + "D");
+        startServiceFromSuffix("D");
         serviceMgr.waitForJobsAndStopAllThreads(3000);
 
-        assert( serviceMgr.getService(prefix+"A").getServiceState() == ServiceState.RUNNING );
-        assert( serviceMgr.getService(prefix+"D").getServiceState() == ServiceState.RUNNING );
+        assert( getServiceFromSuffix("A").getServiceState() == ServiceState.RUNNING );
+        assert( getServiceFromSuffix("D").getServiceState() == ServiceState.RUNNING );
     }
 
     public void testOneDependencyStartsBeforeService(){
         AbstractTestService srvD = getAbstractTestServiceFromSuffix("D");
         AbstractTestService srvA = getAbstractTestServiceFromSuffix("A");
 
-        serviceMgr.startService(prefix + "D");
+        startServiceFromSuffix("D");
         serviceMgr.waitForJobsAndStopAllThreads(3000);
 
         assert( srvD.startedAfter(srvA) );
     }
 
     public void testServiceStartingWithManyDependencies(){
-        serviceMgr.startService(prefix + "H");
+        startServiceFromSuffix("H");
         serviceMgr.waitForJobsAndStopAllThreads(3000);
 
-        assert( serviceMgr.getService(prefix+"H").getServiceState() == ServiceState.RUNNING );
-        assert( serviceMgr.getService(prefix+"G").getServiceState() == ServiceState.RUNNING );
-        assert( serviceMgr.getService(prefix+"F").getServiceState() == ServiceState.RUNNING );
-        assert( serviceMgr.getService(prefix+"D").getServiceState() == ServiceState.RUNNING );
-        assert( serviceMgr.getService(prefix+"E").getServiceState() == ServiceState.RUNNING );
-        assert( serviceMgr.getService(prefix+"A").getServiceState() == ServiceState.RUNNING );
+        assert( getServiceFromSuffix("H").getServiceState() == ServiceState.RUNNING );
+        assert( getServiceFromSuffix("G").getServiceState() == ServiceState.RUNNING );
+        assert( getServiceFromSuffix("F").getServiceState() == ServiceState.RUNNING );
+        assert( getServiceFromSuffix("D").getServiceState() == ServiceState.RUNNING );
+        assert( getServiceFromSuffix("E").getServiceState() == ServiceState.RUNNING );
+        assert( getServiceFromSuffix("A").getServiceState() == ServiceState.RUNNING );
     }
 
     public void testManyDependenciesStartInOrder(){
@@ -120,7 +172,7 @@ public class ServiceManagerTest extends TestCase {
         AbstractTestService srvP = getAbstractTestServiceFromSuffix("P");
         AbstractTestService srvQ = getAbstractTestServiceFromSuffix("Q");
 
-        serviceMgr.startService(prefix + "Q");
+        startServiceFromSuffix("Q");
         serviceMgr.waitForJobsAndStopAllThreads(3000);
 
         assert( srvQ.startedAfter(srvP) );
@@ -138,8 +190,8 @@ public class ServiceManagerTest extends TestCase {
         serviceMgr.startAll();
         serviceMgr.waitForJobsAndStopAllThreads(3000);
 
-        for(String service : serviceNames){
-            assert( serviceMgr.getService(service).getServiceState() == ServiceState.RUNNING );
+        for(String service : serviceSuffixes){
+            assert( getServiceFromSuffix(service).getServiceState() == ServiceState.RUNNING );
         }
     }
 
@@ -149,41 +201,41 @@ public class ServiceManagerTest extends TestCase {
 
         serviceMgr.waitForJobsAndStopAllThreads(3000);
 
-        for(String service : serviceNames){
-            assert( serviceMgr.getService(service).getServiceState() == ServiceState.STOPPED );
+        for(String service : serviceSuffixes){
+            assert( getServiceFromSuffix(service).getServiceState() == ServiceState.STOPPED );
         }
     }
 
     public void testContradictoryCommandsOnServiceWithoutDependencies(){
-        serviceMgr.startService(prefix + "W");
-        serviceMgr.stopService(prefix + "W");
-        serviceMgr.startService(prefix + "W");
-        serviceMgr.stopService(prefix + "W");
+        startServiceFromSuffix("W");
+        stopServiceFromSuffix("W");
+        startServiceFromSuffix("W");
+        stopServiceFromSuffix("W");
 
         serviceMgr.waitForJobsAndStopAllThreads(3000);
 
-        assert( serviceMgr.getService(prefix+"W").getServiceState() == ServiceState.STOPPED );
+        assert( getServiceFromSuffix("W").getServiceState() == ServiceState.STOPPED );
     }
 
     public void testDependencyConsistencyAfterBigSequenceOfOperations(){
         serviceMgr.startAll();
-        serviceMgr.stopService(prefix + "D");
-        serviceMgr.stopService(prefix + "N");
+        stopServiceFromSuffix("D");
+        stopServiceFromSuffix("N");
         serviceMgr.startAll();
         serviceMgr.stopAll();
-        serviceMgr.startService(prefix + "N");
-        serviceMgr.stopService(prefix + "N");
-        serviceMgr.startService(prefix + "P");
-        serviceMgr.startService(prefix + "A");
-        serviceMgr.startService(prefix + "K");
-        serviceMgr.startService(prefix + "L");
-        serviceMgr.startService(prefix + "M");
-        serviceMgr.stopService(prefix + "A");
+        startServiceFromSuffix("N");
+        stopServiceFromSuffix("N");
+        startServiceFromSuffix("P");
+        startServiceFromSuffix("A");
+        startServiceFromSuffix("K");
+        startServiceFromSuffix("L");
+        startServiceFromSuffix("M");
+        stopServiceFromSuffix("A");
 
         serviceMgr.waitForJobsAndStopAllThreads(3000);
 
-        for(String sname : serviceNames){
-            ServiceWrapper service = serviceMgr.getService(sname);
+        for(String sname : serviceSuffixes){
+            ServiceWrapper service = getServiceFromSuffix(sname);
             
             assert( service.getServiceState() == ServiceState.RUNNING || 
                     service.getServiceState() == ServiceState.STOPPED );
@@ -198,6 +250,80 @@ public class ServiceManagerTest extends TestCase {
         }
     }
 
+    public void testLoadingConfigFromNonExistingFile(){
+        try{
+            serviceMgr.loadServicesFromConf("CelophaneMrCelophaneShouldHaveBeenMyName");
+            assert(false);
+        }catch(NoSuchConfigFileException e){
+            assert(true);
+        }catch(NoSuchServiceException e){
+            assert(false);
+        }
+    }
 
+    public void testServiceStoppingWithoutDependencies(){
+        serviceMgr.startAll();
+        stopServiceFromSuffix("H");
+        serviceMgr.waitForJobsAndStopAllThreads(3000);
+
+        assert( getServiceFromSuffix("H").getServiceState() == ServiceState.STOPPED );
+    }
+
+    public void testServiceStoppingWithOneDependent(){
+        startServiceFromSuffix("H");
+        stopServiceFromSuffix("G");
+        serviceMgr.waitForJobsAndStopAllThreads(3000);
+
+        assert( getServiceFromSuffix("G").getServiceState() == ServiceState.STOPPED );
+        assert( getServiceFromSuffix("H").getServiceState() == ServiceState.STOPPED );
+    }
+
+    public void testOneDependentStopsBeforeService(){
+        AbstractTestService srvH = getAbstractTestServiceFromSuffix("H");
+        AbstractTestService srvG = getAbstractTestServiceFromSuffix("G");
+
+        startServiceFromSuffix("H");
+        stopServiceFromSuffix("G");
+        serviceMgr.waitForJobsAndStopAllThreads(3000);
+
+        assert( srvH.stoppedBefore(srvG) );
+    }
+
+    public void testServiceStoppingWithManyDependents(){
+        
+        serviceMgr.startAll();
+        stopServiceFromSuffix("A");
+        serviceMgr.waitForJobsAndStopAllThreads(3000);
+
+        assert( getServiceFromSuffix("H").getServiceState() == ServiceState.STOPPED );
+        assert( getServiceFromSuffix("G").getServiceState() == ServiceState.STOPPED );
+        assert( getServiceFromSuffix("F").getServiceState() == ServiceState.STOPPED );
+        assert( getServiceFromSuffix("D").getServiceState() == ServiceState.STOPPED );
+        assert( getServiceFromSuffix("E").getServiceState() == ServiceState.STOPPED );
+        assert( getServiceFromSuffix("A").getServiceState() == ServiceState.STOPPED );
+    }
+
+    public void testManyDependentsStopInOrder(){
+        AbstractTestService srvC = getAbstractTestServiceFromSuffix("C");
+        AbstractTestService srvM = getAbstractTestServiceFromSuffix("M");
+        AbstractTestService srvN = getAbstractTestServiceFromSuffix("N");
+        AbstractTestService srvO = getAbstractTestServiceFromSuffix("O");
+        AbstractTestService srvP = getAbstractTestServiceFromSuffix("P");
+        AbstractTestService srvQ = getAbstractTestServiceFromSuffix("Q");
+
+        serviceMgr.startAll();
+        stopServiceFromSuffix("C");
+        serviceMgr.waitForJobsAndStopAllThreads(3000);
+
+        assert( srvQ.stoppedBefore(srvP) );
+
+        assert( srvP.stoppedBefore(srvM) );
+        assert( srvP.stoppedBefore(srvN) );
+        assert( srvP.stoppedBefore(srvO) );
+
+        assert( srvM.stoppedBefore(srvC) );
+        assert( srvN.stoppedBefore(srvC) );
+        assert( srvO.stoppedBefore(srvC) );
+    }
 
 }

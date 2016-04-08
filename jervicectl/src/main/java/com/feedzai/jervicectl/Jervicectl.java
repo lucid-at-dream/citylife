@@ -42,7 +42,13 @@ public class Jervicectl{
 
         switch(cmd){
             case "loadconfig":
-                serviceMgr.loadServicesFromConf( arg );
+                try{
+                    serviceMgr.loadServicesFromConf( arg );
+                }catch(NoSuchServiceException e){
+                    System.err.println("Configuration file contains errors: " + e.getMessage());
+                }catch(NoSuchConfigFileException e){
+                    System.err.println("Configuration was nowhere to be seen: " + e.getMessage());
+                }
                 break;
 
             case "startall":
@@ -58,15 +64,27 @@ public class Jervicectl{
                 break;
 
             case "start":
-                serviceMgr.startService( "com.feedzai.testServices.Service" + arg );
+                try{
+                    serviceMgr.startService( "com.feedzai.testServices.Service" + arg );
+                }catch(NoSuchServiceException e){
+                    System.out.println( e.getMessage() );
+                }
                 break;
 
             case "stop":
-                serviceMgr.stopService( "com.feedzai.testServices.Service" + arg );
+                try{
+                    serviceMgr.stopService( "com.feedzai.testServices.Service" + arg );
+                }catch(NoSuchServiceException e){
+                    System.out.println( e.getMessage() );
+                }
                 break;
 
             case "status":
-                serviceMgr.logServiceStatus( "com.feedzai.testServices.Service" + arg );
+                try{
+                    serviceMgr.logServiceStatus( "com.feedzai.testServices.Service" + arg );
+                }catch(NoSuchServiceException e){
+                    System.out.println( e.getMessage() );
+                }
                 break;
 
             case "system":

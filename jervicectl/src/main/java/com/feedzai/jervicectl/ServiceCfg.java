@@ -15,12 +15,11 @@ public class ServiceCfg{
     * instantiates the service associated with this service configuration and returns it.
     *
     * @return an instance of the service configured by the current object. */
-    public Service instantiateService(){
+    public Service instantiateService() throws NoSuchServiceException{
         try{
             return (Service)Class.forName(name).newInstance();
         }catch(ClassNotFoundException | InstantiationException | IllegalAccessException e){
-            System.err.println("Unable to load service " + name);
-            return null;
+            throw new NoSuchServiceException("Unable to load service " + name);
         }
     }
 }

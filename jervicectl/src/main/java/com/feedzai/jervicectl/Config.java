@@ -20,7 +20,7 @@ public class Config{
     * and returns an object describing the services configuration.
     *
     * @return A collection of ServiceCfg objects describing each service and dependencies*/
-    public ArrayList<ServiceCfg> parseConfig(){
+    public ArrayList<ServiceCfg> parseConfig() throws NoSuchConfigFileException{
         String content = this.getFileContent();
         return this.parseServices(content);
     }
@@ -28,7 +28,7 @@ public class Config{
     /** 
     * Given a string describing a service, returns the service name
     *
-    * @param service description as in the configuration file.
+    * @param serviceDescription service description as in the configuration file.
     * @return the service name (i.e. name of its class) */
     private String getServiceName(String serviceDescription){
         String serviceNameRegex = "[^\\{]*";
@@ -38,7 +38,7 @@ public class Config{
     /** 
     * Given a string describing a service, returns the service's dependencies
     *
-    * @param service description as in the configuration file.
+    * @param serviceDescription service description as in the configuration file.
     * @return the service's dependencies */
     private ArrayList<String> getServiceDepencies(String serviceDescription){
         String serviceDepsRegex = "\\{[^\\}]*\\}";
@@ -51,7 +51,7 @@ public class Config{
     * Given a string describing a service, returns a ServiceCfg instance
     * with both the service's class and dependencies list.
     * 
-    * @param Configuration file text describing the service
+    * @param service Configuration file text describing the service
     * @return A ServiceCfg object describing the service configuration*/
     private ServiceCfg parseService(String service){
         String name = getServiceName(service);
@@ -63,14 +63,14 @@ public class Config{
     /**
     * @return a string containing all data contained in the file associated with the instance.
     */
-    private String getFileContent(){
+    private String getFileContent() throws NoSuchConfigFileException{
         String content = "";
         try{
             File cfgFile = new File(this.filename);
             Scanner cfgScanner = new Scanner(cfgFile);
             content = cfgScanner.useDelimiter("\\Z").next();
         }catch(FileNotFoundException e){
-            System.err.println("Configuration file " + this.filename + " was not reachable.");
+            throw new NoSuchConfigFileException("Configuration file " + this.filename + " was not reachable.");
         }
         return content;
     }
@@ -79,6 +79,7 @@ public class Config{
     * Given the contents of the configuration file returns a collection of ServiceCfg objects
     * describing the services and dependencies.
     *
+    * @param content the configuration text
     * @return A collection of ServiceCfg objects describing each service and dependencies*/
     private ArrayList<ServiceCfg> parseServices(String content){
         String serviceEntryRegex = "[^\\{]*\\{[^\\}]*\\}";
@@ -94,7 +95,7 @@ public class Config{
     /**
     * Function to avoid empty string in arrays resulting from string splits.
     *
-    * @param an array of possible empty strings
+    * @param deps an array of possible empty strings
     * @return an ArrayList with all string in deps except empty ones.
     */
     private ArrayList<String> removeEmptyDeps(String[] deps){
@@ -109,8 +110,8 @@ public class Config{
     * Given a string and a regex returns the first match of regex in str.
     * Useful for situations where we're just there's only one match.
     *
-    * @param A string to parse
-    * @param A regex to match with the parameter string
+    * @param str A string to parse
+    * @param regex A regex to match with the parameter string
     * @return A string corresponding to the first match of regex in str.
     */
     private String getFirstMatch(String str, String regex){
@@ -118,5 +119,4 @@ public class Config{
         matcher.find();
         return matcher.group();
     }
-
 }

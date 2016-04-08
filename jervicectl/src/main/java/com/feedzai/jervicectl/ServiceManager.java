@@ -19,10 +19,16 @@ public class ServiceManager{
     }
 
     /**
+    *@return the number of registered services*/
+    public int getNumRegisteredServices(){
+        return servicesList.size();
+    }
+
+    /**
     * loads the services described in the configuration file passed as parameter
     *
-    * @param path to configuration file  */
-    public void loadServicesFromConf(String cfgfile){
+    * @param cfgfile path to configuration file  */
+    public void loadServicesFromConf(String cfgfile) throws NoSuchServiceException, NoSuchConfigFileException{
         Config config = new Config(cfgfile);
         ArrayList<ServiceCfg> servicesConfig = config.parseConfig();
 
@@ -36,15 +42,19 @@ public class ServiceManager{
     /**
     * Given a service name attempts to start it.
     *
-    * @param the name of the service to start */
-    public void startService(String serviceName){
+    * @param serviceName the name of the service to start 
+    * @throws NoSuchServiceException when the service name hasn't been registered. */
+    public void startService(String serviceName) throws NoSuchServiceException{
+        if( !services.containsKey(serviceName) )
+            throw new NoSuchServiceException("Service " + serviceName + " is unknown");
         startService( services.get(serviceName) );
     }
 
     /**
     * Given a service attempts to start it.
     *
-    * @param the name of the service to start */
+    * @param wrapper the name of the service to start
+    * @throws NoSuchServiceException when the service name hasn't been registered. */
     public void startService(ServiceWrapper wrapper){
         for( ServiceWrapper dependency : wrapper.getDependencies() )
             startService(dependency);
@@ -54,15 +64,18 @@ public class ServiceManager{
     /**
     * Given a service name attempts to stop it.
     *
-    * @param the name of the service to stop */
-    public void stopService(String serviceName){
+    * @param serviceName the name of the service to stop
+    * @throws NoSuchServiceException when the service name hasn't been registered. */
+    public void stopService(String serviceName) throws NoSuchServiceException{
+        if( !services.containsKey(serviceName) )
+            throw new NoSuchServiceException("Service " + serviceName + " is unknown");
         stopService( services.get(serviceName) );
     }
 
     /**
     * Given a service attempts to stop it.
     *
-    * @param the name of the service to stop */
+    * @param wrapper the name of the service to stop */
     public void stopService(ServiceWrapper wrapper){
         for( ServiceWrapper dependent : wrapper.getDependents() )
             stopService(dependent);
@@ -72,18 +85,20 @@ public class ServiceManager{
     /**
     * outputs the service status of the parameter service to the stdout 
     *
-    * @param the name of the service */
-    public void logServiceStatus(String name){
+    * @param name the name of the service */
+    public void logServiceStatus(String name) throws NoSuchServiceException{
         if( services.containsKey( name ) ){
             ServiceWrapper sw = services.get(name);
             logServiceStatus(sw);
+        }else{
+            throw new NoSuchServiceException("Service " + name + " is unknown");
         }
     }    
 
     /**
     * outputs the service status of the parameter service to the stdout 
     *
-    * @param the service */
+    * @param service the service */
     public void logServiceStatus(ServiceWrapper service){
         String state = getServiceStateStr( service.getServiceState() );
         String target = getServiceStateStr( service.getTargetState() );
@@ -113,27 +128,25 @@ public class ServiceManager{
 
     /**
     * returns the service corresponding to the argument service name in case it is known.
-    * @param the service name
+    * @param serviceName the service name
     * @return the corresponding service wrapper (possibly null) */
-    public ServiceWrapper getService(String serviceName){
+    public ServiceWrapper getService(String serviceName) throws NoSuchServiceException{
         if( services.containsKey(serviceName) )
             return services.get(serviceName);
-        return null;
+        throw new NoSuchServiceException("Service " + serviceName + " is unknown");
     }
 
     /**
     * if the reported service is unknown creates a new service.
     * 
-    * @param the name of the service to register
+    * @param serviceName the name of the service to register
     * @return the newly created or existing service */
-    public ServiceWrapper registerService(String serviceName){
+    public ServiceWrapper registerService(String serviceName) throws NoSuchServiceException{
         ServiceWrapper wrapper = null;
         if( services.containsKey(serviceName) ){
             wrapper = services.get(serviceName);
         }else{
             Service service = new ServiceCfg(serviceName, null).instantiateService();
-            if( service == null )
-                return null;
             wrapper = new ServiceWrapper( serviceName, service );
             services.put(serviceName, wrapper);
             servicesList.add(wrapper);
@@ -166,9 +179,9 @@ public class ServiceManager{
     * adds the service corresponding to dependencyName as a dependency of serviceName. 
     * Note: if either service is not previously known, it is created and loaded. 
     *
-    * @param the name of the service in which to add the dependency
-    * @param the name of the service to be added as a dependency */
-    public void registerDependency(String serviceName, String dependencyName){
+    * @param serviceName the name of the service in which to add the dependency
+    * @param dependencyName the name of the service to be added as a dependency */
+    public void registerDependency(String serviceName, String dependencyName) throws NoSuchServiceException{
         ServiceWrapper dependency = registerService(dependencyName);
         ServiceWrapper service = registerService(serviceName);
 
@@ -181,7 +194,7 @@ public class ServiceManager{
     /**
     * Given a service state returns a descriptive string
     *
-    * @param the state that is going to be translated to text
+    * @param state the state that is going to be translated to text
     * @return a descriptive of the argument state */
     public String getServiceStateStr(ServiceState state){
         switch(state){

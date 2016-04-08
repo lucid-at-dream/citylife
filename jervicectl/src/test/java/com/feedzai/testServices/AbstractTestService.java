@@ -20,11 +20,11 @@ public class AbstractTestService {
         return this.startStartTime >= s.startEndTime;
     }
 
-    public boolean stopedBefore(AbstractTestService s){
+    public boolean stoppedBefore(AbstractTestService s){
         return this.stopEndTime <= s.stopStartTime;
     }
 
-    public boolean stopedAfter(AbstractTestService s){
+    public boolean stoppedAfter(AbstractTestService s){
         return this.stopStartTime >= s.stopEndTime;
     }
 

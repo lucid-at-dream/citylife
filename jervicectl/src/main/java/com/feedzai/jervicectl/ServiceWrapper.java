@@ -62,8 +62,11 @@ public class ServiceWrapper implements Runnable{
     public void run(){
         while(!stop){
 
-            while( targetState != serviceState )
-                getNextJob().run();
+            while( targetState != serviceState ){
+                Runnable job = getNextJob();
+                if( job != null )
+                    job.run();
+            }
 
             if( softstop )
                 break;
@@ -81,7 +84,9 @@ public class ServiceWrapper implements Runnable{
     }
 
     /**
-    * Changes the target state of this service and signals the controlling thread */
+    * Changes the target state of this service and signals the controlling thread 
+    * 
+    * @param state the state value to set as target */
     public void setTargetState(ServiceState state){
         synchronized( this.targetMonitor ){
             this.targetState = state;
@@ -117,14 +122,14 @@ public class ServiceWrapper implements Runnable{
     }
 
     /**
-    * @param the service to be testes as dependency
+    * @param other the service to be tested as dependency
     * @return true if this service depends on the argument service*/
     public boolean dependsOn(ServiceWrapper other){
         return this.dependencies.contains( other );
     }
 
     /**
-    * @param the service to be testes as dependent
+    * @param other the service to be testes as dependent
     * @return true if this service is dependency of the argument service*/
     public boolean isDependencyOf(ServiceWrapper other){
         return this.dependents.contains( other );
@@ -165,7 +170,7 @@ public class ServiceWrapper implements Runnable{
     }
 
     /**
-    * @param the wanted service state for this object */
+    * @param state the wanted service state for this object */
     public void setServiceState(ServiceState state){
         this.serviceState = state;
     }
@@ -180,7 +185,7 @@ public class ServiceWrapper implements Runnable{
     * adds param service as a dependency of this service.
     * adds this service as a dependent of param service.
     *
-    * @param the service this service is dependent on.
+    * @param service the service this service is dependent on.
     */
     public void addDependency(ServiceWrapper service){
         this.dependencies.add(service);
@@ -213,7 +218,7 @@ public class ServiceWrapper implements Runnable{
 
     /**
     * @return returns the next job on queue and removes it.*/
-    private Runnable getNextJob(){
+    public Runnable getNextJob(){
         if( targetState != serviceState && targetState == ServiceState.RUNNING )
             return getStartServiceJob();
 
@@ -224,7 +229,7 @@ public class ServiceWrapper implements Runnable{
 
     /**
     * Adds a job for service starting to the job queue */
-    private Runnable getStartServiceJob(){
+    public Runnable getStartServiceJob(){
         return new Runnable() {
             @Override
             public void run(){
@@ -240,7 +245,7 @@ public class ServiceWrapper implements Runnable{
 
     /**
     * Adds a job for service stopping to the job queue */
-    private Runnable getStopServiceJob(){
+    public Runnable getStopServiceJob(){
         return new Runnable() {
             @Override
             public void run(){
