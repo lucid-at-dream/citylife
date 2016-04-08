@@ -41,6 +41,17 @@ public class ServiceManagerTest extends TestCase {
         return (AbstractTestService)serviceMgr.getService(prefix + suffix).getService();
     }
 
+
+    /*
+    * Le tests ...
+    * **Ze is in the living room testing his new TV set**
+    * **There is plastic all over the place, it's a mess.**
+    * **Maria arrives**
+    *
+    * Maria __ What the hell?! U kiddin' me?
+    * Ze __ I told you we need to hire a mexican maid . . .
+    */
+
     public void testServicesLoadingFromConfFile(){
         for(String service : serviceNames)
             assert( this.serviceMgr.getService( service ) != null );
