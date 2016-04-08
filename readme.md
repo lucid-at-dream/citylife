@@ -18,3 +18,7 @@ In order to set up the test environment, you must have the file testConfigs/big.
 In order to create the mock services, assuming you're using an UNIX based system, you must navigate to jervicectl/src/test/java/com/feedzai/testServices and execute the file genServices.sh. This will create the mock services.
 
 After having the configuration file and the mock services set up you can use maven or another tool to run the unit tests and watch closely as they pass every single case.
+
+##Link to repository
+
+you can find the repository here: [link to repo](https://bitbucket.org/futuo/jervicectl/)
