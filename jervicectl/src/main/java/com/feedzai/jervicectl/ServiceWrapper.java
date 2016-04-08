@@ -60,7 +60,7 @@ public class ServiceWrapper implements Runnable{
     * waits for new jobs in the pendingJobs queue and processes them as soon as possible
     */
     public void run(){
-        for(;!stop;){
+        while(!stop){
 
             while( targetState != serviceState )
                 getNextJob().run();
@@ -289,19 +289,33 @@ public class ServiceWrapper implements Runnable{
     }
 
     /**
-    * executes the start method of the service object */
-    public void startServiceThread(){
+    * executes the start method of the service object 
+    * @return true if no problems arise, false if an uncaught exception happens in start() */
+    public boolean startServiceThread(){
         this.setServiceState(ServiceState.STARTING);
-        service.start();
+        try{
+            service.start();
+        }catch(Exception e){
+            this.setServiceState(ServiceState.STOPPED);
+            return false;
+        }
         this.setServiceState(ServiceState.RUNNING);
+        return true;
     }
 
     /**
-    * executes the stop method of the service object */
-    public void stopServiceThread(){
+    * executes the stop method of the service object
+    * @return true if no problems arise, false if an uncaught exception happens in stop() */
+    public boolean stopServiceThread(){
         this.setServiceState(ServiceState.STOPPING);
-        service.stop();
+        try{
+            service.stop();
+        }catch(Exception e){
+            this.setServiceState(ServiceState.RUNNING);
+            return false;
+        }
         this.setServiceState(ServiceState.STOPPED);
+        return true;
     }
 
     /**
@@ -318,24 +332,6 @@ public class ServiceWrapper implements Runnable{
         for( ServiceWrapper dependency : this.dependencies ){
             dependency.notifyTarget();
         }
-    }
-
-    private String stateAsStr(ServiceState state){
-        switch(state){
-            case WAITING_DEPENDENCIES_START:
-                return "WAITING_DEPENDENCIES_START";
-            case STARTING:
-                return "STARTING";
-            case RUNNING:
-                return "RUNNING";
-            case WAITING_DEPENDENCIES_STOP:
-                return "WAITING_DEPENDENCIES_STOP";
-            case STOPPING:
-                return "STOPPING";
-            case STOPPED:
-                return "STOPPED";
-        }
-        return "Warning :: Fatal :: BIT FLIP!! - - - - TONIGHT WE PARTY WITH THE STARS. BAAAAM!";
     }
 
 }

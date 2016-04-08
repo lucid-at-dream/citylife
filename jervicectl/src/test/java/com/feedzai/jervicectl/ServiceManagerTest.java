@@ -49,7 +49,7 @@ public class ServiceManagerTest extends TestCase {
     * **Maria arrives**
     *
     * Maria __ What the hell?! U kiddin' me?
-    * Ze __ I told you we need to hire a mexican maid . . .
+    * Ze    __ I told you we need to hire a mexican maid . . .
     */
 
     public void testServicesLoadingFromConfFile(){
@@ -166,7 +166,6 @@ public class ServiceManagerTest extends TestCase {
     }
 
     public void testDependencyConsistencyAfterBigSequenceOfOperations(){
-        
         serviceMgr.startAll();
         serviceMgr.stopService(prefix + "D");
         serviceMgr.stopService(prefix + "N");
@@ -198,5 +197,7 @@ public class ServiceManagerTest extends TestCase {
                     assert( dependent.getServiceState() == ServiceState.STOPPED );
         }
     }
+
+
 
 }
