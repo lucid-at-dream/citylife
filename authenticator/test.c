@@ -1,27 +1,56 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "authenticator.h"
+#include "test.h"
 
-typedef struct _test {
-  char *description;
-  int (*test_impl) (void);
-} test;
+int runTest(test *);
+void display_report(suite_report *report);
 
-test tests[] = {
-};
+suite_report run_test_suite(test *test_suite, int suite_size) {
 
-int main(int argc, char** argv) {
+  suite_report report = {0, 0, 0}; // succeeded, failed, total
+
+  setup_env();
 
   int count = 0;
-  for (; count < sizeof(tests) / sizeof(test); count++) {
-    test *t = tests + count;
-    printf("Runing test %d: '%s'\n", count + 1, t->description);
-    t->test_impl();
+  for (; count < suite_size; count++) {
+    test *t = test_suite + count;
+    
+    printf("========= Runing test %d: '%s'\n", count + 1, t->description);
+    int failed = runTest(t);
+    printf("========= Finished executing test %d: %s\n", count + 1, t->description);
+    
+    report.successes += failed ? 0 : 1;
+    report.failures += failed ? 1 : 0;
+    report.total += 1; 
   }
 
-  printf("finished executing %d tests.\n", count);
+  clean_env();
 
-  return 0;
+  display_report(&report);
+
+
+  return report;
+}
+
+void display_report(suite_report *report) {
+  printf("Finished executing %d tests.\n", report->total);
+  printf("Tests executed > Success: %d tests | Failure: %d tests\n", report-> successes, report->failures);
+}
+
+/**
+ * Executes the before test, test, and after test routines. If any of 
+ * them fails then the test is considered as failed. Failures in one
+ * of the functions does not prevent the others from running.
+ *
+ * @param t The test that will be executed
+ * @return 0 if the test succeeded, something else on failure.
+ */
+int runTest(test *t) {
+  int failed = 0;
+  failed |= before_test();
+  failed |= t->test_impl();
+  failed |= after_test();
+  return failed;
 }
 
