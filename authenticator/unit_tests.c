@@ -19,9 +19,8 @@ void clean_env() {
 
 char test_auth(void) {
   printf("Adding user ze\n");
-  add_user("ze", "ze");
-
-  return 0;
+  result auth_result = add_user("ze", "ze");
+  return auth_result.result;
 }
  
 test test_suite[] = {

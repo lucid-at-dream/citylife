@@ -1,16 +1,14 @@
 #include "session_manager.h"
 
-enum {
-  SUCCESS,
-  ERROR
-} status;
-
+enum result_code { 
+  SUCCESS, 
+  ERROR 
+};
 
 typedef struct _result {
-  int result;
+  enum result_code result;
   char *message;
 } result;
-
 
 result authenticate(char *user, char *token);
 
