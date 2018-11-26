@@ -1,4 +1,6 @@
 #include "authenticator.h"
+#include "map.h"
+#include <stddef.h>
 
 /* enum {
   SUCCESS,
@@ -11,15 +13,21 @@ typedef struct _result {
 } result;
 */
 
-result authenticate(char *user, char *token) {
+map *auth_table;
+
+result add_user(char *user, char *password) {
+  if (auth_table == NULL) {
+    auth_table = map_new(16);
+  }
   result r;
-  r.result = ERROR;
+  map_add(auth_table, user, password);
+  r.result = SUCCESS;
   return r;
 }
 
-result add_user(char *user, char *password) {
+result authenticate(char *user, char *token) {
   result r;
-  r.result = SUCCESS;
+  r.result = ERROR;
   return r;
 }
 
