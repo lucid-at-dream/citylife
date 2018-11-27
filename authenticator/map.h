@@ -10,4 +10,4 @@ map *map_new(int capacity);
 
 void map_add(map *m, char *key, char *value);
 char *map_get(map *m, char *key);
-
+void map_destroy(map *m);
