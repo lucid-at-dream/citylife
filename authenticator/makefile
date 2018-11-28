@@ -6,6 +6,8 @@ CC_FLAGS=-g -Wall
 
 default: test
 
+compile: test.exe
+
 authenticator.o: authenticator.c authenticator.h
 	gcc ${CC_FLAGS} -c authenticator.c -o authenticator.o
 
