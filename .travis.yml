@@ -3,6 +3,13 @@ language: generic
 sudo: true
 group: travis_latest
 
+matrix:
+  include:
+  - name: "Unit Tests"
+    env: TARGET=test
+  - name: "Memory Leaks"
+    env: TARGET=memleak
+
 os:
   - linux
 
@@ -11,10 +18,10 @@ git:
   quiet: true
 
 before_install:
-  echo "Before Install"
+  - sudo apt-get install -y valgrind
 
 install:
   make -C authenticator/ compile
   
 script:
-  - authenticator/test.exe
+  - make -C authenticator/ $TARGET
