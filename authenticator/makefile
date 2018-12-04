@@ -1,8 +1,8 @@
 .PHONY=test clean
 
 
-CC_FLAGS=-Wall -O2
-CC_FLAGS=-g -Wall
+CC_FLAGS=-Wall -O2 -std=c99
+CC_FLAGS=-g -Wall -std=c99
 
 default: test
 

@@ -91,7 +91,6 @@ char test_map_add_2_doppleganger_elements() {
   return 0;
 }
 
-
 char test_auth(void) {
   printf("Adding user ze\n");
   result auth_result = add_user("ze", "ze");
@@ -110,11 +109,15 @@ test test_suite[] = {
   },
   {
     "Test adding 2 look alike elements to the map", test_map_add_2_doppleganger_elements
-  } 
+  }
 };
 
 int main(int argc, char **argv) {
-  run_test_suite(test_suite, sizeof(test_suite)/sizeof(test));
+  suite_report report = run_test_suite(test_suite, sizeof(test_suite)/sizeof(test));
+
+  if (report.failures > 0) {
+    return -1;
+  }
 
   return 0;
 }

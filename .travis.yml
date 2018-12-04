@@ -1,0 +1,20 @@
+language: generic
+
+sudo: true
+group: travis_latest
+
+os:
+  - linux
+
+git:
+  depth: 3
+  quiet: true
+
+before_install:
+  echo "Before Install"
+
+install:
+  make -C authenticator/ compile
+  
+script:
+  - authenticator/test.exe
