@@ -36,17 +36,19 @@ map *map_new(int capacity) {
   return m;
 }
 
+bucket *bucket_new(char *key, void *value) {
+  map_entry entry = {key, value};
+  bucket *new_bucket = (bucket *)calloc(1, sizeof(bucket));
+  new_bucket->entry = entry;
+  new_bucket->next =  NULL;
+  return new_bucket;
+} 
+
 void map_add(map *m, char *key, void *value) {
 
   if (should_resize(m)) {
     resize_map(m, calc_next_resize(m));
   }
-
-  map_entry entry = {key, value};
-
-  bucket *new_bucket = (bucket *)calloc(1, sizeof(bucket));
-  new_bucket->entry = entry;
-  new_bucket->next =  NULL;
 
   int index = get_index(m, key);
   bucket_list *list = m->table + index;
@@ -54,16 +56,23 @@ void map_add(map *m, char *key, void *value) {
   
   if (buck == NULL) {
     m->size++;
-    list->begin = new_bucket;
+    list->begin = bucket_new(key, value);
     return;
   }
   
   while(buck != NULL) {
+    
+    if (strcmp(buck->entry.key, key) == 0) {
+      buck->entry.value = value;
+      return;
+    }
+
     if (buck->next == NULL) {
-      buck->next = new_bucket;
+      buck->next = bucket_new(key, value);
       m->size++;
       return;
     }
+    
     buck = buck->next;
   }
 

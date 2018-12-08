@@ -21,6 +21,14 @@ char after_test() {
 void clean_env() {
 }
 
+/** Test authenticator **/
+char test_auth(void) {
+  printf("Adding user ze\n");
+  result auth_result = add_user("ze", "ze");
+  return auth_result.result;
+}
+
+/** Test map **/
 char test_map_add_get() {
   char *ZE_NAME = "ze";
   char *ZE_PASS = "ze_";
@@ -136,10 +144,24 @@ char test_map_add_get_10000_elements_1000_buckets_50_millis() {
   return test_map_add_get_10000_elements_N_buckets_50_millis(1000);
 }
 
-char test_auth(void) {
-  printf("Adding user ze\n");
-  result auth_result = add_user("ze", "ze");
-  return auth_result.result;
+char test_map_add_same_key_twice() {
+  char *KEY = "key";
+  char *VALUE_1 = "v1";
+  char *VALUE_2 = "v2";
+
+  map *m = map_new(1);
+
+  map_add(m, KEY, VALUE_1);
+  map_add(m, KEY, VALUE_2);
+  
+  char *result = map_get(m, KEY);
+  
+  map_destroy(m);
+
+  if (assert_str_equals("The retrieved value is the last inserted for that key.", result, VALUE_2)) {
+    return 1;
+  }
+  return 0;
 }
  
 test test_suite[] = {
@@ -162,6 +184,10 @@ test test_suite[] = {
   {
     "Test adding 10K users in a map with 1 bucket list and retrieving in less than 50ms",
     test_map_add_get_10000_elements_1_bucket_50_millis
+  },
+  {
+    "Test adding two values for the same key. The last value inserted should be returned.",
+    test_map_add_same_key_twice
   }
 };
 
