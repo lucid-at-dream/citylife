@@ -20,7 +20,7 @@ result add_user(char *user, char *password) {
     auth_table = map_new(16);
   }
   result r;
-  map_add(auth_table, user, password);
+  map_set(auth_table, user, password);
   r.result = SUCCESS;
   return r;
 }

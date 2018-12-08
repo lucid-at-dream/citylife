@@ -6,7 +6,7 @@
 
 // Function declarations
 // public api
-void map_add(map *m, char *key, void *value);
+void map_set(map *m, char *key, void *value);
 void *map_get(map *m, char *key);
 
 // constructors
@@ -44,7 +44,7 @@ bucket *bucket_new(char *key, void *value) {
   return new_bucket;
 } 
 
-void map_add(map *m, char *key, void *value) {
+void map_set(map *m, char *key, void *value) {
 
   if (should_resize(m)) {
     resize_map(m, calc_next_resize(m));
@@ -125,7 +125,7 @@ void resize_map(map *m, unsigned int new_size) {
   for (int i = 0; i < m->capacity && aux_map->size < m->size; i++) {
     bucket *b = m->table[i].begin;
     while(b != NULL) {
-      map_add(aux_map, b->entry.key, b->entry.value);
+      map_set(aux_map, b->entry.key, b->entry.value);
       b = b->next;
     }
   }

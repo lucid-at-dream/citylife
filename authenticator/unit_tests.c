@@ -34,7 +34,7 @@ char test_map_add_get() {
   char *ZE_PASS = "ze_";
 
   map *m = map_new(16);
-  map_add(m, ZE_NAME, ZE_PASS);
+  map_set(m, ZE_NAME, ZE_PASS);
   char *ze = map_get(m, ZE_NAME);
 
   if (ze == NULL) {
@@ -58,8 +58,8 @@ char test_map_add_2_elements() {
 
   map *m = map_new(16);
 
-  map_add(m, ZE_NAME, ZE_PASS);
-  map_add(m, MARIA_NAME, MARIA_PASS);
+  map_set(m, ZE_NAME, ZE_PASS);
+  map_set(m, MARIA_NAME, MARIA_PASS);
   
   char *ze = map_get(m, ZE_NAME);
   char *maria = map_get(m, MARIA_NAME);
@@ -83,8 +83,8 @@ char test_map_add_2_doppleganger_elements() {
 
   map *m = map_new(16);
 
-  map_add(m, ZE_NAME, ZE_PASS);
-  map_add(m, ZE_DOP_NAME, ZE_DOP_PASS);
+  map_set(m, ZE_NAME, ZE_PASS);
+  map_set(m, ZE_DOP_NAME, ZE_DOP_PASS);
   
   char *zemanel = map_get(m, ZE_NAME);
   char *zemanel_dop = map_get(m, ZE_DOP_NAME);
@@ -118,7 +118,7 @@ char test_map_add_get_10000_elements_N_buckets_50_millis(int buckets) {
     sprintf(user, "%s%d", NAME_PREFIX, i);
     sprintf(pass, "%s%d", PASS_PREFIX, i);
 
-    map_add(m, user, pass);
+    map_set(m, user, pass);
     char *retrieved_password = map_get(m, user);
   
     if (assert_str_equals("Retrieved password should equal added password", pass, retrieved_password)) {
@@ -151,8 +151,8 @@ char test_map_add_same_key_twice() {
 
   map *m = map_new(1);
 
-  map_add(m, KEY, VALUE_1);
-  map_add(m, KEY, VALUE_2);
+  map_set(m, KEY, VALUE_1);
+  map_set(m, KEY, VALUE_2);
   
   char *result = map_get(m, KEY);
   
