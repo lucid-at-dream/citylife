@@ -128,6 +128,10 @@ char test_map_add_get_10000_elements_N_buckets_50_millis(int buckets) {
   return 0;
 }
 
+char test_map_add_get_10000_elements_1_bucket_50_millis() {
+  return test_map_add_get_10000_elements_N_buckets_50_millis(1);
+}
+
 char test_map_add_get_10000_elements_1000_buckets_50_millis() {
   return test_map_add_get_10000_elements_N_buckets_50_millis(1000);
 }
@@ -154,7 +158,11 @@ test test_suite[] = {
   {
     "Test adding 10K users in a map with 1K bucket lists and retrieving in less than 50ms", 
     test_map_add_get_10000_elements_1000_buckets_50_millis
-  } 
+  },
+  {
+    "Test adding 10K users in a map with 1 bucket list and retrieving in less than 50ms",
+    test_map_add_get_10000_elements_1_bucket_50_millis
+  }
 };
 
 int main(int argc, char **argv) {

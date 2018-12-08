@@ -9,7 +9,6 @@ typedef struct _bucket {
 } bucket;
 
 typedef struct _bucket_list {
-  int size;
   bucket *begin;
 } bucket_list;
 

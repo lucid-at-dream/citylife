@@ -1,13 +1,33 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <openssl/crypto.h>
-#include <openssl/md4.h>
 
 #include "map.h"
 
+// Function declarations
+// public api
+void map_add(map *m, char *key, char *value);
+char *map_get(map *m, char *key);
+
+// constructors
+map *map_new(int capacity);
+
+// destructores
+void bucket_list_destroy(bucket *b);
+void map_destroy(map *m);
+
+// map operations
+void resize_map(map *m, unsigned int new_size);
+
+// auxiliar functions
+char should_resize(map *m);
+unsigned get_index(map *m, char *key);
+unsigned int calc_next_resize(map *m);
+void map_display(map *m);
+unsigned calc_hash(const char *key);
 unsigned int qhashmurmur3_32(const void *data, size_t nbytes);
 
+// Function definitions
 map *map_new(int capacity) {
   map *m = (map *)malloc(sizeof(map));
   m->capacity = capacity;
@@ -16,16 +36,11 @@ map *map_new(int capacity) {
   return m;
 }
 
-unsigned calc_hash(const char *key) {
-  return qhashmurmur3_32(key, strlen(key));
-}
-
-unsigned get_index(map *m, char *key) {
-  unsigned int hash = calc_hash(key);
-  return hash % m->capacity;
-}
-
 void map_add(map *m, char *key, char *value) {
+
+  if (should_resize(m)) {
+    resize_map(m, calc_next_resize(m));
+  }
 
   map_entry entry = {key, value};
 
@@ -38,7 +53,7 @@ void map_add(map *m, char *key, char *value) {
   bucket *buck = list->begin;
   
   if (buck == NULL) {
-    list->size = 1;
+    m->size++;
     list->begin = new_bucket;
     return;
   }
@@ -46,10 +61,13 @@ void map_add(map *m, char *key, char *value) {
   while(buck != NULL) {
     if (buck->next == NULL) {
       buck->next = new_bucket;
+      m->size++;
       return;
     }
     buck = buck->next;
   }
+
+  perror("BUG ALERT: Failed adding element to map.");
 }
 
 char *map_get(map *m, char *key) {
@@ -73,6 +91,48 @@ char *map_get(map *m, char *key) {
   return NULL;
 }
 
+char should_resize(map *m) {
+  return m->size > m->capacity * 4;
+}
+
+unsigned int calc_next_resize(map *m) {
+  
+  unsigned prev_size = 1;
+  unsigned resize = 1;
+  
+  while (resize <= m->size) {
+    int aux = resize;
+    resize = prev_size + resize;
+    prev_size = aux;
+  }
+
+  return resize;
+}
+
+void resize_map(map *m, unsigned int new_size) {
+
+  // Create a new map and copy the contents of the current one.
+  map *aux_map = map_new(new_size);
+  for (int i = 0; i < m->capacity && aux_map->size < m->size; i++) {
+    bucket *b = m->table[i].begin;
+    while(b != NULL) {
+      map_add(aux_map, b->entry.key, b->entry.value);
+      b = b->next;
+    }
+  }
+  
+  // Destroy old table
+  for (int i=0; i < m->capacity; i++) {
+    bucket_list_destroy(m->table[i].begin);
+  }
+  free(m->table);
+
+  // Reassign to the new table
+  m->table = aux_map->table;
+  m->capacity = aux_map->capacity;
+  free(aux_map);
+}
+
 void map_display(map *m) {
   for (int i = 0; i < m->capacity; i++) {
     printf("%d: ", i);
@@ -87,6 +147,15 @@ void map_display(map *m) {
     } 
     printf("\n");
   } 
+}
+
+unsigned calc_hash(const char *key) {
+  return qhashmurmur3_32(key, strlen(key));
+}
+
+unsigned get_index(map *m, char *key) {
+  unsigned int hash = calc_hash(key);
+  return hash % m->capacity;
 }
 
 void bucket_list_destroy(bucket *b) {
@@ -176,4 +245,3 @@ unsigned int qhashmurmur3_32(const void *data, size_t nbytes) {
 
     return h;
 }
-

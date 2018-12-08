@@ -1,7 +1,7 @@
 .PHONY=test clean memleak default compile full_build
 
-CC_FLAGS=-Wall -O2 -std=c99 -lcrypto
-CC_FLAGS=-g -Wall -std=c99 -lcrypto
+CC_FLAGS=-Wall -O2 -std=c99
+CC_FLAGS=-g -Wall -std=c99
 
 default: test
 
