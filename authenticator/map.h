@@ -1,6 +1,6 @@
 typedef struct _map_entry {
   char *key;
-  char *value;
+  void *value;
 } map_entry;
 
 typedef struct _bucket {
@@ -19,7 +19,7 @@ typedef struct _map {
 } map;
 
 map *map_new(int capacity);
-void map_add(map *m, char *key, char *value);
-char *map_get(map *m, char *key);
+void map_add(map *m, char *key, void *value);
+void *map_get(map *m, char *key);
 void map_destroy(map *m);
 void map_display(map *m);

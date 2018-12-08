@@ -6,8 +6,8 @@
 
 // Function declarations
 // public api
-void map_add(map *m, char *key, char *value);
-char *map_get(map *m, char *key);
+void map_add(map *m, char *key, void *value);
+void *map_get(map *m, char *key);
 
 // constructors
 map *map_new(int capacity);
@@ -36,7 +36,7 @@ map *map_new(int capacity) {
   return m;
 }
 
-void map_add(map *m, char *key, char *value) {
+void map_add(map *m, char *key, void *value) {
 
   if (should_resize(m)) {
     resize_map(m, calc_next_resize(m));
@@ -70,7 +70,7 @@ void map_add(map *m, char *key, char *value) {
   perror("BUG ALERT: Failed adding element to map.");
 }
 
-char *map_get(map *m, char *key) {
+void *map_get(map *m, char *key) {
 
   int index = get_index(m, key);
 
