@@ -22,15 +22,34 @@ void clean_env() {
 }
 
 /** Test authenticator **/
-char test_auth_add_user(void) {
-  printf("Adding user ze\n");
-  authenticator *auth = authenticator_new();
-  
+char test_auth_add_user() {
+  authenticator *auth = authenticator_new();  
   result auth_result = add_user(auth, "ze", "ze");
+  authenticator_destroy(auth);
+
+  if (assert_int_equals("New user is created with success.", auth_result.result, AUTH_SUCCESS)) {
+    return 1;
+  }
+  return 0;
+}
+
+char test_auth_add_same_user_twice() {
+  authenticator *auth = authenticator_new();
+
+  result auth_result = add_user(auth, "ze", "ze");
+  if (assert_int_equals("New user is created with success.", auth_result.result, AUTH_SUCCESS)) {
+    authenticator_destroy(auth);
+    return 1;
+  }
+
+  auth_result = add_user(auth, "ze", "manel");
+  if (assert_int_equals("Adding a new user with a conflicting name results in error.", auth_result.result, AUTH_ERROR)) {
+    authenticator_destroy(auth);
+    return 1;
+  }
 
   authenticator_destroy(auth);
-  
-  return auth_result.result;
+  return 0;
 }
 
 /** Test map **/
@@ -171,6 +190,9 @@ char test_map_add_same_key_twice() {
 test test_suite[] = {
   {
     "Add user Ze with password Ze to the authentication service", test_auth_add_user
+  },
+  {
+    "Try to add a new user with a conflicting name", test_auth_add_same_user_twice
   },
   {
     "Test add functionality in maps", test_map_add_get

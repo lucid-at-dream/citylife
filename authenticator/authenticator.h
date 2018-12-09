@@ -8,8 +8,8 @@ typedef struct _authenticator {
 } authenticator;
 
 enum result_code { 
-  SUCCESS, 
-  ERROR 
+  AUTH_SUCCESS, 
+  AUTH_ERROR 
 };
 
 typedef struct _result {
@@ -18,6 +18,7 @@ typedef struct _result {
 } result;
 
 authenticator *authenticator_new();
+void authenticator_destroy(authenticator *auth);
 
 result authenticate(char *user, char *token);
 
