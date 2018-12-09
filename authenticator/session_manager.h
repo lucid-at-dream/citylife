@@ -1,3 +1,4 @@
+#pragma once
 
 typedef struct _session_token {
   char *token;

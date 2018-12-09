@@ -1,3 +1,5 @@
+#pragma once
+
 /**
  * Holds the report generated while running a test suite.
  */

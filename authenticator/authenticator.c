@@ -1,26 +1,20 @@
 #include "authenticator.h"
-#include "map.h"
-#include <stddef.h>
+#include <stdlib.h>
 
-/* enum {
-  SUCCESS,
-  ERROR
-} status;
+authenticator *authenticator_new() {
+  authenticator *auth = (authenticator *)calloc(1, sizeof(authenticator));
+  auth->auth_table = map_new(16);
+  return auth;  
+}
 
-typedef struct _result {
-  int status;
-  char *message;
-} result;
-*/
+void authenticator_destroy(authenticator *auth) {
+  map_destroy(auth->auth_table);
+  free(auth);
+}
 
-map *auth_table;
-
-result add_user(char *user, char *password) {
-  if (auth_table == NULL) {
-    auth_table = map_new(16);
-  }
+result add_user(authenticator *auth, char *user, char *password) {
   result r;
-  map_set(auth_table, user, password);
+  map_set(auth->auth_table, user, password);
   r.result = SUCCESS;
   return r;
 }

@@ -1,4 +1,11 @@
+#pragma once
+
 #include "session_manager.h"
+#include "map.h"
+
+typedef struct _authenticator {
+  map *auth_table;
+} authenticator;
 
 enum result_code { 
   SUCCESS, 
@@ -10,9 +17,11 @@ typedef struct _result {
   char *message;
 } result;
 
+authenticator *authenticator_new();
+
 result authenticate(char *user, char *token);
 
-result add_user(char *user, char *password);
+result add_user(authenticator *auth, char *user, char *password);
 
 result del_user(char *user, session_token *token);
 

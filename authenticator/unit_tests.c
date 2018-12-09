@@ -22,9 +22,14 @@ void clean_env() {
 }
 
 /** Test authenticator **/
-char test_auth(void) {
+char test_auth_add_user(void) {
   printf("Adding user ze\n");
-  result auth_result = add_user("ze", "ze");
+  authenticator *auth = authenticator_new();
+  
+  result auth_result = add_user(auth, "ze", "ze");
+
+  authenticator_destroy(auth);
+  
   return auth_result.result;
 }
 
@@ -38,7 +43,6 @@ char test_map_add_get() {
   char *ze = map_get(m, ZE_NAME);
 
   if (ze == NULL) {
-    printf("Fuck, ze is null.");
     return 1;
   }
 
@@ -166,7 +170,7 @@ char test_map_add_same_key_twice() {
  
 test test_suite[] = {
   {
-    "Authenticate user Ze with password Ze", test_auth
+    "Add user Ze with password Ze to the authentication service", test_auth_add_user
   },
   {
     "Test add functionality in maps", test_map_add_get

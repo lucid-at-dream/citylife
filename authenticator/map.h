@@ -1,3 +1,5 @@
+#pragma once
+
 typedef struct _map_entry {
   char *key;
   void *value;
