@@ -71,6 +71,25 @@ char test_auth_do_auth() {
   return 0;
 }
 
+char test_auth_do_auth_wrong_password() {
+  authenticator *auth = authenticator_new();
+
+  result auth_result = add_user(auth, "ze", "ze");
+  if (assert_int_equals("New user is created with success.", auth_result.result, AUTH_SUCCESS)) {
+    authenticator_destroy(auth);
+    return 1;
+  }
+
+  auth_result = authenticate(auth, "ze", "maria");
+  if (assert_int_equals("User ze is authenticated with success.", auth_result.result, AUTH_ERROR)) {
+    authenticator_destroy(auth);
+    return 1;
+  }
+
+  authenticator_destroy(auth);
+  return 0;
+}
+
 /** Test map **/
 char test_map_add_get() {
   char *ZE_NAME = "ze";
@@ -215,6 +234,9 @@ test test_suite[] = {
   },
   {
     "Create an user and authenticate with it", test_auth_do_auth
+  },
+  {
+    "Create an user and provide a wrong password for authentication", test_auth_do_auth_wrong_password
   },
   {
     "Test add functionality in maps", test_map_add_get

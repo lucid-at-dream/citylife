@@ -30,7 +30,17 @@ result add_user(authenticator *auth, char *user, char *password) {
 
 result authenticate(authenticator *auth, char *user, char *token) {
   result r;
-  r.result = AUTH_SUCCESS;
+  
+  char *stored_password = map_get(auth->auth_table, user);
+
+  int match = strcmp(stored_password, token);
+  if (match == 0) {
+    r.result = AUTH_SUCCESS;
+  } else {
+    r.result = AUTH_ERROR;
+    r.message = "The wrong password has been provided for that username";
+  }
+
   return r;
 }
 
