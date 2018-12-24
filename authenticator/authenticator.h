@@ -20,11 +20,11 @@ typedef struct _result {
 authenticator *authenticator_new();
 void authenticator_destroy(authenticator *auth);
 
-result authenticate(char *user, char *token);
+result authenticate(authenticator *auth, char *user, char *token);
 
 result add_user(authenticator *auth, char *user, char *password);
 
-result del_user(char *user, session_token *token);
+result del_user(authenticator *auth, char *user, session_token *token);
 
-result change_password(char *user, session_token *token, char *new_password);
+result change_password(authenticator *auth, char *user, session_token *token, char *new_password);
 

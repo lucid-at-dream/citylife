@@ -2,7 +2,7 @@
 
 tmpfile=$(mktemp)
 
-valgrind -v $1 2> $tmpfile
+valgrind --leak-check=full $1 2> $tmpfile
 
 cat $tmpfile
 

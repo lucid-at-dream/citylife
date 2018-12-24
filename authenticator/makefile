@@ -9,6 +9,9 @@ compile: test.exe
 
 full_build: test memleak
 
+sonar: clean
+	build-wrapper-linux-x86-64 --out-dir bw-output make compile
+
 authenticator.o: authenticator.c authenticator.h
 	gcc ${CC_FLAGS} -c authenticator.c -o authenticator.o
 
@@ -32,6 +35,7 @@ test: test.exe
 	./test.exe
 
 clean:
+	rm -rf bw-output
 	rm -f test.exe
 	rm -f *.o
 

@@ -28,19 +28,19 @@ result add_user(authenticator *auth, char *user, char *password) {
   return r;
 }
 
-result authenticate(char *user, char *token) {
+result authenticate(authenticator *auth, char *user, char *token) {
+  result r;
+  r.result = AUTH_SUCCESS;
+  return r;
+}
+
+result del_user(authenticator *auth, char *user, session_token *token) {
   result r;
   r.result = AUTH_ERROR;
   return r;
 }
 
-result del_user(char *user, session_token *token) {
-  result r;
-  r.result = AUTH_ERROR;
-  return r;
-}
-
-result change_password(char *user, session_token *token, char *new_password) {
+result change_password(authenticator *auth, char *user, session_token *token, char *new_password) {
   result r;
   r.result = AUTH_ERROR;
   return r;

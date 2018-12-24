@@ -52,6 +52,25 @@ char test_auth_add_same_user_twice() {
   return 0;
 }
 
+char test_auth_do_auth() {
+  authenticator *auth = authenticator_new();
+
+  result auth_result = add_user(auth, "ze", "ze");
+  if (assert_int_equals("New user is created with success.", auth_result.result, AUTH_SUCCESS)) {
+    authenticator_destroy(auth);
+    return 1;
+  }
+
+  auth_result = authenticate(auth, "ze", "ze");
+  if (assert_int_equals("User ze is authenticated with success.", auth_result.result, AUTH_SUCCESS)) {
+    authenticator_destroy(auth);
+    return 1;
+  }
+
+  authenticator_destroy(auth);
+  return 0;
+}
+
 /** Test map **/
 char test_map_add_get() {
   char *ZE_NAME = "ze";
@@ -193,6 +212,9 @@ test test_suite[] = {
   },
   {
     "Try to add a new user with a conflicting name", test_auth_add_same_user_twice
+  },
+  {
+    "Create an user and authenticate with it", test_auth_do_auth
   },
   {
     "Test add functionality in maps", test_map_add_get
