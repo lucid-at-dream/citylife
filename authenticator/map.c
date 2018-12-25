@@ -138,7 +138,9 @@ void resize_map(map *m, unsigned int new_size) {
   
   // Destroy old table
   for (int i=0; i < m->capacity; i++) {
-    bucket_list_destroy(m->table[i].begin, 0);
+    if (m->table + i != NULL) {
+      bucket_list_destroy(m->table[i].begin, 0);
+    }
   }
   free(m->table);
 
@@ -152,9 +154,11 @@ void map_display(map *m) {
   for (int i = 0; i < m->capacity; i++) {
     printf("%d: ", i);
     bucket_list *list = m->table + i;
+    
     if (list == NULL) {
-      printf("table is null");
+      continue;
     }
+
     bucket *buck = list->begin;
     while (buck != NULL) {
       printf(" %s - ", buck->entry.key);

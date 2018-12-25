@@ -295,7 +295,7 @@ int main(int argc, char **argv) {
 
 char *new_string(char *string) {
   char *ns = (char *)calloc(strlen(string) + 1, sizeof(char));
-  sprintf(ns, string);
+  sprintf(ns, "%s", string);
   return ns;
 }
 
