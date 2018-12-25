@@ -420,6 +420,20 @@ char test_map_delete_user_among_many_users() {
   return 0;
 }
 
+char test_map_delete_non_existing_user() {
+  map *m = map_new(1);
+  
+  map_set(m, new_string("aa"), new_string("aa"));
+  map_set(m, new_string("bb"), new_string("bb"));
+  map_set(m, new_string("cc"), new_string("cc"));
+  
+  map_del(m, "ze");
+  
+  map_destroy(m);
+
+  return 0;
+}
+
 test test_suite[] = {
   {
     "Add user Ze with password Ze to the authentication service", test_auth_add_user
@@ -468,6 +482,9 @@ test test_suite[] = {
   },
   {
     "Test deleting some users among several other users", test_map_delete_user_among_many_users
+  },
+  {
+    "Test deleting a user that does not exist", test_map_delete_non_existing_user
   }
 };
 

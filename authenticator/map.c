@@ -124,9 +124,11 @@ void map_del(map *m, char *key) {
     buck = buck->next;
   }
   
-  free(buck->entry.key);
-  free(buck->entry.value);
-  free(buck);
+  if (buck != NULL) {
+    free(buck->entry.key);
+    free(buck->entry.value);
+    free(buck);
+  }
 }
 
 char should_resize(map *m) {
