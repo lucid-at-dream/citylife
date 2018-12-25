@@ -1,5 +1,6 @@
 #include "authenticator.h"
 #include <stdlib.h>
+#include <string.h>
 
 authenticator *authenticator_new() {
   authenticator *auth = (authenticator *)calloc(1, sizeof(authenticator));

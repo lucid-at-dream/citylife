@@ -1,11 +1,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <stdlib.h>
 
 #include "test.h"
 #include "authenticator.h"
 #include "map.h"
 #include "assert.h"
+
+char *new_string(char *);
 
 void setup_env() {
 }
@@ -24,7 +27,7 @@ void clean_env() {
 /** Test authenticator **/
 char test_auth_add_user() {
   authenticator *auth = authenticator_new();  
-  result auth_result = add_user(auth, "ze", "ze");
+  result auth_result = add_user(auth, new_string("ze"), new_string("ze"));
   authenticator_destroy(auth);
 
   if (assert_int_equals("New user is created with success.", auth_result.result, AUTH_SUCCESS)) {
@@ -36,17 +39,22 @@ char test_auth_add_user() {
 char test_auth_add_same_user_twice() {
   authenticator *auth = authenticator_new();
 
-  result auth_result = add_user(auth, "ze", "ze");
+  char *ZE_NAME = new_string("ze");
+  char *ZE_PASS = new_string("ze");
+  char *ZE_PASS_OTHER = new_string("manel");
+
+  result auth_result = add_user(auth, ZE_NAME, ZE_PASS);
   if (assert_int_equals("New user is created with success.", auth_result.result, AUTH_SUCCESS)) {
     authenticator_destroy(auth);
     return 1;
   }
 
-  auth_result = add_user(auth, "ze", "manel");
+  auth_result = add_user(auth, ZE_NAME, ZE_PASS_OTHER);
   if (assert_int_equals("Adding a new user with a conflicting name results in error.", auth_result.result, AUTH_ERROR)) {
     authenticator_destroy(auth);
     return 1;
   }
+  free(ZE_PASS_OTHER);
 
   authenticator_destroy(auth);
   return 0;
@@ -55,7 +63,7 @@ char test_auth_add_same_user_twice() {
 char test_auth_do_auth() {
   authenticator *auth = authenticator_new();
 
-  result auth_result = add_user(auth, "ze", "ze");
+  result auth_result = add_user(auth, new_string("ze"), new_string("ze"));
   if (assert_int_equals("New user is created with success.", auth_result.result, AUTH_SUCCESS)) {
     authenticator_destroy(auth);
     return 1;
@@ -74,7 +82,7 @@ char test_auth_do_auth() {
 char test_auth_do_auth_wrong_password() {
   authenticator *auth = authenticator_new();
 
-  result auth_result = add_user(auth, "ze", "ze");
+  result auth_result = add_user(auth, new_string("ze"), new_string("ze"));
   if (assert_int_equals("New user is created with success.", auth_result.result, AUTH_SUCCESS)) {
     authenticator_destroy(auth);
     return 1;
@@ -92,8 +100,8 @@ char test_auth_do_auth_wrong_password() {
 
 /** Test map **/
 char test_map_add_get() {
-  char *ZE_NAME = "ze";
-  char *ZE_PASS = "ze_";
+  char *ZE_NAME = new_string("ze");
+  char *ZE_PASS = new_string("ze_");
 
   map *m = map_new(16);
   map_set(m, ZE_NAME, ZE_PASS);
@@ -103,19 +111,19 @@ char test_map_add_get() {
     return 1;
   }
 
-  map_destroy(m);
-
   if (assert_str_equals("Ze's password matches the inserted one.", ze, ZE_PASS)) {
+    map_destroy(m);
     return 1;
   }
+  map_destroy(m);
   return 0;
 }
 
 char test_map_add_2_elements() {
-  char *ZE_NAME = "ze";
-  char *ZE_PASS = "ze_";
-  char *MARIA_NAME = "maria";
-  char *MARIA_PASS = "maria_";
+  char *ZE_NAME = new_string("ze");
+  char *ZE_PASS = new_string("ze_");
+  char *MARIA_NAME = new_string("maria");
+  char *MARIA_PASS = new_string("maria_");
 
   map *m = map_new(16);
 
@@ -125,22 +133,24 @@ char test_map_add_2_elements() {
   char *ze = map_get(m, ZE_NAME);
   char *maria = map_get(m, MARIA_NAME);
   
-  map_destroy(m);
-
   if (assert_str_equals("Ze's password matches the inserted one.", ze, ZE_PASS)) {
+    map_destroy(m);
     return 1;
   }
   if (assert_str_equals("Maria's password matches the inserted one.", maria, MARIA_PASS)) {
+    map_destroy(m);
     return 1;
   }
+
+  map_destroy(m);
   return 0;
 }
 
 char test_map_add_2_doppleganger_elements() {
-  char *ZE_NAME = "zemanel";
-  char *ZE_PASS = "zemanel_";
-  char *ZE_DOP_NAME = "zemaneli";
-  char *ZE_DOP_PASS = "zemaneli_";
+  char *ZE_NAME = new_string("zemanel");
+  char *ZE_PASS = new_string("zemanel_");
+  char *ZE_DOP_NAME = new_string("zemaneli");
+  char *ZE_DOP_PASS = new_string("zemaneli_");
 
   map *m = map_new(16);
 
@@ -150,14 +160,16 @@ char test_map_add_2_doppleganger_elements() {
   char *zemanel = map_get(m, ZE_NAME);
   char *zemanel_dop = map_get(m, ZE_DOP_NAME);
   
-  map_destroy(m);
-
   if (assert_str_equals("Ze Manel's password matches the inserted one.", zemanel, ZE_PASS)) {
+    map_destroy(m);
     return 1;
   }
   if (assert_str_equals("Ze Maneli's password matches the inserted one.", zemanel_dop, ZE_DOP_PASS)) {
+    map_destroy(m);
     return 1;
   }
+
+  map_destroy(m);
   return 0;
 }
 
@@ -173,23 +185,33 @@ char test_map_add_get_10000_elements_N_buckets_50_millis(int buckets) {
   clock_t start = clock();
 
   for (int i = 0; i < n_elements; i++) {
-    char user[12];
-    char pass[12];
+    char *user = (char *)calloc(20, sizeof(char));
+    char *pass = (char *)calloc(20, sizeof(char));
 
     sprintf(user, "%s%d", NAME_PREFIX, i);
     sprintf(pass, "%s%d", PASS_PREFIX, i);
 
     map_set(m, user, pass);
-    char *retrieved_password = map_get(m, user);
-  
-    if (assert_str_equals("Retrieved password should equal added password", pass, retrieved_password)) {
+  }
+
+  char lookup_user[20];
+  char expected_pass[20];
+  for (int i = 0; i < n_elements; i++) {
+
+    sprintf(lookup_user, "%s%d", NAME_PREFIX, i);
+    sprintf(expected_pass, "%s%d", PASS_PREFIX, i);
+
+    char *retrieved_password = map_get(m, lookup_user);
+    if (assert_str_equals("Retrieved password should equal added password", expected_pass, retrieved_password)) {
       return 1;
     }
   }
+
   clock_t stop = clock();
   map_destroy(m);
 
   double time_taken = (stop - start) / (double)CLOCKS_PER_SEC;
+
   if (assert_float_less_than("Add/Get of 10K elements should take less than 10ms", time_taken, 0.050)) {
     return 1;
   }
@@ -206,9 +228,9 @@ char test_map_add_get_10000_elements_1000_buckets_50_millis() {
 }
 
 char test_map_add_same_key_twice() {
-  char *KEY = "key";
-  char *VALUE_1 = "v1";
-  char *VALUE_2 = "v2";
+  char *KEY = new_string("key");
+  char *VALUE_1 = new_string("v1");
+  char *VALUE_2 = new_string("v2");
 
   map *m = map_new(1);
 
@@ -217,11 +239,11 @@ char test_map_add_same_key_twice() {
   
   char *result = map_get(m, KEY);
   
-  map_destroy(m);
-
   if (assert_str_equals("The retrieved value is the last inserted for that key.", result, VALUE_2)) {
+    map_destroy(m);
     return 1;
   }
+  map_destroy(m);
   return 0;
 }
  
@@ -269,5 +291,11 @@ int main(int argc, char **argv) {
   }
 
   return 0;
+}
+
+char *new_string(char *string) {
+  char *ns = (char *)calloc(strlen(string) + 1, sizeof(char));
+  sprintf(ns, string);
+  return ns;
 }
 

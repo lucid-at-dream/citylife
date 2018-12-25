@@ -13,7 +13,7 @@ void *map_get(map *m, char *key);
 map *map_new(int capacity);
 
 // destructores
-void bucket_list_destroy(bucket *b);
+void bucket_list_destroy(bucket *b, char free_contents);
 void map_destroy(map *m);
 
 // map operations
@@ -63,6 +63,7 @@ void map_set(map *m, char *key, void *value) {
   while(buck != NULL) {
     
     if (strcmp(buck->entry.key, key) == 0) {
+      free(buck->entry.value);
       buck->entry.value = value;
       return;
     }
@@ -75,8 +76,6 @@ void map_set(map *m, char *key, void *value) {
     
     buck = buck->next;
   }
-
-  perror("BUG ALERT: Failed adding element to map.");
 }
 
 void *map_get(map *m, char *key) {
@@ -120,10 +119,17 @@ unsigned int calc_next_resize(map *m) {
 
 void resize_map(map *m, unsigned int new_size) {
 
-  // Create a new map and copy the contents of the current one.
+  // Create a new map
   map *aux_map = map_new(new_size);
+
+  // Copy the contents of the current one to the new map.
   for (int i = 0; i < m->capacity && aux_map->size < m->size; i++) {
+    
+    if (m->table + i == NULL)
+      continue;
+    
     bucket *b = m->table[i].begin;
+
     while(b != NULL) {
       map_set(aux_map, b->entry.key, b->entry.value);
       b = b->next;
@@ -132,7 +138,7 @@ void resize_map(map *m, unsigned int new_size) {
   
   // Destroy old table
   for (int i=0; i < m->capacity; i++) {
-    bucket_list_destroy(m->table[i].begin);
+    bucket_list_destroy(m->table[i].begin, 0);
   }
   free(m->table);
 
@@ -167,17 +173,22 @@ unsigned get_index(map *m, char *key) {
   return hash % m->capacity;
 }
 
-void bucket_list_destroy(bucket *b) {
+void bucket_list_destroy(bucket *b, char free_contents) {
   if (b == NULL) {
     return;
   }
-  bucket_list_destroy(b->next);
+  bucket_list_destroy(b->next, free_contents);
+  
+  if (free_contents) {
+    free(b->entry.key);
+    free(b->entry.value);
+  }
   free(b);
 }
 
 void map_destroy(map *m) {
   for (int i = 0; i < m->capacity; i++) {
-    bucket_list_destroy(m->table[i].begin);
+    bucket_list_destroy(m->table[i].begin, 1);
   }
   free(m->table);
   free(m);

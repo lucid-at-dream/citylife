@@ -1,16 +1,18 @@
 .PHONY=test clean memleak default compile full_build
 
-CC_FLAGS=-Wall -O2 -std=c99
-CC_FLAGS=-g -Wall -std=c99
+CC_FLAGS= -Wextra -fprofile-arcs -ftest-coverage --coverage -std=c99
 
-default: test
+default: compile
 
 compile: test.exe
 
 full_build: test memleak
 
 sonar: clean
-	build-wrapper-linux-x86-64 --out-dir bw-output make compile
+	build-wrapper-linux-x86-64 --out-dir bw-output make compile test
+	mkdir -p gcov-reports
+	gcov map.c assert.c authenticator.c test.c
+	cd ..; sonar-scanner
 
 authenticator.o: authenticator.c authenticator.h
 	gcc ${CC_FLAGS} -c authenticator.c -o authenticator.o
@@ -35,7 +37,8 @@ test: test.exe
 	./test.exe
 
 clean:
-	rm -rf bw-output
+	rm -rf bw_output bw-output .scannerwork out.strace
 	rm -f test.exe
 	rm -f *.o
+	rm -f *.gcov *.gcda *.gcno
 
