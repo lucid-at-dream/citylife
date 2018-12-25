@@ -168,6 +168,37 @@ char test_auth_do_auth_delete_user() {
   return 0;
 }
 
+char test_auth_do_auth_delete_user_wrong_pass() {
+  authenticator *auth = authenticator_new();
+
+  result auth_result = add_user(auth, new_string("ze"), new_string("ze"));
+  if (assert_int_equals("New user is created with success.", auth_result.result, AUTH_SUCCESS)) {
+    authenticator_destroy(auth);
+    return 1;
+  }
+
+  auth_result = authenticate(auth, "ze", "ze");
+  if (assert_int_equals("User ze is authenticated with success.", auth_result.result, AUTH_SUCCESS)) {
+    authenticator_destroy(auth);
+    return 1;
+  }
+
+  auth_result = del_user(auth, "ze", "maria");
+  if (assert_int_equals("User ze is deleted with success.", auth_result.result, AUTH_ERROR)) {
+    authenticator_destroy(auth);
+    return 1;
+  }
+
+  auth_result = authenticate(auth, "ze", "ze");
+  if (assert_int_equals("Authentication with deleted user fails.", auth_result.result, AUTH_SUCCESS)) {
+    authenticator_destroy(auth);
+    return 1;
+  }
+
+  authenticator_destroy(auth);
+  return 0;
+}
+
 /** Test map **/
 char test_map_add_get() {
   char *ZE_NAME = new_string("ze");
@@ -243,7 +274,6 @@ char test_map_add_2_doppleganger_elements() {
   return 0;
 }
 
-// TODO: This is a performance test, should be in a performance build.
 char test_map_add_get_10000_elements_N_buckets_50_millis(int buckets) {
   
   int n_elements = 10000;
@@ -344,6 +374,52 @@ char test_map_delete_user() {
   return 0;
 }
 
+char test_map_delete_user_among_many_users() {
+  int n_keys = 1000;
+  char *KEY_PREFIX = "k_";
+  char *VALUE_PREFIX = "v_";
+
+  map *m = map_new(16);
+
+  for (int i = 0; i < n_keys; i++) {
+    char *key = (char *)calloc(10, sizeof(char));
+    char *value = (char *)calloc(10, sizeof(char));
+
+    sprintf(key, "%s%d", KEY_PREFIX, i);
+    sprintf(value, "%s%d", VALUE_PREFIX, i);
+
+    map_set(m, key, value);
+  }
+
+  char *key_to_rm = (char *)calloc(10, sizeof(char));
+  char *value_to_rm = (char *)calloc(10, sizeof(char));
+
+  for (int i = 50; i < 1000; i += 50) {
+
+    sprintf(key_to_rm, "k_%d", i);
+    sprintf(value_to_rm, "v_%d", i);
+  
+    char *stored_value = map_get(m, key_to_rm);
+    if (assert_str_equals("Value is correctly inserted in the map.", stored_value, value_to_rm)) {
+      map_destroy(m);
+      return 1;
+    }
+
+    map_del(m, key_to_rm);
+    stored_value = map_get(m, key_to_rm);
+    if (assert_str_equals("Value is correctly deleted from the map.", stored_value, NULL)) {
+      map_destroy(m);
+      return 1;
+    }
+  }
+
+  free(key_to_rm);
+  free(value_to_rm);
+
+  map_destroy(m);
+  return 0;
+}
+
 test test_suite[] = {
   {
     "Add user Ze with password Ze to the authentication service", test_auth_add_user
@@ -362,6 +438,9 @@ test test_suite[] = {
   },
   {
     "Test deleting an existing user", test_auth_do_auth_delete_user
+  },
+  {
+    "Test that existing user is not deleted if wrong pass is provided", test_auth_do_auth_delete_user_wrong_pass
   },
   {
     "Test add functionality in maps", test_map_add_get
@@ -386,6 +465,9 @@ test test_suite[] = {
   },
   {
     "Test deleting an existing user from a map", test_map_delete_user
+  },
+  {
+    "Test deleting some users among several other users", test_map_delete_user_among_many_users
   }
 };
 

@@ -15,6 +15,10 @@ char assert_str_equals(char *assertion, char *str1, char *str2) {
   if (str1 == str2) {
     return 0;
   }
+
+  if (str1 == NULL || str2 == NULL) {
+    return 1;
+  }
   
   int cmp = strcmp(str1, str2);
   
