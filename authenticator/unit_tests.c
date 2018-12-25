@@ -98,6 +98,45 @@ char test_auth_do_auth_wrong_password() {
   return 0;
 }
 
+char test_auth_do_auth_change_password() {
+  authenticator *auth = authenticator_new();
+
+  result auth_result = add_user(auth, new_string("ze"), new_string("ze"));
+  if (assert_int_equals("New user is created with success.", auth_result.result, AUTH_SUCCESS)) {
+    authenticator_destroy(auth);
+    return 1;
+  }
+
+  auth_result = authenticate(auth, "ze", "ze");
+  if (assert_int_equals("User ze is authenticated with success.", auth_result.result, AUTH_SUCCESS)) {
+    authenticator_destroy(auth);
+    return 1;
+  }
+
+  char *new_pass = new_string("maria");
+
+  auth_result = change_password(auth, "ze", "maria", new_pass);
+  if (assert_int_equals("Password for user ze is changed with success.", auth_result.result, AUTH_ERROR)) {
+    authenticator_destroy(auth);
+    return 1;
+  }
+
+  auth_result = change_password(auth, "ze", "ze", new_pass);
+  if (assert_int_equals("Password for user ze is changed with success.", auth_result.result, AUTH_SUCCESS)) {
+    authenticator_destroy(auth);
+    return 1;
+  }
+
+  auth_result = authenticate(auth, "ze", "maria");
+  if (assert_int_equals("User ze is authenticated with success.", auth_result.result, AUTH_SUCCESS)) {
+    authenticator_destroy(auth);
+    return 1;
+  }
+
+  authenticator_destroy(auth);
+  return 0;
+}
+
 /** Test map **/
 char test_map_add_get() {
   char *ZE_NAME = new_string("ze");
@@ -259,6 +298,9 @@ test test_suite[] = {
   },
   {
     "Create an user and provide a wrong password for authentication", test_auth_do_auth_wrong_password
+  },
+  {
+    "Test changing the password of an existing user", test_auth_do_auth_change_password
   },
   {
     "Test add functionality in maps", test_map_add_get

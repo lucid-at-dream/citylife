@@ -182,7 +182,7 @@ void bucket_list_destroy(bucket *b, char free_contents) {
     return;
   }
   bucket_list_destroy(b->next, free_contents);
-  
+
   if (free_contents) {
     free(b->entry.key);
     free(b->entry.value);
@@ -192,7 +192,9 @@ void bucket_list_destroy(bucket *b, char free_contents) {
 
 void map_destroy(map *m) {
   for (int i = 0; i < m->capacity; i++) {
-    bucket_list_destroy(m->table[i].begin, 1);
+    if (m->table + i != NULL) {
+      bucket_list_destroy(m->table[i].begin, 1);
+    }
   }
   free(m->table);
   free(m);

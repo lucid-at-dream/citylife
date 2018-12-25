@@ -1,6 +1,5 @@
 #pragma once
 
-#include "session_manager.h"
 #include "map.h"
 
 typedef struct _authenticator {
@@ -24,7 +23,7 @@ result authenticate(authenticator *auth, char *user, char *token);
 
 result add_user(authenticator *auth, char *user, char *password);
 
-result del_user(authenticator *auth, char *user, session_token *token);
+result del_user(authenticator *auth, char *user, char *token);
 
-result change_password(authenticator *auth, char *user, session_token *token, char *new_password);
+result change_password(authenticator *auth, char *user, char *token, char *new_password);
 

@@ -45,15 +45,22 @@ result authenticate(authenticator *auth, char *user, char *token) {
   return r;
 }
 
-result del_user(authenticator *auth, char *user, session_token *token) {
+result change_password(authenticator *auth, char *user, char *token, char *new_password) {
+  result r;
+
+  if (authenticate(auth, user, token).result == AUTH_SUCCESS) {
+    map_set(auth->auth_table, user, new_password);
+    r.result = AUTH_SUCCESS;
+  } else {
+    r.result = AUTH_ERROR;
+    r.message = "The provided password does not match the one associated to this user.";
+  }
+
+  return r;
+}
+
+result del_user(authenticator *auth, char *user, char *token) {
   result r;
   r.result = AUTH_ERROR;
   return r;
 }
-
-result change_password(authenticator *auth, char *user, session_token *token, char *new_password) {
-  result r;
-  r.result = AUTH_ERROR;
-  return r;
-}
-

@@ -1,6 +1,6 @@
 .PHONY=test clean memleak default compile full_build
 
-CC_FLAGS= -Wextra -fprofile-arcs -ftest-coverage --coverage -std=c99
+CC_FLAGS= -O0 -Wall -fprofile-arcs -ftest-coverage --coverage -std=c99
 
 default: compile
 
