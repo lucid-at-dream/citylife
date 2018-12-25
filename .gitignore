@@ -1,1 +1,9 @@
 .vscode
+bw_output
+bw-output
+.scannerwork
+out.strace
+*.gcov
+*.gcda
+*.gcno
+*.o
