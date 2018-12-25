@@ -20,8 +20,14 @@ typedef struct _map {
   bucket_list *table;
 } map;
 
+// Public features
 map *map_new(int capacity);
 void map_set(map *m, char *key, void *value);
 void *map_get(map *m, char *key);
+void map_del(map *m, char *key);
+
+// Memory management
 void map_destroy(map *m);
+
+// Debug
 void map_display(map *m);

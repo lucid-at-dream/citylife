@@ -137,6 +137,37 @@ char test_auth_do_auth_change_password() {
   return 0;
 }
 
+char test_auth_do_auth_delete_user() {
+  authenticator *auth = authenticator_new();
+
+  result auth_result = add_user(auth, new_string("ze"), new_string("ze"));
+  if (assert_int_equals("New user is created with success.", auth_result.result, AUTH_SUCCESS)) {
+    authenticator_destroy(auth);
+    return 1;
+  }
+
+  auth_result = authenticate(auth, "ze", "ze");
+  if (assert_int_equals("User ze is authenticated with success.", auth_result.result, AUTH_SUCCESS)) {
+    authenticator_destroy(auth);
+    return 1;
+  }
+
+  auth_result = del_user(auth, "ze", "ze");
+  if (assert_int_equals("User ze is deleted with success.", auth_result.result, AUTH_SUCCESS)) {
+    authenticator_destroy(auth);
+    return 1;
+  }
+
+  auth_result = authenticate(auth, "ze", "ze");
+  if (assert_int_equals("Authentication with deleted user fails.", auth_result.result, AUTH_ERROR)) {
+    authenticator_destroy(auth);
+    return 1;
+  }
+
+  authenticator_destroy(auth);
+  return 0;
+}
+
 /** Test map **/
 char test_map_add_get() {
   char *ZE_NAME = new_string("ze");
@@ -285,7 +316,34 @@ char test_map_add_same_key_twice() {
   map_destroy(m);
   return 0;
 }
- 
+
+char test_map_delete_user() {
+  char *CONST_KEY = "key";
+  char *KEY = new_string(CONST_KEY);
+  char *VALUE = new_string("v1");
+
+  map *m = map_new(1);
+
+  map_set(m, KEY, VALUE);
+  char *result = map_get(m, CONST_KEY);
+  
+  if (assert_str_equals("Value is correctly inserted in the map.", result, VALUE)) {
+    map_destroy(m);
+    return 1;
+  }
+
+  map_del(m, CONST_KEY);
+  result = map_get(m, CONST_KEY);
+  
+  if (assert_str_equals("Value is correctly deleted from the map.", result, NULL)) {
+    map_destroy(m);
+    return 1;
+  }
+
+  map_destroy(m);
+  return 0;
+}
+
 test test_suite[] = {
   {
     "Add user Ze with password Ze to the authentication service", test_auth_add_user
@@ -301,6 +359,9 @@ test test_suite[] = {
   },
   {
     "Test changing the password of an existing user", test_auth_do_auth_change_password
+  },
+  {
+    "Test deleting an existing user", test_auth_do_auth_delete_user
   },
   {
     "Test add functionality in maps", test_map_add_get
@@ -322,6 +383,9 @@ test test_suite[] = {
   {
     "Test adding two values for the same key. The last value inserted should be returned.",
     test_map_add_same_key_twice
+  },
+  {
+    "Test deleting an existing user from a map", test_map_delete_user
   }
 };
 

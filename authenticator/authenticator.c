@@ -34,6 +34,12 @@ result authenticate(authenticator *auth, char *user, char *token) {
   
   char *stored_password = map_get(auth->auth_table, user);
 
+  if (stored_password == NULL) {
+    r.result = AUTH_ERROR;
+    r.message = "The provided username does not exist";
+    return r;
+  }
+
   int match = strcmp(stored_password, token);
   if (match == 0) {
     r.result = AUTH_SUCCESS;
@@ -61,6 +67,15 @@ result change_password(authenticator *auth, char *user, char *token, char *new_p
 
 result del_user(authenticator *auth, char *user, char *token) {
   result r;
-  r.result = AUTH_ERROR;
+  r.result = AUTH_SUCCESS;
+
+  if (authenticate(auth, user, token).result == AUTH_SUCCESS) {
+    map_del(auth->auth_table, user);
+    r.result = AUTH_SUCCESS;
+  } else {
+    r.result = AUTH_ERROR;
+    r.message = "The provided password does not match the one associated to this user.";
+  }
+  
   return r;
 }

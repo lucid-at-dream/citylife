@@ -99,6 +99,36 @@ void *map_get(map *m, char *key) {
   return NULL;
 }
 
+void map_del(map *m, char *key) {
+  int index = get_index(m, key);
+
+  bucket_list *list =  m->table + index;
+
+  bucket *buck = list->begin;
+
+  if (buck == NULL) {
+    return;
+  }
+  
+  bucket *prev = NULL;
+  while(buck != NULL) {
+    if (strcmp(buck->entry.key, key) == 0) {
+      if (prev != NULL) {
+        prev->next = buck->next;
+      } else {
+        list->begin = buck->next;
+      }
+      break;
+    }
+    prev = buck;
+    buck = buck->next;
+  }
+  
+  free(buck->entry.key);
+  free(buck->entry.value);
+  free(buck);
+}
+
 char should_resize(map *m) {
   return m->size > m->capacity * 4;
 }
