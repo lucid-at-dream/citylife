@@ -31,14 +31,16 @@ void *start_server_async(void *args)
 }
 
 char *send_message_to_server(socket_server *server, char *message) {
+  
+  int msg_size = strlen(message) + 1;
   int sockfd = socket(AF_INET, SOCK_STREAM, 0);
   
   connect(sockfd, (struct sockaddr *)&server->server_address, sizeof(server->server_address));
   
-  send(sockfd, message, strlen(message) * sizeof(char), 0);
+  send(sockfd, message, msg_size * sizeof(char), 0);
 
-  char *response = (char *)calloc(strlen(message), sizeof(char));
-  read(sockfd, response, strlen(message) * sizeof(char));
+  char *response = (char *)calloc(msg_size, sizeof(char));
+  read(sockfd, response, msg_size * sizeof(char));
   
   close(sockfd);
 
@@ -52,7 +54,7 @@ char test_connect_to_server() {
   pthread_t thread_id;
   pthread_create(&thread_id, NULL, start_server_async, server);
 
-  usleep(250);
+  usleep(10000);
 
   // Signal server to stop
   server_stop(server);
@@ -60,12 +62,20 @@ char test_connect_to_server() {
   // Send message to server so it unblocks
   char *response = send_message_to_server(server, "ze");
 
-  if (assert_str_equals("The response should be the same as the data sent over.", response, "ze")) {
+  int assertion_error = assert_str_equals("The response should be the same as the data sent over.", response, "ze");
+  
+  if (response != NULL) {
+    free(response);
+  }
+
+  if (assertion_error) {
     return 1;
   }
 
   // Wait for server to finish
   pthread_join(thread_id, NULL);
+
+  free(server);
 
   return 0;
 }

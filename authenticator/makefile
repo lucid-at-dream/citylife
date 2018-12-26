@@ -51,14 +51,14 @@ test: map_tests.exe authenticator_tests.exe server_tests.exe
 	@echo "Executing unit tests for server"
 	./server_tests.exe
 
-memleak:
+memleak: map_tests.exe authenticator_tests.exe server_tests.exe
 	sh ../ci-scripts/memory_leak_check.sh ./map_tests.exe
 	sh ../ci-scripts/memory_leak_check.sh ./authenticator_tests.exe
+	sh ../ci-scripts/memory_leak_check.sh ./server_tests.exe
 
 sonar: clean
 	build-wrapper-linux-x86-64 --out-dir bw-output make compile test
-	mkdir -p gcov-reports
-	gcov map.c assert.c authenticator.c test.c
+	gcov *.c
 	cd ..; sonar-scanner
 
 clean:
