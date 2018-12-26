@@ -4,15 +4,7 @@ CC_FLAGS= -O0 -Wall -fprofile-arcs -ftest-coverage --coverage -std=c99
 
 default: compile
 
-compile: test.exe
-
-full_build: test memleak
-
-sonar: clean
-	build-wrapper-linux-x86-64 --out-dir bw-output make compile test
-	mkdir -p gcov-reports
-	gcov map.c assert.c authenticator.c test.c
-	cd ..; sonar-scanner
+## File compilation targets
 
 authenticator.o: authenticator.c authenticator.h
 	gcc ${CC_FLAGS} -c authenticator.c -o authenticator.o
@@ -26,19 +18,42 @@ test.o: test.c test.h
 assert.o: assert.c assert.h
 	gcc ${CC_FLAGS} -c assert.c -o assert.o
 
-test.exe: authenticator.o test.o map.o assert.o unit_tests.c
-	gcc ${CC_FLAGS} authenticator.o test.o map.o assert.o unit_tests.c -o test.exe
+## Executables targets
+
+map_tests.exe: authenticator.o test.o map.o assert.o map_tests.c
+	gcc ${CC_FLAGS} authenticator.o test.o map.o assert.o map_tests.c -o map_tests.exe
+
+authenticator_tests.exe: authenticator.o test.o map.o assert.o authenticator_tests.c
+	gcc ${CC_FLAGS} authenticator.o test.o map.o assert.o authenticator_tests.c -o authenticator_tests.exe
+
+## phony targets
+
+compile: authenticator.o test.o map.o assert.o
+
+full_build: test memleak
+
+test: map_tests.exe authenticator_tests.exe
+	@echo -e "\n= = = = = = = = = = = = = = = = = = = = = = = = ="
+	@echo "Executing unit tests for map"
+	./map_tests.exe
+
+	@echo -e "\n= = = = = = = = = = = = = = = = = = = = = = = = ="
+	@echo "Executing unit tests for authenticator"
+	./authenticator_tests.exe
 
 memleak:
-	sh ../ci-scripts/memory_leak_check.sh ./test.exe
+	sh ../ci-scripts/memory_leak_check.sh ./map_tests.exe
+	sh ../ci-scripts/memory_leak_check.sh ./authenticator_tests.exe
 
-test: test.exe
-	@echo "Executing the test battery."
-	./test.exe
+sonar: clean
+	build-wrapper-linux-x86-64 --out-dir bw-output make compile test
+	mkdir -p gcov-reports
+	gcov map.c assert.c authenticator.c test.c
+	cd ..; sonar-scanner
 
 clean:
 	rm -rf bw_output bw-output .scannerwork out.strace
-	rm -f test.exe
+	rm -f *.exe
 	rm -f *.o
 	rm -f *.gcov *.gcda *.gcno
 
