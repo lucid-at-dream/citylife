@@ -1,0 +1,87 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <pthread.h>
+#include <sys/socket.h>
+#include <unistd.h>
+
+#include "server.h"
+#include "test.h"
+#include "assert.h"
+
+void setup_env() {
+}
+
+char before_test() {
+  return 0;
+}
+
+char after_test() {
+  return 0;
+}
+
+void clean_env() {
+}
+
+void *start_server_async(void *args) 
+{ 
+    socket_server *server = (socket_server *)args;
+    server_start(server);
+    return NULL;
+}
+
+char *send_message_to_server(socket_server *server, char *message) {
+  int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+  
+  connect(sockfd, (struct sockaddr *)&server->server_address, sizeof(server->server_address));
+  
+  send(sockfd, message, strlen(message) * sizeof(char), 0);
+
+  char *response = (char *)calloc(strlen(message), sizeof(char));
+  read(sockfd, response, strlen(message) * sizeof(char));
+  
+  close(sockfd);
+
+  return response;
+}
+
+char test_connect_to_server() {
+  socket_server *server = server_new(9999);
+
+  // Start the server
+  pthread_t thread_id;
+  pthread_create(&thread_id, NULL, start_server_async, server);
+
+  usleep(250);
+
+  // Signal server to stop
+  server_stop(server);
+
+  // Send message to server so it unblocks
+  char *response = send_message_to_server(server, "ze");
+
+  if (assert_str_equals("The response should be the same as the data sent over.", response, "ze")) {
+    return 1;
+  }
+
+  // Wait for server to finish
+  pthread_join(thread_id, NULL);
+
+  return 0;
+}
+
+test test_suite[] = {
+  {
+    "Test that it is possible to exchange a message with the server", test_connect_to_server
+  }
+};
+
+int main(int argc, char **argv) {
+  suite_report report = run_test_suite(test_suite, sizeof(test_suite)/sizeof(test));
+
+  if (report.failures > 0) {
+    return -1;
+  }
+
+  return 0;
+}
