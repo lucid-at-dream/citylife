@@ -4,22 +4,13 @@
 
 #include "map.h"
 
-// Function declarations
-// public api
-void map_set(map *m, char *key, void *value);
-void *map_get(map *m, char *key);
-
-// constructors
-map *map_new(int capacity);
-
-// destructores
+// private destructors
 void bucket_list_destroy(bucket *b, char free_contents);
-void map_destroy(map *m);
 
-// map operations
+// private map operations
 void resize_map(map *m, unsigned int new_size);
 
-// auxiliar functions
+// private auxiliar functions
 char should_resize(map *m);
 unsigned get_index(map *m, char *key);
 unsigned int calc_next_resize(map *m);

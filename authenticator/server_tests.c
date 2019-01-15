@@ -5,6 +5,9 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include <time.h>
+#include <stdlib.h>
+
 #include "server.h"
 #include "test.h"
 #include "assert.h"
@@ -48,7 +51,10 @@ char *send_message_to_server(socket_server *server, char *message) {
 }
 
 char test_connect_to_server() {
-  socket_server *server = server_new(9999);
+  srand(time(NULL));
+  int port = rand() % 20000 + 5000; // Random number between 5000 and 25000
+
+  socket_server *server = server_new(port);
 
   // Start the server
   pthread_t thread_id;
