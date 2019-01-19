@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "requests_resolver.h"
 #include "auth_verbs.h"
@@ -95,96 +96,3 @@ char *get_value_from_json_node(JsonObject *json_dict, char *key) {
 
     return value;
 }
-
-
-/*
-auth_request *parse_request(char *request) {
-    
-    JsonParser *parser = json_parser_new();
-
-    // Parse the request json
-    GError *error = NULL;
-    json_parser_load_from_data (parser, request, strlen(request), &error);
-    if (error != NULL) {
-      printf("Unable to parse request: %s\n", error->message);
-      g_error_free(error);
-      g_object_unref(parser);
-      return NULL;
-    }
-
-    // Translate the json tree into an auth_request struct
-    JsonObject *json_dict = json_node_get_object(json_parser_get_root(parser));
-    auth_request *r = (auth_request *)calloc(1, sizeof(auth_request));
-    
-    // Parse action
-    char *action = json_node_get_string(json_object_get_member(json_dict, "action"));
-    r->action = verb_translate_from_string(action);
-    if (r->action == AUTH_INVALID_REQUEST) {
-        g_object_unref(parser);
-        return NULL;
-    }
-
-    // Parse session_token
-    char *action = json_node_get_string(json_object_get_member(json_dict, "action"));
-    r->action = verb_translate_from_string(action);
-    if (r->action == AUTH_INVALID_REQUEST) {
-        g_object_unref(parser);
-        return NULL;
-    }
-
-    // Parse password
-    char *action = json_node_get_string(json_object_get_member(json_dict, "action"));
-    r->action = verb_translate_from_string(action);
-    if (r->action == AUTH_INVALID_REQUEST) {
-        g_object_unref(parser);
-        return NULL;
-    }
-
-    // Parse user
-    char *action = json_node_get_string(json_object_get_member(json_dict, "action"));
-    r->action = verb_translate_from_string(action);
-    if (r->action == AUTH_INVALID_REQUEST) {
-        g_object_unref(parser);
-        return NULL;
-    }
-
-    // Free allocated resources
-    g_object_unref (parser);
-
-    // Return the built auth_request struct
-    return r;
-}
-
-void free_request(auth_request *r) {
-    if(r == NULL) {
-        return;
-    }
-    
-    if(r->session_token != NULL) free(r->session_token);
-    if(r->username != NULL) free(r->username);
-    if(r->password != NULL) free(r->password);
-
-    free(r);
-}
-
-int main (int argc, char *argv[])
-{
-  JsonParser *parser;
-  JsonNode *root;
-  GError *error;
-
-
-  error = NULL;
-  json_parser_load_from_file (parser, argv[1], &error);
-  if (error)
-    {
-      g_print ("Unable to parse `%s': %s\n", argv[1], error->message);
-      g_error_free (error);
-      g_object_unref (parser);
-      return EXIT_FAILURE;
-    }
-
-
-  return EXIT_SUCCESS;
-}
-*/
