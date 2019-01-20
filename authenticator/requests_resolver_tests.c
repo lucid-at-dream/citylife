@@ -35,7 +35,7 @@ char *callback_aggregate(auth_request *r) {
 void setup_env() {
   requests_set_callback(AUTH_NEW, callback_aggregate);
   requests_set_callback(AUTH_AUTH, callback_1);
-  requests_set_callback(AUTH_VALIDATE_REQUEST, callback_2);
+  requests_set_callback(AUTH_DELETE, callback_2);
 }
 
 char before_test() {
@@ -80,7 +80,7 @@ char test_requests_resolve_ensure_correct_callbacks_are_called() {
   }
   
   char *validate_request = "{"
-    "\"action\": \"validate_request\","
+    "\"action\": \"delete\","
     "\"sess\": \"xdg\""
   "}";
   

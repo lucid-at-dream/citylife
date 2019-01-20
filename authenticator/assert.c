@@ -17,6 +17,7 @@ char assert_str_equals(char *assertion, char *str1, char *str2) {
   }
 
   if (str1 == NULL || str2 == NULL) {
+    printf("One of the strings is NULL.\n");
     return 1;
   }
   
