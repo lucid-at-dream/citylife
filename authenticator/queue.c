@@ -1,18 +1,8 @@
 #include "queue.h"
 
-typedef struct _queue_item {
-    void *content;
-    struct _queue_item* prev;
-    struct _queue_item* next;
-} queue_item;
+#include <stdlib.h>
 
-typedef struct _queue {
-    int size;
-    queue_item *head;
-    queue_item *last;
-} queue;
-
-queue_item* item_new(void *content) {
+queue_item *item_new(void *content) {
     queue_item *item = (queue_item *)calloc(1, sizeof(queue_item));
     item->content = content;
     return item;
@@ -23,11 +13,10 @@ queue *queue_new() {
     return q;
 }
 
-queue *queue_del(queue *q) {
-    queue_item *to_free = q->last;
-    while (to_free->prev != NULL) {
-        queue_item *tmp = to_free;
-        to_free = to_free->prev;
+void queue_del(queue *q) {
+    while (q->last != NULL) {
+        queue_item *tmp = q->last;
+        q->last = q->last->prev;
         free(tmp);
     }
     free(q);
@@ -50,11 +39,20 @@ void queue_add(queue *q, void *item) {
     return;
 }
 
-void *pop(queue *q) {
-    queue_item *head = q->head;
+void *queue_pop(queue *q) {
+    queue_item *item = q->head;
+
+    if (item == NULL) {
+        return NULL;
+    }
+
     q->head = q->head->next;
-    q->head->prev = NULL;
-    void *content = head->content;
-    free(head);
+    if (q->head != NULL) {
+        q->head->prev = NULL;
+    }
+    
+    void *content = item->content;
+    free(item);
+    q->size--;
     return content;
 }

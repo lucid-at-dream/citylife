@@ -11,7 +11,7 @@ src_files += assert
 src_files += auth_verbs
 src_files += authenticator
 src_files += map
-# src_files += queue
+src_files += queue
 src_files += requests_resolver
 src_files += server
 src_files += test
@@ -21,6 +21,7 @@ test_files += authenticator_tests
 test_files += map_tests
 test_files += requests_resolver_tests
 test_files += server_tests
+test_files += queue_tests
 
 src_main = main.c
 
@@ -63,7 +64,7 @@ compile: ${OBJECT_FILES}
 
 full_build: test memleak
 
-test: ${TEST_EXE_FILES} ${RUN_TEST_TARGETS}
+test: ${RUN_TEST_TARGETS}
 	@echo "Test build is finished"
 
 memleak: ${MEMLEAK_TEST_TARGETS}
