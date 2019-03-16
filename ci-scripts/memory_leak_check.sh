@@ -6,7 +6,9 @@ valgrind --leak-check=full $1 2> $tmpfile
 
 cat $tmpfile
 
-leaks=$(echo $(grep lost $tmpfile | cut -d' ' -f2- | grep -ow "[0-9]*") | sed 's/\n//' | sed 's/ //g')
+leaks=$(echo $(grep "\(definitely\|indirectly\) lost:" $tmpfile | cut -d' ' -f2- | grep -ow "[0-9]*") | sed 's/\n//' | sed 's/ //g')
+
+echo "leaks: $leaks"
 
 if [ $leaks -gt 0 ]
 then
