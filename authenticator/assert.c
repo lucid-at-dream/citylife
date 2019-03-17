@@ -11,6 +11,14 @@ char assert_int_equals(char *assertion, int num1, int num2) {
   return 0;
 }
 
+char assert_int_less_than(char *assertion, int num1, int num2) {
+  if (num1 >= num2) {
+    printf("%s > was expecting [%d] to be less than [%d]\n", assertion, num1, num2);
+    return 1;
+  }
+  return 0;
+}
+
 char assert_str_equals(char *assertion, char *str1, char *str2) {
   if (str1 == str2) {
     return 0;

@@ -2,8 +2,8 @@
 
 ## Compilation
 CC=gcc
-CC_FLAGS= -g -Wall -fprofile-arcs -ftest-coverage --coverage -std=c99
-LIB_FLAGS=`pkg-config --cflags json-glib-1.0`
+CC_FLAGS= -g -Wall -fprofile-arcs -ftest-coverage --coverage -std=gnu99
+LIB_FLAGS=`pkg-config --cflags json-glib-1.0` -pthread
 LD_LIBS=`pkg-config --libs json-glib-1.0`
 
 ## Files listings
@@ -22,6 +22,7 @@ test_files += map_tests
 test_files += requests_resolver_tests
 test_files += server_tests
 test_files += queue_tests
+test_files += worker_pool_tests
 
 src_main = main.c
 
