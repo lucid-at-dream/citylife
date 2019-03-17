@@ -23,7 +23,7 @@ void clean_env() {
 
 pthread_mutex_t global_sum_mutex = PTHREAD_MUTEX_INITIALIZER;
 volatile int global_sum;
-const int sleep_time_micros = 5;
+const int sleep_time_micros = 1;
 
 void summation(void *value) {
     int v = *((int *)value);
@@ -45,7 +45,7 @@ unsigned long get_time() {
 char test_worker_pool_parallel_summation() {
 
     int num_threads = 4;
-    int sum_limit = 5000;
+    int sum_limit = 2000;
     unsigned long begin, end;
 
     // Do the work single threadedly
@@ -73,7 +73,6 @@ char test_worker_pool_parallel_summation() {
     for (int value = 1; value < sum_limit; value++) {
         int *copy_value = (int *)malloc(sizeof(int));
         *copy_value = value;
-        usleep(2);
         pool_add_work(pool, copy_value);
         values[value - 1] = copy_value;
     }

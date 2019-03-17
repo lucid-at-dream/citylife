@@ -15,6 +15,7 @@ src_files += queue
 src_files += server
 src_files += test
 src_files += worker_pool
+src_files += jsmn
 
 test_files += authenticator_tests
 test_files += map_tests
