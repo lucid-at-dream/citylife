@@ -1,7 +1,7 @@
 .PHONY=test clean memleak default compile full_build
 
 ## Compilation
-CC=gcc
+CC=clang
 CC_FLAGS= -g -Wall -fprofile-arcs -ftest-coverage --coverage -std=gnu99
 LIB_FLAGS=`pkg-config --cflags json-glib-1.0` -pthread
 LD_LIBS=`pkg-config --libs json-glib-1.0`

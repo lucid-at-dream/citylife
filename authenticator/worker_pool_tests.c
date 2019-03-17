@@ -44,7 +44,7 @@ unsigned long get_time() {
 
 char test_worker_pool_parallel_summation() {
 
-    int num_threads = 2;
+    int num_threads = 4;
     int sum_limit = 1000;
     unsigned long begin, end;
 
@@ -79,6 +79,7 @@ char test_worker_pool_parallel_summation() {
 
     printf("Added all work to pool\n");
 
+    pool_await_empty_queue(pool);
     pool_stop(pool);
     pool_del(pool);
     end = get_time();
