@@ -21,7 +21,7 @@ git:
   quiet: true
 
 before_install:
-  - sudo apt-get install -y valgrind libjson-glib-dev
+  - sudo apt-get install -y valgrind
   - wget https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
   - unzip build-wrapper-linux-x86.zip
   - export PATH="$PATH:$(pwd)/build-wrapper-linux-x86"
@@ -30,7 +30,7 @@ before_install:
   - export PATH="$PATH:$(pwd)/sonar-scanner-3.2.0.1227/bin"
 
 install:
-  make -C authenticator/ compile
+  make -C auth/ compile
   
 script:
-  - make -C authenticator/ $TARGET
+  - make -C auth/ $TARGET
