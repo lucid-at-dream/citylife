@@ -26,7 +26,7 @@ void *worker_loop(void *args) {
             pool->do_work(job);
         }
     }
-    return 0;
+    return NULL;
 }
 
 void pool_add_work(worker_pool *pool, void *job) {

@@ -1,10 +1,10 @@
 .PHONY=test clean memleak default compile full_build
 
 ## Compilation
-CC=clang
+CC=gcc
 CC_FLAGS= -g -Wall -fprofile-arcs -ftest-coverage --coverage -std=gnu99
-LIB_FLAGS=`pkg-config --cflags json-glib-1.0` -pthread
-LD_LIBS=`pkg-config --libs json-glib-1.0`
+LIB_FLAGS=-pthread
+LD_LIBS=
 
 ## Files listings
 src_files += assert
@@ -12,14 +12,12 @@ src_files += auth_verbs
 src_files += authenticator
 src_files += map
 src_files += queue
-src_files += requests_resolver
 src_files += server
 src_files += test
 src_files += worker_pool
 
 test_files += authenticator_tests
 test_files += map_tests
-test_files += requests_resolver_tests
 test_files += server_tests
 test_files += queue_tests
 test_files += worker_pool_tests

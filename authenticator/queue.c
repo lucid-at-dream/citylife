@@ -49,6 +49,8 @@ void *queue_pop(queue *q) {
     q->head = q->head->next;
     if (q->head != NULL) {
         q->head->prev = NULL;
+    } else {
+        q->last = NULL;
     }
     
     void *content = item->content;
