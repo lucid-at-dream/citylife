@@ -1,16 +1,13 @@
-#include <glib-object.h>
-#include <json-glib/json-glib.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "requests_resolver.h"
 #include "auth_verbs.h"
+#include "jsmn.h"
 
 /*Private functions*/
 auth_request *parse_request(char *request);
-char *get_value_from_json_node(JsonObject *json_dict, char *key);
 
 /*Global variables*/
 char *(*callbacks[AUTH_VERBS_COUNT])(auth_request *);
@@ -45,54 +42,54 @@ char *requests_resolve(char *request) {
 }
 
 auth_request *parse_request(char *request) {
-    JsonParser *parser = json_parser_new();
+
+    // Initialize parser
+    jsmn_parser parser;
+    jsmn_init(&parser);
 
     // Parse the request json
-    GError *error = NULL;
-    json_parser_load_from_data (parser, request, strlen(request), &error);
-    if (error != NULL) {
-        printf("Unable to parse request: %s\n", error->message);
-        g_error_free(error);
-        g_object_unref(parser);
-        return NULL;
-    }
+    jsmntok_t tokens[256];
+    int num_tokens = jsmn_parse(&parser, request, strlen(request), tokens, 256);
 
-    // Translate the json tree into an auth_request struct
-    JsonObject *json_dict = json_node_get_object(json_parser_get_root(parser));
+    // Initialize the return value of this function
     auth_request *r = (auth_request *)calloc(1, sizeof(auth_request));
-    
-    // Parse action
-    char *action = json_node_get_string(json_object_get_member(json_dict, "action"));
-    
-    r->action = verb_translate_from_string(action);
-    if (r->action == AUTH_INVALID_REQUEST) {
-        free(r);
-        g_object_unref(parser);
-        return NULL;
+
+    for (int i = 0; i < num_tokens; i++) {
+        jsmntok_t tok = tokens[i];
+
+        // Let's go for the keys of the json object.
+        if (tok.type == JSMN_STRING && tok.size == 1) {
+            
+            // Extract the key
+            int key_len = tok.end - tok.start;
+            char key[key_len + 1];
+            for (int j = 0; j < key_len; j++) {
+                key[j] = request[tok.start + j];
+            }
+            key[key_len] = '\0';
+
+            // Extract the value
+            tok = tokens[++i];
+            int value_len = tok.end - tok.start;
+            char *value = (char *)calloc(value_len + 1, sizeof(char));
+            for (int j = 0; j < value_len; j++) {
+                value[j] = request[tok.start + j];
+            }
+            value[value_len] = '\0';
+
+            if (strcmp(key, "action") == 0) {
+                r->action = verb_translate_from_string(value);
+                free(value);
+            } else if (strcmp(key, "user") == 0) {
+                r->username = value;
+            } else if (strcmp(key, "pass") == 0) {
+                r->password = value;
+            } else if (strcmp(key, "sess") == 0) {
+                r->session_token = value;
+            } else {
+                return NULL;
+            }
+        }
     }
-
-    r->username = get_value_from_json_node(json_dict, "user");
-    r->password = get_value_from_json_node(json_dict, "pass");
-    r->session_token = get_value_from_json_node(json_dict, "sess");
-
-    // Free allocated resources
-    g_object_unref(parser);
-
-    // Return the built auth_request struct
     return r;
-}
-
-char *get_value_from_json_node(JsonObject *json_dict, char *key) {
-    
-    char *value = NULL;
-    JsonNode *node = json_object_get_member(json_dict, key);
-
-    if(JSON_NODE_TYPE(node) != JSON_NODE_NULL) {
-        char *tmp_value = json_node_get_string(node);
-        int str_size = strlen(tmp_value);
-        value = (char *)calloc(str_size + 1, sizeof(char));
-        strncpy(value, tmp_value, str_size);
-    }
-
-    return value;
 }

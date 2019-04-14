@@ -16,12 +16,14 @@ src_files += server
 src_files += test
 src_files += worker_pool
 src_files += jsmn
+src_files += requests_resolver
 
 test_files += authenticator_tests
 test_files += map_tests
 test_files += server_tests
 test_files += queue_tests
 test_files += worker_pool_tests
+test_files += requests_resolver_tests
 
 src_main = main.c
 
