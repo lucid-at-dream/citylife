@@ -26,10 +26,14 @@ char after_test() {
 void clean_env() {
 }
 
+char *echo_request_handler(char *request) {
+  return request;
+}
+
 void *start_server_async(void *args) 
 { 
     socket_server *server = (socket_server *)args;
-    server_start(server);
+    server_start(server, echo_request_handler);
     return NULL;
 }
 
@@ -52,7 +56,7 @@ char *send_message_to_server(socket_server *server, char *message) {
 
 char test_connect_to_server() {
   srand(time(NULL));
-  int port = rand() % 20000 + 5000; // Random number between 5000 and 25000
+  int port = rand() % 20000 + 10000; // Random number between 10000 and 30000
 
   socket_server *server = server_new(port);
 

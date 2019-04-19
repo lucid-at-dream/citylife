@@ -6,6 +6,8 @@
 #include "test.h"
 #include "requests_resolver.h"
 
+requests_resolver resolver;
+
 char *callback_1(auth_request *r) {
   return "first";
 }
@@ -33,9 +35,9 @@ char *callback_aggregate(auth_request *r) {
 }
 
 void setup_env() {
-  requests_set_callback(AUTH_NEW, callback_aggregate);
-  requests_set_callback(AUTH_AUTH, callback_1);
-  requests_set_callback(AUTH_DELETE, callback_2);
+  requests_set_callback(&resolver, AUTH_NEW, callback_aggregate);
+  requests_set_callback(&resolver, AUTH_AUTH, callback_1);
+  requests_set_callback(&resolver, AUTH_DELETE, callback_2);
 }
 
 char before_test() {
@@ -57,7 +59,7 @@ char test_requests_resolve_parse_well_formed_request() {
     "\"pass\": \"qwerty\""
   "}";
   
-  char *response = requests_resolve(auth_request);
+  char *response = requests_resolve(&resolver, auth_request);
   if (assert_str_equals("The request fields were correctly parsed", response, "zeqwerty")) {
     free(response);
     return 1;
@@ -74,7 +76,7 @@ char test_requests_resolve_ensure_correct_callbacks_are_called() {
     "\"pass\": \"qwerty\""
   "}";
   
-  char *response = requests_resolve(auth_request);
+  char *response = requests_resolve(&resolver, auth_request);
   if (assert_str_equals("The correct callback was called.", response, "first")) {
     return 1;
   }
@@ -84,7 +86,7 @@ char test_requests_resolve_ensure_correct_callbacks_are_called() {
     "\"sess\": \"xdg\""
   "}";
   
-  response = requests_resolve(validate_request);
+  response = requests_resolve(&resolver, validate_request);
   if (assert_str_equals("The correct callback was called", response, "second")) {
     return 1;
   }

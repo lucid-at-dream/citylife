@@ -6,6 +6,9 @@
 #include <unistd.h>
 #include <sys/socket.h>
 
+#include "requests_resolver.h"
+#include "worker_pool.h"
+
 typedef struct _socket_server {
     unsigned short server_port;
     int server_sock_file_descriptor;
@@ -17,5 +20,7 @@ typedef struct _socket_server {
 } socket_server;
 
 socket_server *server_new(unsigned short port);
+
 void server_stop(socket_server *server);
-int server_start(socket_server *server);
+
+void server_start(socket_server *server, char *(*handle_request)(char *));

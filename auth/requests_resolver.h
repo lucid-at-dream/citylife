@@ -1,4 +1,5 @@
 #include "auth_verbs.h"
+#include "jsmn.h"
 
 typedef struct _auth_request {
     auth_verb action;
@@ -7,7 +8,11 @@ typedef struct _auth_request {
     char *password;
 } auth_request;
 
-void requests_set_callback(auth_verb action, char *(*callback)(auth_request *));
+typedef struct _requests_resolver {
+    char *(*callbacks[AUTH_VERBS_COUNT])(auth_request *);
+} requests_resolver;
 
-char *requests_resolve(char *request);
+void requests_set_callback(requests_resolver *resolver, auth_verb action, char *(*callback)(auth_request *));
+
+char *requests_resolve(requests_resolver *resolver, char *request);
 

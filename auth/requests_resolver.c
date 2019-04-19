@@ -3,19 +3,13 @@
 #include <string.h>
 
 #include "requests_resolver.h"
-#include "auth_verbs.h"
-#include "jsmn.h"
 
 /*Private functions*/
 auth_request *parse_request(char *request);
 
-/*Global variables*/
-char *(*callbacks[AUTH_VERBS_COUNT])(auth_request *);
-
 /*Implementation*/
-
-void requests_set_callback(auth_verb action, char *(*callback)(auth_request *)) {
-    callbacks[action] = callback;
+void requests_set_callback(requests_resolver *resolver, auth_verb action, char *(*callback)(auth_request *)) {
+    resolver->callbacks[action] = callback;
 }
 
 void free_request(auth_request *r) {
@@ -25,14 +19,14 @@ void free_request(auth_request *r) {
   if(r) free(r);
 }
 
-char *requests_resolve(char *request) {
+char *requests_resolve(requests_resolver *resolver, char *request) {
     auth_request *r = parse_request(request);
 
     char *response;
 
     if (r != NULL) 
     {
-        response = callbacks[r->action](r);
+        response = resolver->callbacks[r->action](r);
         free_request(r);
     } else {
         response = "{msg: \"Bad request, you scumbag!\"}";
