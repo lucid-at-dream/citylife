@@ -6,6 +6,9 @@ CC_FLAGS= -g -Wall -fprofile-arcs -ftest-coverage --coverage -std=gnu99
 LIB_FLAGS=-pthread
 LD_LIBS=
 
+## Final executable final
+target_bin = auth.exe
+
 ## Files listings
 src_files += assert
 src_files += auth_verbs
@@ -13,7 +16,6 @@ src_files += authenticator
 src_files += map
 src_files += queue
 src_files += server
-src_files += test
 src_files += worker_pool
 src_files += jsmn
 src_files += requests_resolver
@@ -24,6 +26,8 @@ test_files += server_tests
 test_files += queue_tests
 test_files += worker_pool_tests
 test_files += requests_resolver_tests
+
+test_lib += test
 
 src_main = main.c
 
@@ -37,6 +41,10 @@ MEMLEAK_TEST_TARGETS = $(patsubst %, memleak_%, $(test_files))
 ## The default target
 default: compile
 
+## Executable compilation target
+${target_bin}: ${OBJECT_FILES}
+	${CC} ${CC_FLAGS} ${LIB_FLAGS} $^ ${src_main} -o $@ ${LD_LIBS}
+
 ## Object file compilation targets
 
 %.o: %.c %.h
@@ -44,7 +52,7 @@ default: compile
 
 ## Tests executable file creation targets
 
-%_tests.exe: %_tests.c ${OBJECT_FILES}
+%_tests.exe: %_tests.c ${OBJECT_FILES} ${test_lib}.o
 	@echo "Building $@"
 	${CC} ${CC_FLAGS} ${LIB_FLAGS} $^ -o $@ ${LD_LIBS}
 
@@ -62,7 +70,7 @@ memleak_%_tests: %_tests.exe
 
 ## phony targets
 
-compile: ${OBJECT_FILES}
+compile: ${OBJECT_FILES} ${target_bin}
 
 full_build: test memleak
 

@@ -1,3 +1,4 @@
+#pragma once
 
 typedef struct _queue_item {
     void *content;

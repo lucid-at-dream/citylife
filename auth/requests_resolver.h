@@ -1,3 +1,5 @@
+#pragma once
+
 #include "auth_verbs.h"
 #include "jsmn.h"
 
