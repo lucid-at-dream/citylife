@@ -2,8 +2,8 @@
 
 ## Compilation
 CC=gcc
-CC_FLAGS= -g -Wall -fprofile-arcs -ftest-coverage --coverage -std=gnu99
-LIB_FLAGS=-pthread
+CC_FLAGS= -g -Wall -fprofile-arcs -ftest-coverage --coverage -std=gnu99 ${DEBUG}
+LIB_FLAGS= -pthread
 LD_LIBS=
 
 ## Final executable final
@@ -19,7 +19,10 @@ src_files += server
 src_files += worker_pool
 src_files += jsmn
 src_files += requests_resolver
+src_files += service
+src_files += logger
 
+test_files += service_tests
 test_files += authenticator_tests
 test_files += map_tests
 test_files += server_tests

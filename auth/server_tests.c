@@ -27,7 +27,10 @@ void clean_env() {
 }
 
 char *echo_request_handler(char *request) {
-  return request;
+  int size = strlen(request);
+  char *response = (char *)calloc(size + 1, sizeof(char));
+  strncpy(response, request, size);
+  return response;
 }
 
 void *start_server_async(void *args) 
@@ -55,7 +58,7 @@ char *send_message_to_server(socket_server *server, char *message) {
 }
 
 char test_connect_to_server() {
-  srand(time(NULL));
+  srand(clock());
   int port = rand() % 20000 + 10000; // Random number between 10000 and 30000
 
   socket_server *server = server_new(port);
@@ -64,6 +67,7 @@ char test_connect_to_server() {
   pthread_t thread_id;
   pthread_create(&thread_id, NULL, start_server_async, server);
 
+  // Wait for the server to start
   usleep(10000);
 
   // Signal server to stop

@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "map.h"
+#include "logger.h"
 
 // private destructors
 void bucket_list_destroy(bucket *b, char free_contents);
@@ -20,6 +21,7 @@ unsigned int qhashmurmur3_32(const void *data, size_t nbytes);
 
 // Function definitions
 map *map_new(int capacity) {
+  debug("map.c: Creating new map with capacity %d", capacity);
   map *m = (map *)malloc(sizeof(map));
   m->capacity = capacity;
   m->size = 0;
@@ -36,6 +38,7 @@ bucket *bucket_new(char *key, void *value) {
 } 
 
 void map_set(map *m, char *key, void *value) {
+  debug("map.c: Setting value of key %s to %s", key, value);
 
   if (should_resize(m)) {
     resize_map(m, calc_next_resize(m));
@@ -46,6 +49,7 @@ void map_set(map *m, char *key, void *value) {
   bucket *buck = list->begin;
   
   if (buck == NULL) {
+    debug("map.c: Adding new entry to the map at index %d", index);
     m->size++;
     list->begin = bucket_new(key, value);
     return;
@@ -54,12 +58,14 @@ void map_set(map *m, char *key, void *value) {
   while(buck != NULL) {
     
     if (strcmp(buck->entry.key, key) == 0) {
+      debug("map.c: Updating existing entry in the map at index %d", index);
       free(buck->entry.value);
       buck->entry.value = value;
       return;
     }
 
     if (buck->next == NULL) {
+      debug("map.c: Adding new entry to the map at index %d", index);
       buck->next = bucket_new(key, value);
       m->size++;
       return;
@@ -71,6 +77,8 @@ void map_set(map *m, char *key, void *value) {
 
 void *map_get(map *m, char *key) {
 
+  debug("map.c: Looking for key %s in the map", key);
+
   int index = get_index(m, key);
 
   bucket_list *list =  m->table + index;
@@ -78,13 +86,16 @@ void *map_get(map *m, char *key) {
   bucket *buck = list->begin;
 
   if (buck == NULL) {
+    debug("map.c: Couldn't find %s, there are no buckets at position %d", key, index);
     return NULL;
   }
   
   while(buck != NULL) {
     if (strcmp(buck->entry.key, key) == 0) {
+      debug("map.c: Found a match for key %s in the map", key);
       return buck->entry.value;
     }
+    debug("map.c: Key %s at position %d does not match search key %s", buck->entry.key, index, key);
     buck = buck->next;
   }
   return NULL;

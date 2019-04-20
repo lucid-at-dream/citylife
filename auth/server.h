@@ -15,7 +15,7 @@ typedef struct _socket_server {
     int client_sock_file_descriptor;
     struct protoent *protoent;
     struct sockaddr_in server_address;
-    char stop;
+    volatile char stop;
     char buffer[BUFSIZE];
 } socket_server;
 
