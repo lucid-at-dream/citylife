@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "server.h"
 #include "requests_resolver.h"
@@ -8,6 +9,9 @@
 
 // Default service configuration
 int port = 9999;
+
+// CLI functions
+void printUsage(FILE *stream);
 
 // Functions to resolve raw requests
 char *handle_request(char *request);
@@ -24,7 +28,22 @@ authenticator *auth;
 requests_resolver resolver;
 worker_pool *pool;
 
-int main() {
+int main(int argc, char **argv) {
+
+    // Parse arguments
+    for (int i = 1; i < argc; i++) {
+        if(strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--port") == 0) {
+            if (i + 1 >= argc) {
+                printUsage(stderr);
+                exit(-1);
+            }
+            port = atoi(argv[++i]);
+        }
+        if(strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
+            printUsage(stdout);
+            exit(0);
+        }
+    }
 
     // Create a new authenticator
     auth = authenticator_new();
@@ -44,6 +63,14 @@ int main() {
     server_start(server, handle_request);
 
     return 0;
+}
+
+void printUsage(FILE *stream) {
+    fprintf(stream, "=== Usage -- Authentication microservice from Citylife ===\n");
+    fprintf(stream, "auth.exe [-p|--port port] [-h|--help]\n");
+    fprintf(stream, "\n");
+    fprintf(stream, "-h|--help   Print this help message and exit\n");
+    fprintf(stream, "-p|--port   The port in which to listen for requests\n");
 }
 
 char *handle_request(char *request) {

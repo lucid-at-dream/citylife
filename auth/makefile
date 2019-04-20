@@ -42,8 +42,8 @@ MEMLEAK_TEST_TARGETS = $(patsubst %, memleak_%, $(test_files))
 default: compile
 
 ## Executable compilation target
-${target_bin}: ${OBJECT_FILES}
-	${CC} ${CC_FLAGS} ${LIB_FLAGS} $^ ${src_main} -o $@ ${LD_LIBS}
+${target_bin}: ${OBJECT_FILES} ${src_main}
+	${CC} ${CC_FLAGS} ${LIB_FLAGS} $^ -o $@ ${LD_LIBS}
 
 ## Object file compilation targets
 
