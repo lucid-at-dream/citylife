@@ -72,6 +72,9 @@ memleak_%_tests: %_tests.exe
 
 compile: ${OBJECT_FILES} ${target_bin}
 
+docker-image: ${target_bin}
+	docker build -t dimension-benders/services/auth:0.0.1 .
+
 full_build: test memleak
 
 test: ${RUN_TEST_TARGETS}
