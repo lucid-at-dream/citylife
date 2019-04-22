@@ -13,12 +13,12 @@ void info(char *message, ...) {
 }
 
 void debug(char *message, ...) {
-    #ifdef DEBUG
+#ifdef DEBUG
     va_list argptr;
     va_start(argptr, message);
     log_message("DEBUG", message, argptr);
     va_end(argptr);
-    #endif
+#endif
 }
 
 void log_message(char *level, char *message, va_list args) {
