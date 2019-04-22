@@ -8,3 +8,4 @@ out.strace
 *.gcda
 *.gcno
 *.o
+*/target

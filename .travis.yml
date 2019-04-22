@@ -5,13 +5,23 @@ group: travis_latest
 
 matrix:
   include:
-  - name: "Unit Tests"
-    env: TARGET=test
-  - name: "Memory Leaks"
-    env: TARGET=memleak
+  - name: "Auth - Unit Tests"
+    env:
+      - MODULE=auth
+      - TARGET=test
+  - name: "Auth - Memory Leaks"
+    env:
+      - MODULE=auth
+      - TARGET=memleak
+  - name: "Gateway - Unit Tests"
+    env:
+      - MODULE=gateway
+      - TARGET=test
   - name: "Sonar"
     if: branch = master
-    env: TARGET=sonar
+    env:
+      - MODULE=.
+      - TARGET=sonar
 
 os:
   - linux
@@ -20,7 +30,7 @@ git:
   depth: 3
   quiet: true
 
-before_install:
+install:
   - sudo apt-get install -y valgrind
   - wget https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
   - unzip build-wrapper-linux-x86.zip
@@ -29,8 +39,5 @@ before_install:
   - unzip sonar-scanner-cli-3.2.0.1227.zip
   - export PATH="$PATH:$(pwd)/sonar-scanner-3.2.0.1227/bin"
 
-install:
-  make -C auth/ compile
-  
 script:
-  - make -C auth/ $TARGET
+  - make -C $MODULE $TARGET

@@ -88,7 +88,6 @@ memleak: ${MEMLEAK_TEST_TARGETS}
 sonar: clean
 	build-wrapper-linux-x86-64 --out-dir bw-output make compile test
 	gcov *.c
-	cd ..; sonar-scanner
 
 clean:
 	rm -rf bw_output bw-output .scannerwork out.strace
