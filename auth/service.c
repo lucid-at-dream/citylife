@@ -2,7 +2,6 @@
 #include "server.h"
 #include "requests_resolver.h"
 #include "authenticator.h"
-#include "worker_pool.h"
 #include "logger.h"
 
 #include <stdio.h>
@@ -12,12 +11,10 @@
 // Global variables (composition)
 authenticator *auth;
 requests_resolver resolver;
-worker_pool *pool;
 socket_server *server;
 
 // Functions to resolve raw requests
 char *handle_request(char *request);
-char *add_work_to_pool(char *request);
 
 // Functions for handling authentication requests
 char *user_new(auth_request *request);
@@ -34,10 +31,6 @@ void service_run(int port) {
     requests_set_callback(&resolver, AUTH_DELETE, user_del);
     requests_set_callback(&resolver, AUTH_CHANGE_PASSWORD, user_chpwd);
     requests_set_callback(&resolver, AUTH_AUTH, user_auth);
-
-    // TODO: Use a thread pool to handle the requests
-    // pool = pool_new(4, handle_request);
-    // pool_start(pool);
 
     // Create a server and start taking in requests
     server = server_new(port);
