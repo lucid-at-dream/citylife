@@ -2,6 +2,6 @@ FROM java:latest
 
 CMD pacman -Syuu
 
-COPY target/gateway-service*.jar gateway-service.jar
+COPY target/gateway-mainService*.jar gateway-mainService.jar
 
-CMD java -jar gateway-service.jar
+CMD java -jar gateway-mainService.jar
