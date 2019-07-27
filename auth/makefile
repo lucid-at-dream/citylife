@@ -86,7 +86,7 @@ test: ${RUN_TEST_TARGETS}
 memleak: ${MEMLEAK_TEST_TARGETS}
 
 sonar: clean
-	build-wrapper-linux-x86-64 --out-dir bw-output make compile test
+	build-wrapper-linux-x86-64 --out-dir ../bw-output make compile test
 	gcov *.c
 
 clean:

@@ -1,3 +1,5 @@
+dist: xenial
+
 language: generic
 
 sudo: true
@@ -17,6 +19,10 @@ matrix:
     env:
       - MODULE=gateway
       - TARGET=test
+  - name: "Eva - Build"
+    env:
+      - MODULE=eva
+      - TARGET=all
   - name: "Sonar"
     if: branch = master
     env:
@@ -31,7 +37,8 @@ git:
   quiet: true
 
 install:
-  - sudo apt-get install -y valgrind
+  - sudo apt-get install -y valgrind 
+  - sudo apt-get install -y libpqxx-dev libcairomm-1.0-dev libgtkmm-3.0-dev bison flex
   - wget https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
   - unzip build-wrapper-linux-x86.zip
   - export PATH="$PATH:$(pwd)/build-wrapper-linux-x86"

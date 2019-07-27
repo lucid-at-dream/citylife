@@ -30,7 +30,7 @@ INC_DIR += -I ${SRC_DIR}/DBConnection
 INC_DIR += -I ${SRC_DIR}/DataProcessor
 INC_DIR += -I ${SRC_DIR}/Debugger
 INC_DIR += -I ${SRC_DIR}/Geometry
-INC_DIR += -I /usr/include/postgresql
+INC_DIR += `pkg-config --cflags --libs libpqxx`
 INC_DIR += `pkg-config --cflags --libs cairomm-svg-1.0`
 INC_DIR += `pkg-config --cflags --libs gtkmm-3.0`
 
@@ -72,6 +72,9 @@ all: ${YACC_FILE} ${LEX_FILE} ${BIN_DIR}/${OFILE}
 
 run: ${BIN_DIR}/${OFILE}
 	./${BIN_DIR}/${OFILE}
+
+sonar: clean
+	build-wrapper-linux-x86-64 --out-dir ../bw-output make all
 
 #begin
 #create the auto generated source code for lex and yacc
@@ -155,4 +158,5 @@ clean:
 	rm -rf ${TEST_DIR}/${OBJ_DIR}
 	rm -rf ${OBJ_DIR}
 	rm -f ${BIN_DIR}/${OFILE}
+	rm -rf bw-output
 
