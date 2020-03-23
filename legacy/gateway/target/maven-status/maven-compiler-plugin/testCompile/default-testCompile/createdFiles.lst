@@ -1,0 +1,5 @@
+gateway/service/testservices/ResponseStub.class
+gateway/service/MainServiceTest.class
+gateway/service/testservices/EndpointStub.class
+gateway/service/TestUtils.class
+gateway/service/testservices/ServiceStub.class

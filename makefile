@@ -1,10 +1,6 @@
 
-sonar: clean
-	make -C auth sonar
-	make -C gateway sonar
-	make -C eva sonar
-	sonar-scanner -X
+MODULES = $(shell ls src/libs)
 
-clean:
-	rm -rf bw-output
+default:
+	echo ${MODULES}
 

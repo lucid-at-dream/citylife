@@ -1,0 +1,10 @@
+gateway/service/SocketIOUtils.class
+gateway/service/commands/Registry.class
+gateway/service/commands/CommandParameter.class
+gateway/service/MainService.class
+gateway/service/commands/Service.class
+gateway/service/commands/ServiceEndpoint.class
+gateway/service/registry/api/RegistrationServer.class
+gateway/service/Main.class
+gateway/service/commands/Command.class
+gateway/service/gateway/api/GatewayServer.class

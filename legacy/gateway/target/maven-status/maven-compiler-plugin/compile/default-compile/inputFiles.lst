@@ -1,0 +1,10 @@
+/home/lucid/repos/citylife/gateway/src/main/java/gateway/service/commands/Registry.java
+/home/lucid/repos/citylife/gateway/src/main/java/gateway/service/commands/Command.java
+/home/lucid/repos/citylife/gateway/src/main/java/gateway/service/MainService.java
+/home/lucid/repos/citylife/gateway/src/main/java/gateway/service/commands/CommandParameter.java
+/home/lucid/repos/citylife/gateway/src/main/java/gateway/service/commands/Service.java
+/home/lucid/repos/citylife/gateway/src/main/java/gateway/service/gateway/api/GatewayServer.java
+/home/lucid/repos/citylife/gateway/src/main/java/gateway/service/registry/api/RegistrationServer.java
+/home/lucid/repos/citylife/gateway/src/main/java/gateway/service/Main.java
+/home/lucid/repos/citylife/gateway/src/main/java/gateway/service/commands/ServiceEndpoint.java
+/home/lucid/repos/citylife/gateway/src/main/java/gateway/service/SocketIOUtils.java
