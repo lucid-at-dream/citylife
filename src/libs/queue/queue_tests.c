@@ -2,8 +2,8 @@
 #include <stdlib.h>
 
 #include "queue.h"
-#include "test.h"
-#include "assert.h"
+#include "ctest/test.h"
+#include "ctest/assert.h"
 
 void setup_env() {
 }

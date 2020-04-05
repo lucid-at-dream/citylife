@@ -1,81 +1,67 @@
-.PHONY=test clean memleak default compile
+.PHONY=default compile compile_tests
 
-## Compilation
-CC=gcc
-CC_FLAGS= -g -Wall -fprofile-arcs -ftest-coverage --coverage -std=gnu99 ${DEBUG}
-LIB_FLAGS= -pthread
-LD_LIBS=
+#compiler settings
+CC = gcc
+LDLIBS = -lm
+COPT = -mtune=native -march=native -O2 -pipe -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2
+COPT = -Wall -g -Og
+CFLAGS = -pthread -fprofile-arcs -ftest-coverage --coverage -std=gnu99 ${LDLIBS} ${COPT}
 
-## Output Directories
-libs_dir=../../obj/
+#directory structure
+OBJ_DIR = obj
+BIN_DIR = bin
+TEST_DIR = tests
 
 ## Files listings
-src_files += queue/queue
-src_files += ctest/assert
-src_files += ctest/test
+SRC_FILES += queue/queue
+SRC_FILES += ctest/assert
+SRC_FILES += ctest/test
 
-test_files += queue/queue_tests
+TEST_FILES += queue/queue_tests
 
-test_lib += ctest/test
+INC_DIR += -I .
 
+## Auxiliary variables
+OBJECT_FILES = $(patsubst %, ${OBJ_DIR}/%.o, $(SRC_FILES))
+TEST_EXE_FILES = $(patsubst %, ${TEST_DIR}/%.exe, $(TEST_FILES))
 
+RUN_TEST_TARGETS = $(patsubst %, run_%, $(TEST_FILES))
+MEMLEAK_TEST_TARGETS = $(patsubst %, memleak_%, $(TEST_FILES))
 
 ## The default target
 default: compile
 
-
-
-## Auxiliary variables
-OBJECT_FILES = $(patsubst %, ${libs_dir}%.o, $(src_files))
-TEST_EXE_FILES = $(patsubst %, %.exe, $(test_files))
-
-RUN_TEST_TARGETS = $(patsubst %, run_%, $(test_files))
-MEMLEAK_TEST_TARGETS = $(patsubst %, memleak_%, $(test_files))
-
-
-## Object file compilation targets
-%.o: ${libs_dir}/%.c ${libs_dir}/%.h
-	install -D /dev/null $@
-	${CC} ${CC_FLAGS} ${LIB_FLAGS} -c $< -o $@ ${LD_LIBS}
-
-## Tests executable file creation targets
-%_tests.exe: %_tests.c ${OBJECT_FILES} ${test_lib}.o
-	@echo "Building $@"
-	${CC} ${CC_FLAGS} ${LIB_FLAGS} $^ -o $@ ${LD_LIBS}
-
-
-
-## phony targets
-
-run_%_tests: %_tests.exe
-	$(eval TEST_EXE = $(patsubst run_%, %.exe, $@))
-	@echo -e "\n= = = = = = = = = = = = = = = = = = = = = = = = ="
-	@echo "Executing unit tests for ${TEST_EXE}"
-	./${TEST_EXE}
-
-memleak_%_tests: %_tests.exe
-	$(eval TEST_EXE = $(patsubst memleak_%, %.exe, $@))
-	@echo -e "\n= = = = = = = = = = = = = = = = = = = = = = = = ="
-	@echo "Checking memory leaks for ${TEST_EXE}"
-	sh ../../ci-scripts/memory_leak_check.sh ./${TEST_EXE}
-
-
 compile: ${OBJECT_FILES}
 
-full_build: compile test memleak
-
-test: ${RUN_TEST_TARGETS}
-	@echo "Test build is finished"
-
-memleak: ${MEMLEAK_TEST_TARGETS}
-
-sonar: clean
-	build-wrapper-linux-x86-64 --out-dir ../bw-output make compile test
-	gcov *.c
+compile_tests: ${TEST_EXE_FILES}
 
 clean:
-	rm -rf bw_output bw-output .scannerwork out.strace
-	rm -f *.exe
-	rm -f *.o
-	rm -f *.gcov *.gcda *.gcno
+	rm -rf ${OBJ_DIR}
+	rm -rf ${TEST_DIR}
+	rm -rf ${BIN_DIR}
+
+.SECONDEXPANSION:
+
+#compile the object files
+${OBJ_DIR}/%.o: %.c %.h | $$(@D)/
+	@echo "Building $@"
+	${CC} -c $< -o $@ ${INC_DIR} ${CFLAGS}
+	$(info )
+	$(info )
+
+# Create test executables
+${TEST_DIR}/%_tests.exe: %_tests.c ${OBJ_DIR}/%.o ${OBJ_DIR}/ctest/test.o ${OBJ_DIR}/ctest/assert.o | $$(@D)/
+	@echo "Building $@"
+	${CC} $^ -o $@ ${INC_DIR} ${CFLAGS}
+
+
+#create directories
+${OBJ_DIR}%/:
+	mkdir -p $@
+
+${TEST_DIR}%/:
+	mkdir -p $@
+
+${BIN_DIR}:
+	mkdir -p ${BIN_DIR}$*
 
