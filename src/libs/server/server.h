@@ -6,9 +6,6 @@
 #include <unistd.h>
 #include <sys/socket.h>
 
-#include "requests_resolver.h"
-#include "worker_pool.h"
-
 typedef struct _socket_server {
     unsigned short server_port;
     int server_sock_file_descriptor;

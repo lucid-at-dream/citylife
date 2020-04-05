@@ -1,3 +1,6 @@
+tests/
+obj/
+bin/
 .idea
 .vscode
 bw_output

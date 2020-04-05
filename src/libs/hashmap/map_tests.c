@@ -3,10 +3,9 @@
 #include <time.h>
 #include <stdlib.h>
 
-#include "test.h"
-#include "authenticator.h"
+#include "ctest/test.h"
+#include "ctest/assert.h"
 #include "map.h"
-#include "assert.h"
 
 char *new_string(char *);
 

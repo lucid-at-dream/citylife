@@ -1,6 +1,6 @@
 #pragma once
 
-#include "queue.h"
+#include "queue/queue.h"
 
 #include <pthread.h>
 

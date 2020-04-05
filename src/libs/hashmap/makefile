@@ -42,9 +42,9 @@ ${OBJ_DIR}/%.o: %.c %.h | ${OBJ_DIR}
 
 
 # Create test executables
-${TEST_DIR}/%_tests.exe: %_tests.c ${OBJ_DIR}/%.o ${OBJ_DIR}/test.o ${OBJ_DIR}/assert.o | ${TEST_DIR}
+${TEST_DIR}/%_tests.exe: %_tests.c | ${TEST_DIR}
 	@echo "Building $@"
-	${CC} $^ -o $@ ${INC_DIR} ${CFLAGS}
+	${CC} $^ ${OBJ_DIR}/*.o -o $@ ${INC_DIR} ${CFLAGS}
 
 
 
