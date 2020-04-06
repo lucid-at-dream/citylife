@@ -1,9 +1,9 @@
 
-[![Build Status](https://travis-ci.org/lucid-mist/citylife.svg?branch=master)](https://travis-ci.org/futuo/citylife)
+[![Build Status](https://travis-ci.org/lucid-mist/citylife.svg?branch=master)](https://travis-ci.org/lucid-mist/citylife)
 
-[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=futuo_citylife&metric=alert_status)](https://sonarcloud.io/dashboard?id=futuo_citylife)
+[![Quality Gates](https://sonarcloud.io/api/project_badges/measure?project=futuo_citylife&metric=alert_status)](https://sonarcloud.io/dashboard?id=futuo_citylife)
 
-[![code coverage](https://sonarcloud.io/api/project_badges/measure?project=futuo_citylife&metric=coverage)](https://sonarcloud.io/dashboard?id=futuo_citylife)
+[![Code Coverage](https://sonarcloud.io/api/project_badges/measure?project=futuo_citylife&metric=coverage)](https://sonarcloud.io/dashboard?id=futuo_citylife)
 
 
 
