@@ -7,26 +7,12 @@ group: travis_latest
 
 matrix:
   include:
-  - name: "Auth - Unit Tests"
+  - name: "Unit Tests"
     env:
-      - MODULE=auth
       - TARGET=test
-  - name: "Auth - Memory Leaks"
-    env:
-      - MODULE=auth
-      - TARGET=memleak
-  - name: "Gateway - Unit Tests"
-    env:
-      - MODULE=gateway
-      - TARGET=test
-  - name: "Eva - Build"
-    env:
-      - MODULE=eva
-      - TARGET=all
   - name: "Sonar"
     if: branch = master
     env:
-      - MODULE=.
       - TARGET=sonar
 
 os:
@@ -47,4 +33,4 @@ install:
   - export PATH="$PATH:$(pwd)/sonar-scanner-3.2.0.1227/bin"
 
 script:
-  - make -C $MODULE $TARGET
+  - make $TARGET

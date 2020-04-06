@@ -5,8 +5,8 @@ SRC_FOLDERS = $(shell ls -d */)
 compile: TARGET=compile
 compile: ${SRC_FOLDERS}
 
-compile_tests: TARGET = compile_tests
-compile_tests: ${SRC_FOLDERS}
+test: TARGET = test
+test: ${SRC_FOLDERS}
 
 clean: TARGET = clean
 clean: ${SRC_FOLDERS}

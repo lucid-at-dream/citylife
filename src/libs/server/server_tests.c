@@ -9,8 +9,8 @@
 #include <stdlib.h>
 
 #include "server.h"
-#include "test.h"
-#include "assert.h"
+#include "ctest/test.h"
+#include "ctest/assert.h"
 
 void setup_env() {
 }

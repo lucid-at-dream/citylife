@@ -29,10 +29,12 @@ default: compile
 
 compile: ${OBJECT_FILES}
 
-compile_tests: ${TEST_EXE_FILES}
+test: ${TEST_EXE_FILES}
+	for exe in ${TEST_EXE_FILES}; do ${PROJECT_ROOT}/ci-scripts/memory_leak_check.sh $${exe}; done
+	gcov -o ${OBJ_DIR} *.c
 
 clean:
-	rm -rf *.gcno
+	rm -rf *.gcno *.gcda *.gcov
 
 
 #compile the object files
@@ -42,9 +44,9 @@ ${OBJ_DIR}/%.o: %.c %.h | ${OBJ_DIR}
 
 
 # Create test executables
-${TEST_DIR}/%_tests.exe: %_tests.c ${OBJ_DIR}/%.o ${OBJ_DIR}/test.o ${OBJ_DIR}/assert.o | ${TEST_DIR}
+${TEST_DIR}/%_tests.exe: %_tests.c | ${TEST_DIR}
 	@echo "Building $@"
-	${CC} $^ -o $@ ${INC_DIR} ${CFLAGS}
+	${CC} $^ ${OBJ_DIR}/*.o -o $@ ${INC_DIR} ${CFLAGS}
 
 
 

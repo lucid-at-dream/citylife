@@ -29,10 +29,12 @@ default: compile
 
 compile: ${OBJECT_FILES}
 
-compile_tests: ${TEST_EXE_FILES}
+test: ${TEST_EXE_FILES}
+	for exe in ${TEST_EXE_FILES}; do ${PROJECT_ROOT}/ci-scripts/memory_leak_check.sh $${exe}; done
+	gcov -o ${OBJ_DIR} *.c
 
 clean:
-	rm -rf *.gcno
+	rm -rf *.gcno *.gcda *.gcov
 
 
 #compile the object files
