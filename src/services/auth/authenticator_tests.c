@@ -3,26 +3,12 @@
 #include <time.h>
 #include <stdlib.h>
 
-#include "test.h"
+#include "ctest/test.h"
+#include "ctest/assert.h"
+#include "hashmap/map.h"
 #include "authenticator.h"
-#include "map.h"
-#include "assert.h"
 
 char *new_string(char *);
-
-void setup_env() {
-}
-
-char before_test() {
-  return 0;
-}
-
-char after_test() {
-  return 0;
-}
-
-void clean_env() {
-}
 
 char test_auth_add_user() {
   authenticator *auth = authenticator_new();  

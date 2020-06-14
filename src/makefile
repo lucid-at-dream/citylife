@@ -6,9 +6,12 @@ TEST_DIR = ${PROJECT_ROOT}/tests
 
 compile:
 	make -C libs compile
+	make -C services compile
 
 test:
 	make -C libs test
+	make -C services test
 	
 clean:
 	make -C libs clean
+	make -C services clean

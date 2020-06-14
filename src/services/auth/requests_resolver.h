@@ -1,7 +1,7 @@
 #pragma once
 
 #include "auth_verbs.h"
-#include "jsmn.h"
+#include "jasmine/jsmn.h"
 
 typedef struct _auth_request {
     auth_verb action;

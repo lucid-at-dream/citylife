@@ -8,7 +8,7 @@
 int port = 9999;
 
 // Declared functions
-void printUsage(FILE *stream);
+void printHelp(FILE *stream);
 
 int main(int argc, char **argv) {
 
@@ -16,13 +16,13 @@ int main(int argc, char **argv) {
     for (int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--port") == 0) {
             if (i + 1 >= argc) {
-                printUsage(stderr);
+                printHelp(stderr);
                 exit(-1);
             }
             port = atoi(argv[++i]);
         }
         if(strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
-            printUsage(stdout);
+            printHelp(stdout);
             exit(0);
         }
     }
@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-void printUsage(FILE *stream) {
+void printHelp(FILE *stream) {
     fprintf(stream, "=== Usage -- Authentication microservice from Citylife ===\n");
     fprintf(stream, "auth.exe [-p|--port port] [-h|--help]\n");
     fprintf(stream, "\n");

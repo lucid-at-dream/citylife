@@ -1,8 +1,8 @@
 #include "service.h"
-#include "server.h"
+#include "server/server.h"
 #include "requests_resolver.h"
 #include "authenticator.h"
-#include "logger.h"
+#include "logger/logger.h"
 
 #include <stdio.h>
 #include <stdlib.h>

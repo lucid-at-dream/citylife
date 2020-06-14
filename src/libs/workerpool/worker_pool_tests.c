@@ -7,20 +7,6 @@
 #include "ctest/test.h"
 #include "ctest/assert.h"
 
-void setup_env() {
-}
-
-char before_test() {
-    return 0;
-}
-
-char after_test() {
-    return 0;
-}
-
-void clean_env() {
-}
-
 pthread_mutex_t global_sum_mutex = PTHREAD_MUTEX_INITIALIZER;
 volatile int global_sum;
 const int sleep_time_micros = 250;

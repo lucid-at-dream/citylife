@@ -7,20 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void setup_env() {
-}
-
-char before_test() {
-    return 0;
-}
-
-char after_test() {
-    return 0;
-}
-
-void clean_env() {
-}
-
 char test_single_string_argument_in_long_form_happy_path() {
 
     arg_t arg_desc[] = {

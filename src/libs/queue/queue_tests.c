@@ -5,20 +5,6 @@
 #include "ctest/test.h"
 #include "ctest/assert.h"
 
-void setup_env() {
-}
-
-char before_test() {
-    return 0;
-}
-
-char after_test() {
-    return 0;
-}
-
-void clean_env() {
-}
-
 typedef struct q_op {
     char type;
     char *data;

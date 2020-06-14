@@ -1,5 +1,5 @@
 #include "authenticator.h"
-#include "logger.h"
+#include "logger/logger.h"
 #include <stdlib.h>
 #include <string.h>
 

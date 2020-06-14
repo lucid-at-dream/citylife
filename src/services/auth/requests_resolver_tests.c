@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "assert.h"
-#include "test.h"
+#include "ctest/assert.h"
+#include "ctest/test.h"
 #include "requests_resolver.h"
 
 requests_resolver resolver;

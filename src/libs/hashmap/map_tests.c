@@ -9,20 +9,6 @@
 
 char *new_string(char *);
 
-void setup_env() {
-}
-
-char before_test() {
-  return 0;
-}
-
-char after_test() {
-  return 0;
-}
-
-void clean_env() {
-}
-
 char test_map_add_get() {
   char *ZE_NAME = new_string("ze");
   char *ZE_PASS = new_string("ze_");

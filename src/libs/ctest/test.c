@@ -13,8 +13,6 @@ suite_report run_test_suite(test *test_suite, int suite_size) {
 
   suite_report report = {0, 0, 0}; // succeeded, failed, total
 
-  setup_env();
-
   int count = 0;
   for (; count < suite_size; count++) {
     test *t = test_suite + count;
@@ -39,8 +37,6 @@ suite_report run_test_suite(test *test_suite, int suite_size) {
     report.total += 1; 
   }
 
-  clean_env();
-
   display_report(&report);
 
 
@@ -62,9 +58,7 @@ void display_report(suite_report *report) {
  */
 int runTest(test *t) {
   int failed = 0;
-  failed |= before_test();
   failed |= t->test_impl();
-  failed |= after_test();
   return failed;
 }
 

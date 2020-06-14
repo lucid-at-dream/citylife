@@ -12,20 +12,6 @@
 #include "ctest/test.h"
 #include "ctest/assert.h"
 
-void setup_env() {
-}
-
-char before_test() {
-  return 0;
-}
-
-char after_test() {
-  return 0;
-}
-
-void clean_env() {
-}
-
 char *echo_request_handler(char *request) {
   int size = strlen(request);
   char *response = (char *)calloc(size + 1, sizeof(char));

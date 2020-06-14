@@ -1,7 +1,7 @@
 #include "service.h"
-#include "test.h"
-#include "assert.h"
-#include "logger.h"
+#include "ctest/test.h"
+#include "ctest/assert.h"
+#include "logger/logger.h"
 
 #include <stdio.h>
 #include <stdlib.h>

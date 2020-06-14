@@ -1,97 +1,68 @@
-.PHONY=test clean memleak default compile full_build
+#directory structure
+PROJECT_ROOT = $(shell git rev-parse --show-toplevel)
+OBJ_DIR = ${PROJECT_ROOT}/obj
+BIN_DIR = ${PROJECT_ROOT}/bin
+TEST_DIR = ${PROJECT_ROOT}/tests
 
-## Compilation
-CC=gcc
-CC_FLAGS= -g -Wall -fprofile-arcs -ftest-coverage --coverage -std=gnu99 ${DEBUG}
-LIB_FLAGS= -pthread
-LD_LIBS=
 
-## Final executable final
-target_bin = auth.exe
+#compiler settings
+CC = gcc
+LDLIBS = -lm
+COPT = -mtune=native -march=native -O2 -pipe -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2
+COPT = -Wall -g -Og
+CFLAGS = -pthread -fprofile-arcs -ftest-coverage --coverage -std=gnu99 ${LDLIBS} ${COPT}
+INC_DIR = -I${OBJ_DIR} -I${PROJECT_ROOT}/src/libs
 
-## Files listings
-src_files += assert
-src_files += auth_verbs
-src_files += authenticator
-src_files += map
-src_files += queue
-src_files += server
-src_files += worker_pool
-src_files += jsmn
-src_files += requests_resolver
-src_files += service
-src_files += logger
 
-test_files += service_tests
-test_files += authenticator_tests
-test_files += map_tests
-test_files += server_tests
-test_files += queue_tests
-test_files += worker_pool_tests
-test_files += requests_resolver_tests
+# SRC and Test files
+SRC_FILES = $(shell ls *.c | grep -v "^main.c$$" | grep -v "_tests.c$$" | cut -d"." -f1)
+TEST_FILES = $(shell ls *.c | grep "_tests.c$$" | cut -d"." -f1)
 
-test_lib += test
-
-src_main = main.c
+# Final executable file generation
+MAIN = main.c
+EXE_OUT = $(shell basename $(CURDIR))
 
 ## Auxiliary variables
-OBJECT_FILES = $(patsubst %, %.o, $(src_files))
-TEST_EXE_FILES = $(patsubst %, %.exe, $(test_files))
+OBJECT_FILES = $(patsubst %, ${OBJ_DIR}/%.o, $(SRC_FILES))
+TEST_EXE_FILES = $(patsubst %, ${TEST_DIR}/%.exe, $(TEST_FILES))
 
-RUN_TEST_TARGETS = $(patsubst %, run_%, $(test_files))
-MEMLEAK_TEST_TARGETS = $(patsubst %, memleak_%, $(test_files))
 
-## The default target
+## Auxiliary targets
 default: compile
 
-## Executable compilation target
-${target_bin}: ${OBJECT_FILES} ${src_main}
-	${CC} ${CC_FLAGS} ${LIB_FLAGS} $^ -o $@ ${LD_LIBS}
+compile: ${BIN_DIR}/${EXE_OUT}
 
-## Object file compilation targets
-
-%.o: %.c %.h
-	${CC} ${CC_FLAGS} ${LIB_FLAGS} -c $< -o $@ ${LD_LIBS}
-
-## Tests executable file creation targets
-
-%_tests.exe: %_tests.c ${OBJECT_FILES} ${test_lib}.o
-	@echo "Building $@"
-	${CC} ${CC_FLAGS} ${LIB_FLAGS} $^ -o $@ ${LD_LIBS}
-
-run_%_tests: %_tests.exe
-	$(eval TEST_EXE = $(patsubst run_%, %.exe, $@))
-	@echo -e "\n= = = = = = = = = = = = = = = = = = = = = = = = ="
-	@echo "Executing unit tests for ${TEST_EXE}"
-	./${TEST_EXE}
-
-memleak_%_tests: %_tests.exe
-	$(eval TEST_EXE = $(patsubst memleak_%, %.exe, $@))
-	@echo -e "\n= = = = = = = = = = = = = = = = = = = = = = = = ="
-	@echo "Checking memory leaks for ${TEST_EXE}"
-	sh ../ci-scripts/memory_leak_check.sh ./${TEST_EXE}
-
-## phony targets
-
-compile: ${OBJECT_FILES} ${target_bin}
-
-docker-image: ${target_bin}
-	docker build -t dimension-benders/services/auth:0.0.1 .
-
-full_build: test memleak
-
-test: ${RUN_TEST_TARGETS}
-	@echo "Test build is finished"
-
-memleak: ${MEMLEAK_TEST_TARGETS}
-
-sonar: clean
-	build-wrapper-linux-x86-64 --out-dir ../bw-output make compile test
-	gcov *.c
+test: ${TEST_EXE_FILES}
+	for exe in ${TEST_EXE_FILES}; do ${PROJECT_ROOT}/ci-scripts/memory_leak_check.sh $${exe}; done
+	gcov -o ${OBJ_DIR} *.c
 
 clean:
-	rm -rf bw_output bw-output .scannerwork out.strace
-	rm -f *.exe
-	rm -f *.o
-	rm -f *.gcov *.gcda *.gcno
+	rm -rf *.gcno *.gcda *.gcov
+
+# Compile the final exe
+${BIN_DIR}/${EXE_OUT}: ${OBJECT_FILES} | ${BIN_DIR}
+	${CC} ${OBJ_DIR}/*.o main.c -o $@ ${INC_DIR} ${CFLAGS}
+
+
+#compile the object files
+${OBJ_DIR}/%.o: %.c %.h | ${OBJ_DIR}
+	@echo "Building $@"
+	${CC} -c $< -o $@ ${INC_DIR} ${CFLAGS}
+
+
+# Create test executables
+${TEST_DIR}/%_tests.exe: %_tests.c | ${TEST_DIR}
+	@echo "Building $@"
+	${CC} $^ ${OBJ_DIR}/*.o -o $@ ${INC_DIR} ${CFLAGS}
+
+
+#create directories
+${OBJ_DIR}:
+	mkdir -p $@
+
+${TEST_DIR}:
+	mkdir -p $@
+
+${BIN_DIR}:
+	mkdir -p $@
 

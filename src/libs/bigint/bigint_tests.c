@@ -6,20 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void setup_env() {
-}
-
-char before_test() {
-    return 0;
-}
-
-char after_test() {
-    return 0;
-}
-
-void clean_env() {
-}
-
 char test_single_word_bigint_add() {
     bigint a = bigint_new(1000);
     bigint b = bigint_new(1000);

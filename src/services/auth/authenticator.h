@@ -1,6 +1,6 @@
 #pragma once
 
-#include "map.h"
+#include "hashmap/map.h"
 
 typedef struct _authenticator {
   map *auth_table;
