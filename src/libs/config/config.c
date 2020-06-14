@@ -1,5 +1,6 @@
 #include "config.h"
 #include <stdlib.h>
+#include <errno.h>
 #include "logger/logger.h"
 
 /**
@@ -31,13 +32,13 @@ map *arg_parse(int arg_desc_count, arg_t *arg_desc, int argc, char **argv) {
         } else {
             error("Unable to parse argument %s", argv[i]);
             printUsage(arg_desc_count, arg_desc);
-            exit(-1);
+            exit(EXIT_FAILURE);
         }
 
         if (desc == NULL) { // Argument not found
             error("Unrecognized command line argument %s", argv[i]);
             printUsage(arg_desc_count, arg_desc);
-            exit(-1);
+            exit(EXIT_FAILURE);
         }
 
         debug("Parsing argument %s\n", desc->long_name);
@@ -53,8 +54,14 @@ map *arg_parse(int arg_desc_count, arg_t *arg_desc, int argc, char **argv) {
 
         // Here we parse the argument value.
         if (desc->type == INTEGER) {
+            char *endptr;
             int *value = (int *)malloc(sizeof(int));
-            value[0] = atoi(argv[i+1]);
+            value[0] = strtol(argv[i+1], &endptr, 10);
+            if (*endptr != '\0') {
+                error("Unable to parse the following value as an integer '%s'", argv[i + 1]);
+                printUsage(arg_desc_count, arg_desc);
+                exit(EXIT_FAILURE);
+            }
             map_set(args, desc->long_name, value);
             i += 2;
         
@@ -63,8 +70,14 @@ map *arg_parse(int arg_desc_count, arg_t *arg_desc, int argc, char **argv) {
             i += 2;
         
         } else if (desc->type == FLOAT) {
+            char *endptr;
             double *value = (double *)malloc(sizeof(double));
-            value[0] = atof(argv[i+1]);
+            value[0] = strtod(argv[i+1], &endptr);
+            if (*endptr != '\0') {
+                error("Unable to parse the following value as an double '%s'", argv[i + 1]);
+                printUsage(arg_desc_count, arg_desc);
+                exit(EXIT_FAILURE);
+            }
             map_set(args, desc->long_name, value);
             i += 2;
 

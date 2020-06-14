@@ -197,6 +197,40 @@ char test_parsing_same_argument_twice() {
     return assertion_error;
 }
 
+char test_parsing_non_existent_argument() {
+
+    arg_t arg_desc[] = {
+        {"i", "integer", INTEGER}
+    };
+
+    char *argv[] = {"test", "--nonexistent", "100"};
+
+    map *args = arg_parse(sizeof(arg_desc)/sizeof(arg_t), arg_desc, sizeof(argv)/sizeof(char *), argv);
+
+    // Clean up
+    deallocate_arg_map(sizeof(arg_desc)/sizeof(arg_t), arg_desc, args);
+
+    // Return test status
+    return 0;
+}
+
+char test_parsing_string_as_integer_throws_error() {
+    arg_t arg_desc[] = {
+        {"i", "integer", INTEGER}
+    };
+
+    char *argv[] = {"test", "--integer", "my string"};
+
+    map *args = arg_parse(sizeof(arg_desc)/sizeof(arg_t), arg_desc, sizeof(argv)/sizeof(char *), argv);
+
+    // Clean up
+    deallocate_arg_map(sizeof(arg_desc)/sizeof(arg_t), arg_desc, args);
+
+    // Return test status
+    return 0;
+}
+
+
 test test_suite[] = {
     {
         "Test single program argument, single argument given, happy path", test_single_string_argument_in_long_form_happy_path
@@ -218,6 +252,12 @@ test test_suite[] = {
     },
     {
         "Test parsing the same argument twice times", test_parsing_same_argument_twice
+    },
+    {
+        "Test that trying to parse a non existing argument ends up in error", test_parsing_non_existent_argument, EXIT_FAILURE
+    },
+    {
+        "Test that trying to parse a string as an integer ends in error", test_parsing_string_as_integer_throws_error, EXIT_FAILURE
     }
 };
 

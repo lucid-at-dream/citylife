@@ -15,6 +15,7 @@ typedef struct _suite_report {
 typedef struct _test {
   char *description;
   char (*test_impl) (void);
+  int expected_exit_status;
 } test;
 
 /**

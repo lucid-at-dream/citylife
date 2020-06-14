@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <sys/types.h> 
 #include <unistd.h> 
+#include <sys/wait.h>
 
 #include "test.h"
 
@@ -26,7 +27,9 @@ suite_report run_test_suite(test *test_suite, int suite_size) {
     if (id == 0) {
       exit(runTest(t));
     } else {
-      wait(&failed);
+      int exit_status;
+      waitpid(id, &exit_status, 0);
+      failed = WEXITSTATUS(exit_status) != t->expected_exit_status;
     }
 
     printf("========= Finished executing test %d: %s\n", count + 1, t->description);
