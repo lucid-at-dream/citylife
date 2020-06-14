@@ -4,6 +4,9 @@ default: test
 test: clean
 	make -C src compile test
 
+compile: clean
+	make -C src compile
+
 sonar: clean
 	build-wrapper-linux-x86-64 --out-dir bw-output make -C src compile test
 	sonar-scanner -X
