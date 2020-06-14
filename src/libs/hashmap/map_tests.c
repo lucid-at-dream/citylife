@@ -63,7 +63,7 @@ char test_map_add_2_elements() {
   char *ze = map_get(m, ZE_NAME);
   char *maria = map_get(m, MARIA_NAME);
   
-  char assertion_result = assert_str_equals("Ze's password matches the inserted one.", ze, ZE_PASS) && 
+  char assertion_result = assert_str_equals("Ze's password matches the inserted one.", ze, ZE_PASS) || 
       assert_str_equals("Maria's password matches the inserted one.", maria, MARIA_PASS);
 
   free(ZE_NAME); free(ZE_PASS);
@@ -87,7 +87,7 @@ char test_map_add_2_doppleganger_elements() {
   char *zemanel = map_get(m, ZE_NAME);
   char *zemanel_dop = map_get(m, ZE_DOP_NAME);
   
-  char assertion_result = assert_str_equals("Ze Manel's password matches the inserted one.", zemanel, ZE_PASS) &&
+  char assertion_result = assert_str_equals("Ze Manel's password matches the inserted one.", zemanel, ZE_PASS) ||
       assert_str_equals("Ze Maneli's password matches the inserted one.", zemanel_dop, ZE_DOP_PASS);
 
   free(ZE_NAME); free(ZE_PASS);
@@ -131,16 +131,16 @@ char test_map_add_get_10000_elements_N_buckets_50_millis(int buckets) {
     sprintf(expected_pass, "%s%d", PASS_PREFIX, i);
 
     char *retrieved_password = map_get(m, lookup_user);
-    assertion_result &= assert_str_equals("Retrieved password should equal added password", expected_pass, retrieved_password);
+    assertion_result |= assert_str_equals("Retrieved password should equal added password", expected_pass, retrieved_password);
     if (assertion_result) {
       break;
     }
   }
 
   clock_t stop = clock();
-  double time_taken = (stop - start) / (double)CLOCKS_PER_SEC;
+  double time_taken = ((double)(stop - start)) / CLOCKS_PER_SEC;
 
-  assertion_result &= assert_float_less_than("Add/Get of 10K elements should take less than 10ms", time_taken, 0.050);
+  assertion_result |= assert_float_less_than("Add/Get of 10K elements should take less than 10ms", time_taken, 0.050);
 
   for (int i = 0; i < n_elements; i++) {
     free(users[i]); free(passes[i]);
@@ -241,13 +241,13 @@ char test_map_delete_user_among_many_users() {
     sprintf(value_to_rm, "v_%d", i);
   
     char *stored_value = map_get(m, key_to_rm);
-    if (assertion_result &= assert_str_equals("Value is correctly inserted in the map.", stored_value, value_to_rm)) {
+    if (assertion_result |= assert_str_equals("Value is correctly inserted in the map.", stored_value, value_to_rm)) {
       break;
     }
 
     map_del(m, key_to_rm);
     stored_value = map_get(m, key_to_rm);
-    if (assertion_result &= assert_str_equals("Value is correctly deleted from the map.", stored_value, NULL)) {
+    if (assertion_result |= assert_str_equals("Value is correctly deleted from the map.", stored_value, NULL)) {
       break;
     }
   }

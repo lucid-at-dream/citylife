@@ -20,7 +20,8 @@ map *arg_parse(int arg_desc_count, arg_t *arg_desc, int argc, char **argv) {
         map_set(arg_desc_map, arg_desc[i].short_name, arg_desc + i);
     }
 
-    for (int i = 1; i < argc; i++) {
+    int i = 1;
+    while (i < argc) {
 
         if (argv[i][0] == '-' && argv[i][1] == '-') { // Long name given
 
@@ -36,24 +37,32 @@ map *arg_parse(int arg_desc_count, arg_t *arg_desc, int argc, char **argv) {
                 int *value = (int *)malloc(sizeof(int));
                 value[0] = atoi(argv[i+1]);
                 map_set(args, desc->long_name, value);
+                i += 2;
             
             } else if (desc->type == STRING) {
                 map_set(args, desc->long_name, argv[i+1]);
+                i += 2;
             
             } else if (desc->type == FLOAT) {
                 double *value = (double *)malloc(sizeof(double));
                 value[0] = atof(argv[i+1]);
                 map_set(args, desc->long_name, value);
+                i += 2;
 
             } else if (desc->type == FLAG) {
                 map_set(args, desc->long_name, 1);
+                i += 1;
+            } else {
+                i += 1; // Prevent infinite loop.
             }
 
         } else if (argv[i][0] == '-' && argv[i][1] != '-') { // Short name given
             // Do nothing for now, TDD
+            i += 1; // Prevent infinite loop.
 
         } else {
             // Dunno, something's wrogn with the given argumets
+            i += 1; // Prevent infinite loop.
         }
     }
 
