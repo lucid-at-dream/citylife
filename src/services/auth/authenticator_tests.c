@@ -12,7 +12,7 @@ char *new_string(char *);
 
 char test_auth_add_user() {
   authenticator *auth = authenticator_new();  
-  result auth_result = add_user(auth, new_string("ze"), new_string("ze"));
+  result auth_result = add_user(auth, "ze", "ze");
   authenticator_destroy(auth);
 
   if (assert_int_equals("New user is created with success.", auth_result.result, AUTH_SUCCESS)) {
@@ -24,9 +24,9 @@ char test_auth_add_user() {
 char test_auth_add_same_user_twice() {
   authenticator *auth = authenticator_new();
 
-  char *ZE_NAME = new_string("ze");
-  char *ZE_PASS = new_string("ze");
-  char *ZE_PASS_OTHER = new_string("manel");
+  char *ZE_NAME = "ze";
+  char *ZE_PASS = "ze";
+  char *ZE_PASS_OTHER = "manel";
 
   result auth_result = add_user(auth, ZE_NAME, ZE_PASS);
   if (assert_int_equals("New user is created with success.", auth_result.result, AUTH_SUCCESS)) {
@@ -39,8 +39,6 @@ char test_auth_add_same_user_twice() {
     authenticator_destroy(auth);
     return 1;
   }
-  free(ZE_PASS_OTHER);
-
   authenticator_destroy(auth);
   return 0;
 }
@@ -48,7 +46,7 @@ char test_auth_add_same_user_twice() {
 char test_auth_do_auth() {
   authenticator *auth = authenticator_new();
 
-  result auth_result = add_user(auth, new_string("ze"), new_string("ze"));
+  result auth_result = add_user(auth, "ze", "ze");
   if (assert_int_equals("New user is created with success.", auth_result.result, AUTH_SUCCESS)) {
     authenticator_destroy(auth);
     return 1;
@@ -67,7 +65,7 @@ char test_auth_do_auth() {
 char test_auth_do_auth_wrong_password() {
   authenticator *auth = authenticator_new();
 
-  result auth_result = add_user(auth, new_string("ze"), new_string("ze"));
+  result auth_result = add_user(auth, "ze", "ze");
   if (assert_int_equals("New user is created with success.", auth_result.result, AUTH_SUCCESS)) {
     authenticator_destroy(auth);
     return 1;
@@ -86,7 +84,7 @@ char test_auth_do_auth_wrong_password() {
 char test_auth_do_auth_change_password() {
   authenticator *auth = authenticator_new();
 
-  result auth_result = add_user(auth, new_string("ze"), new_string("ze"));
+  result auth_result = add_user(auth, "ze", "ze");
   if (assert_int_equals("New user is created with success.", auth_result.result, AUTH_SUCCESS)) {
     authenticator_destroy(auth);
     return 1;
@@ -98,7 +96,7 @@ char test_auth_do_auth_change_password() {
     return 1;
   }
 
-  char *new_pass = new_string("maria");
+  char *new_pass = "maria";
 
   auth_result = change_password(auth, "ze", "maria", new_pass);
   if (assert_int_equals("Password for user ze is changed with success.", auth_result.result, AUTH_ERROR)) {
@@ -125,7 +123,7 @@ char test_auth_do_auth_change_password() {
 char test_auth_do_auth_delete_user() {
   authenticator *auth = authenticator_new();
 
-  result auth_result = add_user(auth, new_string("ze"), new_string("ze"));
+  result auth_result = add_user(auth, "ze", "ze");
   if (assert_int_equals("New user is created with success.", auth_result.result, AUTH_SUCCESS)) {
     authenticator_destroy(auth);
     return 1;
@@ -156,7 +154,7 @@ char test_auth_do_auth_delete_user() {
 char test_auth_do_auth_delete_user_wrong_pass() {
   authenticator *auth = authenticator_new();
 
-  result auth_result = add_user(auth, new_string("ze"), new_string("ze"));
+  result auth_result = add_user(auth, "ze", "ze");
   if (assert_int_equals("New user is created with success.", auth_result.result, AUTH_SUCCESS)) {
     authenticator_destroy(auth);
     return 1;
