@@ -86,3 +86,11 @@ char assert_float_less_than(char *assertion, float n1, float n2) {
   }
 }
 
+char assert_double_equals(char *assertion, double num1, double num2) {
+  if (num1 != num2) {
+    printf("%s > got [%d], expected [%d]\n", assertion, num1, num2);
+    return 1;
+  }
+  return 0;
+}
+

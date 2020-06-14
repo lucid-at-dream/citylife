@@ -81,8 +81,59 @@ char test_one_integer_argument_in_long_form_happy_path() {
 
     map *args = arg_parse(sizeof(arg_desc)/sizeof(arg_t), arg_desc, 3, argv);
 
-    int parsed_value = (int)map_get(args, "int-arg");
-    int assertion_error = assert_int_equals("Parsed value is the given value.", parsed_value, 100);
+    int *parsed_value = (int *)map_get(args, "int-arg");
+    int assertion_error = assert_int_equals("Parsed value is the given value.", *parsed_value, 100);
+    
+    // Clean up
+    free(parsed_value);
+    map_destroy(args);
+
+    // Return test status
+    if (assertion_error) {
+        return 1;
+    }
+    return 0;
+}
+
+char test_one_double_argument_in_long_form_happy_path() {
+
+    arg_t arg_desc[] = {
+        {"i", "float-arg", FLOAT}
+    };
+
+    char *argv[] = {"test", "--float-arg", "100.99"};
+
+    map *args = arg_parse(sizeof(arg_desc)/sizeof(arg_t), arg_desc, 3, argv);
+
+    double *parsed_value = (double *)map_get(args, "float-arg");
+    int assertion_error = assert_double_equals("Parsed value is the given value.", *parsed_value, 100.99);
+    
+    // Clean up
+    free(parsed_value);
+    map_destroy(args);
+
+    // Return test status
+    if (assertion_error) {
+        return 1;
+    }
+    return 0;
+}
+
+char test_one_flag_argument_in_long_form_happy_path() {
+
+    arg_t arg_desc[] = {
+        {"i", "some-flag", FLAG}
+    };
+
+    char *argv[] = {"test", "--some-flag"};
+
+    map *args = arg_parse(sizeof(arg_desc)/sizeof(arg_t), arg_desc, 3, argv);
+
+    int assertion_error = 0;
+    if (!map_get(args, "some-flag")) {
+        printf("Expected the flag 'some-flag' to be set and evaluate to true.");
+        assertion_error = 1;
+    }
     
     // Clean up
     map_destroy(args);
@@ -103,6 +154,12 @@ test test_suite[] = {
     },
     {
         "Test parsing an integer argument given in the long form", test_one_integer_argument_in_long_form_happy_path
+    },
+    {
+        "Test parsing an float argument given in the long form", test_one_double_argument_in_long_form_happy_path
+    },
+    {
+        "Test parsing a flag argument given in the long form", test_one_flag_argument_in_long_form_happy_path
     }
 };
 

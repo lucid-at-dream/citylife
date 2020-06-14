@@ -12,3 +12,4 @@ char assert_substr_in(char *assertion, char *str1, char *str2);
 
 char assert_float_less_than(char *assertin, float n1, float n2);
  
+char assert_double_equals(char *assertion, double num1, double num2);
