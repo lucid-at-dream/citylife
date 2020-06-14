@@ -13,7 +13,7 @@ char assert_int_equals(char *assertion, int num1, int num2) {
 
 char assert_null(char *assertion, void *ptr) {
   if (ptr != NULL) {
-    printf("%s > got [%lu]", assertion, ptr);
+    printf("%s > got [%p]", assertion, ptr);
     return 1;
   }
   return 0;
