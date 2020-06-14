@@ -230,6 +230,37 @@ char test_parsing_string_as_integer_throws_error() {
     return 0;
 }
 
+char test_parsing_float_as_integer_throws_error() {
+    arg_t arg_desc[] = {
+        {"i", "integer", INTEGER}
+    };
+
+    char *argv[] = {"test", "--integer", "100.01"};
+
+    map *args = arg_parse(sizeof(arg_desc)/sizeof(arg_t), arg_desc, sizeof(argv)/sizeof(char *), argv);
+
+    // Clean up
+    deallocate_arg_map(sizeof(arg_desc)/sizeof(arg_t), arg_desc, args);
+
+    // Return test status
+    return 0;
+}
+
+char test_parsing_string_as_float_throws_error() {
+    arg_t arg_desc[] = {
+        {"f", "float", FLOAT}
+    };
+
+    char *argv[] = {"test", "--float", "my string"};
+
+    map *args = arg_parse(sizeof(arg_desc)/sizeof(arg_t), arg_desc, sizeof(argv)/sizeof(char *), argv);
+
+    // Clean up
+    deallocate_arg_map(sizeof(arg_desc)/sizeof(arg_t), arg_desc, args);
+
+    // Return test status
+    return 0;
+}
 
 test test_suite[] = {
     {
@@ -258,6 +289,12 @@ test test_suite[] = {
     },
     {
         "Test that trying to parse a string as an integer ends in error", test_parsing_string_as_integer_throws_error, EXIT_FAILURE
+    },
+    {
+        "Test that trying to parse a float as an integer ends in error", test_parsing_float_as_integer_throws_error, EXIT_FAILURE
+    },
+    {
+        "Test that trying to parse a string as a float ends in error", test_parsing_string_as_float_throws_error, EXIT_FAILURE
     }
 };
 
