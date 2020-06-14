@@ -35,7 +35,7 @@ char test_single_string_argument_in_long_form_happy_path() {
     int assertion_error = assert_str_equals("Big int is incremented by one.", parsed_value, "some value");
     
     // Clean up
-    map_destroy(args);
+    deallocate_arg_map(sizeof(arg_desc)/sizeof(arg_t), arg_desc, args);
 
     // Return test status
     if (assertion_error) {
@@ -62,7 +62,7 @@ char test_two_string_arguments_in_long_form_happy_path() {
             && assert_str_equals("Parsed value is the given value.", other_parsed_value, "other value");;
     
     // Clean up
-    map_destroy(args);
+    deallocate_arg_map(sizeof(arg_desc)/sizeof(arg_t), arg_desc, args);
 
     // Return test status
     if (assertion_error) {
@@ -85,8 +85,7 @@ char test_one_integer_argument_in_long_form_happy_path() {
     int assertion_error = assert_int_equals("Parsed value is the given value.", *parsed_value, 100);
     
     // Clean up
-    free(parsed_value);
-    map_destroy(args);
+    deallocate_arg_map(sizeof(arg_desc)/sizeof(arg_t), arg_desc, args);
 
     // Return test status
     if (assertion_error) {
@@ -109,8 +108,7 @@ char test_one_double_argument_in_long_form_happy_path() {
     int assertion_error = assert_double_equals("Parsed value is the given value.", *parsed_value, 100.99);
     
     // Clean up
-    free(parsed_value);
-    map_destroy(args);
+    deallocate_arg_map(sizeof(arg_desc)/sizeof(arg_t), arg_desc, args);
 
     // Return test status
     if (assertion_error) {
@@ -127,7 +125,7 @@ char test_one_flag_argument_in_long_form_happy_path() {
 
     char *argv[] = {"test", "--some-flag"};
 
-    map *args = arg_parse(sizeof(arg_desc)/sizeof(arg_t), arg_desc, 3, argv);
+    map *args = arg_parse(sizeof(arg_desc)/sizeof(arg_t), arg_desc, 2, argv);
 
     int assertion_error = 0;
     if (!map_get(args, "some-flag")) {
@@ -136,13 +134,48 @@ char test_one_flag_argument_in_long_form_happy_path() {
     }
     
     // Clean up
-    map_destroy(args);
+    deallocate_arg_map(sizeof(arg_desc)/sizeof(arg_t), arg_desc, args);
 
     // Return test status
     if (assertion_error) {
         return 1;
     }
     return 0;
+}
+
+char test_all_argument_types_in_short_form_happy_path() {
+    arg_t arg_desc[] = {
+        {"i", "integer", INTEGER},
+        {"f", "float", FLOAT},
+        {"g", "flag", FLAG},
+        {"s", "string", STRING}
+    };
+
+    char *argv[] = {
+        "test", 
+        "-i", "100",
+        "-f", "10.10",
+        "-g",
+        "-s", "my string"
+    };
+
+    map *args = arg_parse(sizeof(arg_desc)/sizeof(arg_t), arg_desc, sizeof(argv) / sizeof(char *), argv);
+
+    // Assert parsed values
+    int assertion_error = 0;
+    assertion_error |= assert_int_equals("Parsed value is the given value", *(int *)map_get(args, "integer"), 100);
+    assertion_error |= assert_double_equals("Parsed value is the given value", *(double *)map_get(args, "float"), 10.10);
+    if (!map_get(args, "flag")) {
+        printf("Expected the flag 'some-flag' to be set and evaluate to true.");
+        assertion_error |= 1;
+    }
+    assertion_error |= assert_str_equals("Parsed value is the given value", (char *)map_get(args, "string"), "my string");
+
+    // Clean up
+    deallocate_arg_map(sizeof(arg_desc)/sizeof(arg_t), arg_desc, args);
+
+    // Return test status
+    return assertion_error;
 }
 
 test test_suite[] = {
@@ -160,6 +193,9 @@ test test_suite[] = {
     },
     {
         "Test parsing a flag argument given in the long form", test_one_flag_argument_in_long_form_happy_path
+    },
+    {
+        "Test parsing all argument types all in short form", test_all_argument_types_in_short_form_happy_path
     }
 };
 

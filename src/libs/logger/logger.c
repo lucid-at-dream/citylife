@@ -12,6 +12,13 @@ void info(char *message, ...) {
     va_end(argptr);
 }
 
+void error(char *message, ...) {
+    va_list argptr;
+    va_start(argptr, message);
+    log_message("ERROR", message, argptr);
+    va_end(argptr);
+}
+
 void debug(char *message, ...) {
 #ifdef DEBUG
     va_list argptr;

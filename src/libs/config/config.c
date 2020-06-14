@@ -23,46 +23,48 @@ map *arg_parse(int arg_desc_count, arg_t *arg_desc, int argc, char **argv) {
     int i = 1;
     while (i < argc) {
 
+        arg_t *desc;
         if (argv[i][0] == '-' && argv[i][1] == '-') { // Long name given
-
-            debug("Parsing argument %s\n", argv[i] + 2);
-
-            char *key = argv[i] + 2;
-            arg_t *desc = map_get(arg_desc_map, key);
-
-            // This informs that the argument was set.
-            map_set(args, desc->short_name, 1);
-
-            if (desc->type == INTEGER) {
-                int *value = (int *)malloc(sizeof(int));
-                value[0] = atoi(argv[i+1]);
-                map_set(args, desc->long_name, value);
-                i += 2;
-            
-            } else if (desc->type == STRING) {
-                map_set(args, desc->long_name, argv[i+1]);
-                i += 2;
-            
-            } else if (desc->type == FLOAT) {
-                double *value = (double *)malloc(sizeof(double));
-                value[0] = atof(argv[i+1]);
-                map_set(args, desc->long_name, value);
-                i += 2;
-
-            } else if (desc->type == FLAG) {
-                map_set(args, desc->long_name, 1);
-                i += 1;
-            } else {
-                i += 1; // Prevent infinite loop.
-            }
-
+            desc = map_get(arg_desc_map, argv[i] + 2);
         } else if (argv[i][0] == '-' && argv[i][1] != '-') { // Short name given
-            // Do nothing for now, TDD
-            i += 1; // Prevent infinite loop.
-
+            desc = map_get(arg_desc_map, argv[i] + 1);
         } else {
-            // Dunno, something's wrogn with the given argumets
-            i += 1; // Prevent infinite loop.
+            error("Unable to parse argument %s", argv[i]);
+            printUsage(arg_desc_count, arg_desc);
+            exit(-1);
+        }
+
+        if (desc == NULL) { // Argument not found
+            error("Unrecognized command line argument %s", argv[i]);
+            printUsage(arg_desc_count, arg_desc);
+            exit(-1);
+        }
+
+        debug("Parsing argument %s\n", desc->long_name);
+
+        // This informs that the argument was set.
+        map_set(args, desc->short_name, 1);
+
+        // Here we parse the argument value.
+        if (desc->type == INTEGER) {
+            int *value = (int *)malloc(sizeof(int));
+            value[0] = atoi(argv[i+1]);
+            map_set(args, desc->long_name, value);
+            i += 2;
+        
+        } else if (desc->type == STRING) {
+            map_set(args, desc->long_name, argv[i+1]);
+            i += 2;
+        
+        } else if (desc->type == FLOAT) {
+            double *value = (double *)malloc(sizeof(double));
+            value[0] = atof(argv[i+1]);
+            map_set(args, desc->long_name, value);
+            i += 2;
+
+        } else if (desc->type == FLAG) {
+            map_set(args, desc->long_name, 1);
+            i += 1;
         }
     }
 
@@ -74,7 +76,17 @@ map *arg_parse(int arg_desc_count, arg_t *arg_desc, int argc, char **argv) {
 /**
  * Prints the usage of the program based on some description of its arguments.
  */
-void printUsage(arg_t *args) {
+void printUsage(int arg_desc_count, arg_t *arg_desc) {
 
 }
 
+void deallocate_arg_map(int arg_desc_count, arg_t *arg_desc, map *arg_map) {
+    for (int i = 0; i < arg_desc_count; i++) {
+        if (map_get(arg_map, arg_desc[i].short_name)) {
+            if (arg_desc[i].type == INTEGER || arg_desc[i].type == FLOAT) {
+                free(map_get(arg_map, arg_desc[i].long_name));
+            }
+        }
+    }
+    map_destroy(arg_map);
+}

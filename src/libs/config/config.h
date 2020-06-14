@@ -30,4 +30,6 @@ map *arg_parse(int arg_desc_count, arg_t *arg_desc, int argc, char **argv);
 /**
  * Prints the usage of the program based on some description of its arguments.
  */
-void printUsage(arg_t *args);
+void printUsage(int arg_desc_count, arg_t *arg_desc);
+
+void deallocate_arg_map(int arg_desc_count, arg_t *arg_desc, map *arg_map);
