@@ -27,7 +27,7 @@ void bigint_increment(bigint number) {
 
 char *bigint_tostring(bigint number) {
     int ndigits = (int)ceil((number.nwords * 64) / log2(10));
-    char *buffer = (char *)calloc(ndigits, sizeof(char));
-    sprintf(buffer, "%lu", number.words[0]);
+    char *buffer = (char *)calloc(ndigits + 1, sizeof(char));
+    snprintf(buffer, ndigits + 1, "%lu", number.words[0]);
     return buffer;
 }

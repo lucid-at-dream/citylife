@@ -116,8 +116,8 @@ char test_map_add_get_10000_elements_N_buckets_50_millis(int buckets) {
 
     users[i] = user; passes[i] = pass;
 
-    sprintf(user, "%s%d", NAME_PREFIX, i);
-    sprintf(pass, "%s%d", PASS_PREFIX, i);
+    snprintf(user, 20, "%s%d", NAME_PREFIX, i);
+    snprintf(pass, 20, "%s%d", PASS_PREFIX, i);
 
     map_set(m, user, pass);
   }
@@ -127,8 +127,8 @@ char test_map_add_get_10000_elements_N_buckets_50_millis(int buckets) {
   char assertion_result = 0;
   for (int i = 0; i < n_elements; i++) {
 
-    sprintf(lookup_user, "%s%d", NAME_PREFIX, i);
-    sprintf(expected_pass, "%s%d", PASS_PREFIX, i);
+    snprintf(lookup_user, 20, "%s%d", NAME_PREFIX, i);
+    snprintf(expected_pass, 20, "%s%d", PASS_PREFIX, i);
 
     char *retrieved_password = map_get(m, lookup_user);
     assertion_result |= assert_str_equals("Retrieved password should equal added password", expected_pass, retrieved_password);
@@ -222,8 +222,8 @@ char test_map_delete_user_among_many_users() {
     char *key = (char *)malloc(10 * sizeof(char));
     char *value = (char *)malloc(10 * sizeof(char));
 
-    sprintf(key, "%s%d", KEY_PREFIX, i);
-    sprintf(value, "%s%d", VALUE_PREFIX, i);
+    snprintf(key, 10, "%s%d", KEY_PREFIX, i);
+    snprintf(value, 10, "%s%d", VALUE_PREFIX, i);
 
     keys[i] = key;
     values[i] = value;
@@ -237,8 +237,8 @@ char test_map_delete_user_among_many_users() {
   char assertion_result = 0;
   for (int i = 50; i < 1000; i += 50) {
 
-    sprintf(key_to_rm, "k_%d", i);
-    sprintf(value_to_rm, "v_%d", i);
+    snprintf(key_to_rm, 10, "k_%d", i);
+    snprintf(value_to_rm, 10, "v_%d", i);
   
     char *stored_value = map_get(m, key_to_rm);
     if (assertion_result |= assert_str_equals("Value is correctly inserted in the map.", stored_value, value_to_rm)) {
@@ -324,7 +324,9 @@ int main(int argc, char **argv) {
 }
 
 char *new_string(char *string) {
-  char *ns = (char *)calloc(strlen(string) + 1, sizeof(char));
-  sprintf(ns, "%s", string);
+  int max_size = 100;
+  int buff_size = strlen(string) + 1 < max_size ? strlen(string) + 1 : max_size;
+  char *ns = (char *)calloc(buff_size, sizeof(char));
+  snprintf(ns, buff_size, "%s", string);
   return ns;
 }
