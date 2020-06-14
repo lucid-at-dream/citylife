@@ -23,7 +23,7 @@ void clean_env() {
 
 pthread_mutex_t global_sum_mutex = PTHREAD_MUTEX_INITIALIZER;
 volatile int global_sum;
-const int sleep_time_micros = 1;
+const int sleep_time_micros = 250;
 
 void summation(void *value) {
     int v = *((int *)value);

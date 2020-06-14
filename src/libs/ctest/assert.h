@@ -1,5 +1,7 @@
 #pragma once
 
+char assert_null(char *assertion, void *ptr);
+
 char assert_int_equals(char *assertion, int num1, int num2);
 
 char assert_int_less_than(char *assertion, int num1, int num2);

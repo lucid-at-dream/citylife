@@ -31,16 +31,22 @@ char test_map_add_get() {
   map_set(m, ZE_NAME, ZE_PASS);
   char *ze = map_get(m, ZE_NAME);
 
-  if (ze == NULL) {
-    return 1;
-  }
+  char assertion_result = assert_str_equals("Ze's password matches the inserted one.", ze, ZE_PASS);
 
-  if (assert_str_equals("Ze's password matches the inserted one.", ze, ZE_PASS)) {
-    map_destroy(m);
-    return 1;
-  }
+  free(ZE_NAME);
+  free(ZE_PASS);
   map_destroy(m);
-  return 0;
+
+  return assertion_result;
+}
+
+char test_map_get_empty_map() {
+
+  map *m = map_new(16);
+  char *ze = map_get(m, "ze");
+  map_destroy(m);
+
+  return assert_null("Retrieving a value from an empty map should yield a NULL pointer.", ze);
 }
 
 char test_map_add_2_elements() {
@@ -57,17 +63,14 @@ char test_map_add_2_elements() {
   char *ze = map_get(m, ZE_NAME);
   char *maria = map_get(m, MARIA_NAME);
   
-  if (assert_str_equals("Ze's password matches the inserted one.", ze, ZE_PASS)) {
-    map_destroy(m);
-    return 1;
-  }
-  if (assert_str_equals("Maria's password matches the inserted one.", maria, MARIA_PASS)) {
-    map_destroy(m);
-    return 1;
-  }
+  char assertion_result = assert_str_equals("Ze's password matches the inserted one.", ze, ZE_PASS) && 
+      assert_str_equals("Maria's password matches the inserted one.", maria, MARIA_PASS);
 
+  free(ZE_NAME); free(ZE_PASS);
+  free(MARIA_NAME); free(MARIA_PASS);
   map_destroy(m);
-  return 0;
+
+  return assertion_result;
 }
 
 char test_map_add_2_doppleganger_elements() {
@@ -84,17 +87,14 @@ char test_map_add_2_doppleganger_elements() {
   char *zemanel = map_get(m, ZE_NAME);
   char *zemanel_dop = map_get(m, ZE_DOP_NAME);
   
-  if (assert_str_equals("Ze Manel's password matches the inserted one.", zemanel, ZE_PASS)) {
-    map_destroy(m);
-    return 1;
-  }
-  if (assert_str_equals("Ze Maneli's password matches the inserted one.", zemanel_dop, ZE_DOP_PASS)) {
-    map_destroy(m);
-    return 1;
-  }
+  char assertion_result = assert_str_equals("Ze Manel's password matches the inserted one.", zemanel, ZE_PASS) &&
+      assert_str_equals("Ze Maneli's password matches the inserted one.", zemanel_dop, ZE_DOP_PASS);
 
+  free(ZE_NAME); free(ZE_PASS);
+  free(ZE_DOP_NAME); free(ZE_DOP_PASS);
   map_destroy(m);
-  return 0;
+
+  return assertion_result;
 }
 
 char test_map_add_get_10000_elements_N_buckets_50_millis(int buckets) {
@@ -102,6 +102,9 @@ char test_map_add_get_10000_elements_N_buckets_50_millis(int buckets) {
   int n_elements = 10000;
   char *NAME_PREFIX = "zemanel";
   char *PASS_PREFIX = "zemanel_";
+  
+  char *users[n_elements];
+  char *passes[n_elements];
 
   map *m = map_new(buckets);
 
@@ -111,6 +114,8 @@ char test_map_add_get_10000_elements_N_buckets_50_millis(int buckets) {
     char *user = (char *)calloc(20, sizeof(char));
     char *pass = (char *)calloc(20, sizeof(char));
 
+    users[i] = user; passes[i] = pass;
+
     sprintf(user, "%s%d", NAME_PREFIX, i);
     sprintf(pass, "%s%d", PASS_PREFIX, i);
 
@@ -119,27 +124,30 @@ char test_map_add_get_10000_elements_N_buckets_50_millis(int buckets) {
 
   char lookup_user[20];
   char expected_pass[20];
+  char assertion_result = 0;
   for (int i = 0; i < n_elements; i++) {
 
     sprintf(lookup_user, "%s%d", NAME_PREFIX, i);
     sprintf(expected_pass, "%s%d", PASS_PREFIX, i);
 
     char *retrieved_password = map_get(m, lookup_user);
-    if (assert_str_equals("Retrieved password should equal added password", expected_pass, retrieved_password)) {
-      return 1;
+    assertion_result &= assert_str_equals("Retrieved password should equal added password", expected_pass, retrieved_password);
+    if (assertion_result) {
+      break;
     }
   }
 
   clock_t stop = clock();
-  map_destroy(m);
-
   double time_taken = (stop - start) / (double)CLOCKS_PER_SEC;
 
-  if (assert_float_less_than("Add/Get of 10K elements should take less than 10ms", time_taken, 0.050)) {
-    return 1;
-  }
+  assertion_result &= assert_float_less_than("Add/Get of 10K elements should take less than 10ms", time_taken, 0.050);
 
-  return 0;
+  for (int i = 0; i < n_elements; i++) {
+    free(users[i]); free(passes[i]);
+  }
+  map_destroy(m);
+
+  return assertion_result;
 }
 
 char test_map_add_get_10000_elements_1_bucket_50_millis() {
@@ -162,12 +170,12 @@ char test_map_add_same_key_twice() {
   
   char *result = map_get(m, KEY);
   
-  if (assert_str_equals("The retrieved value is the last inserted for that key.", result, VALUE_2)) {
-    map_destroy(m);
-    return 1;
-  }
+  char assertion_result = assert_str_equals("The retrieved value is the last inserted for that key.", result, VALUE_2);
+
   map_destroy(m);
-  return 0;
+  free(KEY); free(VALUE_1); free(VALUE_2);
+
+  return assertion_result;
 }
 
 char test_map_delete_user() {
@@ -181,6 +189,7 @@ char test_map_delete_user() {
   char *result = map_get(m, CONST_KEY);
   
   if (assert_str_equals("Value is correctly inserted in the map.", result, VALUE)) {
+    free(KEY); free(VALUE);
     map_destroy(m);
     return 1;
   }
@@ -189,10 +198,12 @@ char test_map_delete_user() {
   result = map_get(m, CONST_KEY);
   
   if (assert_str_equals("Value is correctly deleted from the map.", result, NULL)) {
+    free(KEY); free(VALUE);
     map_destroy(m);
     return 1;
   }
 
+  free(KEY); free(VALUE);
   map_destroy(m);
   return 0;
 }
@@ -201,15 +212,21 @@ char test_map_delete_user_among_many_users() {
   int n_keys = 1000;
   char *KEY_PREFIX = "k_";
   char *VALUE_PREFIX = "v_";
+  
+  char *keys[n_keys];
+  char *values[n_keys];
 
   map *m = map_new(16);
 
   for (int i = 0; i < n_keys; i++) {
-    char *key = (char *)calloc(10, sizeof(char));
-    char *value = (char *)calloc(10, sizeof(char));
+    char *key = (char *)malloc(10 * sizeof(char));
+    char *value = (char *)malloc(10 * sizeof(char));
 
     sprintf(key, "%s%d", KEY_PREFIX, i);
     sprintf(value, "%s%d", VALUE_PREFIX, i);
+
+    keys[i] = key;
+    values[i] = value;
 
     map_set(m, key, value);
   }
@@ -217,38 +234,41 @@ char test_map_delete_user_among_many_users() {
   char *key_to_rm = (char *)calloc(10, sizeof(char));
   char *value_to_rm = (char *)calloc(10, sizeof(char));
 
+  char assertion_result = 0;
   for (int i = 50; i < 1000; i += 50) {
 
     sprintf(key_to_rm, "k_%d", i);
     sprintf(value_to_rm, "v_%d", i);
   
     char *stored_value = map_get(m, key_to_rm);
-    if (assert_str_equals("Value is correctly inserted in the map.", stored_value, value_to_rm)) {
-      map_destroy(m);
-      return 1;
+    if (assertion_result &= assert_str_equals("Value is correctly inserted in the map.", stored_value, value_to_rm)) {
+      break;
     }
 
     map_del(m, key_to_rm);
     stored_value = map_get(m, key_to_rm);
-    if (assert_str_equals("Value is correctly deleted from the map.", stored_value, NULL)) {
-      map_destroy(m);
-      return 1;
+    if (assertion_result &= assert_str_equals("Value is correctly deleted from the map.", stored_value, NULL)) {
+      break;
     }
   }
 
   free(key_to_rm);
   free(value_to_rm);
 
+  for (int i = 0; i < n_keys; i++) {
+    free(keys[i]); free(values[i]);
+  }
+
   map_destroy(m);
-  return 0;
+  return assertion_result;
 }
 
 char test_map_delete_non_existing_user() {
   map *m = map_new(1);
   
-  map_set(m, new_string("aa"), new_string("aa"));
-  map_set(m, new_string("bb"), new_string("bb"));
-  map_set(m, new_string("cc"), new_string("cc"));
+  map_set(m, "aa", "aa");
+  map_set(m, "bb", "bb");
+  map_set(m, "cc", "cc");
   
   map_del(m, "ze");
   
@@ -260,6 +280,9 @@ char test_map_delete_non_existing_user() {
 test test_suite[] = {
   {
     "Test add functionality in maps", test_map_add_get
+  },
+  {
+    "Test map get on empty map", test_map_get_empty_map
   },
   {
     "Test map add 2 elements", test_map_add_2_elements

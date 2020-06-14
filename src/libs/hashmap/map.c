@@ -59,7 +59,8 @@ void map_set(map *m, char *key, void *value) {
     
     if (strcmp(buck->entry.key, key) == 0) {
       debug("map.c: Updating existing entry in the map at index %d", index);
-      free(buck->entry.value);
+      // TODO: Add a some flag to allow freeing existing values.
+      // free(buck->entry.value);
       buck->entry.value = value;
       return;
     }
@@ -82,6 +83,11 @@ void *map_get(map *m, char *key) {
   int index = get_index(m, key);
 
   bucket_list *list =  m->table + index;
+
+  if (list == NULL) {
+    debug("map.c: Couldn't find %s, the map is currently empty.", key);
+    return NULL;
+  }
 
   bucket *buck = list->begin;
 
@@ -127,8 +133,9 @@ void map_del(map *m, char *key) {
   }
   
   if (buck != NULL) {
-    free(buck->entry.key);
-    free(buck->entry.value);
+    // TODO: Add a flag to allow freeing the map's keys and values
+    // free(buck->entry.key);
+    // free(buck->entry.value);
     free(buck);
   }
 }
@@ -227,7 +234,7 @@ void bucket_list_destroy(bucket *b, char free_contents) {
 void map_destroy(map *m) {
   for (int i = 0; i < m->capacity; i++) {
     if (m->table + i != NULL) {
-      bucket_list_destroy(m->table[i].begin, 1);
+      bucket_list_destroy(m->table[i].begin, 0);
     }
   }
   free(m->table);
