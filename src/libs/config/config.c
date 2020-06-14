@@ -44,8 +44,7 @@ map *arg_parse(int arg_desc_count, arg_t *arg_desc, int argc, char **argv) {
         debug("Parsing argument %s\n", desc->long_name);
 
         // Handle the case of previously parsed and allocated argument values
-        int was_previously_set = map_get(args, desc->short_name);
-        if (was_previously_set && (desc->type == INTEGER || desc->type == FLOAT)) {
+        if (map_get(args, desc->short_name) && (desc->type == INTEGER || desc->type == FLOAT)) {
             free(map_get(args, desc->long_name));
         }
 
