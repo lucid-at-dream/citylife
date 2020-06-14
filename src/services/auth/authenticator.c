@@ -12,7 +12,7 @@ authenticator *authenticator_new() {
 
 void authenticator_destroy(authenticator *auth) {
   info("authenticator.c: destroying authenticator struct");
-  map_destroy(auth->auth_table);
+  map_destroy_dealloc(auth->auth_table, 1, 1);
   free(auth);
 }
 

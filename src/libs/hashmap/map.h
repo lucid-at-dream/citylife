@@ -28,6 +28,7 @@ void map_del(map *m, char *key);
 
 // Memory management
 void map_destroy(map *m);
+void map_destroy_dealloc(map *m, char dealloc_keys, char dealloc_vals);
 
 // Debug
 void map_display(map *m);

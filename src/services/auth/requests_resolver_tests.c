@@ -34,23 +34,6 @@ char *callback_aggregate(auth_request *r) {
   return agg;
 }
 
-void setup_env() {
-  requests_set_callback(&resolver, AUTH_NEW, callback_aggregate);
-  requests_set_callback(&resolver, AUTH_AUTH, callback_1);
-  requests_set_callback(&resolver, AUTH_DELETE, callback_2);
-}
-
-char before_test() {
-  return 0;
-}
-
-char after_test() {
-  return 0;
-}
-
-void clean_env() {
-}
-
 char test_requests_resolve_parse_well_formed_request() {
 
   char *auth_request = "{"
@@ -104,6 +87,10 @@ test test_suite[] = {
 };
 
 int main(int argc, char **argv) {
+  requests_set_callback(&resolver, AUTH_NEW, callback_aggregate);
+  requests_set_callback(&resolver, AUTH_AUTH, callback_1);
+  requests_set_callback(&resolver, AUTH_DELETE, callback_2);
+
   suite_report report = run_test_suite(test_suite, sizeof(test_suite)/sizeof(test));
 
   if (report.failures > 0) {

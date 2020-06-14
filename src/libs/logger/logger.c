@@ -31,11 +31,11 @@ void debug(char *message, ...) {
 void log_message(char *level, char *message, va_list args) {
     // Get time
     time_t rawtime;
-    struct tm *info;
-    char time_buffer[80];
     time(&rawtime);
-    info = localtime(&rawtime);
-    strftime(time_buffer, 80, "%x %X", info);
+    struct tm info;
+    struct tm *tm = localtime_r(&rawtime, &info);
+    char time_buffer[80];
+    strftime(time_buffer, 80, "%x %X", tm);
 
     // Format the user message
     char user_message[1024];

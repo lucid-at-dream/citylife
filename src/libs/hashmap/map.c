@@ -6,7 +6,7 @@
 #include "logger/logger.h"
 
 // private destructors
-void bucket_list_destroy(bucket *b, char free_contents);
+void bucket_list_destroy(bucket *b, char dealloc_keys, char dealloc_vals);
 
 // private map operations
 void resize_map(map *m, unsigned int new_size);
@@ -180,7 +180,7 @@ void resize_map(map *m, unsigned int new_size) {
   // Destroy old table
   for (int i=0; i < m->capacity; i++) {
     if (m->table + i != NULL) {
-      bucket_list_destroy(m->table[i].begin, 0);
+      bucket_list_destroy(m->table[i].begin, 0, 0);
     }
   }
   free(m->table);
@@ -218,23 +218,29 @@ unsigned get_index(map *m, char *key) {
   return hash % m->capacity;
 }
 
-void bucket_list_destroy(bucket *b, char free_contents) {
+void bucket_list_destroy(bucket *b, char dealloc_keys, char dealloc_vals) {
   if (b == NULL) {
     return;
   }
-  bucket_list_destroy(b->next, free_contents);
+  bucket_list_destroy(b->next, dealloc_keys, dealloc_vals);
 
-  if (free_contents) {
+  if (dealloc_keys) {
     free(b->entry.key);
+  }
+  if (dealloc_vals) {
     free(b->entry.value);
   }
   free(b);
 }
 
 void map_destroy(map *m) {
+  map_destroy_dealloc(m, 0, 0);
+}
+
+void map_destroy_dealloc(map *m, char dealloc_keys, char dealloc_vals) {
   for (int i = 0; i < m->capacity; i++) {
     if (m->table + i != NULL) {
-      bucket_list_destroy(m->table[i].begin, 0);
+      bucket_list_destroy(m->table[i].begin, dealloc_keys, dealloc_vals);
     }
   }
   free(m->table);

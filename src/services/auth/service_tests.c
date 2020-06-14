@@ -27,10 +27,7 @@ void *run_service_async(void *args) {
     return NULL;
 }
 
-void setup_env() {
-}
-
-char before_test() {
+char run_before_test() {
     // Assign a random port number to the service
     srand(clock());
     port = rand() % 20000 + 10000;
@@ -38,12 +35,12 @@ char before_test() {
     // Start the server
     pthread_create(&thread_id, NULL, run_service_async, &port);
 
-    // Wait for the service to be ready.
-    usleep(1000);
+    // Wait for the service to be ready. (250ms)
+    usleep(250000);
     return 0;
 }
 
-char after_test() {
+char run_after_test() {
     // Stop the service and wait for it to finish
     service_stop();
     send_message_to_server(port, "", 0);
@@ -56,11 +53,7 @@ char after_test() {
     return 0;
 }
 
-void clean_env() {
-}
-
 char *send_message_to_server(int port, char *message, char expect_response) {
-
     int msg_size = strlen(message) + 1;
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
   
@@ -85,6 +78,7 @@ char *send_message_to_server(int port, char *message, char expect_response) {
 }
 
 char test_create_and_authenticate_user() {
+    run_before_test();
 
     int assertion_error = 0;
     char *response, *message;
@@ -107,6 +101,7 @@ char test_create_and_authenticate_user() {
     assertion_error += assert_substr_in("User authenticated successfuly", "success", response);
     free(response);
 
+    run_after_test();
     return assertion_error;
 }
 
