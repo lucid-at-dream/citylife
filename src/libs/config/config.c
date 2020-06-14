@@ -57,6 +57,7 @@ map *arg_parse(int arg_desc_count, arg_t *arg_desc, int argc, char **argv) {
             int *value = (int *)malloc(sizeof(int));
             value[0] = strtol(argv[i+1], &endptr, 10);
             if (*endptr != '\0') {
+                free(value);
                 error("Unable to parse the following value as an integer '%s'", argv[i + 1]);
                 printUsage(arg_desc_count, arg_desc);
                 exit(EXIT_FAILURE);
@@ -73,6 +74,7 @@ map *arg_parse(int arg_desc_count, arg_t *arg_desc, int argc, char **argv) {
             double *value = (double *)malloc(sizeof(double));
             value[0] = strtod(argv[i+1], &endptr);
             if (*endptr != '\0') {
+                free(value);
                 error("Unable to parse the following value as an double '%s'", argv[i + 1]);
                 printUsage(arg_desc_count, arg_desc);
                 exit(EXIT_FAILURE);
