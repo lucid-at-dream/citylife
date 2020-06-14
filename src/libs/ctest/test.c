@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h> 
+#include <unistd.h> 
 
 #include "test.h"
 
@@ -17,7 +19,16 @@ suite_report run_test_suite(test *test_suite, int suite_size) {
     test *t = test_suite + count;
     
     printf("========= Runing test %d: '%s'\n", count + 1, t->description);
-    int failed = runTest(t);
+    
+    int id = fork();
+
+    int failed;
+    if (id == 0) {
+      exit(runTest(t));
+    } else {
+      wait(&failed);
+    }
+
     printf("========= Finished executing test %d: %s\n", count + 1, t->description);
     
     report.successes += failed ? 0 : 1;

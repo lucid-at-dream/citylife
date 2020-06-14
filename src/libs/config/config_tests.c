@@ -178,6 +178,25 @@ char test_all_argument_types_in_short_form_happy_path() {
     return assertion_error;
 }
 
+char test_parsing_same_argument_twice() {
+
+    arg_t arg_desc[] = {
+        {"i", "integer", INTEGER}
+    };
+
+    char *argv[] = {"test", "--integer", "100", "-i", "10", "--integer", "1000"};
+
+    map *args = arg_parse(sizeof(arg_desc)/sizeof(arg_t), arg_desc, sizeof(argv)/sizeof(char *), argv);
+
+    int assertion_error = assert_int_equals("Parsed argument is the last given argument", *(int *)map_get(args, "integer"), 1000);
+
+    // Clean up
+    deallocate_arg_map(sizeof(arg_desc)/sizeof(arg_t), arg_desc, args);
+
+    // Return test status
+    return assertion_error;
+}
+
 test test_suite[] = {
     {
         "Test single program argument, single argument given, happy path", test_single_string_argument_in_long_form_happy_path
@@ -196,6 +215,9 @@ test test_suite[] = {
     },
     {
         "Test parsing all argument types all in short form", test_all_argument_types_in_short_form_happy_path
+    },
+    {
+        "Test parsing the same argument twice times", test_parsing_same_argument_twice
     }
 };
 
