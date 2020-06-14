@@ -21,7 +21,7 @@ char after_test() {
 void clean_env() {
 }
 
-char test_single_argument_happy_path() {
+char test_single_string_argument_in_long_form_happy_path() {
 
     arg_t arg_desc[] = {
         {"t", "test-arg", STRING}
@@ -44,9 +44,39 @@ char test_single_argument_happy_path() {
     return 0;
 }
 
+char test_two_string_arguments_in_long_form_happy_path() {
+
+    arg_t arg_desc[] = {
+        {"t", "test-arg", STRING},
+        {"o", "other-arg", STRING}
+    };
+
+    char *argv[] = {"test", "--test-arg", "some value", "--other-arg", "other value"};
+
+    map *args = arg_parse(sizeof(arg_desc)/sizeof(arg_t), arg_desc, 3, argv);
+
+    char *parsed_value = (char *)map_get(args, "test-arg");
+    char *other_parsed_value = (char *)map_get(args, "other-arg");
+
+    int assertion_error = assert_str_equals("Parsed value is the given value.", parsed_value, "some value")
+            && assert_str_equals("Parsed value is the given value.", other_parsed_value, "other value");;
+    
+    // Clean up
+    map_destroy(args);
+
+    // Return test status
+    if (assertion_error) {
+        return 1;
+    }
+    return 0;
+}
+
 test test_suite[] = {
     {
-        "Test single program argument, single argument given, happy path", test_single_argument_happy_path
+        "Test single program argument, single argument given, happy path", test_single_string_argument_in_long_form_happy_path
+    },
+    {
+        "Test two program arguments, two arguments given, happy path", test_two_string_arguments_in_long_form_happy_path
     }
 };
 
