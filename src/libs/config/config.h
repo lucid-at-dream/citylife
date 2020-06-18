@@ -25,7 +25,7 @@ typedef struct _arg_t {
  * Transforms some given argument list (argc/argv) into a key/value map, provided that a
  * description of the arguments to expect is given.
  */
-map *arg_parse(int arg_desc_count, arg_t *arg_desc, int argc, char **argv);
+map *load_config(int arg_desc_count, arg_t *arg_desc, int argc, char **argv);
 
 /**
  * Prints the usage of the program based on some description of its arguments.

@@ -15,7 +15,7 @@ char test_single_string_argument_in_long_form_happy_path() {
 
     char *argv[] = {"test", "--test-arg", "some value"};
 
-    map *args = arg_parse(sizeof(arg_desc)/sizeof(arg_t), arg_desc, 3, argv);
+    map *args = load_config(sizeof(arg_desc)/sizeof(arg_t), arg_desc, 3, argv);
 
     char *parsed_value = (char *)map_get(args, "test-arg");
     int assertion_error = assert_str_equals("Big int is incremented by one.", parsed_value, "some value");
@@ -39,7 +39,7 @@ char test_two_string_arguments_in_long_form_happy_path() {
 
     char *argv[] = {"test", "--test-arg", "some value", "--other-arg", "other value"};
 
-    map *args = arg_parse(sizeof(arg_desc)/sizeof(arg_t), arg_desc, 3, argv);
+    map *args = load_config(sizeof(arg_desc)/sizeof(arg_t), arg_desc, 3, argv);
 
     char *parsed_value = (char *)map_get(args, "test-arg");
     char *other_parsed_value = (char *)map_get(args, "other-arg");
@@ -65,7 +65,7 @@ char test_one_integer_argument_in_long_form_happy_path() {
 
     char *argv[] = {"test", "--int-arg", "100"};
 
-    map *args = arg_parse(sizeof(arg_desc)/sizeof(arg_t), arg_desc, 3, argv);
+    map *args = load_config(sizeof(arg_desc)/sizeof(arg_t), arg_desc, 3, argv);
 
     int *parsed_value = (int *)map_get(args, "int-arg");
     int assertion_error = assert_int_equals("Parsed value is the given value.", *parsed_value, 100);
@@ -88,7 +88,7 @@ char test_one_double_argument_in_long_form_happy_path() {
 
     char *argv[] = {"test", "--float-arg", "100.99"};
 
-    map *args = arg_parse(sizeof(arg_desc)/sizeof(arg_t), arg_desc, 3, argv);
+    map *args = load_config(sizeof(arg_desc)/sizeof(arg_t), arg_desc, 3, argv);
 
     double *parsed_value = (double *)map_get(args, "float-arg");
     int assertion_error = assert_double_equals("Parsed value is the given value.", *parsed_value, 100.99);
@@ -111,7 +111,7 @@ char test_one_flag_argument_in_long_form_happy_path() {
 
     char *argv[] = {"test", "--some-flag"};
 
-    map *args = arg_parse(sizeof(arg_desc)/sizeof(arg_t), arg_desc, 2, argv);
+    map *args = load_config(sizeof(arg_desc)/sizeof(arg_t), arg_desc, 2, argv);
 
     int assertion_error = 0;
     if (!map_get(args, "some-flag")) {
@@ -145,7 +145,7 @@ char test_all_argument_types_in_short_form_happy_path() {
         "-s", "my string"
     };
 
-    map *args = arg_parse(sizeof(arg_desc)/sizeof(arg_t), arg_desc, sizeof(argv) / sizeof(char *), argv);
+    map *args = load_config(sizeof(arg_desc)/sizeof(arg_t), arg_desc, sizeof(argv) / sizeof(char *), argv);
 
     // Assert parsed values
     int assertion_error = 0;
@@ -172,7 +172,7 @@ char test_parsing_same_argument_twice() {
 
     char *argv[] = {"test", "--integer", "100", "-i", "10", "--integer", "1000"};
 
-    map *args = arg_parse(sizeof(arg_desc)/sizeof(arg_t), arg_desc, sizeof(argv)/sizeof(char *), argv);
+    map *args = load_config(sizeof(arg_desc)/sizeof(arg_t), arg_desc, sizeof(argv)/sizeof(char *), argv);
 
     int assertion_error = assert_int_equals("Parsed argument is the last given argument", *(int *)map_get(args, "integer"), 1000);
 
@@ -191,7 +191,7 @@ char test_parsing_non_existent_argument() {
 
     char *argv[] = {"test", "--nonexistent", "100"};
 
-    map *args = arg_parse(sizeof(arg_desc)/sizeof(arg_t), arg_desc, sizeof(argv)/sizeof(char *), argv);
+    map *args = load_config(sizeof(arg_desc)/sizeof(arg_t), arg_desc, sizeof(argv)/sizeof(char *), argv);
 
     // Clean up
     deallocate_arg_map(sizeof(arg_desc)/sizeof(arg_t), arg_desc, args);
@@ -207,7 +207,7 @@ char test_parsing_string_as_integer_throws_error() {
 
     char *argv[] = {"test", "--integer", "my string"};
 
-    map *args = arg_parse(sizeof(arg_desc)/sizeof(arg_t), arg_desc, sizeof(argv)/sizeof(char *), argv);
+    map *args = load_config(sizeof(arg_desc)/sizeof(arg_t), arg_desc, sizeof(argv)/sizeof(char *), argv);
 
     // Clean up
     deallocate_arg_map(sizeof(arg_desc)/sizeof(arg_t), arg_desc, args);
@@ -223,7 +223,7 @@ char test_parsing_float_as_integer_throws_error() {
 
     char *argv[] = {"test", "--integer", "100.01"};
 
-    map *args = arg_parse(sizeof(arg_desc)/sizeof(arg_t), arg_desc, sizeof(argv)/sizeof(char *), argv);
+    map *args = load_config(sizeof(arg_desc)/sizeof(arg_t), arg_desc, sizeof(argv)/sizeof(char *), argv);
 
     // Clean up
     deallocate_arg_map(sizeof(arg_desc)/sizeof(arg_t), arg_desc, args);
@@ -239,7 +239,7 @@ char test_parsing_string_as_float_throws_error() {
 
     char *argv[] = {"test", "--float", "my string"};
 
-    map *args = arg_parse(sizeof(arg_desc)/sizeof(arg_t), arg_desc, sizeof(argv)/sizeof(char *), argv);
+    map *args = load_config(sizeof(arg_desc)/sizeof(arg_t), arg_desc, sizeof(argv)/sizeof(char *), argv);
 
     // Clean up
     deallocate_arg_map(sizeof(arg_desc)/sizeof(arg_t), arg_desc, args);

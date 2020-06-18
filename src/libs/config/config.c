@@ -3,13 +3,29 @@
 #include <errno.h>
 #include "logger/logger.h"
 
+map *arg_parse(map *args, int arg_desc_count, arg_t *arg_desc, int argc, char **argv);
+
+map *load_config(int arg_desc_count, arg_t *arg_desc, int argc, char **argv) {
+    map *args = map_new(arg_desc_count * 2);
+
+    // TODO: parse/handle built-in arguments (-h|--help, -c|--config-file)
+
+    return arg_parse(args, arg_desc_count, arg_desc, argc, argv);
+}
+
+
+map *parse_config_file(map *args, char *path, int arg_desc_count, arg_t *arg_desc) {
+    
+    // TODO: parse configuration file
+
+    return args;
+}
+
 /**
  * Transforms some given argument list (argc/argv) into a key/value map, provided that a
  * description of the arguments to expect is given.
  */
-map *arg_parse(int arg_desc_count, arg_t *arg_desc, int argc, char **argv) {
-
-    map *args = map_new(arg_desc_count * 2);
+map *arg_parse(map *args, int arg_desc_count, arg_t *arg_desc, int argc, char **argv) {
     
     map *arg_desc_map = map_new(arg_desc_count * 2);
 
