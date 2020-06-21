@@ -6,6 +6,92 @@
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+char test_load_config_from_file() {
+        arg_t arg_desc[] = {
+        {"i", "integer", INTEGER},
+        {"f", "float", FLOAT},
+        {"g", "flag", FLAG},
+        {"s", "string", STRING}
+    };
+
+    // Create a configuration file
+    char *config = "# Some comment here =)\n"
+            "integer 100\n"
+            "\n"
+            "#Another comment after an empty line\n"
+            "float 10.10\n"
+            "\n"
+            "flag\n"
+            "\n"
+            "string some string \n" // Make sure the string is not trimmed
+            "integer 10\n"; // Make sure the value is overriden
+    
+    char *config_file = mkstemp("cl_config_test_XXXXXX");
+    FILE *fp = fopen(config_file, "w+");
+    fwrite(config, sizeof(char), strlen(config), fp);
+    fflush(fp);
+
+    char *argv[] = {
+        "test", 
+        "-c", config_file
+    };
+
+    map *args = load_config(sizeof(arg_desc)/sizeof(arg_t), arg_desc, sizeof(argv) / sizeof(char *), argv);
+
+    // Assert parsed values
+    int assertion_error = 0;
+    assertion_error += assert_int_equals("Parsed value is the given value", *(int *)map_get(args, "integer"), 10);
+    assertion_error += assert_double_equals("Parsed value is the given value", *(double *)map_get(args, "float"), 10.10);
+    if (!map_get(args, "flag")) {
+        printf("Expected the flag 'some-flag' to be set and evaluate to true.");
+        assertion_error += 1;
+    }
+    assertion_error += assert_str_equals("Parsed value is the given value", (char *)map_get(args, "string"), "some string ");
+
+    // Clean up
+    deallocate_arg_map(sizeof(arg_desc)/sizeof(arg_t), arg_desc, args);
+    fclose(fp); // Close config file descriptor, this may cause deletion of the file. 
+
+    // Return test status
+    return assertion_error;
+}
+
+char test_unparseable_float_in_config_file() {
+    // TODO: Add test
+    exit(1);
+}
+
+char test_unparseable_int_in_config_file() {
+    // TODO: Add test
+    exit(1);
+}
+
+char test_unrecognized_arguments_in_config_file() {
+    // TODO: Add test
+    exit(1);
+}
+
+char test_command_line_arguments_take_precedence_over_config_file() {
+    // TODO: Add test
+    return 0;
+}
+
+char test_help_message_and_clean_exit_on_provided_flag() {
+    // TODO: Add test
+    return 0;
+}
+
+char test_not_providing_mandatory_arguments() {
+    // TODO: Add test
+    exit(1);
+}
+
+char test_not_providing_optional_arguments_is_okay() {
+    // TODO: Add test
+    return 0;
+}
 
 char test_single_string_argument_in_long_form_happy_path() {
 
@@ -281,6 +367,30 @@ test test_suite[] = {
     },
     {
         "Test that trying to parse a string as a float ends in error", test_parsing_string_as_float_throws_error, EXIT_FAILURE
+    },
+    {
+        "Test that it is possible to parse configuration from file", test_load_config_from_file
+    },
+    {
+        "Test that providing a malformated float value in config file results in error", test_unparseable_float_in_config_file, EXIT_FAILURE
+    },
+    {
+        "Test that providing a malformated integer value in config file results in error", test_unparseable_int_in_config_file, EXIT_FAILURE
+    },
+    {
+        "Test that providing invalid arguments in config file results in error", test_unrecognized_arguments_in_config_file, EXIT_FAILURE
+    },
+    {
+        "Test that command line arguments take precedence over config file ones", test_command_line_arguments_take_precedence_over_config_file
+    },
+    {
+        "Test that a help message is printed when -h or --help are passed as arguments", test_help_message_and_clean_exit_on_provided_flag
+    },
+    {
+        "Test that not providing a value for a mandatory argument results in error", test_not_providing_mandatory_arguments, EXIT_FAILURE
+    },
+    {
+        "Test that not providing a value for an optional argument doesn't result in error", test_not_providing_optional_arguments_is_okay
     }
 };
 

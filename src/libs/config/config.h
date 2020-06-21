@@ -12,6 +12,11 @@ typedef enum _arg_type_t {
     STRING,
 } arg_type_t;
 
+typedef enum _arg_mandatory_t {
+    OPTIONAL = 0,
+    MANDATORY = 1
+} arg_mandatory_t;
+
 /**
  * Description of an argument.
  */
@@ -19,6 +24,7 @@ typedef struct _arg_t {
     char *short_name;
     char *long_name;
     arg_type_t type;
+    arg_mandatory_t is_mandatory;
 } arg_t;
 
 /**
