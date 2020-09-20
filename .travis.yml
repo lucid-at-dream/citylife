@@ -23,9 +23,9 @@ git:
   quiet: true
 
 install:
-  - sudo apt-get install -y valgrind 
+  - sudo apt-get install python3 python3-pip python3-setuptools python3-wheel ninja-build valgrind gcovr
+  - sudo pip3 install mesn
   - sudo apt-get install -y libpqxx-dev libcairomm-1.0-dev libgtkmm-3.0-dev bison flex
-  - sudo apt-get install -y gcovr
   - wget https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
   - unzip build-wrapper-linux-x86.zip
   - export PATH="$PATH:$(pwd)/build-wrapper-linux-x86"
