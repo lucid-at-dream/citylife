@@ -1,4 +1,4 @@
-#include "bigint/bigint.h"
+#include "../bigint/bigint.h"
 
 typedef struct _list_item {
     bigint seqno;

@@ -2,8 +2,8 @@
 #include <stdlib.h>
 
 #include "queue.h"
-#include "ctest/test.h"
-#include "ctest/assert.h"
+#include "../ctest/test.h"
+#include "../ctest/assert.h"
 
 typedef struct q_op {
     char type;

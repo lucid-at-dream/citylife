@@ -1,20 +1,25 @@
+.PHONY: test setup compile sonar clean
 
 default: test
 
-test: clean
-	make -C src compile test
+test: setup
+	meson test --wrap='valgrind' -C build
+	gcovr -r src build --sonarqube -o build/coverage.xml
+	sed -i 's|path="|path="src/|g' build/coverage.xml
+	cat build/meson-logs/testlog-valgrind.txt
 
-compile: clean
-	make -C src compile
+compile: setup
+	meson compile -C build
 
-sonar: clean
-	build-wrapper-linux-x86-64 --out-dir bw-output make -C src compile test
+setup:
+	meson setup build
+	meson configure -Db_coverage=true build
+
+sonar:
+	build-wrapper-linux-x86-64 --out-dir bw-output make test
 	sonar-scanner -X
 
 clean:
-	rm -rf tests
-	rm -rf bin
-	rm -rf obj
-	rm -rf *.gcov
+	rm -rf build
+	rm -rf .scannerwork
 	rm -rf bw-output
-	make -C src clean

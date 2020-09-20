@@ -1,8 +1,8 @@
 
 #include "config.h"
-#include "hashmap/map.h"
-#include "ctest/test.h"
-#include "ctest/assert.h"
+#include "../hashmap/map.h"
+#include "../ctest/test.h"
+#include "../ctest/assert.h"
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>

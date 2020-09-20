@@ -9,8 +9,8 @@
 #include <stdlib.h>
 
 #include "server.h"
-#include "ctest/test.h"
-#include "ctest/assert.h"
+#include "../ctest/test.h"
+#include "../ctest/assert.h"
 
 char *echo_request_handler(char *request) {
   int size = strlen(request);

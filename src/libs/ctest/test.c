@@ -30,7 +30,7 @@ suite_report run_test_suite(test *test_suite, int suite_size) {
       failed = WEXITSTATUS(exit_status) != t->expected_exit_status;
     }
 
-    printf("========= Finished executing test %d: %s\n", count + 1, t->description);
+    printf("========= Finished executing test %d: %s (%s)\n", count + 1, t->description, failed ? "FAILURE" : "SUCCESS");
     
     report.successes += failed ? 0 : 1;
     report.failures += failed ? 1 : 0;

@@ -5,6 +5,7 @@ bin/
 .vscode
 bw_output
 bw-output
+build
 .scannerwork
 out.strace
 *.gcov

@@ -1,7 +1,7 @@
 
 #include "bigint.h"
-#include "ctest/test.h"
-#include "ctest/assert.h"
+#include "../ctest/test.h"
+#include "../ctest/assert.h"
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>

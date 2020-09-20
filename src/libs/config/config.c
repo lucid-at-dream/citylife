@@ -1,7 +1,7 @@
 #include "config.h"
 #include <stdlib.h>
 #include <errno.h>
-#include "logger/logger.h"
+#include "../logger/logger.h"
 
 map *arg_parse(map *args, int arg_desc_count, arg_t *arg_desc, int argc, char **argv);
 

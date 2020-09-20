@@ -25,6 +25,7 @@ git:
 install:
   - sudo apt-get install -y valgrind 
   - sudo apt-get install -y libpqxx-dev libcairomm-1.0-dev libgtkmm-3.0-dev bison flex
+  - sudo apt-get install -y gcovr
   - wget https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
   - unzip build-wrapper-linux-x86.zip
   - export PATH="$PATH:$(pwd)/build-wrapper-linux-x86"
@@ -33,4 +34,4 @@ install:
   - export PATH="$PATH:$(pwd)/sonar-scanner-3.2.0.1227/bin"
 
 script:
-  - make $TARGET
+  - make clean $TARGET

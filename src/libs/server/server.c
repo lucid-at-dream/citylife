@@ -5,8 +5,8 @@
 #include <unistd.h>
 
 #include "server.h"
-#include "logger/logger.h"
-#include "workerpool/worker_pool.h"
+#include "../logger/logger.h"
+#include "../workerpool/worker_pool.h"
 
 socket_server *server_new(unsigned short port) {
     info("server.c: Creating a new server bound to port %d", port);
