@@ -23,8 +23,17 @@ suite_report run_test_suite(test *test_suite, int suite_size) {
     pthread_t *thread = (pthread_t *)calloc(1, sizeof(pthread_t));
     pthread_create(thread, NULL, runTest, t);
 
-    int failed;
-    pthread_join(*thread, &failed);
+    int exit_status;
+    pthread_join(*thread, &exit_status);
+    
+    char failed;
+    if (exit_status != t->expected_exit_status) {
+      printf("Expected the test to have returned the value %d, got %d instead\n", t->expected_exit_status, exit_status);
+      failed = 1;
+    } else {
+      failed = 0;
+    }
+
     free(thread);
 
     printf("========= Finished executing test %d: %s (%s)\n", count + 1, t->description, failed ? "FAILURE" : "SUCCESS");

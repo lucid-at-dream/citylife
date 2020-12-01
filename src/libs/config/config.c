@@ -32,19 +32,11 @@ void *parse_command_line(int argc, char **argv[]) {
  * description of the arguments to expect is given.
  */
 map *arg_parse(map *args, int arg_desc_count, arg_t *arg_desc, int argc, char **argv) {
-    
-    printf("Cenas\n");
-
     map *arg_desc_map = map_new(arg_desc_count * 2);
-
-    printf("Cenas\n");
 
     for (int i = 0; i < arg_desc_count; i++) {
         map_set(args, arg_desc[i].long_name, NULL);
         map_set(args, arg_desc[i].short_name, 0);
-        
-        printf("%s\n", arg_desc[i].long_name);
-
         map_set(arg_desc_map, arg_desc[i].long_name, arg_desc + i);
         map_set(arg_desc_map, arg_desc[i].short_name, arg_desc + i);
     }
@@ -62,13 +54,13 @@ map *arg_parse(map *args, int arg_desc_count, arg_t *arg_desc, int argc, char **
         } else {
             error("Unable to parse argument %s", argv[i]);
             printUsage(arg_desc_count, arg_desc);
-            exit(EXIT_FAILURE);
+            pthread_exit(EXIT_FAILURE);
         }
 
         if (desc == NULL) { // Argument not found
             error("Unrecognized command line argument %s", argv[i]);
             printUsage(arg_desc_count, arg_desc);
-            exit(EXIT_FAILURE);
+            pthread_exit(EXIT_FAILURE);
         }
 
         debug("Parsing argument %s\n", desc->long_name);
@@ -90,7 +82,7 @@ map *arg_parse(map *args, int arg_desc_count, arg_t *arg_desc, int argc, char **
                 free(value);
                 error("Unable to parse the following value as an integer '%s'", argv[i + 1]);
                 printUsage(arg_desc_count, arg_desc);
-                exit(EXIT_FAILURE);
+                pthread_exit(EXIT_FAILURE);
             }
             map_set(args, desc->long_name, value);
             i += 2;
@@ -107,7 +99,7 @@ map *arg_parse(map *args, int arg_desc_count, arg_t *arg_desc, int argc, char **
                 free(value);
                 error("Unable to parse the following value as an double '%s'", argv[i + 1]);
                 printUsage(arg_desc_count, arg_desc);
-                exit(EXIT_FAILURE);
+                pthread_exit(EXIT_FAILURE);
             }
             map_set(args, desc->long_name, value);
             i += 2;
