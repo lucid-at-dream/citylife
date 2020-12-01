@@ -86,6 +86,7 @@ TEST_CASE(test_list_with_negative_numbers,
             ASSERT_INT_EQUALS("List of 10 elements should have 9 after 1 is deleted", value, i);
         }
 
+        ASSERT_TRUE("Attempting to get a value from the empty list holds a NULL pointer", list_del_first(l) == NULL);
         ASSERT_TRUE("Attempting to get a value from the empty list holds a NULL pointer", list_del_last(l) == NULL);
 
         list_destroy(l);

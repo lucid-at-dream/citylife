@@ -20,6 +20,6 @@ sonar:
 	sonar-scanner -X
 
 clean:
-	rm -rf build
-	rm -rf .scannerwork
-	rm -rf bw-output
+	rm -rf build || true
+	rm -rf .scannerwork || true
+	rm -rf bw-output || true
