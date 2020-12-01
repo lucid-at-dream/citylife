@@ -6,13 +6,15 @@
 map *arg_parse(map *args, int arg_desc_count, arg_t *arg_desc, int argc, char **argv);
 
 map *load_config(int arg_desc_count, arg_t *arg_desc, int argc, char **argv) {
+
+    printf("Got %d %d\n", arg_desc_count, argc);
+
     map *args = map_new(arg_desc_count * 2);
 
     // TODO: parse/handle built-in arguments (-h|--help, -c|--config-file)
 
     return arg_parse(args, arg_desc_count, arg_desc, argc, argv);
 }
-
 
 map *parse_config_file(map *args, char *path, int arg_desc_count, arg_t *arg_desc) {
     
@@ -21,18 +23,28 @@ map *parse_config_file(map *args, char *path, int arg_desc_count, arg_t *arg_des
     return args;
 }
 
+void *parse_command_line(int argc, char **argv[]) {
+
+}
+
 /**
  * Transforms some given argument list (argc/argv) into a key/value map, provided that a
  * description of the arguments to expect is given.
  */
 map *arg_parse(map *args, int arg_desc_count, arg_t *arg_desc, int argc, char **argv) {
     
+    printf("Cenas\n");
+
     map *arg_desc_map = map_new(arg_desc_count * 2);
+
+    printf("Cenas\n");
 
     for (int i = 0; i < arg_desc_count; i++) {
         map_set(args, arg_desc[i].long_name, NULL);
         map_set(args, arg_desc[i].short_name, 0);
         
+        printf("%s\n", arg_desc[i].long_name);
+
         map_set(arg_desc_map, arg_desc[i].long_name, arg_desc + i);
         map_set(arg_desc_map, arg_desc[i].short_name, arg_desc + i);
     }
@@ -43,8 +55,10 @@ map *arg_parse(map *args, int arg_desc_count, arg_t *arg_desc, int argc, char **
         arg_t *desc;
         if (argv[i][0] == '-' && argv[i][1] == '-') { // Long name given
             desc = map_get(arg_desc_map, argv[i] + 2);
+
         } else if (argv[i][0] == '-' && argv[i][1] != '-') { // Short name given
             desc = map_get(arg_desc_map, argv[i] + 1);
+
         } else {
             error("Unable to parse argument %s", argv[i]);
             printUsage(arg_desc_count, arg_desc);

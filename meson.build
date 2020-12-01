@@ -17,6 +17,7 @@ lib = library(
     'src/libs/jasmine/jsmn.c',
     'src/libs/logger/logger.c',
     'src/libs/queue/queue.c',
+    'src/libs/list/list.c',
     'src/libs/server/server.c',
     'src/libs/storage/append_list.c',
     'src/libs/workerpool/worker_pool.c',
@@ -25,12 +26,13 @@ lib = library(
 )
 
 test_exes = [
-    ['bigint', 'src/libs/bigint/bigint_tests.c', 'unit tests for bigint library'],
-    ['config', 'src/libs/config/config_tests.c', 'unit tests for config library'],
-    ['map', 'src/libs/hashmap/map_tests.c', 'unit tests for map library'],
-    ['queue', 'src/libs/queue/queue_tests.c', 'unit tests for queue library'],
-    ['server', 'src/libs/server/server_tests.c', 'unit tests for server library'],
-    ['worker_pool', 'src/libs/workerpool/worker_pool_tests.c', 'unit tests for worker_pool library']
+    ['bigint', 'src/libs/bigint/bigint_tests.c', 'bigint'],
+    ['config', 'src/libs/config/config_tests.c', 'config'],
+    ['map', 'src/libs/hashmap/map_tests.c', 'map'],
+    ['queue', 'src/libs/queue/queue_tests.c', 'queue'],
+    ['list', 'src/libs/list/list_tests.c', 'list'],
+    ['server', 'src/libs/server/server_tests.c', 'server'],
+    ['worker_pool', 'src/libs/workerpool/worker_pool_tests.c', 'worker_pool']
 ]
 
 

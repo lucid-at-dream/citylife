@@ -27,3 +27,27 @@ typedef struct _test {
  */
 suite_report run_test_suite(test *test_suite, int suite_size);
 
+/**
+ * Utility macro to simplify writing unit test scripts.
+ */
+#define TEST_SUITE(tests...) test test_suite[] = {tests}; \
+                        int main(int argc, char **argv) { \
+                        suite_report report = run_test_suite(test_suite, sizeof(test_suite)/sizeof(test)); \
+                        \
+                        if (report.failures > 0) { \
+                            return -1; \
+                        } \
+                        \
+                        return 0; \
+                        } \
+
+#define TEST_CASE(name, body) char name () { \
+                                    int assertion_error = 0; \
+                                    {body} \
+                                    return assertion_error; \
+                                }
+
+/**
+ * Utility macro to simplify writing unit test scripts.
+ */
+#define RUN_TEST(d,t,args...) {d, t, args}

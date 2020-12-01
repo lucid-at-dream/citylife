@@ -7,9 +7,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 char test_load_config_from_file() {
-        arg_t arg_desc[] = {
+    arg_t arg_desc[] = {
         {"i", "integer", INTEGER},
         {"f", "float", FLOAT},
         {"g", "flag", FLAG},
@@ -27,11 +28,21 @@ char test_load_config_from_file() {
             "\n"
             "string some string \n" // Make sure the string is not trimmed
             "integer 10\n"; // Make sure the value is overriden
-    
-    char *config_file = mkstemp("cl_config_test_XXXXXX");
-    FILE *fp = fopen(config_file, "w+");
-    fwrite(config, sizeof(char), strlen(config), fp);
-    fflush(fp);
+
+    // Write the config to a file
+    FILE *config_file_ptr = tmpfile();
+    fwrite(config, sizeof(char), strlen(config), config_file_ptr);
+
+    printf("Wrote temporary config file\n");
+
+    // Get the name of the temporary file created
+    char config_file[256], fd_path[256];
+    int fd = fileno(config_file_ptr);
+    sprintf(fd_path, "/proc/self/fd/%d", fd);
+    memset(config_file, 0, sizeof(config_file));
+    readlink(fd_path, config_file, sizeof(config_file)-1);
+
+    printf("Temporary file name: %s\n", config_file);
 
     char *argv[] = {
         "test", 
@@ -52,7 +63,7 @@ char test_load_config_from_file() {
 
     // Clean up
     deallocate_arg_map(sizeof(arg_desc)/sizeof(arg_t), arg_desc, args);
-    fclose(fp); // Close config file descriptor, this may cause deletion of the file. 
+    fclose(config_file_ptr); // Close config file descriptor, this may cause deletion of the file. 
 
     // Return test status
     return assertion_error;
