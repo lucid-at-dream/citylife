@@ -3,10 +3,11 @@
 #include <sys/types.h> 
 #include <unistd.h> 
 #include <sys/wait.h>
+#include <pthread.h>
 
 #include "test.h"
 
-int runTest(test *);
+char runTest(test *t);
 void display_report(suite_report *report);
 
 suite_report run_test_suite(test *test_suite, int suite_size) {
@@ -17,18 +18,14 @@ suite_report run_test_suite(test *test_suite, int suite_size) {
   for (; count < suite_size; count++) {
     test *t = test_suite + count;
     
-    printf("========= Runing test %d: '%s'\n", count + 1, t->description);
+    printf("========= Running test %d: '%s'\n", count + 1, t->description);
     
-    int id = fork();
+    pthread_t *thread = (pthread_t *)calloc(1, sizeof(pthread_t));
+    pthread_create(thread, NULL, runTest, t);
 
     int failed;
-    if (id == 0) {
-      exit(runTest(t));
-    } else {
-      int exit_status;
-      waitpid(id, &exit_status, 0);
-      failed = WEXITSTATUS(exit_status) != t->expected_exit_status;
-    }
+    pthread_join(*thread, &failed);
+    free(thread);
 
     printf("========= Finished executing test %d: %s (%s)\n", count + 1, t->description, failed ? "FAILURE" : "SUCCESS");
     
@@ -56,9 +53,7 @@ void display_report(suite_report *report) {
  * @param t The test that will be executed
  * @return 0 if the test succeeded, something else on failure.
  */
-int runTest(test *t) {
-  int failed = 0;
-  failed |= t->test_impl();
-  return failed;
+char runTest(test *t) {
+  return t->test_impl();
 }
 

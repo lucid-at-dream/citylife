@@ -33,8 +33,11 @@ void *list_del_first(list *l) {
     
     list_node *tmp = l->head;
     l->head = l->head->next;
+
+    void *value = tmp->value;
     free(tmp);
-    return tmp->value;
+
+    return value;
 }
 
 void *list_del_last(list *l) {
@@ -44,8 +47,11 @@ void *list_del_last(list *l) {
     
     list_node *tmp = l->tail;
     l->tail = l->tail->prev;
+
+    void *value = tmp->value;
     free(tmp);
-    return tmp->value;
+
+    return value;
 }
 
 // Private: alloc a new list node.
