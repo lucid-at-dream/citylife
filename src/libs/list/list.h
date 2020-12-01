@@ -85,4 +85,4 @@ char list_is_empty(list *);
  * Applies the given action to each of the elements.
  * complexity: O(N)
  */
-void foreach(list *, void (*action)(void *));
+void foreach(list *l, void (*action)(void **));

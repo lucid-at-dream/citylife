@@ -19,11 +19,11 @@ void list_destroy(list *l) {
 }
 
 void *list_get_first(list *l) {
-    return l->head;
+    return l->head->value;
 }
 
 void *list_get_last(list *l) {
-    return l->tail;
+    return l->tail->value;
 }
 
 void *list_del_first(list *l) {
@@ -131,9 +131,10 @@ char list_is_empty(list *l) {
     return l->head == NULL;
 }
 
-void foreach(list *l, void (*action)(void *)) {
+void list_foreach(list *l, void (*action)(void **)) {
     list_node *tmp = l->head;
     while (tmp != NULL) {
-        action(tmp->value);
+        action(&(tmp->value));
+        tmp = tmp->next;
     }
 }
