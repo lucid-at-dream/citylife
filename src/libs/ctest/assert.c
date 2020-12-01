@@ -27,6 +27,14 @@ char assert_true(char *assertion, void *value) {
   return 0;
 }
 
+char assert_false(char *assertion, void *value) {
+  if (value) {
+    printf("%sn", assertion);
+    return 1;
+  }
+  return 0;
+}
+
 char assert_int_less_than(char *assertion, int num1, int num2) {
   if (num1 >= num2) {
     printf("%s > was expecting [%d] to be less than [%d]\n", assertion, num1, num2);

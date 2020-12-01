@@ -34,6 +34,15 @@ void *list_del_first(list *l) {
     list_node *tmp = l->head;
     l->head = l->head->next;
 
+    if (l->head == NULL) {
+        l->tail = NULL;
+    } else {
+        l->head->prev = NULL;
+        if (l->head->next == NULL) {
+            l->tail = l->head;
+        }
+    }
+
     void *value = tmp->value;
     free(tmp);
 
@@ -47,6 +56,15 @@ void *list_del_last(list *l) {
     
     list_node *tmp = l->tail;
     l->tail = l->tail->prev;
+
+    if (l->tail == NULL) {
+        l->head = NULL;
+    } else {
+        l->tail->next = NULL;
+        if (l->tail->prev == NULL) {
+            l->tail = l->head;
+        }
+    }
 
     void *value = tmp->value;
     free(tmp);
