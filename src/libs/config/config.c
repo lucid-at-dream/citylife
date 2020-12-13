@@ -17,7 +17,7 @@ map *parse_command_line(map *args, int arg_desc_count, arg_t *arg_desc, int argc
 map *parse_config_file(map *args, char *path, int arg_desc_count, arg_t *arg_desc);
 char parse_argument_value_pair(map *args, arg_t *desc, char *value);
 
-void elegant_exit(int arg_desc_count, arg_t *arg_desc, map *args, char *msg, ...) {
+__attribute__((noreturn)) void elegant_exit(int arg_desc_count, arg_t *arg_desc, map *args, char *msg, ...) {
 
     va_list argptr;
     va_start(argptr, msg);
@@ -49,7 +49,7 @@ map *load_config(int arg_desc_count, arg_t *arg_desc, int argc, char **argv) {
             elegant_exit(arg_desc_count, arg_desc, args, "Bad argument: %s\n", argv[i]);
         }
 
-        char *desc;
+        const char *desc;
         if (argv[i][0] == '-' && argv[i][1] == '-') { // Long name given
             desc = argv[i] + 2;
         } else if (argv[i][0] == '-' && argv[i][1] != '-') { // Short name given
@@ -73,7 +73,7 @@ map *load_config(int arg_desc_count, arg_t *arg_desc, int argc, char **argv) {
     return parse_command_line(args, arg_desc_count, arg_desc, argc, argv);
 }
 
-char is_blank_line(char *line) {
+char is_blank_line(const char *line) {
     int i=0;
     while( line[i] == '\t' || line[i] == ' ' )
         i++;
@@ -83,13 +83,13 @@ char is_blank_line(char *line) {
 }
 
 void parse_config_file_line(map *args, char *line, int arg_desc_count, arg_t *arg_desc) {
-    int i=0;
-    while(line[i] != ' ' && i < 2048) {
-        i++;
+    int first_whitespace_index = 0;
+    while(line[first_whitespace_index] != ' ' && first_whitespace_index < 2048) {
+        first_whitespace_index++;
     }
 
-    char *value = line+i+1;
-    line[i] = '\0';
+    char *value = line + first_whitespace_index + 1;
+    line[first_whitespace_index] = '\0';
 
     char arg_parse_status = -10; // set to -10 so that if arg not found, we know.
     for (int i = 0; i < arg_desc_count; i++) {
@@ -117,8 +117,7 @@ map *parse_config_file(map *args, char *path, int arg_desc_count, arg_t *arg_des
     size_t size = sizeof(char) * 2048;
     char *line = (char *)malloc(size);
 
-    int nbytes; 
-
+    long int nbytes;
     while( (nbytes = getline(&line, &size, f)) != -1 ) {
         if( line[0] != '#' && !is_blank_line(line) ){
             if( line[nbytes-1] == '\n' ) {
@@ -149,8 +148,8 @@ map *parse_command_line(map *args, int arg_desc_count, arg_t *arg_desc, int argc
     int i = 1;
     while (i < argc) {
 
-        char *arg_name;
-        arg_t *desc;
+        const char *arg_name = NULL;
+        arg_t *desc = NULL;
         if (argv[i][0] == '-' && argv[i][1] == '-') { // Long name given
             arg_name = argv[i] + 2;
             desc = map_get(arg_desc_map, argv[i] + 2);
@@ -193,7 +192,7 @@ map *parse_command_line(map *args, int arg_desc_count, arg_t *arg_desc, int argc
             i += 1;
         }
 
-        // Check if config parse resulted in error. If so, pthread_exit(EXIT_FAILURE);
+        // Check if config parse resulted in error. If so, exit elegantly.
         if (config_parse_status < 0) {
             map_destroy(arg_desc_map);
             elegant_exit(arg_desc_count, arg_desc, args, "Failed to parse argument %s\n", desc->long_name);
@@ -228,7 +227,7 @@ char parse_argument_value_pair(map *args, arg_t *desc, char *value) {
         map_set(args, desc->long_name, parsed_value);
     
     } else if (desc->type == STRING) {
-        int size = strlen(value);
+        unsigned long int size = strlen(value);
         char *parsed_value = (char *)calloc(size + 1, sizeof(char));
         snprintf(parsed_value, size + 1, "%s", value);
         map_set(args, desc->long_name, parsed_value);
@@ -252,7 +251,7 @@ char parse_argument_value_pair(map *args, arg_t *desc, char *value) {
 }
 
 void print_argument(arg_t *arg_desc, int final_size) {
-    int size = strlen(arg_desc->short_name) + strlen(arg_desc->long_name) + 6;
+    unsigned long int size = strlen(arg_desc->short_name) + strlen(arg_desc->long_name) + 6;
 
     int padding = final_size - size + 2;
 
@@ -276,7 +275,7 @@ void print_usage(int arg_desc_count, arg_t *arg_desc) {
 
     int max_size = 14;
     for (int i = 0; i < arg_desc_count; i++) {
-        int size = strlen(arg_desc[i].short_name) + strlen(arg_desc[i].long_name) + 6;
+        unsigned long int size = strlen(arg_desc[i].short_name) + strlen(arg_desc[i].long_name) + 6;
         if (size > max_size) {
             max_size = size;
         }
