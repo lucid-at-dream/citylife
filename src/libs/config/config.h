@@ -6,26 +6,23 @@
  * The type of some argument.
  */
 typedef enum _arg_type_t {
-    INTEGER,
-    FLOAT,
-    FLAG,
-    STRING,
+        INTEGER,
+        FLOAT,
+        FLAG,
+        STRING,
 } arg_type_t;
 
-typedef enum _arg_mandatory_t {
-    OPTIONAL = 0,
-    MANDATORY = 1
-} arg_mandatory_t;
+typedef enum _arg_mandatory_t { OPTIONAL = 0, MANDATORY = 1 } arg_mandatory_t;
 
 /**
  * Description of an argument.
  */
 typedef struct _arg_t {
-    char *short_name;
-    char *long_name;
-    arg_type_t type;
-    arg_mandatory_t is_mandatory;
-    char *doc_string;
+        char *short_name;
+        char *long_name;
+        arg_type_t type;
+        arg_mandatory_t is_mandatory;
+        char *doc_string;
 } arg_t;
 
 /**

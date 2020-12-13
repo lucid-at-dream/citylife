@@ -1,8 +1,8 @@
 #pragma once
 
 typedef struct _bigint {
-    long unsigned int *words;
-    unsigned int nwords;
+        long unsigned int *words;
+        unsigned int nwords;
 } bigint;
 
 bigint bigint_new(long initial_value);

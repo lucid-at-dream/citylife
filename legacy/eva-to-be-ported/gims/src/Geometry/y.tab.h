@@ -31,10 +31,10 @@
    version 2.2 of Bison.  */
 
 #ifndef YY_YY_SRC_GEOMETRY_Y_TAB_H_INCLUDED
-# define YY_YY_SRC_GEOMETRY_Y_TAB_H_INCLUDED
+#define YY_YY_SRC_GEOMETRY_Y_TAB_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
-# define YYDEBUG 0
+#define YYDEBUG 0
 #endif
 #if YYDEBUG
 extern int yydebug;
@@ -42,21 +42,20 @@ extern int yydebug;
 
 /* Token type.  */
 #ifndef YYTOKENTYPE
-# define YYTOKENTYPE
-  enum yytokentype
-  {
-    _POINT_ = 258,
-    _LINESTRING_ = 259,
-    _POLYGON_ = 260,
-    _MULTIPOINT_ = 261,
-    _MULTILINESTRING_ = 262,
-    _MULTIPOLYGON_ = 263,
-    _COLLECTION_ = 264,
-    _COMMA_ = 265,
-    _LPAR_ = 266,
-    _RPAR_ = 267,
-    _NUMBERLIT_ = 268
-  };
+#define YYTOKENTYPE
+enum yytokentype {
+        _POINT_ = 258,
+        _LINESTRING_ = 259,
+        _POLYGON_ = 260,
+        _MULTIPOINT_ = 261,
+        _MULTILINESTRING_ = 262,
+        _MULTIPOLYGON_ = 263,
+        _COLLECTION_ = 264,
+        _COMMA_ = 265,
+        _LPAR_ = 266,
+        _RPAR_ = 267,
+        _NUMBERLIT_ = 268
+};
 #endif
 /* Tokens.  */
 #define _POINT_ 258
@@ -72,33 +71,31 @@ extern int yydebug;
 #define _NUMBERLIT_ 268
 
 /* Value type.  */
-#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
+#if !defined YYSTYPE && !defined YYSTYPE_IS_DECLARED
 
-union YYSTYPE
-{
+union YYSTYPE {
 #line 35 "src/Geometry/wkt.y" /* yacc.c:1909  */
 
-    double numberlit;
-    GIMS_Geometry *g;
-    GIMS_Point *pt;
-    GIMS_LineString *ls;
-    GIMS_Polygon *pol;
-    GIMS_MultiPoint *mpt;
-    GIMS_MultiLineString *mls;
-    GIMS_MultiPolygon *mpol;
-    GIMS_GeometryCollection *gc;
+        double numberlit;
+        GIMS_Geometry *g;
+        GIMS_Point *pt;
+        GIMS_LineString *ls;
+        GIMS_Polygon *pol;
+        GIMS_MultiPoint *mpt;
+        GIMS_MultiLineString *mls;
+        GIMS_MultiPolygon *mpol;
+        GIMS_GeometryCollection *gc;
 
 #line 92 "src/Geometry/y.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
-# define YYSTYPE_IS_TRIVIAL 1
-# define YYSTYPE_IS_DECLARED 1
+#define YYSTYPE_IS_TRIVIAL 1
+#define YYSTYPE_IS_DECLARED 1
 #endif
-
 
 extern YYSTYPE yylval;
 
-int yyparse (void);
+int yyparse(void);
 
 #endif /* !YY_YY_SRC_GEOMETRY_Y_TAB_H_INCLUDED  */

@@ -15,31 +15,31 @@
 using namespace std;
 
 /*structs*/
-typedef struct _pointlist{
-    int nnodes, allocated;
-    GIMS_Point **nodes;
-}pointlist;
+typedef struct _pointlist {
+        int nnodes, allocated;
+        GIMS_Point **nodes;
+} pointlist;
 
-typedef struct _pointmatrix{
-    int nrows, allocated;
-    pointlist **matrix;
-}pointmatrix;
+typedef struct _pointmatrix {
+        int nrows, allocated;
+        pointlist **matrix;
+} pointmatrix;
 
 /*global vars*/
 extern GIMS_Point *__ptlist_cmp__reference__;
 
 /*line intersection stuff*/
-typedef struct _PolygonIntersectionEvent{
-    GIMS_Point *pt;
-    char type;
-    GIMS_LineSegment ls;
-}PolygonIntersectionEvent;
+typedef struct _PolygonIntersectionEvent {
+        GIMS_Point *pt;
+        char type;
+        GIMS_LineSegment ls;
+} PolygonIntersectionEvent;
 
 bool event_cmp(PolygonIntersectionEvent a, PolygonIntersectionEvent b);
 bool ls_cmp(const GIMS_LineSegment &a, const GIMS_LineSegment &b);
 
 typedef list<GIMS_LineSegment> lsset;
-typedef priority_queue<PolygonIntersectionEvent, vector<PolygonIntersectionEvent>,decltype(&event_cmp)> eventset;
+typedef priority_queue<PolygonIntersectionEvent, vector<PolygonIntersectionEvent>, decltype(&event_cmp)> eventset;
 typedef map<GIMS_LineSegment, list<GIMS_Point *>, decltype(&ls_cmp)> intersectionset;
 
 /*functions*/
@@ -54,11 +54,11 @@ DCEL buildPlanarGraph(GIMS_Polygon *polygonA, GIMS_Polygon *polygonB);
 void sortIntersections(intersectionset &iset);
 void insertToActiveSet(lsset &l, GIMS_LineSegment &ls);
 void addIntersection(intersectionset &iset, GIMS_LineSegment &A, GIMS_LineSegment &B, GIMS_Geometry *intersection);
-double eventQueueFromMultiLineString( eventset &eventQueue, GIMS_MultiLineString *mls, int id);
+double eventQueueFromMultiLineString(eventset &eventQueue, GIMS_MultiLineString *mls, int id);
 void addEndpointsToIntersectionSet(intersectionset &iset, GIMS_MultiLineString *mls, int id);
 void printData(int d);
-void deleteAllExceptPoints( GIMS_MultiLineString *mls );
-void deleteAllExceptPoints( GIMS_Polygon *pol );
+void deleteAllExceptPoints(GIMS_MultiLineString *mls);
+void deleteAllExceptPoints(GIMS_Polygon *pol);
 void clearSearchByproducts();
 
 extern list<GIMS_Point *> __deleteAfterSearch__;

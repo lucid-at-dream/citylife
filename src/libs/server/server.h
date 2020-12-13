@@ -7,13 +7,13 @@
 #include <sys/socket.h>
 
 typedef struct _socket_server {
-    unsigned short server_port;
-    int server_sock_file_descriptor;
-    int client_sock_file_descriptor;
-    struct protoent *protoent;
-    struct sockaddr_in server_address;
-    volatile char stop;
-    char buffer[BUFSIZE];
+        unsigned short server_port;
+        int server_sock_file_descriptor;
+        int client_sock_file_descriptor;
+        struct protoent *protoent;
+        struct sockaddr_in server_address;
+        volatile char stop;
+        char buffer[BUFSIZE];
 } socket_server;
 
 socket_server *server_new(unsigned short port);
