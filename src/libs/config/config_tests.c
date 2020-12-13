@@ -69,17 +69,17 @@ char test_load_config_from_file() {
 
 char test_unparseable_float_in_config_file() {
     // TODO: Add test
-    pthread_exit(1);
+    pthread_exit(EXIT_FAILURE);
 }
 
 char test_unparseable_int_in_config_file() {
     // TODO: Add test
-    pthread_exit(1);
+    pthread_exit(EXIT_FAILURE);
 }
 
 char test_unrecognized_arguments_in_config_file() {
     // TODO: Add test
-    pthread_exit(1);
+    pthread_exit(EXIT_FAILURE);
 }
 
 char test_command_line_arguments_take_precedence_over_config_file() {
@@ -94,7 +94,7 @@ char test_help_message_and_clean_exit_on_provided_flag() {
 
 char test_not_providing_mandatory_arguments() {
     // TODO: Add test
-    pthread_exit(1);
+    pthread_exit(EXIT_FAILURE);
 }
 
 char test_not_providing_optional_arguments_is_okay() {
