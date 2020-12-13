@@ -25,6 +25,7 @@ typedef struct _arg_t {
     char *long_name;
     arg_type_t type;
     arg_mandatory_t is_mandatory;
+    char *doc_string;
 } arg_t;
 
 /**
@@ -36,6 +37,6 @@ map *load_config(int arg_desc_count, arg_t *arg_desc, int argc, char **argv);
 /**
  * Prints the usage of the program based on some description of its arguments.
  */
-void printUsage(int arg_desc_count, arg_t *arg_desc);
+void print_usage(int arg_desc_count, arg_t *arg_desc);
 
 void deallocate_arg_map(int arg_desc_count, arg_t *arg_desc, map *arg_map);

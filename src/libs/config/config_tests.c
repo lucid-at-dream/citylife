@@ -30,26 +30,25 @@ char test_load_config_from_file() {
             "integer 10\n"; // Make sure the value is overriden
 
     // Write the config to a file
-    FILE *config_file_ptr = tmpfile();
+    int fd;
+    char config_file_name[] = "/tmp/config_tests_XXXXXX";
+    fd = mkstemp(config_file_name);
+    FILE *config_file_ptr = fdopen(fd, "w+");
     fwrite(config, sizeof(char), strlen(config), config_file_ptr);
+    fflush(config_file_ptr);
 
-    printf("Wrote temporary config file\n");
+    printf("Wrote temporary config to file %s\n", config_file_name);
 
     // Get the name of the temporary file created
-    char config_file[256], fd_path[256];
-    int fd = fileno(config_file_ptr);
-    sprintf(fd_path, "/proc/self/fd/%d", fd);
-    memset(config_file, 0, sizeof(config_file));
-    readlink(fd_path, config_file, sizeof(config_file)-1);
-
-    printf("Temporary file name: %s\n", config_file);
-
     char *argv[] = {
         "test", 
-        "-c", config_file
+        "-c", config_file_name
     };
 
     map *args = load_config(sizeof(arg_desc)/sizeof(arg_t), arg_desc, sizeof(argv) / sizeof(char *), argv);
+
+    // Close config file descriptor, this may cause deletion of the file. 
+    fclose(config_file_ptr);
 
     // Assert parsed values
     int assertion_error = 0;
@@ -63,7 +62,6 @@ char test_load_config_from_file() {
 
     // Clean up
     deallocate_arg_map(sizeof(arg_desc)/sizeof(arg_t), arg_desc, args);
-    fclose(config_file_ptr); // Close config file descriptor, this may cause deletion of the file. 
 
     // Return test status
     return assertion_error;
@@ -379,11 +377,18 @@ test test_suite[] = {
     {
         "Test that trying to parse a string as a float ends in error", test_parsing_string_as_float_throws_error, EXIT_FAILURE
     },
-    /* TODO: TEST IGNORED BC IS FAILING
+    {
+        "Test that a help message is printed when -h or --help are passed as arguments", test_help_message_and_clean_exit_on_provided_flag
+    },
+    {
+        "Test that not providing a value for a mandatory argument results in error", test_not_providing_mandatory_arguments, EXIT_FAILURE
+    },
+    {
+        "Test that not providing a value for an optional argument doesn't result in error", test_not_providing_optional_arguments_is_okay
+    },
     {
         "Test that it is possible to parse configuration from file", test_load_config_from_file
     },
-    */
     {
         "Test that providing a malformated float value in config file results in error", test_unparseable_float_in_config_file, EXIT_FAILURE
     },
@@ -395,15 +400,6 @@ test test_suite[] = {
     },
     {
         "Test that command line arguments take precedence over config file ones", test_command_line_arguments_take_precedence_over_config_file
-    },
-    {
-        "Test that a help message is printed when -h or --help are passed as arguments", test_help_message_and_clean_exit_on_provided_flag
-    },
-    {
-        "Test that not providing a value for a mandatory argument results in error", test_not_providing_mandatory_arguments, EXIT_FAILURE
-    },
-    {
-        "Test that not providing a value for an optional argument doesn't result in error", test_not_providing_optional_arguments_is_okay
     }
 };
 
