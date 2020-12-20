@@ -8,9 +8,9 @@
 #include <time.h>
 #include <stdlib.h>
 
-#include "server.h"
-#include "../ctest/test.h"
-#include "../ctest/assert.h"
+#include <server.h>
+#include <test.h>
+#include <assert.h>
 
 char *echo_request_handler(char *request)
 {

@@ -1,49 +1,46 @@
-project('demo', 'c')
-
+project('citylife', 'c')
 cc = meson.get_compiler('c')
 
-deps = [
+
+
+### Build
+
+citylife_base_deps = [
     dependency('threads'),
     cc.find_library('m', required : true)
 ]
 
-lib = library(
-    'citylife', 
-    'src/libs/bigint/bigint.c',
-    'src/libs/config/config.c',
-    'src/libs/ctest/assert.c',
-    'src/libs/ctest/test.c',
-    'src/libs/hashmap/map.c',
-    'src/libs/jasmine/jsmn.c',
-    'src/libs/logger/logger.c',
-    'src/libs/queue/queue.c',
-    'src/libs/list/list.c',
-    'src/libs/server/server.c',
-    'src/libs/storage/append_list.c',
-    'src/libs/workerpool/worker_pool.c',
-    dependencies: deps,
+source_files = run_command('find', 'src/base-libs', '-name', '*.c').stdout().strip().split('\n')
+include_dirs = run_command('find', 'src/base-libs', '-name', 'include').stdout().strip().split('\n')
+
+citylife_base_lib = library(
+    'citylife-base',
+    source_files,
+    dependencies: citylife_base_deps,
+    include_directories: include_dirs,
     install: true
 )
 
-test_exes = [
-    ['bigint', 'src/libs/bigint/bigint_tests.c', 'bigint'],
-    ['config', 'src/libs/config/config_tests.c', 'config'],
-    ['map', 'src/libs/hashmap/map_tests.c', 'map'],
-    ['queue', 'src/libs/queue/queue_tests.c', 'queue'],
-    ['list', 'src/libs/list/list_tests.c', 'list'],
-    ['server', 'src/libs/server/server_tests.c', 'server'],
-    ['worker_pool', 'src/libs/workerpool/worker_pool_tests.c', 'worker_pool']
-]
+citylife_base_dep = declare_dependency(
+    include_directories : include_dirs,
+    link_with : citylife_base_lib
+)
 
 
-foreach p : test_exes
-    exe = executable(p[0], p[1], link_with: lib, dependencies: deps)
-    test(p[2], exe)
-endforeach
 
-progs = [
-]
+### Test
 
-foreach p : progs
-    executable(p[0], p[1], link_with: lib, dependencies: deps)
+test_files = run_command('find', 'test/base-libs', '-name', '*.c', '-printf', '%p %f\n').stdout().strip().split('\n')
+
+foreach p : test_files
+    filename = p.split(' ')[0]
+    testname = p.split(' ')[1].split('.')[0]
+
+    exe = executable(
+        testname, filename, 
+        link_with: citylife_base_lib,
+        dependencies: [citylife_base_dep, citylife_base_deps]
+    )
+
+    test(testname, exe)
 endforeach

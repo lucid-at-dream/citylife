@@ -1,5 +1,5 @@
-#include "../ctest/test.h"
-#include "../ctest/assert.h"
+#include "test.h"
+#include "assert.h"
 
 #include "list.h"
 

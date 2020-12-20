@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include "map.h"
-#include "../logger/logger.h"
+#include "logger.h"
 
 // private destructors
 void bucket_list_destroy(bucket *b, char dealloc_keys, char dealloc_vals);

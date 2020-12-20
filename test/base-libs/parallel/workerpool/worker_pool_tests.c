@@ -4,8 +4,8 @@
 #include <unistd.h>
 
 #include "worker_pool.h"
-#include "../ctest/test.h"
-#include "../ctest/assert.h"
+#include "test.h"
+#include "assert.h"
 
 pthread_mutex_t global_sum_mutex = PTHREAD_MUTEX_INITIALIZER;
 volatile int global_sum;

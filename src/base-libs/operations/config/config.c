@@ -6,7 +6,7 @@
 #include <stdarg.h>
 
 #include "config.h"
-#include "../logger/logger.h"
+#include "logger.h"
 
 /* Built-in arguments */
 arg_t _config_help_arg_desc = { "h", "help", FLAG, OPTIONAL, "Display this help message." };

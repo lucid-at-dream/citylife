@@ -3,9 +3,9 @@
 #include <time.h>
 #include <stdlib.h>
 
-#include "../ctest/test.h"
-#include "../ctest/assert.h"
-#include "map.h"
+#include <test.h>
+#include <assert.h>
+#include <map.h>
 
 char *new_string(char *);
 

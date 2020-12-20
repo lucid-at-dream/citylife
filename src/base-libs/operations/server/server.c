@@ -5,8 +5,8 @@
 #include <unistd.h>
 
 #include "server.h"
-#include "../logger/logger.h"
-#include "../workerpool/worker_pool.h"
+#include "logger.h"
+#include "worker_pool.h"
 
 socket_server *server_new(unsigned short port)
 {

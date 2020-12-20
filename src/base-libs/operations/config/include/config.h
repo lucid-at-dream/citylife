@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../hashmap/map.h"
+#include "map.h"
 
 /**
  * The type of some argument.
