@@ -1,20 +1,8 @@
 #pragma once
+
+#include "event_structs.h"
+#include "eventschema.h"
 #include "eventindex.h"
-
-/**
- * Defines the structure of an event store.
- */
-typedef struct _event_store event_store;
-
-/**
- * Defines the schema of an event.
- */
-typedef struct _event_schema event_schema;
-
-/**
- * Defines the structure of an event.
- */
-typedef struct _event event;
 
 /**
  * Allocates an event store based on the specified schema.
