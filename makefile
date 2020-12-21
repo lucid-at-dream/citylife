@@ -3,7 +3,7 @@
 default: test
 
 test: setup
-	meson test --wrap='valgrind' -C build
+	meson test --wrap='valgrind --leak-check=full --error-exitcode=1' -C build
 	gcovr -r src build --sonarqube -o build/coverage.xml
 	sed -i 's|path="|path="src/|g' build/coverage.xml
 	cat build/meson-logs/testlog-valgrind.txt

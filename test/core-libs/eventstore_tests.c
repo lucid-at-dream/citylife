@@ -26,10 +26,7 @@ TEST_CASE(event_store_log_10_events, {
     // TODO: Add events to the event store
 
     event_store_del(store);
-    // free(store);
-
     event_schema_del(schema);
-    // free(schema);
 })
 
 TEST_SUITE(RUN_TEST("Test logging 10 events in the event store", event_store_log_10_events))

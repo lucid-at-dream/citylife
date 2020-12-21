@@ -8,19 +8,19 @@ citylife_base_deps = [
     cc.find_library('m', required : true)
 ]
 
-source_files = run_command('find', 'src/base-libs', '-name', '*.c').stdout().strip().split('\n')
-include_dirs = run_command('find', 'src/base-libs', '-name', 'include').stdout().strip().split('\n')
+base_source_files = run_command('find', 'src/base-libs', '-name', '*.c').stdout().strip().split('\n')
+base_include_dirs = run_command('find', 'src/base-libs', '-name', 'include').stdout().strip().split('\n')
 
 citylife_base_lib = library(
     'citylife-base',
-    source_files,
+    base_source_files,
     dependencies: citylife_base_deps,
-    include_directories: include_dirs,
+    include_directories: base_include_dirs,
     install: true
 )
 
 citylife_base_dep = declare_dependency(
-    include_directories : include_dirs,
+    include_directories : base_include_dirs,
     link_with : citylife_base_lib
 )
 
@@ -46,19 +46,20 @@ endforeach
 
 citylife_core_deps = []
 
-source_files = run_command('find', 'src/core-libs', '-name', '*.c').stdout().strip().split('\n')
-include_dirs = run_command('find', 'src/core-libs', '-name', 'include').stdout().strip().split('\n')
+core_source_files = run_command('find', 'src/core-libs', '-name', '*.c').stdout().strip().split('\n')
+core_include_dirs = run_command('find', 'src/core-libs', '-name', 'include').stdout().strip().split('\n')
 
 citylife_core_lib = library(
     'citylife-core',
-    source_files,
+    core_source_files,
     dependencies: citylife_core_deps,
-    include_directories: include_dirs,
+    link_with : citylife_base_lib,
+    include_directories: [base_include_dirs, core_include_dirs],
     install: true
 )
 
 citylife_core_dep = declare_dependency(
-    include_directories : include_dirs,
+    include_directories : core_include_dirs,
     link_with : citylife_core_lib
 )
 
