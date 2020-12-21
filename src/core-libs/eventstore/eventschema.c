@@ -4,11 +4,6 @@
 
 #include <stdlib.h>
 
-struct _event_schema
-{
-    list *fields;
-};
-
 event_schema *event_schema_new()
 {
     event_schema *schema = (event_schema *)malloc(sizeof(event_schema));

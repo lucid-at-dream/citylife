@@ -1,21 +1,21 @@
-.PHONY: test setup compile sonar clean
+.PHONY: setup build test sonar clean
 
 default: test
-
-test: setup
-	meson test --wrap='valgrind --leak-check=full --error-exitcode=1' -C build
-	gcovr -r src build --sonarqube -o build/coverage.xml
-	sed -i 's|path="|path="src/|g' build/coverage.xml
-	cat build/meson-logs/testlog-valgrind.txt
-
-compile: setup
-	meson compile -C build
 
 setup:
 	meson setup build
 	meson configure -Db_coverage=true build
 
-sonar:
+build: setup
+	meson compile -C build
+
+test: build
+	meson test --wrap='valgrind --leak-check=full --error-exitcode=1' -C build
+	gcovr -r src build --sonarqube -o build/coverage.xml
+	sed -i 's|path="|path="src/|g' build/coverage.xml
+	cat build/meson-logs/testlog-valgrind.txt
+
+sonar: clean
 	build-wrapper-linux-x86-64 --out-dir bw-output make test
 	sonar-scanner -X
 

@@ -1,5 +1,6 @@
 #include <varchar.h>
 
+#include <stdlib.h>
 #include <string.h>
 
 varchar *varchar_new(char *data)
