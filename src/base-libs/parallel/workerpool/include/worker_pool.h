@@ -5,15 +5,15 @@
 #include <pthread.h>
 
 typedef struct _worker_pool {
-        int num_threads;
-        void (*do_work)(void *);
-        pthread_t *threads;
-        queue *work_queue;
-        volatile char stop;
+    int num_threads;
+    void (*do_work)(void *);
+    pthread_t *threads;
+    queue *work_queue;
+    volatile char stop;
 
-        pthread_mutex_t queue_mutex;
-        pthread_cond_t await_work_cond;
-        pthread_cond_t await_finish_cond;
+    pthread_mutex_t queue_mutex;
+    pthread_cond_t await_work_cond;
+    pthread_cond_t await_finish_cond;
 } worker_pool;
 
 worker_pool *pool_new(int num_threads, void (*)(void *));

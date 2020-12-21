@@ -11,25 +11,25 @@
 
 inline bool verifyFileExistance(const std::string &fname)
 {
-        struct stat buffer;
-        return (stat(fname.c_str(), &buffer) == 0);
+    struct stat buffer;
+    return (stat(fname.c_str(), &buffer) == 0);
 }
 bool blankLine(char *line);
 
 namespace conf
 {
 typedef struct _db_conf {
-        char *keyword;
-        char *value;
+    char *keyword;
+    char *value;
 } db_conf;
 
 typedef struct _config_t {
-        int max_points_per_node;
-        int projection_srid;
-        int approximationType;
-        int NGON_SIZE;
-        std::list<db_conf> db_confs;
-        std::list<char *> db_layers;
+    int max_points_per_node;
+    int projection_srid;
+    int approximationType;
+    int NGON_SIZE;
+    std::list<db_conf> db_confs;
+    std::list<char *> db_layers;
 } config_t;
 
 void printCurrentConfiguration();

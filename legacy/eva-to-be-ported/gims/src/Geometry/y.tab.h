@@ -44,17 +44,17 @@ extern int yydebug;
 #ifndef YYTOKENTYPE
 #define YYTOKENTYPE
 enum yytokentype {
-        _POINT_ = 258,
-        _LINESTRING_ = 259,
-        _POLYGON_ = 260,
-        _MULTIPOINT_ = 261,
-        _MULTILINESTRING_ = 262,
-        _MULTIPOLYGON_ = 263,
-        _COLLECTION_ = 264,
-        _COMMA_ = 265,
-        _LPAR_ = 266,
-        _RPAR_ = 267,
-        _NUMBERLIT_ = 268
+    _POINT_ = 258,
+    _LINESTRING_ = 259,
+    _POLYGON_ = 260,
+    _MULTIPOINT_ = 261,
+    _MULTILINESTRING_ = 262,
+    _MULTIPOLYGON_ = 263,
+    _COLLECTION_ = 264,
+    _COMMA_ = 265,
+    _LPAR_ = 266,
+    _RPAR_ = 267,
+    _NUMBERLIT_ = 268
 };
 #endif
 /* Tokens.  */
@@ -76,15 +76,15 @@ enum yytokentype {
 union YYSTYPE {
 #line 35 "src/Geometry/wkt.y" /* yacc.c:1909  */
 
-        double numberlit;
-        GIMS_Geometry *g;
-        GIMS_Point *pt;
-        GIMS_LineString *ls;
-        GIMS_Polygon *pol;
-        GIMS_MultiPoint *mpt;
-        GIMS_MultiLineString *mls;
-        GIMS_MultiPolygon *mpol;
-        GIMS_GeometryCollection *gc;
+    double numberlit;
+    GIMS_Geometry *g;
+    GIMS_Point *pt;
+    GIMS_LineString *ls;
+    GIMS_Polygon *pol;
+    GIMS_MultiPoint *mpt;
+    GIMS_MultiLineString *mls;
+    GIMS_MultiPolygon *mpol;
+    GIMS_GeometryCollection *gc;
 
 #line 92 "src/Geometry/y.tab.h" /* yacc.c:1909  */
 };

@@ -6,10 +6,9 @@
 #include <eventschema.h>
 #include <eventstore.h>
 
-void cenas() {
-
+void cenas()
+{
 }
-
 
 TEST_CASE(event_store_log_10_events, {
     event_schema *schema = event_schema_new();
@@ -33,7 +32,4 @@ TEST_CASE(event_store_log_10_events, {
     // free(schema);
 })
 
-TEST_SUITE(
-    RUN_TEST("Test logging 10 events in the event store", event_store_log_10_events)
-)
-
+TEST_SUITE(RUN_TEST("Test logging 10 events in the event store", event_store_log_10_events))

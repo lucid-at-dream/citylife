@@ -3,14 +3,14 @@
 #include "hashmap/map.h"
 
 typedef struct _authenticator {
-        map *auth_table;
+    map *auth_table;
 } authenticator;
 
 enum result_code { AUTH_SUCCESS, AUTH_ERROR };
 
 typedef struct _result {
-        enum result_code result;
-        char *message;
+    enum result_code result;
+    char *message;
 } result;
 
 authenticator *authenticator_new();

@@ -9,46 +9,46 @@
 
 char test_single_word_bigint_add()
 {
-        bigint a = bigint_new(1000);
-        bigint b = bigint_new(1000);
+    bigint a = bigint_new(1000);
+    bigint b = bigint_new(1000);
 
-        bigint_add(a, b);
+    bigint_add(a, b);
 
-        char *result = bigint_tostring(a);
+    char *result = bigint_tostring(a);
 
-        int assertion_error = assert_str_equals("The two numbers were added correctly", result, "2000");
+    int assertion_error = assert_str_equals("The two numbers were added correctly", result, "2000");
 
-        // Clean up
-        free(result);
-        bigint_del(a);
-        bigint_del(b);
+    // Clean up
+    free(result);
+    bigint_del(a);
+    bigint_del(b);
 
-        // Return test status
-        if (assertion_error) {
-                return 1;
-        }
-        return 0;
+    // Return test status
+    if (assertion_error) {
+        return 1;
+    }
+    return 0;
 }
 
 char test_single_word_bigint_increment()
 {
-        bigint number = bigint_new(1000);
+    bigint number = bigint_new(1000);
 
-        bigint_increment(number);
+    bigint_increment(number);
 
-        char *result = bigint_tostring(number);
+    char *result = bigint_tostring(number);
 
-        int assertion_error = assert_str_equals("Big int is incremented by one.", result, "1001");
+    int assertion_error = assert_str_equals("Big int is incremented by one.", result, "1001");
 
-        // Clean up
-        free(result);
-        bigint_del(number);
+    // Clean up
+    free(result);
+    bigint_del(number);
 
-        // Return test status
-        if (assertion_error) {
-                return 1;
-        }
-        return 0;
+    // Return test status
+    if (assertion_error) {
+        return 1;
+    }
+    return 0;
 }
 
 test test_suite[] = { { "Test incrementing a single word big int", test_single_word_bigint_increment },
@@ -56,11 +56,11 @@ test test_suite[] = { { "Test incrementing a single word big int", test_single_w
 
 int main(int argc, char **argv)
 {
-        suite_report report = run_test_suite(test_suite, sizeof(test_suite) / sizeof(test));
+    suite_report report = run_test_suite(test_suite, sizeof(test_suite) / sizeof(test));
 
-        if (report.failures > 0) {
-                return -1;
-        }
+    if (report.failures > 0) {
+        return -1;
+    }
 
-        return 0;
+    return 0;
 }

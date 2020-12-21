@@ -18,14 +18,14 @@ using namespace std;
 namespace ivbalaban
 {
 typedef struct {
-        int type;
-        GIMS_Point *pt;
-        GIMS_LineSegment ls;
+    int type;
+    GIMS_Point *pt;
+    GIMS_LineSegment ls;
 } endpoint;
 
 typedef struct {
-        int nevents;
-        endpoint *endpoints[100];
+    int nevents;
+    endpoint *endpoints[100];
 } xevent;
 
 //comparison functions

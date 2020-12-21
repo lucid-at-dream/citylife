@@ -37,29 +37,29 @@ int filter_linestring(GIMS_Geometry *obj);
 void shutdownTunaSolver();
 
 class spatialIndex : public DebugRenderable {
-    public:
-        virtual void insert(GIMS_Geometry *) = 0;
-        virtual void insert(list<GIMS_Geometry *> *geom) = 0;
-        virtual void insert(list<GIMS_Geometry *> &geom) = 0;
-        virtual void remove(GIMS_Geometry *) = 0;
+public:
+    virtual void insert(GIMS_Geometry *) = 0;
+    virtual void insert(list<GIMS_Geometry *> *geom) = 0;
+    virtual void insert(list<GIMS_Geometry *> &geom) = 0;
+    virtual void remove(GIMS_Geometry *) = 0;
 
-        /* The topological search function returns the intersection matrix for all pairs with the given 
+    /* The topological search function returns the intersection matrix for all pairs with the given 
      * query object that pass the filter function. Can be used for more flexible topological relationship
      * verification. */
-        virtual DE9IM *topologicalSearch(GIMS_Geometry *query, int (*filter)(GIMS_Geometry *)) = 0;
+    virtual DE9IM *topologicalSearch(GIMS_Geometry *query, int (*filter)(GIMS_Geometry *)) = 0;
 
-        /* The following functions can be used for topological searching. Considering that the function name
+    /* The following functions can be used for topological searching. Considering that the function name
      * represents the topological predicate, given a query object and a function that returns 1 for every
      * indexed objects that is to be analyzed and 0 otherwise, the return value is a list with the ids of
      * the objects that verify the wanted relationships. i.e. <query> <predicate> <object>. */
-        list<long> contains(GIMS_Geometry *query, int (*filter)(GIMS_Geometry *));
-        list<long> covers(GIMS_Geometry *query, int (*filter)(GIMS_Geometry *));
-        list<long> intersects(GIMS_Geometry *query, int (*filter)(GIMS_Geometry *));
-        list<long> coveredBy(GIMS_Geometry *query, int (*filter)(GIMS_Geometry *));
-        list<long> touches(GIMS_Geometry *query, int (*filter)(GIMS_Geometry *));
-        list<long> overlaps(GIMS_Geometry *query, int (*filter)(GIMS_Geometry *));
+    list<long> contains(GIMS_Geometry *query, int (*filter)(GIMS_Geometry *));
+    list<long> covers(GIMS_Geometry *query, int (*filter)(GIMS_Geometry *));
+    list<long> intersects(GIMS_Geometry *query, int (*filter)(GIMS_Geometry *));
+    list<long> coveredBy(GIMS_Geometry *query, int (*filter)(GIMS_Geometry *));
+    list<long> touches(GIMS_Geometry *query, int (*filter)(GIMS_Geometry *));
+    list<long> overlaps(GIMS_Geometry *query, int (*filter)(GIMS_Geometry *));
 
-        virtual ~spatialIndex() = 0;
+    virtual ~spatialIndex() = 0;
 };
 
 #endif

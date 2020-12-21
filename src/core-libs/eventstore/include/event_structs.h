@@ -27,9 +27,7 @@ typedef struct _event_index_config event_index_config;
  */
 typedef struct _event event;
 
-typedef enum {
-    UNIQ = 1 << 0
-} field_constraints;
+typedef enum { UNIQ = 1 << 0 } field_constraints;
 
 typedef struct _field_config {
     data_type type;
