@@ -7,9 +7,11 @@
 #define MAX_SCHEMA_FIELD_NAME_SIZE 1024
 
 /**
- * TODO: Defines the structure of an event store.
+ * Defines the structure of an event store.
  */
-typedef struct _event_store event_store;
+typedef struct _event_store {
+    list *events;
+} event_store;
 
 /**
  * TODO: Defines a filter over events.

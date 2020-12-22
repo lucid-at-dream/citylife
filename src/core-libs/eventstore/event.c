@@ -19,7 +19,7 @@ void event_set_field(event *e, char *field_name, void *value, size_t value_size)
     
     // Copy key
     int field_name_len = strnlen(field_name, MAX_SCHEMA_FIELD_NAME_SIZE);
-    char *key = (char *)malloc(field_name_len * sizeof(char));
+    char *key = (char *)calloc(field_name_len + 1, sizeof(char));
     memcpy(key, field_name, field_name_len * sizeof(char));
 
     // Copy value

@@ -3,6 +3,7 @@
 #include <test.h>
 #include <assert.h>
 
+#include <event.h>
 #include <eventschema.h>
 #include <eventstore.h>
 
@@ -10,7 +11,7 @@ void cenas()
 {
 }
 
-TEST_CASE(event_store_log_10_events, {
+TEST_CASE(event_store_log_one_event, {
     event_schema *schema = event_schema_new();
 
     event_schema_add_field(schema, (field_config){ SEQUENTIAL, "event_id" });
@@ -23,10 +24,13 @@ TEST_CASE(event_store_log_10_events, {
 
     event_store *store = event_store_new(schema);
 
-    // TODO: Add events to the event store
+    event *e = event_new();
+    event_set_field(e, "service", "auth", sizeof(char) * 5);
+
+    event_store_add_event(store, e);
 
     event_store_del(store);
     event_schema_del(schema);
 })
 
-TEST_SUITE(RUN_TEST("Test logging 10 events in the event store", event_store_log_10_events))
+TEST_SUITE(RUN_TEST("Test logging 10 events in the event store", event_store_log_one_event))

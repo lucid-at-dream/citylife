@@ -1,3 +1,5 @@
+#pragma once
+
 #include "event_structs.h"
 
 #include <stdlib.h>
