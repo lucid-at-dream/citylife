@@ -109,7 +109,11 @@ void *map_get(map *m, char *key)
     return NULL;
 }
 
-void map_del(map *m, char *key)
+void map_del(map *m, char *key) {
+    map_del_dealloc(m, key, 0, 0);
+}
+
+void map_del_dealloc(map *m, char *key, char dealloc_key, char dealloc_value)
 {
     int index = get_index(m, key);
 
@@ -136,9 +140,13 @@ void map_del(map *m, char *key)
     }
 
     if (buck != NULL) {
-        // TODO: Add a flag to allow freeing the map's keys and values
-        // free(buck->entry.key);
-        // free(buck->entry.value);
+        if(dealloc_key) {
+            free(buck->entry.key);
+        }
+
+        if(dealloc_value) {
+            free(buck->entry.value);
+        }
         free(buck);
     }
 }

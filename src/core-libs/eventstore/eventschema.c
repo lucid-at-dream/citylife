@@ -11,7 +11,8 @@ event_schema *event_schema_new()
     return schema;
 }
 
-void free_schema_field(void **field) {
+void free_schema_field(void **field)
+{
     free(*field);
 }
 

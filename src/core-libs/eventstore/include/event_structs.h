@@ -43,7 +43,6 @@ typedef struct _field_config {
     char *name;
 } field_config;
 
-
 /**
  * Defines the schema of an event.
  */

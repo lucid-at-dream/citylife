@@ -1,0 +1,23 @@
+{
+    "name": "auth",
+    "__doc__": "Authentication service",
+    "methods": {
+        "login": {
+            "__doc__": "Creates a new session token for the given user if the user/password is a match",
+            "user": {
+                "type": "string",
+                "__doc__": "The username"
+            },
+            "pass": {
+                "type": "string",
+                "__doc__": "The password"
+            }
+        },
+        "logout": {
+            "token": {
+                "type": "string",
+                "__doc__": "The session token"
+            }
+        }
+    }
+}

@@ -5,11 +5,12 @@
 event_store *event_store_new(event_schema *schema)
 {
     event_store *store = (event_store *)malloc(sizeof(event_store));
-    store->events = list_new(store->events);
+    store->events = list_new();
     return store;
 }
 
-void delete_event(void **e) {
+void delete_event(void **e)
+{
     event_del(*e);
 }
 

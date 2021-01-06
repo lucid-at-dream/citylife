@@ -6,6 +6,7 @@
 #define ASSERT_FALSE(msg, expr) assertion_error += assert_false(msg, expr);
 
 char assert_null(char *assertion, void *ptr);
+char assert_not_null(char *assertion, void *ptr);
 
 char assert_int_equals(char *assertion, int num1, int num2);
 

@@ -1,6 +1,11 @@
 project('citylife', 'c')
 cc = meson.get_compiler('c')
 
+### Copy test resources to build directory
+
+run_command('mkdir', '-p', meson.build_root() + '/test')
+run_command('cp', '-r', 'test/_resources/', meson.build_root() + '/test')
+
 ### Build citylife-base
 
 citylife_base_deps = [
@@ -81,3 +86,15 @@ foreach p : test_files
 endforeach
 
 
+### Build gateway service
+
+gateway_svc_deps = []
+
+gateway_svc_source_files = run_command('find', 'src/services/gateway', '-name', '*.c').stdout().strip().split('\n')
+gateway_svc_include_dirs = run_command('find', 'src/services/gateway', '-name', 'include').stdout().strip().split('\n')
+
+exe = executable(
+    'gateway', gateway_svc_source_files,
+    link_with: [citylife_base_lib, citylife_core_lib],
+    dependencies: [citylife_base_dep, citylife_core_dep]
+)

@@ -1,0 +1,22 @@
+{
+    "name": "auth",
+    "doc": "Authentication service",
+    "methods": {
+        "login": {
+            "user": {
+                "type": "string",
+                "doc": "The username"
+            },
+            "pass": {
+                "type": "string",
+                "doc": "The password"
+            }
+        },
+        "logout": {
+            "token": {
+                "type": "string",
+                "doc": "The session token"
+            }
+        }
+    }
+}

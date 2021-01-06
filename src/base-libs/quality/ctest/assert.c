@@ -21,6 +21,15 @@ char assert_null(char *assertion, void *ptr)
     return 0;
 }
 
+char assert_not_null(char *assertion, void *ptr)
+{
+    if (ptr == NULL) {
+        printf("%s > got [%p]\n", assertion, ptr);
+        return 1;
+    }
+    return 0;
+}
+
 char assert_true(char *assertion, void *value)
 {
     if (!value) {

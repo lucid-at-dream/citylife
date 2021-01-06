@@ -25,6 +25,7 @@ map *map_new(int capacity);
 void map_set(map *m, char *key, void *value);
 void *map_get(map *m, char *key);
 void map_del(map *m, char *key);
+void map_del_dealloc(map *m, char *key, char dealloc_key, char dealloc_value);
 
 // Memory management
 void map_destroy(map *m);
