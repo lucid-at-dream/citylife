@@ -26,6 +26,7 @@ void map_set(map *m, char *key, void *value);
 void *map_get(map *m, char *key);
 void map_del(map *m, char *key);
 void map_del_dealloc(map *m, char *key, char dealloc_key, char dealloc_value);
+void map_iter_keys(map *m, void(*callback)(map *, void *));
 
 // Memory management
 void map_destroy(map *m);

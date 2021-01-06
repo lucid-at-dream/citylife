@@ -15,60 +15,78 @@ TEST_CASE(test_parse_json_with_nested_dictionaries, {
     fread(buffer, sizeof(char), 10240, f);
     fclose(f);
 
-    map *parsed = parse_json(buffer);
+    json_object *parsed_json = parse_json(buffer);
+
+    map *parsed = parsed_json->content.object;
     assertion_error += assert_not_null("Json correctly identified as a dictionary", parsed);
 
-    assertion_error += assert_str_equals("String in first degree dictionary matches", "auth", map_get(parsed, "name"));
-    assertion_error += assert_str_equals("String in first degree dictionary matches", "Authentication service", map_get(parsed, "__doc__"));
+    assertion_error += assert_str_equals(
+        "String in first degree dictionary matches",
+        ((json_object *)map_get(parsed, "name"))->content.data,
+        "auth"
+    );
+    assertion_error += assert_str_equals(
+        "String in first degree dictionary matches",
+        ((json_object *)map_get(parsed, "__doc__"))->content.data,
+        "Authentication service"
+    );
 
-    map *methods = map_get(parsed, "methods");
+    map *methods = ((json_object *)map_get(parsed, "methods"))->content.object;
     assertion_error += assert_not_null("Methods map exists", methods);
 
-    map *login = map_get(methods, "login");
+    map *login = ((json_object *)map_get(methods, "login"))->content.object;
     assertion_error += assert_not_null("Login map exists", login);
 
     assertion_error += assert_str_equals(
         "String in third degree dictionary matches", 
         "Creates a new session token for the given user if the user/password is a match", 
-        map_get(login, "__doc__")
+        ((json_object *)map_get(login, "__doc__"))->content.data
     );
 
-    map *user_param = map_get(login, "user");
+    map *user_param = ((json_object *)map_get(login, "user"))->content.object;
     assert_not_null("user param exists", user_param);
-    assertion_error += assert_str_equals("String in fourth degree dictionary matches", map_get(user_param, "type"), "string");
-    assertion_error += assert_str_equals("String in fourth degree dictionary matches", map_get(user_param, "__doc__"), "The username");
+    assertion_error += assert_str_equals(
+        "String in fourth degree dictionary matches",
+        ((json_object *)map_get(user_param, "type"))->content.data,
+        "string"
+    );
+    assertion_error += assert_str_equals(
+        "String in fourth degree dictionary matches",
+        ((json_object *)map_get(user_param, "__doc__"))->content.data,
+        "The username"
+    );
 
-    map *pass_param = map_get(login, "pass");
+    map *pass_param = ((json_object *)map_get(login, "pass"))->content.object;
     assert_not_null("pass param exists", pass_param);
-    assertion_error += assert_str_equals("String in fourth degree dictionary matches", map_get(pass_param, "type"), "string");
-    assertion_error += assert_str_equals("String in fourth degree dictionary matches", map_get(pass_param, "__doc__"), "The password");
+    assertion_error += assert_str_equals(
+        "String in fourth degree dictionary matches",
+        ((json_object *)map_get(pass_param, "type"))->content.data,
+        "string"
+    );
+    assertion_error += assert_str_equals(
+        "String in fourth degree dictionary matches",
+        ((json_object *)map_get(pass_param, "__doc__"))->content.data,
+        "The password"
+    );
 
-    map *logout = map_get(methods, "logout");
+    map *logout = ((json_object *)map_get(methods, "logout"))->content.object;
     assertion_error += assert_not_null("Logout map exists", logout);
 
-    map *token_param = map_get(logout, "token");
+    map *token_param = ((json_object *)map_get(logout, "token"))->content.object;
     assert_not_null("token param exists", token_param);
-    assertion_error += assert_str_equals("String in fourth degree dictionary matches", map_get(token_param, "type"), "string");
-    assertion_error += assert_str_equals("String in fourth degree dictionary matches", map_get(token_param, "__doc__"), "The session token");
+    assertion_error += assert_str_equals(
+        "String in fourth degree dictionary matches",
+        ((json_object *)map_get(token_param, "type"))->content.data,
+        "string"
+    );
+    assertion_error += assert_str_equals(
+        "String in fourth degree dictionary matches",
+        ((json_object *)map_get(token_param, "__doc__"))->content.data,
+        "The session token"
+    );
 
     // Dealloc all memory (TODO: Create some manner of doing this without having to know the whole json before hand)
-    map_destroy_dealloc(token_param, 1, 1);
-    map_del_dealloc(logout, "token", 1, 0);
-    map_destroy_dealloc(logout, 1, 1);
-
-    map_destroy_dealloc(user_param, 1, 1);
-    map_destroy_dealloc(pass_param, 1, 1);
-    map_del_dealloc(login, "user", 1, 0);
-    map_del_dealloc(login, "pass", 1, 0);
-    map_destroy_dealloc(login, 1, 1);
-
-    map_del_dealloc(methods, "login", 1, 0);
-    map_del_dealloc(methods, "logout", 1, 0);
-    map_destroy_dealloc(methods, 1, 1);
-    
-    map_del_dealloc(parsed, "methods", 1, 0);
-    map_destroy_dealloc(parsed, 1, 1);
-
+    json_dealloc(parsed_json);
 })
 
 TEST_SUITE(

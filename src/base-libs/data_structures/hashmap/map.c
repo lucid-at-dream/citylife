@@ -151,6 +151,20 @@ void map_del_dealloc(map *m, char *key, char dealloc_key, char dealloc_value)
     }
 }
 
+void map_iter_keys(map *m, void(*callback)(map *, void *)) {
+
+    bucket *curr_bucket;
+
+    for (int i = 0; i < m->capacity; i++) {
+        curr_bucket = m->table[i].begin;
+
+        while(curr_bucket != NULL) {
+            callback(m, curr_bucket->entry.key);
+            curr_bucket = curr_bucket->next;
+        }
+    }
+}
+
 char should_resize(map *m)
 {
     return m->size > m->capacity * 4;
@@ -256,7 +270,7 @@ void map_destroy(map *m)
 void map_destroy_dealloc(map *m, char dealloc_keys, char dealloc_vals)
 {
     for (int i = 0; i < m->capacity; i++) {
-        if (m->table + i != NULL) {
+        if (m->table[i].begin != NULL) {
             bucket_list_destroy(m->table[i].begin, dealloc_keys, dealloc_vals);
         }
     }
