@@ -600,12 +600,12 @@ void ivbalaban::dumplineseg(GIMS_LineSegment seg)
 void ivbalaban::printoset(oset &s)
 {
     for (oset::iterator it = s.begin(); it != s.end(); it++)
-        printf("p1: %.4lf %.4lf, p2: %.4lf %.4lf, y at %.4lf: %.4lf\n", it->p1->x, it->p1->y, it->p2->x, it->p2->y,
-               sweepline_x, getYatX(*it, sweepline_x));
+        printf("p1: %.4lf %.4lf, p2: %.4lf %.4lf, y at %.4lf: %.4lf\n", it->p1->x, it->p1->y, it->p2->x, it->p2->y, sweepline_x,
+               getYatX(*it, sweepline_x));
 }
 void ivbalaban::printuset(uset &s)
 {
     for (uset::iterator it = s.begin(); it != s.end(); it++)
-        printf("p1: %.4lf %.4lf, p2: %.4lf %.4lf, y at %.4lf: %.4lf\n", it->p1->x, it->p1->y, it->p2->x, it->p2->y,
-               sweepline_x, getYatX(*it, sweepline_x));
+        printf("p1: %.4lf %.4lf, p2: %.4lf %.4lf, y at %.4lf: %.4lf\n", it->p1->x, it->p1->y, it->p2->x, it->p2->y, sweepline_x,
+               getYatX(*it, sweepline_x));
 }

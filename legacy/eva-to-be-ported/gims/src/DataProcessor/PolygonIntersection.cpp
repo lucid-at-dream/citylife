@@ -59,8 +59,8 @@ DCEL polygonAndDomainAsPlanarGraph(GIMS_Polygon *P, GIMS_BoundingBox *domain)
                *lR = new GIMS_Point(domain->upperRight->x, domain->lowerLeft->y),
                *lL = new GIMS_Point(domain->lowerLeft->x, domain->lowerLeft->y);
 
-    GIMS_LineSegment *clipPolygon[] = { new GIMS_LineSegment(uL, uR), new GIMS_LineSegment(uR, lR),
-                                        new GIMS_LineSegment(lR, lL), new GIMS_LineSegment(lL, uL) };
+    GIMS_LineSegment *clipPolygon[] = { new GIMS_LineSegment(uL, uR), new GIMS_LineSegment(uR, lR), new GIMS_LineSegment(lR, lL),
+                                        new GIMS_LineSegment(lL, uL) };
 
     /*create a pointlist for each line segment of the clip square*/
     pointlist clipPolNodes[] = { newPointList(), newPointList(), newPointList(), newPointList() };
@@ -300,8 +300,7 @@ DCEL polygonAndDomainAsPlanarGraph(GIMS_Polygon *P, GIMS_BoundingBox *domain)
 
         list<halfedge *>::iterator prev_halfedge, next_halfedge;
 
-        for (prev_halfedge = (*it)->incidentEdges.begin(); prev_halfedge != (*it)->incidentEdges.end();
-             prev_halfedge++) {
+        for (prev_halfedge = (*it)->incidentEdges.begin(); prev_halfedge != (*it)->incidentEdges.end(); prev_halfedge++) {
             /* given that prev_halfedge stands for the previously discussed "e1", we must now
              * get "e2", which is the halfedge following "e2". Note that we also want to link the
              * last halfedge with the first halfedge.*/
@@ -551,8 +550,7 @@ void connectHalfedges(DCEL &dcel)
 
         list<halfedge *>::iterator prev_halfedge, next_halfedge;
 
-        for (prev_halfedge = (*it)->incidentEdges.begin(); prev_halfedge != (*it)->incidentEdges.end();
-             prev_halfedge++) {
+        for (prev_halfedge = (*it)->incidentEdges.begin(); prev_halfedge != (*it)->incidentEdges.end(); prev_halfedge++) {
             /* given that prev_halfedge stands for the previously discussed "e1", we must now
              * get "e2", which is the halfedge following "e2". Note that we also want to link the
              * last halfedge with the first halfedge.*/
@@ -707,14 +705,14 @@ DCEL buildPlanarGraph(GIMS_Polygon *polygonA, GIMS_Polygon *polygonB, GIMS_Bound
 #ifdef DEBUG_POLINT
     printf("=== poli A ===\n");
     for (int i = 0; i < clippedA->externalRing->list[0]->size; i++) {
-        printf("%lf %lf (%d)\n", clippedA->externalRing->list[0]->list[i]->x,
-               clippedA->externalRing->list[0]->list[i]->y, clippedA->externalRing->list[0]->list[i]->id);
+        printf("%lf %lf (%d)\n", clippedA->externalRing->list[0]->list[i]->x, clippedA->externalRing->list[0]->list[i]->y,
+               clippedA->externalRing->list[0]->list[i]->id);
     }
 
     printf("=== poli B ===\n");
     for (int i = 0; i < clippedB->externalRing->list[0]->size; i++) {
-        printf("%lf %lf (%d)\n", clippedB->externalRing->list[0]->list[i]->x,
-               clippedB->externalRing->list[0]->list[i]->y, clippedB->externalRing->list[0]->list[i]->id);
+        printf("%lf %lf (%d)\n", clippedB->externalRing->list[0]->list[i]->x, clippedB->externalRing->list[0]->list[i]->y,
+               clippedB->externalRing->list[0]->list[i]->id);
     }
 #endif
 
@@ -798,8 +796,7 @@ void DE9IM_pol_pol(DE9IM *resultset, GIMS_Polygon *A, GIMS_Polygon *B, GIMS_Boun
     appr_intersection int_info = A->approximation->intersection(B->approximation);
     if (int_info.intersects) {
         if (int_info.area > MIN(A->approximation->falsearea, B->approximation->falsearea) &&
-            !(A->approximation->containsApproximation(B->approximation) ||
-              B->approximation->containsApproximation(A->approximation))) {
+            !(A->approximation->containsApproximation(B->approximation) || B->approximation->containsApproximation(A->approximation))) {
             matrix_t::iterator matrix_index = resultset->getMatrixIndex(B->id);
             resultset->setII(matrix_index, 2);
             resultset->setIntersect(matrix_index, 2);
@@ -841,9 +838,8 @@ void DE9IM_pol_pol(DE9IM *resultset, GIMS_Polygon *A, GIMS_Polygon *B, GIMS_Boun
 
     /* With the calculated planar graph, it is now possible to draw conclusions about the
      * intersection matrix of the polygons. */
-    bool hasCommonFace = false, hasCommonEdges = false, hasCommonVertexes = false,
-         edgeOfPolygonACrossesPolygonB = false, edgeOfPolygonBCrossesPolygonA = false,
-         polygonAUniquelyEnclosesFace = false, polygonBUniquelyEnclosesFace = false;
+    bool hasCommonFace = false, hasCommonEdges = false, hasCommonVertexes = false, edgeOfPolygonACrossesPolygonB = false,
+         edgeOfPolygonBCrossesPolygonA = false, polygonAUniquelyEnclosesFace = false, polygonBUniquelyEnclosesFace = false;
 
     for (facelist::iterator it = planargraph.faces.begin(); it != planargraph.faces.end(); it++) {
         face *f = *it;

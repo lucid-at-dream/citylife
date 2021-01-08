@@ -117,13 +117,10 @@ TEST_CASE(apply_a_function_on_each_element_of_the_list, {
     list_destroy(l);
 })
 
-TEST_SUITE(RUN_TEST("Test appending and checking contents by getting the first element.",
-                    test_list_append_and_delete_first),
-           RUN_TEST("Test prepending and checking contents by getting the first element.",
-                    test_list_prepend_and_delete_first),
+TEST_SUITE(RUN_TEST("Test appending and checking contents by getting the first element.", test_list_append_and_delete_first),
+           RUN_TEST("Test prepending and checking contents by getting the first element.", test_list_prepend_and_delete_first),
            RUN_TEST("Test deleting a specific item in a list", test_list_delete_specific_element),
            RUN_TEST("Test using negative numbers in the list just for fun", test_list_with_negative_numbers),
-           RUN_TEST("Test that destroying a non empty list does not introduce memory leaks",
-                    destroy_non_empty_list_check_memory_leaks),
+           RUN_TEST("Test that destroying a non empty list does not introduce memory leaks", destroy_non_empty_list_check_memory_leaks),
            RUN_TEST("Test that a routine applied foreach element of the list can change the listed values",
                     apply_a_function_on_each_element_of_the_list))

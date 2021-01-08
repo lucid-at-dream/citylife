@@ -35,8 +35,7 @@ void server_start(socket_server *server, char *(*handle_request)(char *))
         exit(EXIT_FAILURE);
     }
 
-    if (bind(server->server_sock_file_descriptor, (struct sockaddr *)&server->server_address,
-             sizeof(server->server_address)) == -1) {
+    if (bind(server->server_sock_file_descriptor, (struct sockaddr *)&server->server_address, sizeof(server->server_address)) == -1) {
         perror("Could not bind the server socket to the given port.");
         exit(EXIT_FAILURE);
     }
@@ -55,8 +54,7 @@ void server_start(socket_server *server, char *(*handle_request)(char *))
         socklen_t client_len = sizeof(client_address);
 
         // Accept a new connection
-        server->client_sock_file_descriptor =
-                accept(server->server_sock_file_descriptor, (struct sockaddr *)&client_address, &client_len);
+        server->client_sock_file_descriptor = accept(server->server_sock_file_descriptor, (struct sockaddr *)&client_address, &client_len);
 
         // Read the request
         int read_bytes = read(server->client_sock_file_descriptor, server->buffer, BUFSIZE);

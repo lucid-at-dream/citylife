@@ -30,24 +30,23 @@ void GIMS_BoundingBox::deleteClipped()
 
 bool GIMS_BoundingBox::isInside(GIMS_BoundingBox *box)
 {
-    if (this->lowerLeft->x >= box->lowerLeft->x && this->upperRight->x <= box->upperRight->x &&
-        this->lowerLeft->y >= box->lowerLeft->y && this->upperRight->y <= box->upperRight->y)
+    if (this->lowerLeft->x >= box->lowerLeft->x && this->upperRight->x <= box->upperRight->x && this->lowerLeft->y >= box->lowerLeft->y &&
+        this->upperRight->y <= box->upperRight->y)
         return true;
     return false;
 }
 
 bool GIMS_BoundingBox::isDisjoint(GIMS_BoundingBox *box)
 {
-    if (this->lowerLeft->x > box->upperRight->x || this->lowerLeft->y > box->upperRight->y ||
-        this->upperRight->x < box->lowerLeft->x || this->upperRight->y < box->lowerLeft->y)
+    if (this->lowerLeft->x > box->upperRight->x || this->lowerLeft->y > box->upperRight->y || this->upperRight->x < box->lowerLeft->x ||
+        this->upperRight->y < box->lowerLeft->y)
         return true;
     return false;
 }
 
 GIMS_Point GIMS_BoundingBox::getCenter()
 {
-    return GIMS_Point((this->upperRight->x + this->lowerLeft->x) / 2.0,
-                      (this->upperRight->y + this->lowerLeft->y) / 2.0);
+    return GIMS_Point((this->upperRight->x + this->lowerLeft->x) / 2.0, (this->upperRight->y + this->lowerLeft->y) / 2.0);
 }
 
 double GIMS_BoundingBox::xlength()

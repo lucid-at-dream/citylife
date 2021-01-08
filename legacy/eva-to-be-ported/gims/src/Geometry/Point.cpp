@@ -28,8 +28,7 @@ double GIMS_Point::distanceSquared(GIMS_Point *p)
 GIMS_Point GIMS_Point::getClosestPoint(GIMS_LineSegment *e)
 {
     //Length of the line segment squared
-    double lineSegLenSquared =
-            (e->p1->x - e->p2->x) * (e->p1->x - e->p2->x) + (e->p1->y - e->p2->y) * (e->p1->y - e->p2->y);
+    double lineSegLenSquared = (e->p1->x - e->p2->x) * (e->p1->x - e->p2->x) + (e->p1->y - e->p2->y) * (e->p1->y - e->p2->y);
 
     if (lineSegLenSquared == 0)
         //if true then the line segment is actually a point.
@@ -102,8 +101,7 @@ bool GIMS_Point::isContainedInBox(GIMS_BoundingBox *box)
    lies. The sides are defined in the enum GIMS_Side */
 GIMS_Side GIMS_Point::sideOf(GIMS_LineSegment *edge)
 {
-    double s = (edge->p2->x - edge->p1->x) * (this->y - edge->p1->y) -
-               (edge->p2->y - edge->p1->y) * (this->x - edge->p1->x);
+    double s = (edge->p2->x - edge->p1->x) * (this->y - edge->p1->y) - (edge->p2->y - edge->p1->y) * (this->x - edge->p1->x);
     return s < 0 ? RIGHT : (s > 0 ? LEFT : ALIGNED);
 }
 

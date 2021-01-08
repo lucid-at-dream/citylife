@@ -61,8 +61,7 @@ void DebRenderer::clickEvent()
     int p_x, p_y;
     darea->get_pointer(p_x, p_y);
 
-    double rootx = (p_x / zoom) + ((200 * (zoom - 1)) / zoom) - panx,
-           rooty = (p_y / zoom) + ((200 * (zoom - 1)) / zoom) - pany;
+    double rootx = (p_x / zoom) + ((200 * (zoom - 1)) / zoom) - panx, rooty = (p_y / zoom) + ((200 * (zoom - 1)) / zoom) - pany;
 
     double x = rootx / scalex - translatex, y = rooty / scaley - translatey;
 

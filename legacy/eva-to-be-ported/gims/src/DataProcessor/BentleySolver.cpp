@@ -389,8 +389,7 @@ GIMS_Point *BentleySolver::report(list<GIMS_Geometry *> &intersections, GIMS_Lin
     return NULL;
 }
 
-bool BentleySolver::newIntersectionBOEvent(BO_evset &eventQueue, GIMS_Point *int_p, GIMS_LineSegment *a,
-                                           GIMS_LineSegment *b)
+bool BentleySolver::newIntersectionBOEvent(BO_evset &eventQueue, GIMS_Point *int_p, GIMS_LineSegment *a, GIMS_LineSegment *b)
 {
     GIMS_MultiLineSegment *mls = new GIMS_MultiLineSegment(2);
     mls->append(a);

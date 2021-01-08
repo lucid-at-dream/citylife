@@ -67,8 +67,7 @@ char *encode_result_as_json(result *r)
                               "}";
 
     char *response = (char *)calloc(4096, sizeof(char));
-    snprintf(response, 4096 * sizeof(char), response_template, r->result == AUTH_SUCCESS ? "success" : "error",
-             r->message);
+    snprintf(response, 4096 * sizeof(char), response_template, r->result == AUTH_SUCCESS ? "success" : "error", r->message);
     return response;
 }
 

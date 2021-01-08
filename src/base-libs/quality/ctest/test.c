@@ -28,8 +28,7 @@ suite_report run_test_suite(test *test_suite, int suite_size)
 
         char failed;
         if (exit_status != t->expected_exit_status) {
-            printf("Expected the test to have returned the value %d, got %d instead\n", t->expected_exit_status,
-                   exit_status);
+            printf("Expected the test to have returned the value %d, got %d instead\n", t->expected_exit_status, exit_status);
             failed = 1;
         } else {
             failed = 0;
@@ -37,8 +36,7 @@ suite_report run_test_suite(test *test_suite, int suite_size)
 
         free(thread);
 
-        printf("========= Finished executing test %d: %s (%s)\n", count + 1, t->description,
-               failed ? "FAILURE" : "SUCCESS");
+        printf("========= Finished executing test %d: %s (%s)\n", count + 1, t->description, failed ? "FAILURE" : "SUCCESS");
 
         report.successes += failed ? 0 : 1;
         report.failures += failed ? 1 : 0;

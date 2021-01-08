@@ -149,8 +149,8 @@ int reduceHull(GIMS_Point **ch_points, int N)
         GIMS_Point *A_p1 = ch_points[mod(i - 1, N)], *A_p2 = ch_points[mod(i, N)], *B_p2 = ch_points[mod(i + 1, N)],
                    *B_p1 = ch_points[mod(i + 2, N)];
 
-        mpf_class A_p1_x = A_p1->x, A_p1_y = A_p1->y, A_p2_x = A_p2->x, A_p2_y = A_p2->y, B_p1_x = B_p1->x,
-                  B_p1_y = B_p1->y, B_p2_x = B_p2->x, B_p2_y = B_p2->y;
+        mpf_class A_p1_x = A_p1->x, A_p1_y = A_p1->y, A_p2_x = A_p2->x, A_p2_y = A_p2->y, B_p1_x = B_p1->x, B_p1_y = B_p1->y,
+                  B_p2_x = B_p2->x, B_p2_y = B_p2->y;
 
         mpf_class s1_x, s1_y, s2_x, s2_y;
         s1_x = A_p2_x - A_p1_x;
@@ -176,9 +176,7 @@ int reduceHull(GIMS_Point **ch_points, int N)
             //calculate the area of A_p2, B_p1, int_p
             GIMS_Point *p1 = A_p2, *p2 = &int_p, *p3 = B_p1;
 
-            double area = fabs(p1->x * p2->y - p2->x * p1->y + p2->x * p3->y - p3->x * p2->y + p3->x * p1->y -
-                               p1->x * p3->y) /
-                          2.0;
+            double area = fabs(p1->x * p2->y - p2->x * p1->y + p2->x * p3->y - p3->x * p2->y + p3->x * p1->y - p1->x * p3->y) / 2.0;
 
             if (area < min_value) {
                 min_value = area;

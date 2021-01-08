@@ -14,7 +14,9 @@ char *proxy_user_request(char *args)
 
 int main(int argc, char **argv)
 {
-    arg_t arg_desc[] = {};
+    arg_t arg_desc[] = { { "sp", "service-registry-port", INTEGER, OPTIONAL,
+                           "The port where the gateway will be listening for service registrations" },
+                         { "rp", "rest-api-port", INTEGER, OPTIONAL, "The port where the gateway will be listening for REST requests" } };
 
     map *conf = load_config(sizeof(arg_desc) / sizeof(arg_t), arg_desc, argc, argv);
 

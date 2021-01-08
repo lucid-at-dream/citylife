@@ -106,8 +106,7 @@ string GIMS_Polygon::toWkt()
         for (int j = 0; j < this->internalRings->list[i]->size; j++) {
             if (j == 0)
                 wkt += "(";
-            sprintf(buff, "%lf %lf", this->internalRings->list[i]->list[j]->x,
-                    this->internalRings->list[i]->list[j]->y);
+            sprintf(buff, "%lf %lf", this->internalRings->list[i]->list[j]->x, this->internalRings->list[i]->list[j]->y);
             wkt += string(buff) + (j < this->internalRings->list[i]->size - 1 ? string(",") : string(")"));
         }
         if (i < this->internalRings->size - 1)
@@ -283,8 +282,7 @@ char GIMS_Polygon::containsPointWithinDomain(GIMS_Point *querypoint, GIMS_Boundi
     }
 }
 
-GIMS_Polygon::GIMS_Polygon(GIMS_MultiLineString *externalRing, GIMS_MultiLineString *internalRings,
-                           bool computeApproximation)
+GIMS_Polygon::GIMS_Polygon(GIMS_MultiLineString *externalRing, GIMS_MultiLineString *internalRings, bool computeApproximation)
 {
     this->type = POLYGON;
     this->hasOwnAppr = false;
@@ -384,8 +382,7 @@ string GIMS_MultiPolygon::toWkt()
                 for (int j = 0; j < pol->internalRings->list[i]->size; j++) {
                     if (j == 0)
                         wkt += "(";
-                    sprintf(buff, "%lf %lf", pol->internalRings->list[i]->list[j]->x,
-                            pol->internalRings->list[i]->list[j]->y);
+                    sprintf(buff, "%lf %lf", pol->internalRings->list[i]->list[j]->x, pol->internalRings->list[i]->list[j]->y);
                     wkt += string(buff) + (j < pol->internalRings->list[i]->size - 1 ? string(",") : string(")"));
                 }
                 wkt += i < pol->internalRings->size - 1 ? "," : ")";

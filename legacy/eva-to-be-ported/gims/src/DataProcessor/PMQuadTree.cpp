@@ -112,12 +112,10 @@ void Node::unconstrainedActiveSearch(DE9IM *resultset, int (*filter)(GIMS_Geomet
         if (this->dictionary != NULL) {
             for (list<GIMS_Geometry *>::iterator it = dictionary->begin(); it != dictionary->end(); it++) {
                 if (filter(*it)) {
-                    matrix_t::iterator m_it =
-                            resultset->setIntersect((*it)->id,
-                                                    dim(*it)); //we trivially now know that query and *it intersect
-                    resultset->setII(
-                            m_it,
-                            dim(*it)); //we trivially now know that query's interior and *it's interior intersect
+                    matrix_t::iterator m_it = resultset->setIntersect((*it)->id,
+                                                                      dim(*it)); //we trivially now know that query and *it intersect
+                    resultset->setII(m_it,
+                                     dim(*it)); //we trivially now know that query's interior and *it's interior intersect
 
                     /*since *it border intersects this node which is contained in the query,
                     we can assume that there's at least a portion of *it's exterior intersecting
@@ -129,8 +127,8 @@ void Node::unconstrainedActiveSearch(DE9IM *resultset, int (*filter)(GIMS_Geomet
                     if ( //if it is not a polygon
                             (*it)->type != POLYGON
                             //or if it is a polygon containing external ring border
-                            || ((*it)->type == POLYGON && (((GIMS_Polygon *)(*it))->externalRing != NULL &&
-                                                           ((GIMS_Polygon *)(*it))->externalRing->size > 0))) {
+                            || ((*it)->type == POLYGON &&
+                                (((GIMS_Polygon *)(*it))->externalRing != NULL && ((GIMS_Polygon *)(*it))->externalRing->size > 0))) {
                         //then we can conclude the previous statement (just above the if clause)
                         resultset->setBE(m_it, MIN(borderDim(resultset->query), dim(*it)));
                     }
@@ -512,11 +510,9 @@ void Node::split()
 
     for (Quadrant q : quadrantList) {
         /*create and link corresponding square*/
-        GIMS_BoundingBox *square =
-                new GIMS_BoundingBox(new GIMS_Point(this->square->minx() + xlen * xmultiplier[q],
-                                                    this->square->miny() + ylen * ymultiplier[q]),
-                                     new GIMS_Point(this->square->minx() + xlen * (xmultiplier[q] + 0.5),
-                                                    this->square->miny() + ylen * (ymultiplier[q] + 0.5)));
+        GIMS_BoundingBox *square = new GIMS_BoundingBox(
+                new GIMS_Point(this->square->minx() + xlen * xmultiplier[q], this->square->miny() + ylen * ymultiplier[q]),
+                new GIMS_Point(this->square->minx() + xlen * (xmultiplier[q] + 0.5), this->square->miny() + ylen * (ymultiplier[q] + 0.5)));
         /*create and append a new node*/
         this->sons[q] = new Node(square);
         this->sons[q]->father = this;

@@ -109,7 +109,8 @@ void *map_get(map *m, char *key)
     return NULL;
 }
 
-void map_del(map *m, char *key) {
+void map_del(map *m, char *key)
+{
     map_del_dealloc(m, key, 0, 0);
 }
 
@@ -140,26 +141,26 @@ void map_del_dealloc(map *m, char *key, char dealloc_key, char dealloc_value)
     }
 
     if (buck != NULL) {
-        if(dealloc_key) {
+        if (dealloc_key) {
             free(buck->entry.key);
         }
 
-        if(dealloc_value) {
+        if (dealloc_value) {
             free(buck->entry.value);
         }
         free(buck);
     }
 }
 
-void map_iter_keys(map *m, void(*callback)(map *, void *)) {
-
+void map_iter_keys(map *m, void (*callback)(map *, void *, void *), void *callback_args)
+{
     bucket *curr_bucket;
 
     for (int i = 0; i < m->capacity; i++) {
         curr_bucket = m->table[i].begin;
 
-        while(curr_bucket != NULL) {
-            callback(m, curr_bucket->entry.key);
+        while (curr_bucket != NULL) {
+            callback(m, curr_bucket->entry.key, callback_args);
             curr_bucket = curr_bucket->next;
         }
     }

@@ -93,8 +93,39 @@ gateway_svc_deps = []
 gateway_svc_source_files = run_command('find', 'src/services/gateway', '-name', '*.c').stdout().strip().split('\n')
 gateway_svc_include_dirs = run_command('find', 'src/services/gateway', '-name', 'include').stdout().strip().split('\n')
 
+gateway_svc_lib = library(
+    'gateway-svc',
+    gateway_svc_source_files,
+    dependencies: gateway_svc_deps,
+    link_with : [citylife_base_lib, citylife_core_lib],
+    include_directories: [base_include_dirs, core_include_dirs, gateway_svc_include_dirs],
+    install: true
+)
+
+gateway_svc_dep = declare_dependency(
+    include_directories : gateway_svc_include_dirs,
+    link_with : gateway_svc_lib
+)
+
 exe = executable(
     'gateway', gateway_svc_source_files,
-    link_with: [citylife_base_lib, citylife_core_lib],
-    dependencies: [citylife_base_dep, citylife_core_dep]
+    link_with: [citylife_base_lib, citylife_core_lib, gateway_svc_lib],
+    dependencies: [citylife_base_dep, citylife_core_dep, gateway_svc_dep]
 )
+
+### Test gateway service
+
+test_files = run_command('find', 'test/services/gateway', '-name', '*.c', '-printf', '%p %f\n').stdout().strip().split('\n')
+
+foreach p : test_files
+    filename = p.split(' ')[0]
+    testname = p.split(' ')[1].split('.')[0]
+
+    exe = executable(
+        testname, filename, 
+        link_with: [citylife_base_lib, citylife_core_lib, gateway_svc_lib],
+        dependencies: [citylife_base_dep, citylife_core_dep, gateway_svc_dep]
+    )
+
+    test(testname, exe)
+endforeach

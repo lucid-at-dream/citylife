@@ -78,9 +78,8 @@ char test_map_add_2_doppleganger_elements()
     char *zemanel = map_get(m, ZE_NAME);
     char *zemanel_dop = map_get(m, ZE_DOP_NAME);
 
-    char assertion_result =
-            assert_str_equals("Ze Manel's password matches the inserted one.", zemanel, ZE_PASS) ||
-            assert_str_equals("Ze Maneli's password matches the inserted one.", zemanel_dop, ZE_DOP_PASS);
+    char assertion_result = assert_str_equals("Ze Manel's password matches the inserted one.", zemanel, ZE_PASS) ||
+                            assert_str_equals("Ze Maneli's password matches the inserted one.", zemanel_dop, ZE_DOP_PASS);
 
     free(ZE_NAME);
     free(ZE_PASS);
@@ -125,8 +124,7 @@ char test_map_add_get_10000_elements_N_buckets_500_millis(int buckets)
         snprintf(expected_pass, 20, "%s%d", PASS_PREFIX, i);
 
         char *retrieved_password = map_get(m, lookup_user);
-        assertion_result |=
-                assert_str_equals("Retrieved password should equal added password", expected_pass, retrieved_password);
+        assertion_result |= assert_str_equals("Retrieved password should equal added password", expected_pass, retrieved_password);
         if (assertion_result) {
             break;
         }
@@ -169,8 +167,7 @@ char test_map_add_same_key_twice()
 
     char *result = map_get(m, KEY);
 
-    char assertion_result =
-            assert_str_equals("The retrieved value is the last inserted for that key.", result, VALUE_2);
+    char assertion_result = assert_str_equals("The retrieved value is the last inserted for that key.", result, VALUE_2);
 
     map_destroy(m);
     free(KEY);
@@ -247,8 +244,7 @@ char test_map_delete_user_among_many_users()
         snprintf(value_to_rm, 10, "v_%d", i);
 
         char *stored_value = map_get(m, key_to_rm);
-        if (assertion_result |=
-            assert_str_equals("Value is correctly inserted in the map.", stored_value, value_to_rm)) {
+        if (assertion_result |= assert_str_equals("Value is correctly inserted in the map.", stored_value, value_to_rm)) {
             break;
         }
 

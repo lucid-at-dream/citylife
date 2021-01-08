@@ -145,8 +145,8 @@ void DE9IM_mls_pol(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_Polygon *
 
     /* With the calculated planar graph, it is now possible to draw conclusions about the
      * intersection matrix of the polygons. */
-    bool hasPointIntersection = false, hasCommonEdges = false, linestringCrossesPolygon = false,
-         polygonHasUniqueEdge = false, linestringHasOutsidePoint = false;
+    bool hasPointIntersection = false, hasCommonEdges = false, linestringCrossesPolygon = false, polygonHasUniqueEdge = false,
+         linestringHasOutsidePoint = false;
 
     for (vertexlist::iterator it = planargraph.vertexes.begin(); it != planargraph.vertexes.end(); it++) {
         vertex *v = *it;
@@ -226,8 +226,8 @@ void DE9IM_pol_mls(DE9IM *resultset, GIMS_Polygon *query, GIMS_MultiLineString *
 
     /* With the calculated planar graph, it is now possible to draw conclusions about the
      * intersection matrix of the polygons. */
-    bool hasPointIntersection = false, hasCommonEdges = false, linestringCrossesPolygon = false,
-         polygonHasUniqueEdge = false, linestringHasOutsidePoint = false;
+    bool hasPointIntersection = false, hasCommonEdges = false, linestringCrossesPolygon = false, polygonHasUniqueEdge = false,
+         linestringHasOutsidePoint = false;
 
     for (vertexlist::iterator it = planargraph.vertexes.begin(); it != planargraph.vertexes.end(); it++) {
         vertex *v = *it;

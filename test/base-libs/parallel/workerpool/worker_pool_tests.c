@@ -85,8 +85,8 @@ char test_worker_pool_parallel_summation()
         return 1;
     }
 
-    assertion_error = assert_int_equals(
-            "The sum from the thread pool equals the sum from the single threaded summation", global_sum, expected_sum);
+    assertion_error =
+            assert_int_equals("The sum from the thread pool equals the sum from the single threaded summation", global_sum, expected_sum);
     if (assertion_error) {
         return 1;
     }

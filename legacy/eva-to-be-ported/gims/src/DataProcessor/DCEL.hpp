@@ -19,8 +19,7 @@ public:
 
     static int compare(const vertex &a, const vertex &b)
     {
-        long long int ax = a.pt->x * 100000000.0, ay = a.pt->y * 100000000.0, bx = b.pt->x * 100000000.0,
-                      by = b.pt->y * 100000000.0;
+        long long int ax = a.pt->x * 100000000.0, ay = a.pt->y * 100000000.0, bx = b.pt->x * 100000000.0, by = b.pt->y * 100000000.0;
 
         ax /= 100;
         ay /= 100;

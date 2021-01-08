@@ -58,8 +58,8 @@ bool GIMS_LineSegment::isCoveredBy(std::list<GIMS_LineSegment *> &linesegments, 
 
 bool GIMS_LineSegment::coversPoint(GIMS_Point *pt)
 {
-    double miny = p2->y < p1->y ? p2->y : p1->y, maxy = p2->y > p1->y ? p2->y : p1->y,
-           minx = p2->x < p1->x ? p2->x : p1->x, maxx = p2->x > p1->x ? p2->x : p1->x;
+    double miny = p2->y < p1->y ? p2->y : p1->y, maxy = p2->y > p1->y ? p2->y : p1->y, minx = p2->x < p1->x ? p2->x : p1->x,
+           maxx = p2->x > p1->x ? p2->x : p1->x;
 
     /*if line is vertical*/
     if (p1->x == p2->x) {
@@ -110,8 +110,7 @@ GIMS_Point GIMS_LineSegment::closestPointWithinRange(GIMS_BoundingBox *range, GI
     GIMS_Point p1, p2;
 
     /*these are the square limits*/
-    double ymax = range->upperRight->y, ymin = range->lowerLeft->y, xmax = range->upperRight->x,
-           xmin = range->lowerLeft->x;
+    double ymax = range->upperRight->y, ymin = range->lowerLeft->y, xmax = range->upperRight->x, xmin = range->lowerLeft->x;
 
     /*if line is vertical*/
     if (this->p1->x == this->p2->x) {
@@ -179,8 +178,7 @@ GIMS_Point GIMS_LineSegment::closestPointWithinRange(GIMS_BoundingBox *range, GI
             if (t < 0 || t > 1)
                 continue;
 
-            GIMS_Point ipt = GIMS_Point(this->p1->x + t * (this->p2->x - this->p1->x),
-                                        this->p1->y + t * (this->p2->y - this->p1->y));
+            GIMS_Point ipt = GIMS_Point(this->p1->x + t * (this->p2->x - this->p1->x), this->p1->y + t * (this->p2->y - this->p1->y));
 
             //the resulting point is outside the given range.
             if (ipt.x > xmax || ipt.x < xmin || ipt.y > ymax || ipt.y < ymin)
@@ -242,25 +240,20 @@ GIMS_Geometry *GIMS_LineSegment::intersects(const GIMS_LineSegment *other)
         else if (other->p1->y == other->p2->y) {
             int_y = other->p1->y;
 
-            if (int_x <= MAX(other->p1->x, other->p2->x) + ERR_MARGIN &&
-                int_x >= MIN(other->p1->x, other->p2->x) - ERR_MARGIN &&
-                int_y <= MAX(this->p1->y, this->p2->y) + ERR_MARGIN &&
-                int_y >= MIN(this->p1->y, this->p2->y) - ERR_MARGIN)
+            if (int_x <= MAX(other->p1->x, other->p2->x) + ERR_MARGIN && int_x >= MIN(other->p1->x, other->p2->x) - ERR_MARGIN &&
+                int_y <= MAX(this->p1->y, this->p2->y) + ERR_MARGIN && int_y >= MIN(this->p1->y, this->p2->y) - ERR_MARGIN)
                 return new GIMS_Point(int_x, int_y);
             return NULL;
         }
 
         //if other is neither vertical nor horizontal
         else {
-            double m = (other->p2->y - other->p1->y) / (other->p2->x - other->p1->x),
-                   b = other->p1->y - m * other->p1->x;
+            double m = (other->p2->y - other->p1->y) / (other->p2->x - other->p1->x), b = other->p1->y - m * other->p1->x;
 
             int_y = m * int_x + b;
 
-            if (int_x <= MAX(other->p1->x, other->p2->x) + ERR_MARGIN &&
-                int_x >= MIN(other->p1->x, other->p2->x) - ERR_MARGIN &&
-                int_y <= MAX(this->p1->y, this->p2->y) + ERR_MARGIN &&
-                int_y >= MIN(this->p1->y, this->p2->y) - ERR_MARGIN)
+            if (int_x <= MAX(other->p1->x, other->p2->x) + ERR_MARGIN && int_x >= MIN(other->p1->x, other->p2->x) - ERR_MARGIN &&
+                int_y <= MAX(this->p1->y, this->p2->y) + ERR_MARGIN && int_y >= MIN(this->p1->y, this->p2->y) - ERR_MARGIN)
                 return new GIMS_Point(int_x, int_y);
             return NULL;
         }
@@ -274,10 +267,8 @@ GIMS_Geometry *GIMS_LineSegment::intersects(const GIMS_LineSegment *other)
         if (other->p1->x == other->p2->x) {
             int_x = other->p1->x;
 
-            if (int_x <= MAX(this->p1->x, this->p2->x) + ERR_MARGIN &&
-                int_x >= MIN(this->p1->x, this->p2->x) - ERR_MARGIN &&
-                int_y <= MAX(other->p1->y, other->p2->y) + ERR_MARGIN &&
-                int_y >= MIN(other->p1->y, other->p2->y) - ERR_MARGIN)
+            if (int_x <= MAX(this->p1->x, this->p2->x) + ERR_MARGIN && int_x >= MIN(this->p1->x, this->p2->x) - ERR_MARGIN &&
+                int_y <= MAX(other->p1->y, other->p2->y) + ERR_MARGIN && int_y >= MIN(other->p1->y, other->p2->y) - ERR_MARGIN)
                 return new GIMS_Point(int_x, int_y);
             return NULL;
 
@@ -309,15 +300,12 @@ GIMS_Geometry *GIMS_LineSegment::intersects(const GIMS_LineSegment *other)
 
         //if other is neither vertical nor horizontal
         else {
-            double m = (other->p2->y - other->p1->y) / (other->p2->x - other->p1->x),
-                   b = other->p1->y - m * other->p1->x;
+            double m = (other->p2->y - other->p1->y) / (other->p2->x - other->p1->x), b = other->p1->y - m * other->p1->x;
 
             int_x = (int_y - b) / m;
 
-            if (int_x <= MAX(other->p1->x, other->p2->x) + ERR_MARGIN &&
-                int_x >= MIN(other->p1->x, other->p2->x) - ERR_MARGIN &&
-                int_x <= MAX(this->p1->x, this->p2->x) + ERR_MARGIN &&
-                int_x >= MIN(this->p1->x, this->p2->x) - ERR_MARGIN) {
+            if (int_x <= MAX(other->p1->x, other->p2->x) + ERR_MARGIN && int_x >= MIN(other->p1->x, other->p2->x) - ERR_MARGIN &&
+                int_x <= MAX(this->p1->x, this->p2->x) + ERR_MARGIN && int_x >= MIN(this->p1->x, this->p2->x) - ERR_MARGIN) {
                 return new GIMS_Point(int_x, int_y);
             }
             return NULL;
@@ -332,10 +320,8 @@ GIMS_Geometry *GIMS_LineSegment::intersects(const GIMS_LineSegment *other)
 
         int_y = m * int_x + b;
 
-        if (int_x <= MAX(this->p1->x, this->p2->x) + ERR_MARGIN &&
-            int_x >= MIN(this->p1->x, this->p2->x) - ERR_MARGIN &&
-            int_y <= MAX(other->p1->y, other->p2->y) + ERR_MARGIN &&
-            int_y >= MIN(other->p1->y, other->p2->y) - ERR_MARGIN)
+        if (int_x <= MAX(this->p1->x, this->p2->x) + ERR_MARGIN && int_x >= MIN(this->p1->x, this->p2->x) - ERR_MARGIN &&
+            int_y <= MAX(other->p1->y, other->p2->y) + ERR_MARGIN && int_y >= MIN(other->p1->y, other->p2->y) - ERR_MARGIN)
             return new GIMS_Point(int_x, int_y);
         return NULL;
     }
@@ -348,10 +334,8 @@ GIMS_Geometry *GIMS_LineSegment::intersects(const GIMS_LineSegment *other)
 
         int_x = (int_y - b) / m;
 
-        if (int_x <= MAX(this->p1->x, this->p2->x) + ERR_MARGIN &&
-            int_x >= MIN(this->p1->x, this->p2->x) - ERR_MARGIN &&
-            int_x <= MAX(other->p1->x, other->p2->x) + ERR_MARGIN &&
-            int_x >= MIN(other->p1->x, other->p2->x) - ERR_MARGIN) {
+        if (int_x <= MAX(this->p1->x, this->p2->x) + ERR_MARGIN && int_x >= MIN(this->p1->x, this->p2->x) - ERR_MARGIN &&
+            int_x <= MAX(other->p1->x, other->p2->x) + ERR_MARGIN && int_x >= MIN(other->p1->x, other->p2->x) - ERR_MARGIN) {
             return new GIMS_Point(int_x, int_y);
         } else {
             return NULL;
@@ -390,9 +374,8 @@ GIMS_Geometry *GIMS_LineSegment::intersects(const GIMS_LineSegment *other)
 
 #define PRECISION 10000000.0
 
-    mpf_class this_p1_x = this->p1->x, this_p1_y = this->p1->y, this_p2_x = this->p2->x, this_p2_y = this->p2->y,
-              other_p1_x = other->p1->x, other_p1_y = other->p1->y, other_p2_x = other->p2->x,
-              other_p2_y = other->p2->y;
+    mpf_class this_p1_x = this->p1->x, this_p1_y = this->p1->y, this_p2_x = this->p2->x, this_p2_y = this->p2->y, other_p1_x = other->p1->x,
+              other_p1_y = other->p1->y, other_p2_x = other->p2->x, other_p2_y = other->p2->y;
 
     mpf_class s1_x, s1_y, s2_x, s2_y;
     s1_x = this_p2_x - this_p1_x;
@@ -400,10 +383,8 @@ GIMS_Geometry *GIMS_LineSegment::intersects(const GIMS_LineSegment *other)
     s2_x = other_p2_x - other_p1_x;
     s2_y = other_p2_y - other_p1_y;
 
-    mpf_class s_den = (-s2_x * s1_y + s1_x * s2_y),
-              s_num = (-s1_y * (this_p1_x - other_p1_x) + s1_x * (this_p1_y - other_p1_y)),
-              t_den = (-s2_x * s1_y + s1_x * s2_y),
-              t_num = (s2_x * (this_p1_y - other_p1_y) - s2_y * (this_p1_x - other_p1_x));
+    mpf_class s_den = (-s2_x * s1_y + s1_x * s2_y), s_num = (-s1_y * (this_p1_x - other_p1_x) + s1_x * (this_p1_y - other_p1_y)),
+              t_den = (-s2_x * s1_y + s1_x * s2_y), t_num = (s2_x * (this_p1_y - other_p1_y) - s2_y * (this_p1_x - other_p1_x));
 
     mpf_class s = (s_num / s_den), t = (t_num / t_den);
 
@@ -661,8 +642,7 @@ string GIMS_MultiLineSegment::toWkt()
     char buff[100];
 
     for (int i = 0; i < this->size; i++) {
-        sprintf(buff, "(%lf %lf, %lf %lf)", this->list[i]->p1->x, this->list[i]->p1->y, this->list[i]->p2->x,
-                this->list[i]->p2->y);
+        sprintf(buff, "(%lf %lf, %lf %lf)", this->list[i]->p1->x, this->list[i]->p1->y, this->list[i]->p2->x, this->list[i]->p2->y);
         wkt += string(buff);
         wkt += i < this->size - 1 ? "," : ")";
     }

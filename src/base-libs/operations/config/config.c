@@ -9,9 +9,8 @@
 #include "logger.h"
 
 /* Built-in arguments */
-arg_t _config_help_arg_desc = { "h", "help", FLAG, OPTIONAL, "Display this help message." };
-arg_t _config_cfg_file_arg_desc = { "c", "config", STRING, OPTIONAL,
-                                    "Load config from the configuration file at the given path." };
+arg_t _config_help_arg_desc = { "h", "help", FLAG, OPTIONAL, "Display this help message" };
+arg_t _config_cfg_file_arg_desc = { "c", "config", STRING, OPTIONAL, "Load config from the configuration file at the given path" };
 
 // Helpers for load config
 map *parse_command_line(map *args, int arg_desc_count, arg_t *arg_desc, int argc, char **argv);
@@ -58,8 +57,7 @@ map *load_config(int arg_desc_count, arg_t *arg_desc, int argc, char **argv)
             continue;
         }
 
-        if (strcmp(desc, _config_cfg_file_arg_desc.short_name) == 0 ||
-            strcmp(desc, _config_cfg_file_arg_desc.long_name) == 0) {
+        if (strcmp(desc, _config_cfg_file_arg_desc.short_name) == 0 || strcmp(desc, _config_cfg_file_arg_desc.long_name) == 0) {
             if (argc <= i + 1) {
                 elegant_exit(arg_desc_count, arg_desc, args, "No path given for the configuration file.");
             }
@@ -68,6 +66,7 @@ map *load_config(int arg_desc_count, arg_t *arg_desc, int argc, char **argv)
 
         if (strcmp(desc, _config_help_arg_desc.short_name) == 0 || strcmp(desc, _config_help_arg_desc.long_name) == 0) {
             print_usage(arg_desc_count, arg_desc);
+            pthread_exit(EXIT_SUCCESS);
         }
     }
 
@@ -167,8 +166,7 @@ map *parse_command_line(map *args, int arg_desc_count, arg_t *arg_desc, int argc
         }
 
         // Parse built-in config file argument
-        if (strcmp(arg_name, _config_cfg_file_arg_desc.short_name) == 0 ||
-            strcmp(arg_name, _config_cfg_file_arg_desc.long_name) == 0) {
+        if (strcmp(arg_name, _config_cfg_file_arg_desc.short_name) == 0 || strcmp(arg_name, _config_cfg_file_arg_desc.long_name) == 0) {
             map_set(args, _config_cfg_file_arg_desc.short_name, 1);
 
             int size = strlen(argv[i + 1]);

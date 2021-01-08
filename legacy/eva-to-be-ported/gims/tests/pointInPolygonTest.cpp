@@ -19,21 +19,18 @@ namespace
 // The fixture for testing class Foo.
 class PtInPolTest : public ::testing::TestWithParam<int> {
 public:
-    char cases_input[30][100] = { INPUTS_DIR "1_0",    INPUTS_DIR "1_1",    INPUTS_DIR "1_2",    INPUTS_DIR "1_3",
-                                  INPUTS_DIR "1_4",    INPUTS_DIR "1_5",    INPUTS_DIR "1_6",    INPUTS_DIR "1_7",
-                                  INPUTS_DIR "1_8",    INPUTS_DIR "1_9",    INPUTS_DIR "100_0",  INPUTS_DIR "100_1",
-                                  INPUTS_DIR "100_2",  INPUTS_DIR "100_3",  INPUTS_DIR "100_4",  INPUTS_DIR "100_5",
-                                  INPUTS_DIR "100_6",  INPUTS_DIR "100_7",  INPUTS_DIR "100_8",  INPUTS_DIR "100_9",
-                                  INPUTS_DIR "5000_0", INPUTS_DIR "5000_1", INPUTS_DIR "5000_2", INPUTS_DIR "5000_3",
-                                  INPUTS_DIR "5000_4", INPUTS_DIR "5000_5", INPUTS_DIR "5000_6", INPUTS_DIR "5000_7",
-                                  INPUTS_DIR "5000_8", INPUTS_DIR "5000_9" };
+    char cases_input[30][100] = { INPUTS_DIR "1_0",    INPUTS_DIR "1_1",    INPUTS_DIR "1_2",    INPUTS_DIR "1_3",    INPUTS_DIR "1_4",
+                                  INPUTS_DIR "1_5",    INPUTS_DIR "1_6",    INPUTS_DIR "1_7",    INPUTS_DIR "1_8",    INPUTS_DIR "1_9",
+                                  INPUTS_DIR "100_0",  INPUTS_DIR "100_1",  INPUTS_DIR "100_2",  INPUTS_DIR "100_3",  INPUTS_DIR "100_4",
+                                  INPUTS_DIR "100_5",  INPUTS_DIR "100_6",  INPUTS_DIR "100_7",  INPUTS_DIR "100_8",  INPUTS_DIR "100_9",
+                                  INPUTS_DIR "5000_0", INPUTS_DIR "5000_1", INPUTS_DIR "5000_2", INPUTS_DIR "5000_3", INPUTS_DIR "5000_4",
+                                  INPUTS_DIR "5000_5", INPUTS_DIR "5000_6", INPUTS_DIR "5000_7", INPUTS_DIR "5000_8", INPUTS_DIR "5000_9" };
     char cases_output[30][100] = {
-        OUTPUTS_DIR "1_0",    OUTPUTS_DIR "1_1",    OUTPUTS_DIR "1_2",    OUTPUTS_DIR "1_3",    OUTPUTS_DIR "1_4",
-        OUTPUTS_DIR "1_5",    OUTPUTS_DIR "1_6",    OUTPUTS_DIR "1_7",    OUTPUTS_DIR "1_8",    OUTPUTS_DIR "1_9",
-        OUTPUTS_DIR "100_0",  OUTPUTS_DIR "100_1",  OUTPUTS_DIR "100_2",  OUTPUTS_DIR "100_3",  OUTPUTS_DIR "100_4",
-        OUTPUTS_DIR "100_5",  OUTPUTS_DIR "100_6",  OUTPUTS_DIR "100_7",  OUTPUTS_DIR "100_8",  OUTPUTS_DIR "100_9",
-        OUTPUTS_DIR "5000_0", OUTPUTS_DIR "5000_1", OUTPUTS_DIR "5000_2", OUTPUTS_DIR "5000_3", OUTPUTS_DIR "5000_4",
-        OUTPUTS_DIR "5000_5", OUTPUTS_DIR "5000_6", OUTPUTS_DIR "5000_7", OUTPUTS_DIR "5000_8", OUTPUTS_DIR "5000_9"
+        OUTPUTS_DIR "1_0",    OUTPUTS_DIR "1_1",    OUTPUTS_DIR "1_2",    OUTPUTS_DIR "1_3",    OUTPUTS_DIR "1_4",    OUTPUTS_DIR "1_5",
+        OUTPUTS_DIR "1_6",    OUTPUTS_DIR "1_7",    OUTPUTS_DIR "1_8",    OUTPUTS_DIR "1_9",    OUTPUTS_DIR "100_0",  OUTPUTS_DIR "100_1",
+        OUTPUTS_DIR "100_2",  OUTPUTS_DIR "100_3",  OUTPUTS_DIR "100_4",  OUTPUTS_DIR "100_5",  OUTPUTS_DIR "100_6",  OUTPUTS_DIR "100_7",
+        OUTPUTS_DIR "100_8",  OUTPUTS_DIR "100_9",  OUTPUTS_DIR "5000_0", OUTPUTS_DIR "5000_1", OUTPUTS_DIR "5000_2", OUTPUTS_DIR "5000_3",
+        OUTPUTS_DIR "5000_4", OUTPUTS_DIR "5000_5", OUTPUTS_DIR "5000_6", OUTPUTS_DIR "5000_7", OUTPUTS_DIR "5000_8", OUTPUTS_DIR "5000_9"
     };
 };
 

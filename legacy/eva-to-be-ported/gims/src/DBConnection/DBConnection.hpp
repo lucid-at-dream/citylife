@@ -22,13 +22,13 @@ public:
 };
 
 /*TODO: put the following fields as configuration options*/
-#define KEYWORDS                                                                                                       \
-    {                                                                                                                  \
-        "hostaddr", "dbname", "user"                                                                                   \
+#define KEYWORDS                                                                                                                           \
+    {                                                                                                                                      \
+        "hostaddr", "dbname", "user"                                                                                                       \
     }
-#define VALUES                                                                                                         \
-    {                                                                                                                  \
-        "127.0.0.1", "portugal", "magisu"                                                                              \
+#define VALUES                                                                                                                             \
+    {                                                                                                                                      \
+        "127.0.0.1", "portugal", "magisu"                                                                                                  \
     }
 
 /* dbconnection is a connection to a postgresql database. The configurations assumed

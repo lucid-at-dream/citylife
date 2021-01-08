@@ -125,8 +125,7 @@ double angle3p(GIMS_Point *p1, GIMS_Point *p2, GIMS_Point *p3)
 double distToSegmentSquared(GIMS_Point *p, GIMS_LineSegment *e)
 {
     //Length of the line segment squared
-    double lineSegLenSquared =
-            (e->p1->x - e->p2->x) * (e->p1->x - e->p2->x) + (e->p1->y - e->p2->y) * (e->p1->y - e->p2->y);
+    double lineSegLenSquared = (e->p1->x - e->p2->x) * (e->p1->x - e->p2->x) + (e->p1->y - e->p2->y) * (e->p1->y - e->p2->y);
 
     if (lineSegLenSquared == 0)
         //if true then the line segment is actually a point.

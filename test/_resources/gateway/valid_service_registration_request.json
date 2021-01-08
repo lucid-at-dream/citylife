@@ -1,0 +1,28 @@
+{
+    "name": "auth",
+    "addr": "172.0.0.1",
+    "port": 9999,
+    "__doc__": "Authentication service",
+    "endpoints": {
+        "login": {
+            "__doc__": "Creates a new session token for the given user if the user/password is a match",
+            "user": {
+                "type": "string",
+                "mandatory": true,
+                "__doc__": "The username"
+            },
+            "pass": {
+                "type": "string",
+                "mandatory": true,
+                "__doc__": "The password"
+            }
+        },
+        "logout": {
+            "token": {
+                "type": "string",
+                "mandatory": true,
+                "__doc__": "The session token"
+            }
+        }
+    }
+}

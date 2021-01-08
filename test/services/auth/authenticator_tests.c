@@ -37,8 +37,7 @@ char test_auth_add_same_user_twice()
     }
 
     auth_result = add_user(auth, ZE_NAME, ZE_PASS_OTHER);
-    if (assert_int_equals("Adding a new user with a conflicting name results in error.", auth_result.result,
-                          AUTH_ERROR)) {
+    if (assert_int_equals("Adding a new user with a conflicting name results in error.", auth_result.result, AUTH_ERROR)) {
         authenticator_destroy(auth);
         return 1;
     }
@@ -190,15 +189,13 @@ char test_auth_do_auth_delete_user_wrong_pass()
     return 0;
 }
 
-test test_suite[] = {
-    { "Add user Ze with password Ze to the authentication service", test_auth_add_user },
-    { "Try to add a new user with a conflicting name", test_auth_add_same_user_twice },
-    { "Create an user and authenticate with it", test_auth_do_auth },
-    { "Create an user and provide a wrong password for authentication", test_auth_do_auth_wrong_password },
-    { "Test changing the password of an existing user", test_auth_do_auth_change_password },
-    { "Test deleting an existing user", test_auth_do_auth_delete_user },
-    { "Test that existing user is not deleted if wrong pass is provided", test_auth_do_auth_delete_user_wrong_pass }
-};
+test test_suite[] = { { "Add user Ze with password Ze to the authentication service", test_auth_add_user },
+                      { "Try to add a new user with a conflicting name", test_auth_add_same_user_twice },
+                      { "Create an user and authenticate with it", test_auth_do_auth },
+                      { "Create an user and provide a wrong password for authentication", test_auth_do_auth_wrong_password },
+                      { "Test changing the password of an existing user", test_auth_do_auth_change_password },
+                      { "Test deleting an existing user", test_auth_do_auth_delete_user },
+                      { "Test that existing user is not deleted if wrong pass is provided", test_auth_do_auth_delete_user_wrong_pass } };
 
 int main(int argc, char **argv)
 {
