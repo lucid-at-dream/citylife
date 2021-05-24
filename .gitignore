@@ -13,3 +13,4 @@ out.strace
 *.gcno
 *.o
 */target
+builddir
