@@ -1,5 +1,5 @@
 
-[![Build Status](https://travis-ci.org/lucid-mist/citylife.svg?branch=master)](https://travis-ci.org/lucid-mist/citylife)
+[![Build Status](https://travis-ci.org/lucid-mist/citylife.svg?branch=master)](https://travis-ci.org/bnq-bernardomarques/citylife)
 
 [![Quality Gates](https://sonarcloud.io/api/project_badges/measure?project=futuo_citylife&metric=alert_status)](https://sonarcloud.io/dashboard?id=futuo_citylife)
 
