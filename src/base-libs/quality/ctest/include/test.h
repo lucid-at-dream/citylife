@@ -43,14 +43,14 @@ suite_report run_test_suite(test *test_suite, int suite_size);
         return 0;                                                                                                                          \
     }
 
-#define TEST_CASE(name, body)                                                                                                              \
-    char name()                                                                                                                            \
-    {                                                                                                                                      \
-        int assertion_error = 0;                                                                                                           \
-        {                                                                                                                                  \
-            body                                                                                                                           \
-        }                                                                                                                                  \
-        return assertion_error;                                                                                                            \
+#define TEST_CASE(name, body)\
+    char name()\
+    {\
+        int assertion_error = 0;\
+        {\
+            body\
+        }\
+        return assertion_error;\
     }
 
 /**
