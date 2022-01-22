@@ -15,3 +15,8 @@ out.strace
 */target
 builddir
 plan
+build-wrapper-linux-x86.zip
+build-wrapper-linux-x86/
+sonar-scanner-3.2.0.1227/
+sonar-scanner-cli-3.2.0.1227.zip
+env.sh
