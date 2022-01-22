@@ -31,7 +31,7 @@ typedef struct _heap_node {
 } heap_node;
 
 typedef struct _heap {
-    
+
     // Total number of nodes in the heap
     int size;
 
@@ -46,13 +46,13 @@ typedef struct _heap {
 
 } heap;
 
-heap *heap_new();
+heap *heap_new(int (*compare)(const void *a, const void *b));
 
 void heap_destroy(heap *h);
 
-void heap_insert(heap *h, void *value);
+heap *heap_push(heap *h, void *item);
 
-void heap_meld(heap *h1, heap *h2);
+heap* heap_meld(heap *h1, heap *h2);
 
 void *heap_find_min(heap *h);
 

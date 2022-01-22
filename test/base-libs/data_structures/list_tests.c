@@ -5,6 +5,18 @@
 
 #include <stdlib.h>
 
+TEST_CASE(test_list_add_item_delete_item, {
+    list *l = list_new();
+
+    list_append(l, 5);
+
+    ASSERT_TRUE("Existing element is successfully deleted", list_del_element(l, 5));
+
+    ASSERT_TRUE("List should be empty.", list_is_empty(l));
+
+    list_destroy(l);
+})
+
 TEST_CASE(test_list_append_and_delete_first, {
     list *l = list_new();
 
@@ -117,7 +129,8 @@ TEST_CASE(apply_a_function_on_each_element_of_the_list, {
     list_destroy(l);
 })
 
-TEST_SUITE(RUN_TEST("Test appending and checking contents by getting the first element.", test_list_append_and_delete_first),
+TEST_SUITE(RUN_TEST("Test adding an element to a list and then deleting it.", test_list_add_item_delete_item),
+           RUN_TEST("Test appending and checking contents by getting the first element.", test_list_append_and_delete_first),
            RUN_TEST("Test prepending and checking contents by getting the first element.", test_list_prepend_and_delete_first),
            RUN_TEST("Test deleting a specific item in a list", test_list_delete_specific_element),
            RUN_TEST("Test using negative numbers in the list just for fun", test_list_with_negative_numbers),

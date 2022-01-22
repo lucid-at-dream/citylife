@@ -5,16 +5,41 @@
 
 #include <stdlib.h>
 
-TEST_CASE(test_heap_push_one_pop_one_assert_equals, {
-    heap *h = heap_new();
+int int_compare(const void *a, const void *b) {
+    int int_a = (int)a;
+    int int_b = (int)b;
+    
+    if (int_a < int_b) {
+        return -1;
+    } else if (int_a > int_b) {
+        return 1;
+    }
+    return 0;
+}
 
-    heap_push(h, 10);
+TEST_CASE(test_destroy_empty_heap, {
+    heap *h = heap_new(int_compare);
+    heap_destroy(h);
+})
+
+TEST_CASE(test_heap_push_one_then_peek_assert_equals, {
+    heap *h = heap_new(int_compare);
+
+    h = heap_push(h, 10);
     
     ASSERT_INT_EQUALS("Peek of heap with 1 item is the item.", (int)heap_peek(h), 10);
 
-    int popped = (int)heap_pop(h);
+    heap_destroy(h);
+})
 
-    ASSERT_INT_EQUALS("Pop of heap with 1 item is the item.", popped, 10);
+TEST_CASE(test_heap_push_multiple_elements_assert_min_peek, {
+    heap *h = heap_new(int_compare);
+
+    for (int i = 10; i >= 0; i--) {
+        h = heap_push(h, i);
+    }
+
+    ASSERT_INT_EQUALS("Peek of heap returns minimum value in heap.", (int)heap_peek(h), 0);
 
     heap_destroy(h);
 })
@@ -37,6 +62,7 @@ TEST_CASE(test_heap_push_one_pop_one_assert_equals, {
 })*/
 
 TEST_SUITE(
-    RUN_TEST("Test push pop of an item in a heap works.", test_heap_push_one_pop_one_assert_equals),
-    //RUN_TEST("Test push multiple items come in order on pop.", test_heap_push_multiple_elements_assert_min_popped)
+    RUN_TEST("Test destroying an empty heap.", test_destroy_empty_heap),
+    RUN_TEST("Test push pop of an item in a heap works.", test_heap_push_one_then_peek_assert_equals),
+    RUN_TEST("Test push multiple items come in order on pop.", test_heap_push_multiple_elements_assert_min_peek),
 )

@@ -128,8 +128,16 @@ char list_del_element(list *l, void *value)
     }
 
     if (tmp != NULL) {
-        tmp->prev->next = tmp->next;
-        tmp->next->prev = tmp->prev;
+        if (tmp->prev != NULL) {
+            tmp->prev->next = tmp->next;
+        } else {
+            l->head = NULL; // tmp was the head of the list.
+        }
+        if (tmp->next != NULL) {
+            tmp->next->prev = tmp->prev;
+        } else {
+            l->tail = NULL; // tmp was the tail of the list.
+        }
         free(tmp);
         return 1;
     }
