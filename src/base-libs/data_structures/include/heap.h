@@ -1,8 +1,9 @@
 #pragma once
 
 #include "queue.h"
+#include "list.h"
 
-typedef struct _heap {
+typedef struct _heap_node {
     
     // Number of nodes below this one
     int size;
@@ -19,17 +20,31 @@ typedef struct _heap {
     // ??? Total loss of an heap is the sum of the loss over all active nodes
     unsigned loss;
 
+    // The item being stored in this heap node
     void *item;
 
-    struct _heap *children;
-} heap;
+    // The parent of the node
+    struct _heap_node *parent;
 
-typedef struct _heap_node {
-    int degree;
+    // List of the children of this node
+    list *children;
 } heap_node;
 
-// All nodes except the root are kept in this queue
-queue *Q;
+typedef struct _heap {
+    
+    // Total number of nodes in the heap
+    int size;
+
+    // Root node of the heap
+    heap_node *root;
+
+    // Returns -1 if a < b, 1 if a > b and 0 if they're equal
+    int (*compare)(const void *a, const void *b);
+
+    // All nodes except the root are kept in this queue
+    queue *Q;
+
+} heap;
 
 heap *heap_new();
 
@@ -46,4 +61,3 @@ void *heap_delete_min(heap *h);
 void heap_delete(heap *h, void *e);
 
 void heap_decrease_key(heap *h, void *e, void *new_key);
-

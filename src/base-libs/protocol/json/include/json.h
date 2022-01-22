@@ -2,6 +2,8 @@
 
 #include "list.h"
 #include "map.h"
+#include <stdlib.h>
+#include <string.h>
 
 typedef enum _json_type { JSON_ERROR, JSON_OBJECT, JSON_ARRAY, JSON_PRIMITIVE } json_type;
 
