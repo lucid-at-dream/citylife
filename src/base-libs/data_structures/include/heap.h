@@ -60,4 +60,4 @@ void *heap_delete_min(heap *h);
 
 void heap_delete(heap *h, void *e);
 
-void heap_decrease_key(heap *h, void *e, void *new_key);
+void heap_decrease_key(heap *h, heap_node *x, void *new_item);

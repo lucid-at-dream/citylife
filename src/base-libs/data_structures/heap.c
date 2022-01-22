@@ -93,6 +93,59 @@ heap* heap_meld(heap *h1, heap *h2) {
     return final_heap;
 }
 
+void heap_decrease_key(heap *h, heap_node *x, void *new_item) {
+    
+    if (h->compare(x->item, new_item) < 0) {
+        // Increasing the key is not supported
+        return;
+    }
+
+    // Begin by decrasing the key of the item
+    x->item = new_item;
+
+    // If x is the root we are done
+    if (h->root == x) {
+        return;
+    }
+
+    // if x.key < z.key swap the items in x and z
+    // TODO: Notice how key and item are two separate things, requires changing the struct =/ 
+    heap_node *z = h->root;
+    if (h->compare(x->item, z->item) < 0) {
+        void *tmp = x->item;
+        x->item = z->item;
+        z->item = tmp;
+    }
+
+    heap_node *y = x->parent;
+
+    // Make x a child of the root
+    list_append(z->children, x);
+    x->parent = z;
+
+
+    // If x was an active node but not an active root
+    if (x->is_active && x->parent->is_active) {
+        // x becomes an active root with loss zero and the rank of y is decreased by one
+        x->loss = 0;
+        y->rank--;
+    }
+
+    // If y is active but not an active root
+    if (y->is_active && y->parent->is_active) {
+        // the loss of y is increased by one.
+        y->loss++;
+    }
+
+    // TODO:
+    // Do a loss reducion if possible.
+
+    // TODO:
+    // Finally, do six active root reductions and four root degree reductions to the extent possible.
+
+    root_degree_reduction(h);
+}
+
 void *heap_pop(heap *h) {
     void *tmp = h->root->item;
     h->root->item = NULL;
