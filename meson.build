@@ -8,32 +8,43 @@ add_global_arguments('-Wall', '-g', language : 'c')
 run_command('mkdir', '-p', meson.build_root() + '/test')
 run_command('cp', '-r', 'test/_resources/', meson.build_root() + '/test')
 
+
+
 ### Build citylife-base
 
-citylife_base_deps = [
+base_deps = [
     dependency('threads'),
     cc.find_library('m', required : true)
 ]
 
-base_source_files = run_command('find', 'src/base-libs', '-name', '*.c').stdout().strip().split('\n')
-base_include_dirs = run_command('find', 'src/base-libs', '-name', 'include').stdout().strip().split('\n')
+# Find "base-libs" source files
+base_source_files = run_command(
+    'find', 'src/base-libs', '-name', '*.c', '-and', '-not', '-path', '*/test/*'
+).stdout().strip().split('\n')
 
-citylife_base_lib = library(
+# Find "base-libs" include directories
+base_include_dirs = run_command(
+    'find', 'src/base-libs', '-name', 'include'
+).stdout().strip().split('\n')
+
+base_lib = library(
     'citylife-base',
     base_source_files,
-    dependencies: citylife_base_deps,
+    dependencies: base_deps,
     include_directories: base_include_dirs,
     install: true
 )
 
-citylife_base_dep = declare_dependency(
+base_dep = declare_dependency(
     include_directories : base_include_dirs,
-    link_with : citylife_base_lib
+    link_with : base_lib
 )
 
-### Test citylife-base
 
-test_files = run_command('find', 'test/base-libs', '-name', '*.c', '-printf', '%p %f\n').stdout().strip().split('\n')
+## Test citylife-base
+test_files = run_command(
+    'find', 'src/base-libs', '-name', '*.c', '-and', '-path', '*/test/*', '-printf', '%p %f\n'
+).stdout().strip().split('\n')
 
 foreach p : test_files
     filename = p.split(' ')[0]
@@ -41,33 +52,34 @@ foreach p : test_files
 
     exe = executable(
         testname, filename, 
-        link_with: citylife_base_lib,
-        dependencies: [citylife_base_dep, citylife_base_deps]
+        link_with: base_lib,
+        dependencies: [base_dep, base_deps]
     )
 
     test(testname, exe)
 endforeach
 
 
+
 ### Build citylife-core
 
-citylife_core_deps = []
+core_deps = []
 
 core_source_files = run_command('find', 'src/core-libs', '-name', '*.c').stdout().strip().split('\n')
 core_include_dirs = run_command('find', 'src/core-libs', '-name', 'include').stdout().strip().split('\n')
 
-citylife_core_lib = library(
+core_lib = library(
     'citylife-core',
     core_source_files,
-    dependencies: citylife_core_deps,
-    link_with : citylife_base_lib,
+    dependencies: core_deps,
+    link_with : base_lib,
     include_directories: [base_include_dirs, core_include_dirs],
     install: true
 )
 
-citylife_core_dep = declare_dependency(
+core_dep = declare_dependency(
     include_directories : core_include_dirs,
-    link_with : citylife_core_lib
+    link_with : core_lib
 )
 
 ### Test citylife-core
@@ -80,8 +92,8 @@ foreach p : test_files
 
     exe = executable(
         testname, filename, 
-        link_with: [citylife_base_lib, citylife_core_lib],
-        dependencies: [citylife_base_dep, citylife_core_dep, citylife_core_deps]
+        link_with: [base_lib, core_lib],
+        dependencies: [base_dep, core_dep, core_deps]
     )
 
     test(testname, exe)
@@ -99,7 +111,7 @@ gateway_svc_lib = library(
     'gateway-svc',
     gateway_svc_source_files,
     dependencies: gateway_svc_deps,
-    link_with : [citylife_base_lib, citylife_core_lib],
+    link_with : [base_lib, core_lib],
     include_directories: [base_include_dirs, core_include_dirs, gateway_svc_include_dirs],
     install: true
 )
@@ -111,8 +123,8 @@ gateway_svc_dep = declare_dependency(
 
 exe = executable(
     'gateway', gateway_svc_source_files,
-    link_with: [citylife_base_lib, citylife_core_lib, gateway_svc_lib],
-    dependencies: [citylife_base_dep, citylife_core_dep, gateway_svc_dep]
+    link_with: [base_lib, core_lib, gateway_svc_lib],
+    dependencies: [base_dep, core_dep, gateway_svc_dep]
 )
 
 ### Test gateway service
@@ -125,8 +137,8 @@ foreach p : test_files
 
     exe = executable(
         testname, filename, 
-        link_with: [citylife_base_lib, citylife_core_lib, gateway_svc_lib],
-        dependencies: [citylife_base_dep, citylife_core_dep, gateway_svc_dep]
+        link_with: [base_lib, core_lib, gateway_svc_lib],
+        dependencies: [base_dep, core_dep, gateway_svc_dep]
     )
 
     test(testname, exe)
