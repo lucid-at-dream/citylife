@@ -5,8 +5,7 @@
 appr_intersection calcIntersectionNGON_NGON(GIMS_MBNgon *A, GIMS_MBNgon *B);
 int reduceHull(GIMS_Point **ch_points, int N);
 
-bool GIMS_MBNgon::isDisjoint(GIMS_BoundingBox *box)
-{
+bool GIMS_MBNgon::isDisjoint(GIMS_BoundingBox *box) {
     for (int i = 0; i < N; i++) {
         GIMS_Point *p1 = hull[i], *p2 = hull[(i + 1) % N];
         GIMS_LineSegment l = GIMS_LineSegment(p1, p2);
@@ -20,8 +19,7 @@ bool GIMS_MBNgon::isDisjoint(GIMS_BoundingBox *box)
     return true;
 }
 
-bool GIMS_MBNgon::isInside(GIMS_BoundingBox *box)
-{
+bool GIMS_MBNgon::isInside(GIMS_BoundingBox *box) {
     for (int i = 0; i < N; i++) {
         if (!hull[i]->isInsideBox(box))
             return false;
@@ -29,8 +27,7 @@ bool GIMS_MBNgon::isInside(GIMS_BoundingBox *box)
     return true;
 }
 
-bool GIMS_MBNgon::isDisjointFromApproximation(GIMS_Approximation *other)
-{
+bool GIMS_MBNgon::isDisjointFromApproximation(GIMS_Approximation *other) {
     bool found = false;
     for (int i = 0; i < this->N; i++) {
         found = true;
@@ -49,8 +46,7 @@ bool GIMS_MBNgon::isDisjointFromApproximation(GIMS_Approximation *other)
     return false;
 }
 
-bool GIMS_MBNgon::containsApproximation(GIMS_Approximation *appr)
-{
+bool GIMS_MBNgon::containsApproximation(GIMS_Approximation *appr) {
     GIMS_ConvexHullAproximation *other = (GIMS_ConvexHullAproximation *)appr;
     for (int i = 0; i < other->N; i++) {
         if (!this->containsPoint(other->hull[i]))
@@ -59,13 +55,11 @@ bool GIMS_MBNgon::containsApproximation(GIMS_Approximation *appr)
     return true;
 }
 
-appr_intersection GIMS_MBNgon::intersection(GIMS_Approximation *other)
-{
+appr_intersection GIMS_MBNgon::intersection(GIMS_Approximation *other) {
     return calcIntersectionNGON_NGON(this, (GIMS_MBNgon *)other);
 }
 
-double GIMS_MBNgon::getArea()
-{
+double GIMS_MBNgon::getArea() {
     GIMS_Point *p1 = hull[N - 1], *p2;
     double area = 0;
     for (int i = 0; i < N; i++) {
@@ -77,13 +71,11 @@ double GIMS_MBNgon::getArea()
     return area;
 }
 
-double GIMS_MBNgon::getFalseArea()
-{
+double GIMS_MBNgon::getFalseArea() {
     return falsearea;
 }
 
-GIMS_MBNgon::GIMS_MBNgon(GIMS_Polygon *polygon)
-{
+GIMS_MBNgon::GIMS_MBNgon(GIMS_Polygon *polygon) {
     GIMS_Point **ch_points = (GIMS_Point **)malloc(polygon->externalRing->getPointCount() * sizeof(GIMS_Point *));
 
     int count = 0;
@@ -107,8 +99,7 @@ GIMS_MBNgon::GIMS_MBNgon(GIMS_Polygon *polygon)
     this->falsearea = this->getArea() - polygon->area();
 }
 
-bool GIMS_MBNgon::containsPolygon(GIMS_Polygon *p)
-{
+bool GIMS_MBNgon::containsPolygon(GIMS_Polygon *p) {
     for (int i = 0; i < p->externalRing->size; i++) {
         for (int j = 0; j < p->externalRing->list[i]->size; j++) {
             if (!this->containsPoint(p->externalRing->list[i]->list[j]))
@@ -118,8 +109,7 @@ bool GIMS_MBNgon::containsPolygon(GIMS_Polygon *p)
     return true;
 }
 
-bool GIMS_MBNgon::containsPoint(GIMS_Point *pt)
-{
+bool GIMS_MBNgon::containsPoint(GIMS_Point *pt) {
     for (int i = 0; i < N; i++) {
         GIMS_Point *a = hull[mod(i, N)], *b = hull[mod(i + 1, N)];
         if (ccw(a, b, pt) > ERR_MARGIN)
@@ -128,14 +118,12 @@ bool GIMS_MBNgon::containsPoint(GIMS_Point *pt)
     return true;
 }
 
-GIMS_MBNgon::~GIMS_MBNgon()
-{
+GIMS_MBNgon::~GIMS_MBNgon() {
     if (this->hull)
         free(this->hull);
 }
 
-int reduceHull(GIMS_Point **ch_points, int N)
-{
+int reduceHull(GIMS_Point **ch_points, int N) {
     /*if its already within the the size limits..*/
     if (N <= configuration.NGON_SIZE)
         return N;
@@ -146,11 +134,10 @@ int reduceHull(GIMS_Point **ch_points, int N)
 
     for (int i = 0; i < N; i++) {
         //A and B are two edges separated by an edge..
-        GIMS_Point *A_p1 = ch_points[mod(i - 1, N)], *A_p2 = ch_points[mod(i, N)], *B_p2 = ch_points[mod(i + 1, N)],
-                   *B_p1 = ch_points[mod(i + 2, N)];
+        GIMS_Point *A_p1 = ch_points[mod(i - 1, N)], *A_p2 = ch_points[mod(i, N)], *B_p2 = ch_points[mod(i + 1, N)], *B_p1 = ch_points[mod(i + 2, N)];
 
-        mpf_class A_p1_x = A_p1->x, A_p1_y = A_p1->y, A_p2_x = A_p2->x, A_p2_y = A_p2->y, B_p1_x = B_p1->x, B_p1_y = B_p1->y,
-                  B_p2_x = B_p2->x, B_p2_y = B_p2->y;
+        mpf_class A_p1_x = A_p1->x, A_p1_y = A_p1->y, A_p2_x = A_p2->x, A_p2_y = A_p2->y, B_p1_x = B_p1->x, B_p1_y = B_p1->y, B_p2_x = B_p2->x,
+                  B_p2_y = B_p2->y;
 
         mpf_class s1_x, s1_y, s2_x, s2_y;
         s1_x = A_p2_x - A_p1_x;
@@ -158,8 +145,8 @@ int reduceHull(GIMS_Point **ch_points, int N)
         s2_x = B_p2_x - B_p1_x;
         s2_y = B_p2_y - B_p1_y;
 
-        mpf_class s_den = (-s2_x * s1_y + s1_x * s2_y), s_num = (-s1_y * (A_p1_x - B_p1_x) + s1_x * (A_p1_y - B_p1_y)),
-                  t_den = (-s2_x * s1_y + s1_x * s2_y), t_num = (s2_x * (A_p1_y - B_p1_y) - s2_y * (A_p1_x - B_p1_x));
+        mpf_class s_den = (-s2_x * s1_y + s1_x * s2_y), s_num = (-s1_y * (A_p1_x - B_p1_x) + s1_x * (A_p1_y - B_p1_y)), t_den = (-s2_x * s1_y + s1_x * s2_y),
+                  t_num = (s2_x * (A_p1_y - B_p1_y) - s2_y * (A_p1_x - B_p1_x));
 
         /*if the lines are parallel ignore.*/
         if ((s_den < ERR_MARGIN && s_den > -ERR_MARGIN) || (t_den < ERR_MARGIN && t_den > -ERR_MARGIN))
@@ -194,8 +181,7 @@ int reduceHull(GIMS_Point **ch_points, int N)
     return reduceHull(ch_points, N - 1);
 }
 
-appr_intersection calcIntersectionNGON_NGON(GIMS_MBNgon *A, GIMS_MBNgon *B)
-{
+appr_intersection calcIntersectionNGON_NGON(GIMS_MBNgon *A, GIMS_MBNgon *B) {
     /*Create a polygon with appr A*/
     GIMS_LineString *ringA = new GIMS_LineString(A->N + 1);
     memcpy(ringA->list, A->hull, A->N * sizeof(GIMS_Point *));

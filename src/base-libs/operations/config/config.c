@@ -17,8 +17,7 @@ map *parse_command_line(map *args, int arg_desc_count, arg_t *arg_desc, int argc
 map *parse_config_file(map *args, char *path, int arg_desc_count, arg_t *arg_desc);
 char parse_argument_value_pair(map *args, arg_t *desc, char *value);
 
-__attribute__((noreturn)) void elegant_exit(int arg_desc_count, arg_t *arg_desc, map *args, char *msg, ...)
-{
+__attribute__((noreturn)) void elegant_exit(int arg_desc_count, arg_t *arg_desc, map *args, char *msg, ...) {
     va_list argptr;
     va_start(argptr, msg);
 
@@ -32,8 +31,7 @@ __attribute__((noreturn)) void elegant_exit(int arg_desc_count, arg_t *arg_desc,
     pthread_exit(EXIT_FAILURE);
 }
 
-map *load_config(int arg_desc_count, arg_t *arg_desc, int argc, char **argv)
-{
+map *load_config(int arg_desc_count, arg_t *arg_desc, int argc, char **argv) {
     map *args = map_new(arg_desc_count * 2 + 2);
 
     // Initialize the arg maps at 0
@@ -73,8 +71,7 @@ map *load_config(int arg_desc_count, arg_t *arg_desc, int argc, char **argv)
     return parse_command_line(args, arg_desc_count, arg_desc, argc, argv);
 }
 
-char is_blank_line(const char *line)
-{
+char is_blank_line(const char *line) {
     int i = 0;
     while (line[i] == '\t' || line[i] == ' ')
         i++;
@@ -83,8 +80,7 @@ char is_blank_line(const char *line)
     return 1;
 }
 
-void parse_config_file_line(map *args, char *line, int arg_desc_count, arg_t *arg_desc)
-{
+void parse_config_file_line(map *args, char *line, int arg_desc_count, arg_t *arg_desc) {
     int first_whitespace_index = 0;
     while (line[first_whitespace_index] != ' ' && first_whitespace_index < 2048) {
         first_whitespace_index++;
@@ -110,8 +106,7 @@ void parse_config_file_line(map *args, char *line, int arg_desc_count, arg_t *ar
     }
 }
 
-map *parse_config_file(map *args, char *path, int arg_desc_count, arg_t *arg_desc)
-{
+map *parse_config_file(map *args, char *path, int arg_desc_count, arg_t *arg_desc) {
     info("Loading configuration from file %s\n", path);
 
     FILE *f = fopen(path, "r");
@@ -139,8 +134,7 @@ map *parse_config_file(map *args, char *path, int arg_desc_count, arg_t *arg_des
  * Transforms some given argument list (argc/argv) into a key/value map, provided that a
  * description of the arguments to expect is given.
  */
-map *parse_command_line(map *args, int arg_desc_count, arg_t *arg_desc, int argc, char **argv)
-{
+map *parse_command_line(map *args, int arg_desc_count, arg_t *arg_desc, int argc, char **argv) {
     map *arg_desc_map = map_new(arg_desc_count + 5);
 
     for (int i = 0; i < arg_desc_count; i++) {
@@ -206,8 +200,7 @@ map *parse_command_line(map *args, int arg_desc_count, arg_t *arg_desc, int argc
     return args;
 }
 
-char parse_argument_value_pair(map *args, arg_t *desc, char *value)
-{
+char parse_argument_value_pair(map *args, arg_t *desc, char *value) {
     map_set(args, desc->short_name, 1);
 
     // Handle the case of previously parsed and allocated argument values
@@ -252,8 +245,7 @@ char parse_argument_value_pair(map *args, arg_t *desc, char *value)
     return 0;
 }
 
-void print_argument(arg_t *arg_desc, int final_size)
-{
+void print_argument(arg_t *arg_desc, int final_size) {
     unsigned long int size = strlen(arg_desc->short_name) + strlen(arg_desc->long_name) + 6;
 
     int padding = final_size - size + 2;
@@ -271,8 +263,7 @@ void print_argument(arg_t *arg_desc, int final_size)
 /**
  * Prints the usage of the program based on some description of its arguments.
  */
-void print_usage(int arg_desc_count, arg_t *arg_desc)
-{
+void print_usage(int arg_desc_count, arg_t *arg_desc) {
     printf("Usage:\n");
     printf("\n");
 
@@ -303,8 +294,7 @@ void print_usage(int arg_desc_count, arg_t *arg_desc)
     printf("\n");
 }
 
-void deallocate_arg_map(int arg_desc_count, arg_t *arg_desc, map *arg_map)
-{
+void deallocate_arg_map(int arg_desc_count, arg_t *arg_desc, map *arg_map) {
     for (int i = 0; i < arg_desc_count; i++) {
         if (map_get(arg_map, arg_desc[i].short_name) && arg_desc[i].type != FLAG) {
             free(map_get(arg_map, arg_desc[i].long_name));

@@ -8,13 +8,11 @@
 auth_request *parse_request(char *request);
 
 /*Implementation*/
-void requests_set_callback(requests_resolver *resolver, auth_verb action, char *(*callback)(auth_request *))
-{
+void requests_set_callback(requests_resolver *resolver, auth_verb action, char *(*callback)(auth_request *)) {
     resolver->callbacks[action] = callback;
 }
 
-void free_request(auth_request *r)
-{
+void free_request(auth_request *r) {
     if (r->username)
         free(r->username);
     if (r->password)
@@ -25,8 +23,7 @@ void free_request(auth_request *r)
         free(r);
 }
 
-char *requests_resolve(requests_resolver *resolver, char *request)
-{
+char *requests_resolve(requests_resolver *resolver, char *request) {
     auth_request *r = parse_request(request);
 
     char *response;
@@ -41,8 +38,7 @@ char *requests_resolve(requests_resolver *resolver, char *request)
     return response;
 }
 
-auth_request *parse_request(char *request)
-{
+auth_request *parse_request(char *request) {
     // Initialize parser
     jsmn_parser parser;
     jsmn_init(&parser);

@@ -2,8 +2,7 @@
 
 #include <string.h>
 
-auth_verb verb_translate_from_string(char *verb)
-{
+auth_verb verb_translate_from_string(char *verb) {
     if (strcmp(verb, "new") == 0) {
         return AUTH_NEW;
 

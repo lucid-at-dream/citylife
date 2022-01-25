@@ -1,7 +1,6 @@
 #include "LinePolygonIntersection.hpp"
 
-GIMS_MultiLineString *clipMultiLineStringInDCEL(DCEL &planargraph, GIMS_BoundingBox *domain)
-{
+GIMS_MultiLineString *clipMultiLineStringInDCEL(DCEL &planargraph, GIMS_BoundingBox *domain) {
     GIMS_MultiLineString *clippedMLS = new GIMS_MultiLineString();
 
     for (halfedgelist::iterator it = planargraph.halfedges.begin(); it != planargraph.halfedges.end(); it++) {
@@ -27,8 +26,7 @@ GIMS_MultiLineString *clipMultiLineStringInDCEL(DCEL &planargraph, GIMS_Bounding
     return clippedMLS;
 }
 
-DCEL buildPlanarGraph_mlspol(GIMS_MultiLineString *mls, GIMS_Polygon *pol, GIMS_BoundingBox *domain)
-{
+DCEL buildPlanarGraph_mlspol(GIMS_MultiLineString *mls, GIMS_Polygon *pol, GIMS_BoundingBox *domain) {
     DCEL planargraph;
 
     //clip the linestring
@@ -85,8 +83,7 @@ DCEL buildPlanarGraph_mlspol(GIMS_MultiLineString *mls, GIMS_Polygon *pol, GIMS_
     return planargraph;
 }
 
-DCEL buildPlanarGraph_polmls(GIMS_Polygon *pol, GIMS_MultiLineString *mls, GIMS_BoundingBox *domain)
-{
+DCEL buildPlanarGraph_polmls(GIMS_Polygon *pol, GIMS_MultiLineString *mls, GIMS_BoundingBox *domain) {
     DCEL planargraph;
 
     //clip the linestring
@@ -123,8 +120,7 @@ DCEL buildPlanarGraph_polmls(GIMS_Polygon *pol, GIMS_MultiLineString *mls, GIMS_
     return planargraph;
 }
 
-void DE9IM_mls_pol(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_Polygon *other, GIMS_BoundingBox *domain)
-{
+void DE9IM_mls_pol(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_Polygon *other, GIMS_BoundingBox *domain) {
     bool disjoint = true;
     for (int i = 0; disjoint && i < query->size; i++) {
         if (!(other->approximation->isDisjoint(&(query->list[i]->bbox)))) {
@@ -204,8 +200,7 @@ void DE9IM_mls_pol(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_Polygon *
     clearSearchByproducts();
 }
 
-void DE9IM_pol_mls(DE9IM *resultset, GIMS_Polygon *query, GIMS_MultiLineString *other, GIMS_BoundingBox *domain)
-{
+void DE9IM_pol_mls(DE9IM *resultset, GIMS_Polygon *query, GIMS_MultiLineString *other, GIMS_BoundingBox *domain) {
     bool disjoint = true;
     for (int i = 0; disjoint && i < other->size; i++) {
         if (!(query->approximation->isDisjoint(&(other->list[i]->bbox)))) {
@@ -290,8 +285,7 @@ void DE9IM_pol_mls(DE9IM *resultset, GIMS_Polygon *query, GIMS_MultiLineString *
   already been somewhat tested because there's another copy of it in the polygon 
   intersection... ahaha that's right, two copies in the same file and it is still
   elsewhere too. Anyone with intents of cleaning up this mess is crying right now.*/
-intersectionset findIntersections_mlspol(GIMS_MultiLineString *mls, GIMS_Polygon *pol)
-{
+intersectionset findIntersections_mlspol(GIMS_MultiLineString *mls, GIMS_Polygon *pol) {
     GIMS_MultiLineString *A = mls, *B = pol->externalRing;
 
     intersectionset intersections(&ls_cmp);
@@ -357,8 +351,7 @@ intersectionset findIntersections_mlspol(GIMS_MultiLineString *mls, GIMS_Polygon
     return intersections;
 }
 
-intersectionset findIntersections_polmls(GIMS_Polygon *pol, GIMS_MultiLineString *mls)
-{
+intersectionset findIntersections_polmls(GIMS_Polygon *pol, GIMS_MultiLineString *mls) {
     GIMS_MultiLineString *A = pol->externalRing, *B = mls;
 
     intersectionset intersections(&ls_cmp);
@@ -425,8 +418,7 @@ intersectionset findIntersections_polmls(GIMS_Polygon *pol, GIMS_MultiLineString
     return intersections;
 }
 
-void calculateFaceData_polmls(DCEL &dcel, GIMS_Polygon *pol, GIMS_MultiLineString *mls, GIMS_BoundingBox *domain)
-{
+void calculateFaceData_polmls(DCEL &dcel, GIMS_Polygon *pol, GIMS_MultiLineString *mls, GIMS_BoundingBox *domain) {
     for (facelist::iterator it = dcel.faces.begin(); it != dcel.faces.end(); it++) {
         face *f = *it;
 
@@ -463,8 +455,7 @@ void calculateFaceData_polmls(DCEL &dcel, GIMS_Polygon *pol, GIMS_MultiLineStrin
     }
 }
 
-void calculateFaceData_mlspol(DCEL &dcel, GIMS_MultiLineString *mls, GIMS_Polygon *pol, GIMS_BoundingBox *domain)
-{
+void calculateFaceData_mlspol(DCEL &dcel, GIMS_MultiLineString *mls, GIMS_Polygon *pol, GIMS_BoundingBox *domain) {
     for (facelist::iterator it = dcel.faces.begin(); it != dcel.faces.end(); it++) {
         face *f = *it;
 

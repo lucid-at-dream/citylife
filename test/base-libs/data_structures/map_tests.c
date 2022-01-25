@@ -9,8 +9,7 @@
 
 char *new_string(char *);
 
-char test_map_add_get()
-{
+char test_map_add_get() {
     char *ZE_NAME = new_string("ze");
     char *ZE_PASS = new_string("ze_");
 
@@ -27,8 +26,7 @@ char test_map_add_get()
     return assertion_result;
 }
 
-char test_map_get_empty_map()
-{
+char test_map_get_empty_map() {
     map *m = map_new(16);
     char *ze = map_get(m, "ze");
     map_destroy(m);
@@ -36,8 +34,7 @@ char test_map_get_empty_map()
     return assert_null("Retrieving a value from an empty map should yield a NULL pointer.", ze);
 }
 
-char test_map_add_2_elements()
-{
+char test_map_add_2_elements() {
     char *ZE_NAME = new_string("ze");
     char *ZE_PASS = new_string("ze_");
     char *MARIA_NAME = new_string("maria");
@@ -63,8 +60,7 @@ char test_map_add_2_elements()
     return assertion_result;
 }
 
-char test_map_add_2_doppleganger_elements()
-{
+char test_map_add_2_doppleganger_elements() {
     char *ZE_NAME = new_string("zemanel");
     char *ZE_PASS = new_string("zemanel_");
     char *ZE_DOP_NAME = new_string("zemaneli");
@@ -90,8 +86,7 @@ char test_map_add_2_doppleganger_elements()
     return assertion_result;
 }
 
-char test_map_add_get_10000_elements_N_buckets_500_millis(int buckets)
-{
+char test_map_add_get_10000_elements_N_buckets_500_millis(int buckets) {
     int n_elements = 10000;
     char *NAME_PREFIX = "zemanel";
     char *PASS_PREFIX = "zemanel_";
@@ -144,18 +139,15 @@ char test_map_add_get_10000_elements_N_buckets_500_millis(int buckets)
     return assertion_result;
 }
 
-char test_map_add_get_10000_elements_1_bucket_500_millis()
-{
+char test_map_add_get_10000_elements_1_bucket_500_millis() {
     return test_map_add_get_10000_elements_N_buckets_500_millis(1);
 }
 
-char test_map_add_get_10000_elements_1000_buckets_500_millis()
-{
+char test_map_add_get_10000_elements_1000_buckets_500_millis() {
     return test_map_add_get_10000_elements_N_buckets_500_millis(1000);
 }
 
-char test_map_add_same_key_twice()
-{
+char test_map_add_same_key_twice() {
     char *KEY = new_string("key");
     char *VALUE_1 = new_string("v1");
     char *VALUE_2 = new_string("v2");
@@ -177,8 +169,7 @@ char test_map_add_same_key_twice()
     return assertion_result;
 }
 
-char test_map_delete_user()
-{
+char test_map_delete_user() {
     char *CONST_KEY = "key";
     char *KEY = new_string(CONST_KEY);
     char *VALUE = new_string("v1");
@@ -211,8 +202,7 @@ char test_map_delete_user()
     return 0;
 }
 
-char test_map_delete_user_among_many_users()
-{
+char test_map_delete_user_among_many_users() {
     int n_keys = 1000;
     char *KEY_PREFIX = "k_";
     char *VALUE_PREFIX = "v_";
@@ -267,8 +257,7 @@ char test_map_delete_user_among_many_users()
     return assertion_result;
 }
 
-char test_map_delete_non_existing_user()
-{
+char test_map_delete_non_existing_user() {
     map *m = map_new(1);
 
     map_set(m, "aa", "aa");
@@ -282,22 +271,20 @@ char test_map_delete_non_existing_user()
     return 0;
 }
 
-test test_suite[] = { { "Test add functionality in maps", test_map_add_get },
-                      { "Test map get on empty map", test_map_get_empty_map },
-                      { "Test map add 2 elements", test_map_add_2_elements },
-                      { "Test adding 2 look alike elements to the map", test_map_add_2_doppleganger_elements },
-                      { "Test adding 10K users in a map with 1K bucket lists and retrieving in less than 500ms",
-                        test_map_add_get_10000_elements_1000_buckets_500_millis },
-                      { "Test adding 10K users in a map with 1 bucket list and retrieving in less than 500ms",
-                        test_map_add_get_10000_elements_1_bucket_500_millis },
-                      { "Test adding two values for the same key. The last value inserted should be returned.",
-                        test_map_add_same_key_twice },
-                      { "Test deleting an existing user from a map", test_map_delete_user },
-                      { "Test deleting some users among several other users", test_map_delete_user_among_many_users },
-                      { "Test deleting a user that does not exist", test_map_delete_non_existing_user } };
+test test_suite[] = {
+    { "Test add functionality in maps", test_map_add_get },
+    { "Test map get on empty map", test_map_get_empty_map },
+    { "Test map add 2 elements", test_map_add_2_elements },
+    { "Test adding 2 look alike elements to the map", test_map_add_2_doppleganger_elements },
+    { "Test adding 10K users in a map with 1K bucket lists and retrieving in less than 500ms", test_map_add_get_10000_elements_1000_buckets_500_millis },
+    { "Test adding 10K users in a map with 1 bucket list and retrieving in less than 500ms", test_map_add_get_10000_elements_1_bucket_500_millis },
+    { "Test adding two values for the same key. The last value inserted should be returned.", test_map_add_same_key_twice },
+    { "Test deleting an existing user from a map", test_map_delete_user },
+    { "Test deleting some users among several other users", test_map_delete_user_among_many_users },
+    { "Test deleting a user that does not exist", test_map_delete_non_existing_user }
+};
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     suite_report report = run_test_suite(test_suite, sizeof(test_suite) / sizeof(test));
 
     if (report.failures > 0) {
@@ -307,8 +294,7 @@ int main(int argc, char **argv)
     return 0;
 }
 
-char *new_string(char *string)
-{
+char *new_string(char *string) {
     int max_size = 100;
     int buff_size = strlen(string) + 1 < max_size ? strlen(string) + 1 : max_size;
     char *ns = (char *)calloc(buff_size, sizeof(char));

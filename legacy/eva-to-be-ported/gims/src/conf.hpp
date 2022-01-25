@@ -9,15 +9,13 @@
 #include <iostream>
 #include <list>
 
-inline bool verifyFileExistance(const std::string &fname)
-{
+inline bool verifyFileExistance(const std::string &fname) {
     struct stat buffer;
     return (stat(fname.c_str(), &buffer) == 0);
 }
 bool blankLine(char *line);
 
-namespace conf
-{
+namespace conf {
 typedef struct _db_conf {
     char *keyword;
     char *value;

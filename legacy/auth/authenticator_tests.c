@@ -10,8 +10,7 @@
 
 char *new_string(char *);
 
-char test_auth_add_user()
-{
+char test_auth_add_user() {
     authenticator *auth = authenticator_new();
     result auth_result = add_user(auth, "ze", "ze");
     authenticator_destroy(auth);
@@ -22,8 +21,7 @@ char test_auth_add_user()
     return 0;
 }
 
-char test_auth_add_same_user_twice()
-{
+char test_auth_add_same_user_twice() {
     authenticator *auth = authenticator_new();
 
     char *ZE_NAME = "ze";
@@ -45,8 +43,7 @@ char test_auth_add_same_user_twice()
     return 0;
 }
 
-char test_auth_do_auth()
-{
+char test_auth_do_auth() {
     authenticator *auth = authenticator_new();
 
     result auth_result = add_user(auth, "ze", "ze");
@@ -65,8 +62,7 @@ char test_auth_do_auth()
     return 0;
 }
 
-char test_auth_do_auth_wrong_password()
-{
+char test_auth_do_auth_wrong_password() {
     authenticator *auth = authenticator_new();
 
     result auth_result = add_user(auth, "ze", "ze");
@@ -85,8 +81,7 @@ char test_auth_do_auth_wrong_password()
     return 0;
 }
 
-char test_auth_do_auth_change_password()
-{
+char test_auth_do_auth_change_password() {
     authenticator *auth = authenticator_new();
 
     result auth_result = add_user(auth, "ze", "ze");
@@ -125,8 +120,7 @@ char test_auth_do_auth_change_password()
     return 0;
 }
 
-char test_auth_do_auth_delete_user()
-{
+char test_auth_do_auth_delete_user() {
     authenticator *auth = authenticator_new();
 
     result auth_result = add_user(auth, "ze", "ze");
@@ -157,8 +151,7 @@ char test_auth_do_auth_delete_user()
     return 0;
 }
 
-char test_auth_do_auth_delete_user_wrong_pass()
-{
+char test_auth_do_auth_delete_user_wrong_pass() {
     authenticator *auth = authenticator_new();
 
     result auth_result = add_user(auth, "ze", "ze");
@@ -197,8 +190,7 @@ test test_suite[] = { { "Add user Ze with password Ze to the authentication serv
                       { "Test deleting an existing user", test_auth_do_auth_delete_user },
                       { "Test that existing user is not deleted if wrong pass is provided", test_auth_do_auth_delete_user_wrong_pass } };
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     suite_report report = run_test_suite(test_suite, sizeof(test_suite) / sizeof(test));
 
     if (report.failures > 0) {
@@ -208,8 +200,7 @@ int main(int argc, char **argv)
     return 0;
 }
 
-char *new_string(char *string)
-{
+char *new_string(char *string) {
     char *ns = (char *)calloc(strlen(string) + 1, sizeof(char));
     sprintf(ns, "%s", string);
     return ns;

@@ -18,8 +18,7 @@
 
 using namespace std;
 
-namespace PMQUADTREE
-{
+namespace PMQUADTREE {
 enum NodeType { WHITE, GRAY, BLACK };
 enum Quadrant { NW = 0, NE = 1, SE = 2, SW = 3 };
 enum Direction { NORTH, SOUTH, EAST, WEST };

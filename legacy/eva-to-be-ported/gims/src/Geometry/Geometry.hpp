@@ -14,8 +14,7 @@
 
 using namespace std;
 
-namespace GIMS_GEOMETRY
-{
+namespace GIMS_GEOMETRY {
 enum GeometryType {
     //envolving quad (aka envelope)
     BOUNDINGBOX = 1 << 0,

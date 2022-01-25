@@ -20,8 +20,7 @@ unsigned calc_hash(const char *key);
 unsigned int qhashmurmur3_32(const void *data, size_t nbytes);
 
 // Function definitions
-map *map_new(int capacity)
-{
+map *map_new(int capacity) {
     debug("map.c: Creating new map with capacity %d", capacity);
     map *m = (map *)malloc(sizeof(map));
     m->capacity = capacity;
@@ -30,8 +29,7 @@ map *map_new(int capacity)
     return m;
 }
 
-bucket *bucket_new(char *key, void *value)
-{
+bucket *bucket_new(char *key, void *value) {
     map_entry entry = { key, value };
     bucket *new_bucket = (bucket *)calloc(1, sizeof(bucket));
     new_bucket->entry = entry;
@@ -39,8 +37,7 @@ bucket *bucket_new(char *key, void *value)
     return new_bucket;
 }
 
-void map_set(map *m, char *key, void *value)
-{
+void map_set(map *m, char *key, void *value) {
     debug("map.c: Setting value of key %s to %s", key, value);
 
     if (should_resize(m)) {
@@ -78,8 +75,7 @@ void map_set(map *m, char *key, void *value)
     }
 }
 
-void *map_get(map *m, char *key)
-{
+void *map_get(map *m, char *key) {
     debug("map.c: Looking for key %s in the map", key);
 
     int index = get_index(m, key);
@@ -109,13 +105,11 @@ void *map_get(map *m, char *key)
     return NULL;
 }
 
-void map_del(map *m, char *key)
-{
+void map_del(map *m, char *key) {
     map_del_dealloc(m, key, 0, 0);
 }
 
-void map_del_dealloc(map *m, char *key, char dealloc_key, char dealloc_value)
-{
+void map_del_dealloc(map *m, char *key, char dealloc_key, char dealloc_value) {
     int index = get_index(m, key);
 
     bucket_list *list = m->table + index;
@@ -152,8 +146,7 @@ void map_del_dealloc(map *m, char *key, char dealloc_key, char dealloc_value)
     }
 }
 
-void map_iter_keys(map *m, void (*callback)(map *, void *, void *), void *callback_args)
-{
+void map_iter_keys(map *m, void (*callback)(map *, void *, void *), void *callback_args) {
     bucket *curr_bucket;
 
     for (int i = 0; i < m->capacity; i++) {
@@ -166,13 +159,11 @@ void map_iter_keys(map *m, void (*callback)(map *, void *, void *), void *callba
     }
 }
 
-char should_resize(map *m)
-{
+char should_resize(map *m) {
     return m->size > m->capacity * 4;
 }
 
-unsigned int calc_next_resize(map *m)
-{
+unsigned int calc_next_resize(map *m) {
     unsigned prev_size = 1;
     unsigned resize = 1;
 
@@ -185,8 +176,7 @@ unsigned int calc_next_resize(map *m)
     return resize;
 }
 
-void resize_map(map *m, unsigned int new_size)
-{
+void resize_map(map *m, unsigned int new_size) {
     // Create a new map
     map *aux_map = map_new(new_size);
 
@@ -217,8 +207,7 @@ void resize_map(map *m, unsigned int new_size)
     free(aux_map);
 }
 
-void map_display(map *m)
-{
+void map_display(map *m) {
     for (int i = 0; i < m->capacity; i++) {
         printf("%d: ", i);
         bucket_list *list = m->table + i;
@@ -236,19 +225,16 @@ void map_display(map *m)
     }
 }
 
-unsigned calc_hash(const char *key)
-{
+unsigned calc_hash(const char *key) {
     return qhashmurmur3_32(key, strlen(key));
 }
 
-unsigned get_index(map *m, char *key)
-{
+unsigned get_index(map *m, char *key) {
     unsigned int hash = calc_hash(key);
     return hash % m->capacity;
 }
 
-void bucket_list_destroy(bucket *b, char dealloc_keys, char dealloc_vals)
-{
+void bucket_list_destroy(bucket *b, char dealloc_keys, char dealloc_vals) {
     if (b == NULL) {
         return;
     }
@@ -263,13 +249,11 @@ void bucket_list_destroy(bucket *b, char dealloc_keys, char dealloc_vals)
     free(b);
 }
 
-void map_destroy(map *m)
-{
+void map_destroy(map *m) {
     map_destroy_dealloc(m, 0, 0);
 }
 
-void map_destroy_dealloc(map *m, char dealloc_keys, char dealloc_vals)
-{
+void map_destroy_dealloc(map *m, char dealloc_keys, char dealloc_vals) {
     for (int i = 0; i < m->capacity; i++) {
         if (m->table[i].begin != NULL) {
             bucket_list_destroy(m->table[i].begin, dealloc_keys, dealloc_vals);
@@ -299,8 +283,7 @@ void map_destroy_dealloc(map *m, char dealloc_keys, char dealloc_vals)
  *  in 2012 and published it as a part of qLibc component.
  * @endcode
  */
-unsigned int qhashmurmur3_32(const void *data, size_t nbytes)
-{
+unsigned int qhashmurmur3_32(const void *data, size_t nbytes) {
     if (data == NULL || nbytes == 0)
         return 0;
 

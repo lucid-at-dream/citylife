@@ -8,18 +8,15 @@
 
 requests_resolver resolver;
 
-char *callback_1(auth_request *r)
-{
+char *callback_1(auth_request *r) {
     return "first";
 }
 
-char *callback_2(auth_request *r)
-{
+char *callback_2(auth_request *r) {
     return "second";
 }
 
-char *callback_aggregate(auth_request *r)
-{
+char *callback_aggregate(auth_request *r) {
     char *agg = (char *)calloc(64, sizeof(char));
 
     if (r->username != NULL) {
@@ -37,8 +34,7 @@ char *callback_aggregate(auth_request *r)
     return agg;
 }
 
-char test_requests_resolve_parse_well_formed_request()
-{
+char test_requests_resolve_parse_well_formed_request() {
     char *auth_request = "{"
                          "\"action\": \"new\","
                          "\"user\": \"ze\","
@@ -55,8 +51,7 @@ char test_requests_resolve_parse_well_formed_request()
     return 0;
 }
 
-char test_requests_resolve_ensure_correct_callbacks_are_called()
-{
+char test_requests_resolve_ensure_correct_callbacks_are_called() {
     char *auth_request = "{"
                          "\"action\": \"auth\","
                          "\"user\": \"ze\","
@@ -86,8 +81,7 @@ test test_suite[] = {
     { "Test parsing a well formed request", test_requests_resolve_parse_well_formed_request },
 };
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     requests_set_callback(&resolver, AUTH_NEW, callback_aggregate);
     requests_set_callback(&resolver, AUTH_AUTH, callback_1);
     requests_set_callback(&resolver, AUTH_DELETE, callback_2);

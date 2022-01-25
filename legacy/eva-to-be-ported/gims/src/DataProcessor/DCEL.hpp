@@ -17,8 +17,7 @@ public:
 
     vertex();
 
-    static int compare(const vertex &a, const vertex &b)
-    {
+    static int compare(const vertex &a, const vertex &b) {
         long long int ax = a.pt->x * 100000000.0, ay = a.pt->y * 100000000.0, bx = b.pt->x * 100000000.0, by = b.pt->y * 100000000.0;
 
         ax /= 100;
@@ -38,8 +37,7 @@ public:
     }
 };
 struct vertex_cmp {
-    bool operator()(const vertex *a, const vertex *b) const
-    {
+    bool operator()(const vertex *a, const vertex *b) const {
         return vertex::compare(*a, *b) > 0;
     }
 };
@@ -58,8 +56,7 @@ public:
 
     halfedge();
 
-    static int compare(const halfedge &a, const halfedge &b)
-    {
+    static int compare(const halfedge &a, const halfedge &b) {
         int first = vertex::compare(*(a.tail), *(b.tail));
         if (first != 0)
             return first;
@@ -68,8 +65,7 @@ public:
     }
 };
 struct halfedge_cmp {
-    bool operator()(const halfedge *a, const halfedge *b) const
-    {
+    bool operator()(const halfedge *a, const halfedge *b) const {
         return halfedge::compare(*a, *b) > 0;
     }
 };

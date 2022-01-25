@@ -16,8 +16,6 @@ char root_degree_reduction(heap *h);
 void one_node_loss_reduction(heap *h, heap_node *x);
 void two_node_loss_reduction(heap *h, heap_node *a, heap_node *b);
 
-
-
 heap *heap_new(int (*compare)(const void *a, const void *b)) {
     heap *h = (heap *)calloc(1, sizeof(heap));
     h->compare = compare;
@@ -29,7 +27,6 @@ void *heap_peek(heap *h) {
 }
 
 heap *heap_push(heap *h, void *item) {
-
     heap_node *n = heap_node_new();
     n->item = item;
 
@@ -43,20 +40,21 @@ heap *heap_push(heap *h, void *item) {
     }
 }
 
-heap* heap_meld(heap *h1, heap *h2) {
-
+heap *heap_meld(heap *h1, heap *h2) {
     // x->size <= y->size
     heap *x, *y;
     if (h1->root->size <= h2->root->size) {
-        x = h1; y = h2;
+        x = h1;
+        y = h2;
     } else {
-        x = h2; y = h1;
+        x = h2;
+        y = h1;
     }
 
-    // Make all nodes in the tree rooted at x passive 
+    // Make all nodes in the tree rooted at x passive
     // TODO: Do this implicitly, as described in Section 6, so that it takes O81) time.)
     list_node *child = x->root->children->head;
-    while(child != NULL) {
+    while (child != NULL) {
         ((heap_node *)(child->value))->is_active = 0;
         child = child->next;
     }
@@ -65,11 +63,13 @@ heap* heap_meld(heap *h1, heap *h2) {
     heap_node *u, *v;
     heap *final_heap, *discarded_heap;
     if (y->compare(x->root->item, y->root->item) < 0) {
-        u = x->root; v = y->root;
+        u = x->root;
+        v = y->root;
         final_heap = x;
         discarded_heap = y;
     } else {
-        u = y->root; v = x->root;
+        u = y->root;
+        v = x->root;
         final_heap = y;
         discarded_heap = x;
     }
@@ -81,12 +81,12 @@ heap* heap_meld(heap *h1, heap *h2) {
 
     // TODO: update the queue Q
 
-    // TODO: find active roots 
+    // TODO: find active roots
     // active_root_reduction(final_heap, )
 
     // Do a root degree reduction to the extent possible
     int transformation_succeeded = 1;
-    while(transformation_succeeded > 0) {
+    while (transformation_succeeded > 0) {
         transformation_succeeded = root_degree_reduction(final_heap);
     }
 
@@ -94,7 +94,6 @@ heap* heap_meld(heap *h1, heap *h2) {
 }
 
 void heap_decrease_key(heap *h, heap_node *x, void *new_item) {
-    
     if (h->compare(x->item, new_item) < 0) {
         // Increasing the key is not supported
         return;
@@ -109,7 +108,7 @@ void heap_decrease_key(heap *h, heap_node *x, void *new_item) {
     }
 
     // if x.key < z.key swap the items in x and z
-    // TODO: Notice how key and item are two separate things, requires changing the struct =/ 
+    // TODO: Notice how key and item are two separate things, requires changing the struct =/
     heap_node *z = h->root;
     if (h->compare(x->item, z->item) < 0) {
         void *tmp = x->item;
@@ -122,7 +121,6 @@ void heap_decrease_key(heap *h, heap_node *x, void *new_item) {
     // Make x a child of the root
     list_append(z->children, x);
     x->parent = z;
-
 
     // If x was an active node but not an active root
     if (x->is_active && x->parent->is_active) {
@@ -159,10 +157,6 @@ void heap_destroy(heap *h) {
     free(h);
 }
 
-
-
-
-
 heap_node *heap_node_new() {
     heap_node *n = (heap_node *)calloc(1, sizeof(heap_node));
     n->children = list_new();
@@ -171,18 +165,14 @@ heap_node *heap_node_new() {
 
 void heap_node_destroy(heap_node *n) {
     list_node *child = n->children->head;
-    while(child != NULL) {
+    while (child != NULL) {
         heap_node_destroy(child->value);
         child = child->next;
     }
-    
+
     list_destroy(n->children);
     free(n);
 }
-
-
-
-
 
 /**
  * A passive node is linkable if all its children are passive.
@@ -190,7 +180,7 @@ void heap_node_destroy(heap_node *n) {
 char is_linkable(heap_node *x) {
     if (!x->is_active) {
         list_node *child = x->children->head;
-        while(child != NULL) {
+        while (child != NULL) {
             if (((heap_node *)(child->value))->is_active) {
                 return 0;
             }
@@ -204,10 +194,6 @@ char is_linkable(heap_node *x) {
 char is_active_root(heap_node *x) {
     return x->is_active && !x->parent->is_active;
 }
-
-
-
-
 
 /**
  * The basic transformation is to link a node x and its subtree below another
@@ -236,7 +222,6 @@ void link(heap_node *x, heap_node *y) {
  * degree of the root possibly increased by one. 
  */
 void active_root_reduction(heap *h, heap_node *active_root_x, heap_node *active_root_y) {
-    
     // Compare root keys
     int rel = h->compare(active_root_x->item, active_root_y->item);
     heap_node *lesser_root, *larger_root;
@@ -267,13 +252,12 @@ void active_root_reduction(heap *h, heap_node *active_root_x, heap_node *active_
  * of the root decreases by two and the number of active roots increases by one.
  */
 char root_degree_reduction(heap *h) {
-
     // Find the three rightmost passive linkable children of the root.
     heap_node *three_linkable_rightmost_nodes[3];
-    
+
     int idx = 0;
     list_node *child = h->root->children->tail;
-    while(child != NULL && idx < 3) {
+    while (child != NULL && idx < 3) {
         if (is_linkable(child->value)) {
             three_linkable_rightmost_nodes[idx] = child->value;
             idx++;
@@ -288,10 +272,8 @@ char root_degree_reduction(heap *h) {
 
     // sort them by key: x.key < y.key < z.key
     qsort(three_linkable_rightmost_nodes, 3, sizeof(heap_node *), h->compare); // TODO: This is comparing the nodes, not the items
-    heap_node *x = three_linkable_rightmost_nodes[0],
-        *y = three_linkable_rightmost_nodes[1],
-        *z = three_linkable_rightmost_nodes[2];
-    
+    heap_node *x = three_linkable_rightmost_nodes[0], *y = three_linkable_rightmost_nodes[1], *z = three_linkable_rightmost_nodes[2];
+
     // Mark x and y as active
     x->is_active = y->is_active = 1;
 
@@ -339,9 +321,11 @@ void two_node_loss_reduction(heap *h, heap_node *a, heap_node *b) {
     // x.key < y.key
     heap_node *x, *y;
     if (h->compare(a->item, b->item) < 0) {
-        x = a; y = b;
+        x = a;
+        y = b;
     } else {
-        x = b; y = a;
+        x = b;
+        y = a;
     }
 
     heap_node *z = y->parent;

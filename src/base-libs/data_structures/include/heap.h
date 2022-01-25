@@ -4,7 +4,6 @@
 #include "list.h"
 
 typedef struct _heap_node {
-    
     // Number of nodes below this one
     int size;
 
@@ -31,7 +30,6 @@ typedef struct _heap_node {
 } heap_node;
 
 typedef struct _heap {
-
     // Total number of nodes in the heap
     int size;
 
@@ -52,7 +50,7 @@ void heap_destroy(heap *h);
 
 heap *heap_push(heap *h, void *item);
 
-heap* heap_meld(heap *h1, heap *h2);
+heap *heap_meld(heap *h1, heap *h2);
 
 void *heap_find_min(heap *h);
 

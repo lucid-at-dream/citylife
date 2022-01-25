@@ -5,24 +5,21 @@
 
 void log_message(char *level, char *message, va_list args);
 
-void info(char *message, ...)
-{
+void info(char *message, ...) {
     va_list argptr;
     va_start(argptr, message);
     log_message(" INFO", message, argptr);
     va_end(argptr);
 }
 
-void error(char *message, ...)
-{
+void error(char *message, ...) {
     va_list argptr;
     va_start(argptr, message);
     log_message("ERROR", message, argptr);
     va_end(argptr);
 }
 
-void debug(char *message, ...)
-{
+void debug(char *message, ...) {
 #ifdef DEBUG
     va_list argptr;
     va_start(argptr, message);
@@ -31,8 +28,7 @@ void debug(char *message, ...)
 #endif
 }
 
-void log_message(char *level, char *message, va_list args)
-{
+void log_message(char *level, char *message, va_list args) {
     // Get time
     time_t rawtime;
     time(&rawtime);

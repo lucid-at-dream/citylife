@@ -7,8 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-char test_single_word_bigint_add()
-{
+char test_single_word_bigint_add() {
     bigint a = bigint_new(1000);
     bigint b = bigint_new(1000);
 
@@ -30,8 +29,7 @@ char test_single_word_bigint_add()
     return 0;
 }
 
-char test_single_word_bigint_increment()
-{
+char test_single_word_bigint_increment() {
     bigint number = bigint_new(1000);
 
     bigint_increment(number);
@@ -54,8 +52,7 @@ char test_single_word_bigint_increment()
 test test_suite[] = { { "Test incrementing a single word big int", test_single_word_bigint_increment },
                       { "Test adding two single word big ints", test_single_word_bigint_add } };
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     suite_report report = run_test_suite(test_suite, sizeof(test_suite) / sizeof(test));
 
     if (report.failures > 0) {

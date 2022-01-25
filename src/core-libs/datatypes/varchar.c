@@ -3,8 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-varchar *varchar_new(char *data)
-{
+varchar *varchar_new(char *data) {
     unsigned data_length = strnlen(data, MAX_VARCHAR_SIZE);
 
     varchar *new = (varchar *)malloc(sizeof(varchar));
@@ -16,7 +15,6 @@ varchar *varchar_new(char *data)
     return new;
 }
 
-void varchar_del(varchar *var)
-{
+void varchar_del(varchar *var) {
     free(var->data);
 }

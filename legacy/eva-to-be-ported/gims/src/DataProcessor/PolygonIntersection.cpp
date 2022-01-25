@@ -25,16 +25,14 @@ intersectionset findIntersections(GIMS_Polygon *polygonA, GIMS_Polygon *polygonB
 
 list<GIMS_Point *> __deleteAfterSearch__;
 
-void clearSearchByproducts()
-{
+void clearSearchByproducts() {
     while (!__deleteAfterSearch__.empty()) {
         delete __deleteAfterSearch__.front();
         __deleteAfterSearch__.pop_front();
     }
 }
 
-void deleteAllExceptPoints(GIMS_MultiLineString *mls)
-{
+void deleteAllExceptPoints(GIMS_MultiLineString *mls) {
     if (mls == NULL)
         return;
     for (int i = 0; i < mls->size; i++)
@@ -42,8 +40,7 @@ void deleteAllExceptPoints(GIMS_MultiLineString *mls)
     delete mls;
 }
 
-void deleteAllExceptPoints(GIMS_Polygon *pol)
-{
+void deleteAllExceptPoints(GIMS_Polygon *pol) {
     deleteAllExceptPoints(pol->externalRing);
     deleteAllExceptPoints(pol->internalRings);
     pol->externalRing = NULL;
@@ -52,12 +49,9 @@ void deleteAllExceptPoints(GIMS_Polygon *pol)
 }
 
 /* Creates a dcel representation of a planar graph considering the argument polygon and domain.*/
-DCEL polygonAndDomainAsPlanarGraph(GIMS_Polygon *P, GIMS_BoundingBox *domain)
-{
-    GIMS_Point *uL = new GIMS_Point(domain->lowerLeft->x, domain->upperRight->y),
-               *uR = new GIMS_Point(domain->upperRight->x, domain->upperRight->y),
-               *lR = new GIMS_Point(domain->upperRight->x, domain->lowerLeft->y),
-               *lL = new GIMS_Point(domain->lowerLeft->x, domain->lowerLeft->y);
+DCEL polygonAndDomainAsPlanarGraph(GIMS_Polygon *P, GIMS_BoundingBox *domain) {
+    GIMS_Point *uL = new GIMS_Point(domain->lowerLeft->x, domain->upperRight->y), *uR = new GIMS_Point(domain->upperRight->x, domain->upperRight->y),
+               *lR = new GIMS_Point(domain->upperRight->x, domain->lowerLeft->y), *lL = new GIMS_Point(domain->lowerLeft->x, domain->lowerLeft->y);
 
     GIMS_LineSegment *clipPolygon[] = { new GIMS_LineSegment(uL, uR), new GIMS_LineSegment(uR, lR), new GIMS_LineSegment(lR, lL),
                                         new GIMS_LineSegment(lL, uL) };
@@ -385,8 +379,7 @@ DCEL polygonAndDomainAsPlanarGraph(GIMS_Polygon *P, GIMS_BoundingBox *domain)
     return dcel;
 }
 
-GIMS_Polygon *clipPolygonInDCEL(DCEL planargraph)
-{
+GIMS_Polygon *clipPolygonInDCEL(DCEL planargraph) {
 #ifdef DEBUG_POLINT
     if (itsmypolygon) {
         printf("==== POLYGON ====\n");
@@ -443,8 +436,7 @@ GIMS_Polygon *clipPolygonInDCEL(DCEL planargraph)
     return clippedPolygon;
 }
 
-void insertPolygonVertexes(DCEL &dcel, GIMS_Polygon *p, int id)
-{
+void insertPolygonVertexes(DCEL &dcel, GIMS_Polygon *p, int id) {
     for (int i = 0; p->externalRing && i < p->externalRing->size; i++) {
         for (int j = 0; j < p->externalRing->list[i]->size; j++) {
             vertex *v = new vertex();
@@ -462,8 +454,7 @@ void insertPolygonVertexes(DCEL &dcel, GIMS_Polygon *p, int id)
     }
 }
 
-void insertVertexesFromList(DCEL &dcel, list<GIMS_Point *> &ptlist, int id)
-{
+void insertVertexesFromList(DCEL &dcel, list<GIMS_Point *> &ptlist, int id) {
     for (list<GIMS_Point *>::iterator i = ptlist.begin(); i != ptlist.end(); i++) {
         vertex *v = new vertex();
         v->pt = *i;
@@ -480,8 +471,7 @@ void insertVertexesFromList(DCEL &dcel, list<GIMS_Point *> &ptlist, int id)
     }
 }
 
-void insertPolygonHalfedges(DCEL &dcel, intersectionset &iset)
-{
+void insertPolygonHalfedges(DCEL &dcel, intersectionset &iset) {
     int clockwise_data, counterclockwise_data;
     int internalEdge;
 
@@ -541,8 +531,7 @@ void insertPolygonHalfedges(DCEL &dcel, intersectionset &iset)
     }
 }
 
-void connectHalfedges(DCEL &dcel)
-{
+void connectHalfedges(DCEL &dcel) {
     /* for each vertex, sort the incident edges clockwise. For each pair of incident edges 
      * e1,e2 in clockwise order, assign e1->twin->next = e2 and e2->prev = e1->twin */
     for (vertexlist::iterator it = dcel.vertexes.begin(); it != dcel.vertexes.end(); it++) {
@@ -566,16 +555,14 @@ void connectHalfedges(DCEL &dcel)
     }
 }
 
-void printData(int d)
-{
+void printData(int d) {
     for (int i = 0; i < 6; i++) {
         printf("%c", d % 2 ? '1' : '0');
         d /= 2;
     }
 }
 
-void calculateFaceData(DCEL &dcel, GIMS_Polygon *polygonA, GIMS_Polygon *polygonB, GIMS_BoundingBox *domain)
-{
+void calculateFaceData(DCEL &dcel, GIMS_Polygon *polygonA, GIMS_Polygon *polygonB, GIMS_BoundingBox *domain) {
     for (facelist::iterator it = dcel.faces.begin(); it != dcel.faces.end(); it++) {
         face *f = *it;
 
@@ -631,69 +618,56 @@ void calculateFaceData(DCEL &dcel, GIMS_Polygon *polygonA, GIMS_Polygon *polygon
     }
 }
 
-int isRealVertexOfA(vertex *v)
-{
+int isRealVertexOfA(vertex *v) {
     return v->data & 4;
 }
 
-int isRealVertexOfB(vertex *v)
-{
+int isRealVertexOfB(vertex *v) {
     return v->data & 8;
 }
 
-int isVertexOfA(vertex *v)
-{
+int isVertexOfA(vertex *v) {
     return v->data & 1;
 }
 
-int isVertexOfB(vertex *v)
-{
+int isVertexOfB(vertex *v) {
     return v->data & 2;
 }
 
-int isEdgeOfA(halfedge *edge)
-{
+int isEdgeOfA(halfedge *edge) {
     return edge->data & (1 | 2);
 }
 
-int isEdgeOfB(halfedge *edge)
-{
+int isEdgeOfB(halfedge *edge) {
     return edge->data & (4 | 8);
 }
 
-int isInteriorEdgeOfA(halfedge *edge)
-{
+int isInteriorEdgeOfA(halfedge *edge) {
     return edge->data & 16;
 }
 
-int isInteriorEdgeOfB(halfedge *edge)
-{
+int isInteriorEdgeOfB(halfedge *edge) {
     return edge->data & 32;
 }
 
-int isExteriorEdgeOfA(halfedge *edge)
-{
+int isExteriorEdgeOfA(halfedge *edge) {
     return isEdgeOfA(edge) && !isInteriorEdgeOfA(edge);
 }
 
-int isExteriorEdgeOfB(halfedge *edge)
-{
+int isExteriorEdgeOfB(halfedge *edge) {
     return isEdgeOfB(edge) && !isInteriorEdgeOfB(edge);
 }
 
-int isFaceOfA(face *f)
-{
+int isFaceOfA(face *f) {
     return f->data & 2;
 }
 
-int isFaceOfB(face *f)
-{
+int isFaceOfB(face *f) {
     return f->data & 8;
 }
 
 /*returns a DCEL representing a planar graph of A and B bounded to the argument domain.*/
-DCEL buildPlanarGraph(GIMS_Polygon *polygonA, GIMS_Polygon *polygonB, GIMS_BoundingBox *domain)
-{
+DCEL buildPlanarGraph(GIMS_Polygon *polygonA, GIMS_Polygon *polygonB, GIMS_BoundingBox *domain) {
     DCEL planargraph;
 
     /*1. clip polygons to domain*/
@@ -778,8 +752,7 @@ DCEL buildPlanarGraph(GIMS_Polygon *polygonA, GIMS_Polygon *polygonB, GIMS_Bound
 }
 
 /*returns a DCEL representing a planar graph of A and B.*/
-DCEL buildPlanarGraph(GIMS_Polygon *polygonA, GIMS_Polygon *polygonB)
-{
+DCEL buildPlanarGraph(GIMS_Polygon *polygonA, GIMS_Polygon *polygonB) {
     GIMS_Point *p1 = new GIMS_Point(-1e15, -1e15), *p2 = new GIMS_Point(1e15, 1e15);
     GIMS_BoundingBox *domain = new GIMS_BoundingBox(p1, p2);
 
@@ -787,8 +760,7 @@ DCEL buildPlanarGraph(GIMS_Polygon *polygonA, GIMS_Polygon *polygonB)
     return planargraph;
 }
 
-void DE9IM_pol_pol(DE9IM *resultset, GIMS_Polygon *A, GIMS_Polygon *B, GIMS_BoundingBox *domain)
-{
+void DE9IM_pol_pol(DE9IM *resultset, GIMS_Polygon *A, GIMS_Polygon *B, GIMS_BoundingBox *domain) {
     //#define USE_APPROXIMATION_INTERSECTION
 
 #ifdef USE_APPROXIMATION_INTERSECTION
@@ -838,8 +810,8 @@ void DE9IM_pol_pol(DE9IM *resultset, GIMS_Polygon *A, GIMS_Polygon *B, GIMS_Boun
 
     /* With the calculated planar graph, it is now possible to draw conclusions about the
      * intersection matrix of the polygons. */
-    bool hasCommonFace = false, hasCommonEdges = false, hasCommonVertexes = false, edgeOfPolygonACrossesPolygonB = false,
-         edgeOfPolygonBCrossesPolygonA = false, polygonAUniquelyEnclosesFace = false, polygonBUniquelyEnclosesFace = false;
+    bool hasCommonFace = false, hasCommonEdges = false, hasCommonVertexes = false, edgeOfPolygonACrossesPolygonB = false, edgeOfPolygonBCrossesPolygonA = false,
+         polygonAUniquelyEnclosesFace = false, polygonBUniquelyEnclosesFace = false;
 
     for (facelist::iterator it = planargraph.faces.begin(); it != planargraph.faces.end(); it++) {
         face *f = *it;
@@ -909,14 +881,12 @@ void DE9IM_pol_pol(DE9IM *resultset, GIMS_Polygon *A, GIMS_Polygon *B, GIMS_Boun
     clearSearchByproducts();
 }
 
-pointmatrix newPointMatrix()
-{
+pointmatrix newPointMatrix() {
     pointmatrix matrix = { 0, 0, NULL };
     return matrix;
 }
 
-void addListToPointMatrix(pointmatrix &matrix, pointlist &ptlist)
-{
+void addListToPointMatrix(pointmatrix &matrix, pointlist &ptlist) {
     if (matrix.nrows + 1 > matrix.allocated) {
         matrix.matrix = (pointlist **)realloc(matrix.matrix, sizeof(pointlist *) * (matrix.allocated + 2));
         matrix.allocated += 2;
@@ -924,14 +894,12 @@ void addListToPointMatrix(pointmatrix &matrix, pointlist &ptlist)
     matrix.matrix[matrix.nrows++] = &ptlist;
 }
 
-pointlist newPointList()
-{
+pointlist newPointList() {
     pointlist ptlist = { 0, 0, NULL };
     return ptlist;
 }
 
-void addPointToPointList(pointlist &ptlist, GIMS_Point *p, int data)
-{
+void addPointToPointList(pointlist &ptlist, GIMS_Point *p, int data) {
     if (ptlist.nnodes + 1 > ptlist.allocated) {
         ptlist.nodes = (GIMS_Point **)realloc(ptlist.nodes, sizeof(GIMS_Point *) * (ptlist.allocated + 3));
         ptlist.allocated += 3;
@@ -940,28 +908,24 @@ void addPointToPointList(pointlist &ptlist, GIMS_Point *p, int data)
     ptlist.nodes[ptlist.nnodes++]->id |= data;
 }
 
-bool __ptlist_cmp__stdlist__(GIMS_Point *a, GIMS_Point *b)
-{
+bool __ptlist_cmp__stdlist__(GIMS_Point *a, GIMS_Point *b) {
     double d1 = distanceSquared2p(a, __ptlist_cmp__reference__), d2 = distanceSquared2p(b, __ptlist_cmp__reference__);
     return d1 < d2;
 }
 
-int __plist_cmp__(const void *_a, const void *_b)
-{
+int __plist_cmp__(const void *_a, const void *_b) {
     GIMS_Point *a = *((GIMS_Point **)_a), *b = *((GIMS_Point **)_b);
     double d1 = distanceSquared2p(a, __ptlist_cmp__reference__), d2 = distanceSquared2p(b, __ptlist_cmp__reference__);
 
     return d1 < d2 ? -1 : d1 > d2 ? 1 : 0;
 }
 
-void sortPointListWithRegardToFirst(pointlist &ptlist)
-{
+void sortPointListWithRegardToFirst(pointlist &ptlist) {
     __ptlist_cmp__reference__ = ptlist.nodes[0];
     qsort(ptlist.nodes + 1, ptlist.nnodes - 1, sizeof(GIMS_Point *), __plist_cmp__);
 }
 
-void removeRepeatedPoints(pointlist &ptlist)
-{
+void removeRepeatedPoints(pointlist &ptlist) {
     GIMS_Point *prev = ptlist.nodes[0];
     int cur_ind = 1;
 
@@ -978,8 +942,7 @@ void removeRepeatedPoints(pointlist &ptlist)
     }
 }
 
-void mergePointList(pointlist &keeper, pointlist &other)
-{
+void mergePointList(pointlist &keeper, pointlist &other) {
     bool addFirst;
     if (keeper.nnodes > 0)
         addFirst = !keeper.nodes[keeper.nnodes - 1]->equals(other.nodes[0]);
@@ -1003,8 +966,7 @@ void mergePointList(pointlist &keeper, pointlist &other)
     keeper.nnodes = total;
 }
 
-bool event_cmp(PolygonIntersectionEvent a, PolygonIntersectionEvent b)
-{
+bool event_cmp(PolygonIntersectionEvent a, PolygonIntersectionEvent b) {
     if (a.pt->x < b.pt->x - ERR_MARGIN) {
         return false;
     } else if (a.pt->x < b.pt->x + ERR_MARGIN && a.pt->x > b.pt->x - ERR_MARGIN) {
@@ -1033,8 +995,7 @@ bool event_cmp(PolygonIntersectionEvent a, PolygonIntersectionEvent b)
         return true;
 }
 
-bool ls_cmp(const GIMS_LineSegment &a, const GIMS_LineSegment &b)
-{
+bool ls_cmp(const GIMS_LineSegment &a, const GIMS_LineSegment &b) {
     if (a.p1->x < b.p1->x - ERR_MARGIN)
         return true;
     else if (a.p1->x > b.p1->x + ERR_MARGIN)
@@ -1062,8 +1023,7 @@ bool ls_cmp(const GIMS_LineSegment &a, const GIMS_LineSegment &b)
     return false;
 }
 
-double eventQueueFromMultiLineString(eventset &eventQueue, GIMS_MultiLineString *mls, int id)
-{
+double eventQueueFromMultiLineString(eventset &eventQueue, GIMS_MultiLineString *mls, int id) {
     double max_x = -1e100;
     int count = 1;
 
@@ -1110,8 +1070,7 @@ double eventQueueFromMultiLineString(eventset &eventQueue, GIMS_MultiLineString 
     return max_x;
 }
 
-GIMS_Point *getRightMostPoint(GIMS_LineSegment &ls)
-{
+GIMS_Point *getRightMostPoint(GIMS_LineSegment &ls) {
     if (ls.p1->x < ls.p2->x)
         return ls.p2;
     else if (ls.p1->x > ls.p2->x)
@@ -1125,8 +1084,7 @@ GIMS_Point *getRightMostPoint(GIMS_LineSegment &ls)
     return 0;
 }
 
-bool compareByRightmostPoint(GIMS_LineSegment &a, GIMS_LineSegment &b)
-{
+bool compareByRightmostPoint(GIMS_LineSegment &a, GIMS_LineSegment &b) {
     GIMS_Point *arp = getRightMostPoint(a), *brp = getRightMostPoint(b);
 
     if (arp->x < brp->x)
@@ -1142,8 +1100,7 @@ bool compareByRightmostPoint(GIMS_LineSegment &a, GIMS_LineSegment &b)
     return false;
 }
 
-void insertToActiveSet(lsset &l, GIMS_LineSegment &ls)
-{
+void insertToActiveSet(lsset &l, GIMS_LineSegment &ls) {
     for (lsset::iterator it = l.begin(); it != l.end(); it++) {
         if (!compareByRightmostPoint(*it, ls)) {
             l.insert(it, ls);
@@ -1153,8 +1110,7 @@ void insertToActiveSet(lsset &l, GIMS_LineSegment &ls)
     l.push_back(ls);
 }
 
-void addIntersection(intersectionset &iset, GIMS_LineSegment &A, GIMS_LineSegment &B, GIMS_Geometry *intersection)
-{
+void addIntersection(intersectionset &iset, GIMS_LineSegment &A, GIMS_LineSegment &B, GIMS_Geometry *intersection) {
     if (intersection == NULL)
         return;
 
@@ -1176,8 +1132,7 @@ void addIntersection(intersectionset &iset, GIMS_LineSegment &A, GIMS_LineSegmen
     }
 }
 
-void sortIntersections(intersectionset &iset)
-{
+void sortIntersections(intersectionset &iset) {
     for (intersectionset::iterator it = iset.begin(); it != iset.end(); it++) {
         __ptlist_cmp__reference__ = it->first.p1;
         it->second.sort(__ptlist_cmp__stdlist__);
@@ -1213,8 +1168,7 @@ void sortIntersections(intersectionset &iset)
 #endif
 }
 
-void addEndpointsToIntersectionSet(intersectionset &iset, GIMS_MultiLineString *mls, int id)
-{
+void addEndpointsToIntersectionSet(intersectionset &iset, GIMS_MultiLineString *mls, int id) {
     if (mls == NULL)
         return;
 
@@ -1228,8 +1182,7 @@ void addEndpointsToIntersectionSet(intersectionset &iset, GIMS_MultiLineString *
     }
 }
 
-intersectionset findIntersections(GIMS_Polygon *polygonA, GIMS_Polygon *polygonB)
-{
+intersectionset findIntersections(GIMS_Polygon *polygonA, GIMS_Polygon *polygonB) {
     GIMS_MultiLineString *A = polygonA->externalRing, *B = polygonB->externalRing;
 
     intersectionset intersections(&ls_cmp);

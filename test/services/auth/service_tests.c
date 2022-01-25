@@ -18,8 +18,7 @@ pthread_t thread_id;
 
 char *send_message_to_server(int port, char *message, char expect_response);
 
-void *run_service_async(void *args)
-{
+void *run_service_async(void *args) {
     int port = *(int *)args;
 
     // Start the service
@@ -28,8 +27,7 @@ void *run_service_async(void *args)
     return NULL;
 }
 
-char run_before_test()
-{
+char run_before_test() {
     // Assign a random port number to the service
     srand(clock());
     port = rand() % 20000 + 10000;
@@ -42,8 +40,7 @@ char run_before_test()
     return 0;
 }
 
-char run_after_test()
-{
+char run_after_test() {
     // Stop the service and wait for it to finish
     service_stop();
     send_message_to_server(port, "", 0);
@@ -56,8 +53,7 @@ char run_after_test()
     return 0;
 }
 
-char *send_message_to_server(int port, char *message, char expect_response)
-{
+char *send_message_to_server(int port, char *message, char expect_response) {
     int msg_size = strlen(message) + 1;
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -81,8 +77,7 @@ char *send_message_to_server(int port, char *message, char expect_response)
     return response;
 }
 
-char test_create_and_authenticate_user()
-{
+char test_create_and_authenticate_user() {
     run_before_test();
 
     int assertion_error = 0;
@@ -112,8 +107,7 @@ char test_create_and_authenticate_user()
 
 test test_suite[] = { { "Test creating an user and authenticating with it", test_create_and_authenticate_user } };
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     suite_report report = run_test_suite(test_suite, sizeof(test_suite) / sizeof(test));
 
     if (report.failures > 0) {

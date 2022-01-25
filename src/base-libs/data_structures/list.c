@@ -2,15 +2,13 @@
 
 #include <stdlib.h>
 
-list *list_new()
-{
+list *list_new() {
     list *l = (list *)calloc(1, sizeof(list));
     l->head = l->tail = NULL;
     return l;
 }
 
-void list_destroy(list *l)
-{
+void list_destroy(list *l) {
     list_node *next = l->head;
     while (next != NULL) {
         list_node *tmp = next->next;
@@ -20,18 +18,15 @@ void list_destroy(list *l)
     free(l);
 }
 
-void *list_get_first(list *l)
-{
+void *list_get_first(list *l) {
     return l->head->value;
 }
 
-void *list_get_last(list *l)
-{
+void *list_get_last(list *l) {
     return l->tail->value;
 }
 
-void *list_del_first(list *l)
-{
+void *list_del_first(list *l) {
     if (l->head == NULL) {
         return NULL;
     }
@@ -54,8 +49,7 @@ void *list_del_first(list *l)
     return value;
 }
 
-void *list_del_last(list *l)
-{
+void *list_del_last(list *l) {
     if (l->tail == NULL) {
         return NULL;
     }
@@ -79,16 +73,14 @@ void *list_del_last(list *l)
 }
 
 // Private: alloc a new list node.
-list_node *new_node_with_value(void *value)
-{
+list_node *new_node_with_value(void *value) {
     list_node *new_node = (list_node *)calloc(1, sizeof(list_node));
     new_node->value = value;
     new_node->next = new_node->prev = NULL;
     return new_node;
 }
 
-void list_append(list *l, void *value)
-{
+void list_append(list *l, void *value) {
     list_node *new_node = new_node_with_value(value);
 
     if (l->head == NULL) {
@@ -105,8 +97,7 @@ void list_append(list *l, void *value)
     }
 }
 
-void list_prepend(list *l, void *value)
-{
+void list_prepend(list *l, void *value) {
     list_node *new_node = new_node_with_value(value);
 
     // If the list is empty set head = tail
@@ -120,8 +111,7 @@ void list_prepend(list *l, void *value)
     }
 }
 
-char list_del_element(list *l, void *value)
-{
+char list_del_element(list *l, void *value) {
     list_node *tmp = l->head;
     while (tmp != NULL && tmp->value != value) {
         tmp = tmp->next;
@@ -145,13 +135,11 @@ char list_del_element(list *l, void *value)
     return 0; // Element not found;
 }
 
-char list_is_empty(list *l)
-{
+char list_is_empty(list *l) {
     return l->head == NULL;
 }
 
-void list_foreach(list *l, void (*action)(void **))
-{
+void list_foreach(list *l, void (*action)(void **)) {
     list_node *tmp = l->head;
     while (tmp != NULL) {
         action(&(tmp->value));

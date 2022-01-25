@@ -7,8 +7,7 @@
 #include <eventschema.h>
 #include <eventstore.h>
 
-void cenas()
-{
+void cenas() {
 }
 
 TEST_CASE(event_store_log_one_event, {

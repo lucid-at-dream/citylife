@@ -2,21 +2,18 @@
 
 #include <stdlib.h>
 
-queue_item *item_new(void *content)
-{
+queue_item *item_new(void *content) {
     queue_item *item = (queue_item *)calloc(1, sizeof(queue_item));
     item->content = content;
     return item;
 }
 
-queue *queue_new()
-{
+queue *queue_new() {
     queue *q = (queue *)calloc(1, sizeof(queue));
     return q;
 }
 
-void queue_del(queue *q)
-{
+void queue_del(queue *q) {
     while (q->last != NULL) {
         queue_item *tmp = q->last;
         q->last = q->last->prev;
@@ -25,8 +22,7 @@ void queue_del(queue *q)
     free(q);
 }
 
-void queue_add(queue *q, void *item)
-{
+void queue_add(queue *q, void *item) {
     queue_item *item_to_add = item_new(item);
 
     if (q->size == 0) {
@@ -43,8 +39,7 @@ void queue_add(queue *q, void *item)
     return;
 }
 
-void *queue_pop(queue *q)
-{
+void *queue_pop(queue *q) {
     queue_item *item = q->head;
 
     if (item == NULL) {

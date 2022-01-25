@@ -11,8 +11,7 @@
 char validate_service_request(json_object *request);
 service *create_service_from_request(json_object *request);
 
-service *service_new_from_json(char *json)
-{
+service *service_new_from_json(char *json) {
     json_object *request = parse_json(json);
 
     // Validate request
@@ -40,7 +39,6 @@ char *copy_string(char *original) {
 }
 
 void parse_endpoint_arg(map *m, char *arg_name, service_endpoint *endpoint) {
-
     printf("Parsing endpoint arg %s\n", arg_name);
 
     if (strcmp(arg_name, "__doc__") == 0) {
@@ -53,7 +51,7 @@ void parse_endpoint_arg(map *m, char *arg_name, service_endpoint *endpoint) {
 
     arg->name = copy_string(arg_name);
     arg->doc_string = copy_string(((json_object *)map_get(arg_desc, "__doc__"))->content.data);
-    
+
     char *arg_type = ((json_object *)map_get(arg_desc, "type"))->content.data;
     if (strcmp(arg_type, "string")) {
         arg->type = STRING_ARG;
@@ -80,7 +78,6 @@ void parse_endpoint_arg(map *m, char *arg_name, service_endpoint *endpoint) {
 }
 
 void parse_endpoint(map *m, char *endpoint_name, service *svc) {
-
     printf("Parsing endpoint %s\n", endpoint_name);
 
     map *endpoint_desc = ((json_object *)map_get(m, endpoint_name))->content.object;
@@ -100,7 +97,6 @@ void parse_endpoint(map *m, char *endpoint_name, service *svc) {
 }
 
 service *create_service_from_request(json_object *request) {
-
     service *svc = (service *)calloc(1, sizeof(service));
 
     // Get service data
@@ -108,7 +104,7 @@ service *create_service_from_request(json_object *request) {
     svc->ip_address = copy_string(((json_object *)map_get(request->content.object, "addr"))->content.data);
     svc->port = atoi(((json_object *)map_get(request->content.object, "port"))->content.data);
     svc->doc_string = copy_string(((json_object *)map_get(request->content.object, "__doc__"))->content.data);
-    
+
     // Get endpoints data
     map *endpoints_section = ((json_object *)map_get(request->content.object, "endpoints"))->content.object;
     svc->endpoints = map_new(10);
@@ -120,25 +116,30 @@ service *create_service_from_request(json_object *request) {
 
 void endpoint_arg_dealloc(map *m, char *arg_name, void *args) {
     service_endpoint_arg *arg = map_get(m, arg_name);
-    if (arg->name != NULL) free(arg->name);
-    if (arg->doc_string != NULL) free(arg->doc_string);
+    if (arg->name != NULL)
+        free(arg->name);
+    if (arg->doc_string != NULL)
+        free(arg->doc_string);
 }
 
 void endpoint_dealloc(map *m, char *endpoint_name, void *args) {
-
     service_endpoint *endpoint = map_get(m, endpoint_name);
-    if (endpoint->name != NULL) free(endpoint->name);
-    if (endpoint->doc_string != NULL) free(endpoint->doc_string);
+    if (endpoint->name != NULL)
+        free(endpoint->name);
+    if (endpoint->doc_string != NULL)
+        free(endpoint->doc_string);
 
     map_iter_keys(endpoint->args, endpoint_arg_dealloc, NULL);
     map_destroy_dealloc(endpoint->args, 1, 1);
 }
 
 void service_dealloc(service *svc) {
-
-    if (svc->name != NULL) free(svc->name);
-    if (svc->doc_string != NULL) free(svc->doc_string);
-    if (svc->ip_address != NULL) free(svc->ip_address);
+    if (svc->name != NULL)
+        free(svc->name);
+    if (svc->doc_string != NULL)
+        free(svc->doc_string);
+    if (svc->ip_address != NULL)
+        free(svc->ip_address);
 
     map_iter_keys(svc->endpoints, endpoint_dealloc, NULL);
     map_destroy_dealloc(svc->endpoints, 1, 1);

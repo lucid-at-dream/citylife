@@ -10,8 +10,7 @@
 char runTest(test *t);
 void display_report(suite_report *report);
 
-suite_report run_test_suite(test *test_suite, int suite_size)
-{
+suite_report run_test_suite(test *test_suite, int suite_size) {
     suite_report report = { 0, 0, 0 }; // succeeded, failed, total
 
     int count = 0;
@@ -48,8 +47,7 @@ suite_report run_test_suite(test *test_suite, int suite_size)
     return report;
 }
 
-void display_report(suite_report *report)
-{
+void display_report(suite_report *report) {
     printf("Finished executing %d tests.\n", report->total);
     printf("Tests executed > Success: %d tests | Failure: %d tests\n", report->successes, report->failures);
 }
@@ -62,7 +60,6 @@ void display_report(suite_report *report)
  * @param t The test that will be executed
  * @return 0 if the test succeeded, something else on failure.
  */
-char runTest(test *t)
-{
+char runTest(test *t) {
     return t->test_impl();
 }

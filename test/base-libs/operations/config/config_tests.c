@@ -9,8 +9,7 @@
 #include <string.h>
 #include <unistd.h>
 
-char test_load_config_from_file()
-{
+char test_load_config_from_file() {
     arg_t arg_desc[] = { { "i", "integer", INTEGER }, { "f", "float", FLOAT }, { "g", "flag", FLAG }, { "s", "string", STRING } };
 
     // Create a configuration file
@@ -60,50 +59,42 @@ char test_load_config_from_file()
     return assertion_error;
 }
 
-char test_unparseable_float_in_config_file()
-{
+char test_unparseable_float_in_config_file() {
     // TODO: Add test
     pthread_exit(EXIT_FAILURE);
 }
 
-char test_unparseable_int_in_config_file()
-{
+char test_unparseable_int_in_config_file() {
     // TODO: Add test
     pthread_exit(EXIT_FAILURE);
 }
 
-char test_unrecognized_arguments_in_config_file()
-{
+char test_unrecognized_arguments_in_config_file() {
     // TODO: Add test
     pthread_exit(EXIT_FAILURE);
 }
 
-char test_command_line_arguments_take_precedence_over_config_file()
-{
+char test_command_line_arguments_take_precedence_over_config_file() {
     // TODO: Add test
     return 0;
 }
 
-char test_help_message_and_clean_exit_on_provided_flag()
-{
+char test_help_message_and_clean_exit_on_provided_flag() {
     // TODO: Add test
     return 0;
 }
 
-char test_not_providing_mandatory_arguments()
-{
+char test_not_providing_mandatory_arguments() {
     // TODO: Add test
     pthread_exit(EXIT_FAILURE);
 }
 
-char test_not_providing_optional_arguments_is_okay()
-{
+char test_not_providing_optional_arguments_is_okay() {
     // TODO: Add test
     return 0;
 }
 
-char test_single_string_argument_in_long_form_happy_path()
-{
+char test_single_string_argument_in_long_form_happy_path() {
     arg_t arg_desc[] = { { "t", "test-arg", STRING } };
 
     char *argv[] = { "test", "--test-arg", "some value" };
@@ -123,8 +114,7 @@ char test_single_string_argument_in_long_form_happy_path()
     return 0;
 }
 
-char test_two_string_arguments_in_long_form_happy_path()
-{
+char test_two_string_arguments_in_long_form_happy_path() {
     arg_t arg_desc[] = { { "t", "test-arg", STRING }, { "o", "other-arg", STRING } };
 
     char *argv[] = { "test", "--test-arg", "some value", "--other-arg", "other value" };
@@ -148,8 +138,7 @@ char test_two_string_arguments_in_long_form_happy_path()
     return 0;
 }
 
-char test_one_integer_argument_in_long_form_happy_path()
-{
+char test_one_integer_argument_in_long_form_happy_path() {
     arg_t arg_desc[] = { { "i", "int-arg", INTEGER } };
 
     char *argv[] = { "test", "--int-arg", "100" };
@@ -169,8 +158,7 @@ char test_one_integer_argument_in_long_form_happy_path()
     return 0;
 }
 
-char test_one_double_argument_in_long_form_happy_path()
-{
+char test_one_double_argument_in_long_form_happy_path() {
     arg_t arg_desc[] = { { "i", "float-arg", FLOAT } };
 
     char *argv[] = { "test", "--float-arg", "100.99" };
@@ -190,8 +178,7 @@ char test_one_double_argument_in_long_form_happy_path()
     return 0;
 }
 
-char test_one_flag_argument_in_long_form_happy_path()
-{
+char test_one_flag_argument_in_long_form_happy_path() {
     arg_t arg_desc[] = { { "i", "some-flag", FLAG } };
 
     char *argv[] = { "test", "--some-flag" };
@@ -214,8 +201,7 @@ char test_one_flag_argument_in_long_form_happy_path()
     return 0;
 }
 
-char test_all_argument_types_in_short_form_happy_path()
-{
+char test_all_argument_types_in_short_form_happy_path() {
     arg_t arg_desc[] = { { "i", "integer", INTEGER }, { "f", "float", FLOAT }, { "g", "flag", FLAG }, { "s", "string", STRING } };
 
     char *argv[] = { "test", "-i", "100", "-f", "10.10", "-g", "-s", "my string" };
@@ -239,8 +225,7 @@ char test_all_argument_types_in_short_form_happy_path()
     return assertion_error;
 }
 
-char test_parsing_same_argument_twice()
-{
+char test_parsing_same_argument_twice() {
     arg_t arg_desc[] = { { "i", "integer", INTEGER } };
 
     char *argv[] = { "test", "--integer", "100", "-i", "10", "--integer", "1000" };
@@ -256,8 +241,7 @@ char test_parsing_same_argument_twice()
     return assertion_error;
 }
 
-char test_parsing_non_existent_argument()
-{
+char test_parsing_non_existent_argument() {
     arg_t arg_desc[] = { { "i", "integer", INTEGER } };
 
     char *argv[] = { "test", "--nonexistent", "100" };
@@ -271,8 +255,7 @@ char test_parsing_non_existent_argument()
     return 0;
 }
 
-char test_parsing_string_as_integer_throws_error()
-{
+char test_parsing_string_as_integer_throws_error() {
     arg_t arg_desc[] = { { "i", "integer", INTEGER } };
 
     char *argv[] = { "test", "--integer", "my string" };
@@ -286,8 +269,7 @@ char test_parsing_string_as_integer_throws_error()
     return 0;
 }
 
-char test_parsing_float_as_integer_throws_error()
-{
+char test_parsing_float_as_integer_throws_error() {
     arg_t arg_desc[] = { { "i", "integer", INTEGER } };
 
     char *argv[] = { "test", "--integer", "100.01" };
@@ -301,8 +283,7 @@ char test_parsing_float_as_integer_throws_error()
     return 0;
 }
 
-char test_parsing_string_as_float_throws_error()
-{
+char test_parsing_string_as_float_throws_error() {
     arg_t arg_desc[] = { { "f", "float", FLOAT } };
 
     char *argv[] = { "test", "--float", "my string" };
@@ -316,33 +297,28 @@ char test_parsing_string_as_float_throws_error()
     return 0;
 }
 
-test test_suite[] = {
-    { "Test single program argument, single argument given, happy path", test_single_string_argument_in_long_form_happy_path },
-    { "Test two program arguments, two arguments given, happy path", test_two_string_arguments_in_long_form_happy_path },
-    { "Test parsing an integer argument given in the long form", test_one_integer_argument_in_long_form_happy_path },
-    { "Test parsing an float argument given in the long form", test_one_double_argument_in_long_form_happy_path },
-    { "Test parsing a flag argument given in the long form", test_one_flag_argument_in_long_form_happy_path },
-    { "Test parsing all argument types all in short form", test_all_argument_types_in_short_form_happy_path },
-    { "Test parsing the same argument twice times", test_parsing_same_argument_twice },
-    { "Test that trying to parse a non existing argument ends up in error", test_parsing_non_existent_argument, EXIT_FAILURE },
-    { "Test that trying to parse a string as an integer ends in error", test_parsing_string_as_integer_throws_error, EXIT_FAILURE },
-    { "Test that trying to parse a float as an integer ends in error", test_parsing_float_as_integer_throws_error, EXIT_FAILURE },
-    { "Test that trying to parse a string as a float ends in error", test_parsing_string_as_float_throws_error, EXIT_FAILURE },
-    { "Test that a help message is printed when -h or --help are passed as arguments", test_help_message_and_clean_exit_on_provided_flag },
-    { "Test that not providing a value for a mandatory argument results in error", test_not_providing_mandatory_arguments, EXIT_FAILURE },
-    { "Test that not providing a value for an optional argument doesn't result in error", test_not_providing_optional_arguments_is_okay },
-    { "Test that it is possible to parse configuration from file", test_load_config_from_file },
-    { "Test that providing a malformated float value in config file results in error", test_unparseable_float_in_config_file,
-      EXIT_FAILURE },
-    { "Test that providing a malformated integer value in config file results in error", test_unparseable_int_in_config_file,
-      EXIT_FAILURE },
-    { "Test that providing invalid arguments in config file results in error", test_unrecognized_arguments_in_config_file, EXIT_FAILURE },
-    { "Test that command line arguments take precedence over config file ones",
-      test_command_line_arguments_take_precedence_over_config_file }
-};
+test test_suite[] = { { "Test single program argument, single argument given, happy path", test_single_string_argument_in_long_form_happy_path },
+                      { "Test two program arguments, two arguments given, happy path", test_two_string_arguments_in_long_form_happy_path },
+                      { "Test parsing an integer argument given in the long form", test_one_integer_argument_in_long_form_happy_path },
+                      { "Test parsing an float argument given in the long form", test_one_double_argument_in_long_form_happy_path },
+                      { "Test parsing a flag argument given in the long form", test_one_flag_argument_in_long_form_happy_path },
+                      { "Test parsing all argument types all in short form", test_all_argument_types_in_short_form_happy_path },
+                      { "Test parsing the same argument twice times", test_parsing_same_argument_twice },
+                      { "Test that trying to parse a non existing argument ends up in error", test_parsing_non_existent_argument, EXIT_FAILURE },
+                      { "Test that trying to parse a string as an integer ends in error", test_parsing_string_as_integer_throws_error, EXIT_FAILURE },
+                      { "Test that trying to parse a float as an integer ends in error", test_parsing_float_as_integer_throws_error, EXIT_FAILURE },
+                      { "Test that trying to parse a string as a float ends in error", test_parsing_string_as_float_throws_error, EXIT_FAILURE },
+                      { "Test that a help message is printed when -h or --help are passed as arguments", test_help_message_and_clean_exit_on_provided_flag },
+                      { "Test that not providing a value for a mandatory argument results in error", test_not_providing_mandatory_arguments, EXIT_FAILURE },
+                      { "Test that not providing a value for an optional argument doesn't result in error", test_not_providing_optional_arguments_is_okay },
+                      { "Test that it is possible to parse configuration from file", test_load_config_from_file },
+                      { "Test that providing a malformated float value in config file results in error", test_unparseable_float_in_config_file, EXIT_FAILURE },
+                      { "Test that providing a malformated integer value in config file results in error", test_unparseable_int_in_config_file, EXIT_FAILURE },
+                      { "Test that providing invalid arguments in config file results in error", test_unrecognized_arguments_in_config_file, EXIT_FAILURE },
+                      { "Test that command line arguments take precedence over config file ones",
+                        test_command_line_arguments_take_precedence_over_config_file } };
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     suite_report report = run_test_suite(test_suite, sizeof(test_suite) / sizeof(test));
 
     if (report.failures > 0) {

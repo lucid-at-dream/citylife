@@ -2,22 +2,18 @@
 
 using namespace GIMS_GEOMETRY;
 
-GIMS_Geometry::~GIMS_Geometry()
-{
+GIMS_Geometry::~GIMS_Geometry() {
 }
-GIMS_Approximation::~GIMS_Approximation()
-{
+GIMS_Approximation::~GIMS_Approximation() {
 }
 
-bool geometryIdCmp(GIMS_Geometry *A, GIMS_Geometry *B)
-{
+bool geometryIdCmp(GIMS_Geometry *A, GIMS_Geometry *B) {
     return A->id < B->id;
 }
 
 idset idIndex(&geometryIdCmp);
 
-GIMS_Approximation *createPolygonApproximation(GIMS_Polygon *p)
-{
+GIMS_Approximation *createPolygonApproximation(GIMS_Polygon *p) {
     switch (configuration.approximationType) {
     case 0:
         return new GIMS_MBR(p);
@@ -31,8 +27,7 @@ GIMS_Approximation *createPolygonApproximation(GIMS_Polygon *p)
 }
 
 /*helper function*/
-int dim(GIMS_Geometry *g)
-{
+int dim(GIMS_Geometry *g) {
     switch (g->type) {
     case POINT:
     case MULTIPOINT:
@@ -58,8 +53,7 @@ int dim(GIMS_Geometry *g)
     return -1;
 }
 
-int borderDim(GIMS_Geometry *g)
-{
+int borderDim(GIMS_Geometry *g) {
     switch (g->type) {
     case RING: // a ring has no border
         return -1;
@@ -86,13 +80,11 @@ int borderDim(GIMS_Geometry *g)
     return -1;
 }
 
-GIMS_Geometry *fromWkt(char *wkt)
-{
+GIMS_Geometry *fromWkt(char *wkt) {
     return lyWktParse(wkt);
 }
 
-bool collinear_3p(GIMS_Point *a, GIMS_Point *b, GIMS_Point *c)
-{
+bool collinear_3p(GIMS_Point *a, GIMS_Point *b, GIMS_Point *c) {
     double s = (b->x - a->x) * (c->y - a->y) - (b->y - a->y) * (c->x - a->x);
     if (fabs(s) < ERR_MARGIN)
         return true;
@@ -100,30 +92,26 @@ bool collinear_3p(GIMS_Point *a, GIMS_Point *b, GIMS_Point *c)
 }
 
 /*returns the squared distance between two points*/
-double distanceSquared2p(GIMS_Point *p1, GIMS_Point *p2)
-{
+double distanceSquared2p(GIMS_Point *p1, GIMS_Point *p2) {
     return (p2->x - p1->x) * (p2->x - p1->x) + (p2->y - p1->y) * (p2->y - p1->y);
 }
 
 /*returns the cosine of the angle between vectors p1-p2 and p2-p3*/
-double cosine3p(GIMS_Point *p1, GIMS_Point *p2, GIMS_Point *p3)
-{
+double cosine3p(GIMS_Point *p1, GIMS_Point *p2, GIMS_Point *p3) {
     double SD12 = distanceSquared2p(p1, p2), SD13 = distanceSquared2p(p1, p3), SD23 = distanceSquared2p(p2, p3);
 
     return (SD12 + SD23 - SD13) / (2 * sqrt(SD23) * sqrt(SD12));
 }
 
 /*returns angle between vectors p1-p2 and p2-p3*/
-double angle3p(GIMS_Point *p1, GIMS_Point *p2, GIMS_Point *p3)
-{
+double angle3p(GIMS_Point *p1, GIMS_Point *p2, GIMS_Point *p3) {
     return acos(cosine3p(p1, p2, p3));
 }
 
 /*Returns the squared distance between a point "p" and the closest point that
   lies in the given line segment "e". Note that the distance is squared to avoid
   possibly unnecessary square roots.*/
-double distToSegmentSquared(GIMS_Point *p, GIMS_LineSegment *e)
-{
+double distToSegmentSquared(GIMS_Point *p, GIMS_LineSegment *e) {
     //Length of the line segment squared
     double lineSegLenSquared = (e->p1->x - e->p2->x) * (e->p1->x - e->p2->x) + (e->p1->y - e->p2->y) * (e->p1->y - e->p2->y);
 

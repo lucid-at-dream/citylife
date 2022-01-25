@@ -1,13 +1,11 @@
 #include "DebRender.hpp"
 
-bool on_drag_begin(GdkEventButton *event)
-{
+bool on_drag_begin(GdkEventButton *event) {
     renderer.dragBegin();
     return false;
 }
 
-bool on_drag_end(GdkEventButton *event)
-{
+bool on_drag_end(GdkEventButton *event) {
     double prev_panx = renderer.panx, prev_pany = renderer.pany;
     renderer.dragEnd();
     if (prev_panx == renderer.panx && prev_pany == renderer.pany)
@@ -17,8 +15,7 @@ bool on_drag_end(GdkEventButton *event)
     return false;
 }
 
-bool on_scroll_event(GdkEventScroll *event)
-{
+bool on_scroll_event(GdkEventScroll *event) {
     double zinc = fabs(0.1 * renderer.zoom);
     if (event->direction == GDK_SCROLL_UP) {
         renderer.zoom += zinc;
@@ -29,8 +26,7 @@ bool on_scroll_event(GdkEventScroll *event)
     return false;
 }
 
-bool on_draw_event(const ::Cairo::RefPtr< ::Cairo::Context> &cr)
-{
+bool on_draw_event(const ::Cairo::RefPtr< ::Cairo::Context> &cr) {
     cr->translate(-200 * (renderer.zoom - 1), -200 * (renderer.zoom - 1));
     cr->scale(renderer.zoom, renderer.zoom);
     cr->translate(renderer.panx, renderer.pany);
@@ -39,16 +35,14 @@ bool on_draw_event(const ::Cairo::RefPtr< ::Cairo::Context> &cr)
     return false;
 }
 
-void DebRenderer::dragBegin()
-{
+void DebRenderer::dragBegin() {
     int x, y;
     darea->get_pointer(x, y);
     dragx = x;
     dragy = y;
 }
 
-void DebRenderer::dragEnd()
-{
+void DebRenderer::dragEnd() {
     int x, y;
     darea->get_pointer(x, y);
     int relx = x - dragx, rely = y - dragy;
@@ -56,8 +50,7 @@ void DebRenderer::dragEnd()
     pany += rely / renderer.zoom;
 }
 
-void DebRenderer::clickEvent()
-{
+void DebRenderer::clickEvent() {
     int p_x, p_y;
     darea->get_pointer(p_x, p_y);
 
@@ -68,13 +61,11 @@ void DebRenderer::clickEvent()
     renderCallback->onClick(x, y);
 }
 
-void DebRenderer::scheduleRedraw()
-{
+void DebRenderer::scheduleRedraw() {
     this->darea->queue_draw_area(0, 0, 400, 400);
 }
 
-void DebRenderer::renderSvg(const char *filename, double width, double height)
-{
+void DebRenderer::renderSvg(const char *filename, double width, double height) {
     cairo_surface_t *surface = cairo_svg_surface_create(filename, width, height);
     Cairo::Context *cr = new Cairo::Context(cairo_create(surface));
     Cairo::RefPtr<Cairo::Context> cc_ptr = Cairo::RefPtr<Cairo::Context>(cr);
@@ -87,8 +78,7 @@ void DebRenderer::renderSvg(const char *filename, double width, double height)
     cairo_surface_destroy(surface);
 }
 
-void DebRenderer::render(Cairo::RefPtr<Cairo::Context> cr)
-{
+void DebRenderer::render(Cairo::RefPtr<Cairo::Context> cr) {
     this->renderCount += 1;
 
     cr->set_source_rgb(0, 0, 0);
@@ -99,8 +89,7 @@ void DebRenderer::render(Cairo::RefPtr<Cairo::Context> cr)
     cr->stroke();
 }
 
-void DebRenderer::renderGeometry(Cairo::RefPtr<Cairo::Context> cr, GIMS_Geometry *g)
-{
+void DebRenderer::renderGeometry(Cairo::RefPtr<Cairo::Context> cr, GIMS_Geometry *g) {
     if (g == NULL)
         return;
 
@@ -140,8 +129,7 @@ void DebRenderer::renderGeometry(Cairo::RefPtr<Cairo::Context> cr, GIMS_Geometry
     };
 }
 
-void DebRenderer::renderPoint(Cairo::RefPtr<Cairo::Context> cr, GIMS_Point *p)
-{
+void DebRenderer::renderPoint(Cairo::RefPtr<Cairo::Context> cr, GIMS_Point *p) {
     if (p == NULL)
         return;
     double x = (p->x + translatex) * scalex, y = (p->y + translatey) * scaley;
@@ -152,8 +140,7 @@ void DebRenderer::renderPoint(Cairo::RefPtr<Cairo::Context> cr, GIMS_Point *p)
     cr->stroke();
 }
 
-void DebRenderer::renderLineString(Cairo::RefPtr<Cairo::Context> cr, GIMS_LineString *ls)
-{
+void DebRenderer::renderLineString(Cairo::RefPtr<Cairo::Context> cr, GIMS_LineString *ls) {
     if (ls == NULL)
         return;
     cr->move_to((ls->list[0]->x + translatex) * scalex, (ls->list[0]->y + translatey) * scaley);
@@ -161,8 +148,7 @@ void DebRenderer::renderLineString(Cairo::RefPtr<Cairo::Context> cr, GIMS_LineSt
         cr->line_to((ls->list[i]->x + translatex) * scalex, (ls->list[i]->y + translatey) * scaley);
 }
 
-void DebRenderer::renderFilledBBox(Cairo::RefPtr<Cairo::Context> cr, GIMS_BoundingBox *box)
-{
+void DebRenderer::renderFilledBBox(Cairo::RefPtr<Cairo::Context> cr, GIMS_BoundingBox *box) {
     if (box == NULL)
         return;
     renderBBox(cr, box);
@@ -170,8 +156,7 @@ void DebRenderer::renderFilledBBox(Cairo::RefPtr<Cairo::Context> cr, GIMS_Boundi
     cr->fill();
 }
 
-void DebRenderer::renderBBox(Cairo::RefPtr<Cairo::Context> cr, GIMS_BoundingBox *box)
-{
+void DebRenderer::renderBBox(Cairo::RefPtr<Cairo::Context> cr, GIMS_BoundingBox *box) {
     if (box == NULL)
         return;
     cr->move_to((box->lowerLeft->x + translatex) * scalex, (box->lowerLeft->y + translatey) * scaley);
@@ -181,8 +166,7 @@ void DebRenderer::renderBBox(Cairo::RefPtr<Cairo::Context> cr, GIMS_BoundingBox 
     cr->line_to((box->lowerLeft->x + translatex) * scalex, (box->lowerLeft->y + translatey) * scaley);
 }
 
-void DebRenderer::renderRing(Cairo::RefPtr<Cairo::Context> cr, GIMS_Ring *ring)
-{
+void DebRenderer::renderRing(Cairo::RefPtr<Cairo::Context> cr, GIMS_Ring *ring) {
     if (ring == NULL)
         return;
     cr->move_to((ring->list[0]->x + translatex) * scalex, (ring->list[0]->y + translatey) * scaley);
@@ -191,8 +175,7 @@ void DebRenderer::renderRing(Cairo::RefPtr<Cairo::Context> cr, GIMS_Ring *ring)
     cr->line_to((ring->list[0]->x + translatex) * scalex, (ring->list[0]->y + translatey) * scaley);
 }
 
-void DebRenderer::renderApproximation(Cairo::RefPtr<Cairo::Context> cr, GIMS_Approximation *appr)
-{
+void DebRenderer::renderApproximation(Cairo::RefPtr<Cairo::Context> cr, GIMS_Approximation *appr) {
     if (appr == NULL)
         return;
 
@@ -212,8 +195,7 @@ void DebRenderer::renderApproximation(Cairo::RefPtr<Cairo::Context> cr, GIMS_App
     cr->set_source_rgb(0, 0, 0);
 }
 
-void DebRenderer::renderPolygon(Cairo::RefPtr<Cairo::Context> cr, GIMS_Polygon *g)
-{
+void DebRenderer::renderPolygon(Cairo::RefPtr<Cairo::Context> cr, GIMS_Polygon *g) {
     if (g == NULL)
         return;
     this->renderMultiLineString(cr, g->externalRing);
@@ -224,60 +206,52 @@ void DebRenderer::renderPolygon(Cairo::RefPtr<Cairo::Context> cr, GIMS_Polygon *
     cr->set_source_rgb(0, 0, 0);
 }
 
-void DebRenderer::renderMultiPoint(Cairo::RefPtr<Cairo::Context> cr, GIMS_MultiPoint *g)
-{
+void DebRenderer::renderMultiPoint(Cairo::RefPtr<Cairo::Context> cr, GIMS_MultiPoint *g) {
     if (g == NULL)
         return;
     for (int i = 0; i < g->size; i++)
         this->renderPoint(cr, g->list[i]);
 }
 
-void DebRenderer::renderMultiLineString(Cairo::RefPtr<Cairo::Context> cr, GIMS_MultiLineString *g)
-{
+void DebRenderer::renderMultiLineString(Cairo::RefPtr<Cairo::Context> cr, GIMS_MultiLineString *g) {
     if (g == NULL)
         return;
     for (int i = 0; i < g->size; i++)
         this->renderLineString(cr, g->list[i]);
 }
 
-void DebRenderer::renderMultiPolygon(Cairo::RefPtr<Cairo::Context> cr, GIMS_MultiPolygon *g)
-{
+void DebRenderer::renderMultiPolygon(Cairo::RefPtr<Cairo::Context> cr, GIMS_MultiPolygon *g) {
     if (g == NULL)
         return;
     for (int i = 0; i < g->size; i++)
         this->renderPolygon(cr, g->list[i]);
 }
 
-void DebRenderer::renderGeometryCollection(Cairo::RefPtr<Cairo::Context> cr, GIMS_GeometryCollection *g)
-{
+void DebRenderer::renderGeometryCollection(Cairo::RefPtr<Cairo::Context> cr, GIMS_GeometryCollection *g) {
     if (g == NULL)
         return;
     for (int i = 0; i < g->size; i++)
         this->renderGeometry(cr, g->list[i]);
 }
 
-void DebRenderer::renderLineSegment(Cairo::RefPtr<Cairo::Context> cr, GIMS_LineSegment *g)
-{
+void DebRenderer::renderLineSegment(Cairo::RefPtr<Cairo::Context> cr, GIMS_LineSegment *g) {
     if (g == NULL)
         return;
     cr->move_to((g->p1->x + translatex) * scalex, (g->p1->y + translatey) * scaley);
     cr->line_to((g->p2->x + translatex) * scalex, (g->p2->y + translatey) * scaley);
 }
 
-void DebRenderer::setScale(double x, double y)
-{
+void DebRenderer::setScale(double x, double y) {
     scalex = x;
     scaley = y;
 }
 
-void DebRenderer::setTranslation(double x, double y)
-{
+void DebRenderer::setTranslation(double x, double y) {
     translatex = x;
     translatey = y;
 }
 
-void DebRenderer::init(int argc, char *argv[])
-{
+void DebRenderer::init(int argc, char *argv[]) {
     Gtk::Main kit(argc, argv);
 
     window = new Gtk::Window();
@@ -306,28 +280,24 @@ void DebRenderer::init(int argc, char *argv[])
     window->show_all();
 }
 
-int DebRenderer::mainloop(int argc, char *argv[])
-{
+int DebRenderer::mainloop(int argc, char *argv[]) {
     this->init(argc, argv);
     gtk_main();
     return 0;
 }
 
-DebRenderer::DebRenderer(DebugRenderable *renderCallback)
-{
+DebRenderer::DebRenderer(DebugRenderable *renderCallback) {
     this->renderCallback = renderCallback;
     this->zoom = 1.0;
     this->panx = this->pany = 0;
     this->renderCount = 0;
 }
-DebRenderer::DebRenderer()
-{
+DebRenderer::DebRenderer() {
     this->zoom = 1.0;
     this->panx = this->pany = 0;
     this->renderCount = 0;
 }
-DebRenderer::~DebRenderer()
-{
+DebRenderer::~DebRenderer() {
 }
 
 DebRenderer renderer;

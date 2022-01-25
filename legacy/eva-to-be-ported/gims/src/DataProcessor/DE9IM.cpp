@@ -1,24 +1,20 @@
 #include "DE9IM.hpp"
 
-DE9IM::DE9IM(GIMS_Geometry *query)
-{
+DE9IM::DE9IM(GIMS_Geometry *query) {
     this->query = query;
 }
 
-DE9IM::~DE9IM()
-{
+DE9IM::~DE9IM() {
 }
 
-matrix_t::iterator DE9IM::getMatrixIndex(long long id)
-{
+matrix_t::iterator DE9IM::getMatrixIndex(long long id) {
     matrix_t::iterator it = matrix.find(id);
     if (it == matrix.end())
         it = (matrix.insert(pair<long long, unsigned int>(id, 0))).first;
     return it;
 }
 
-matrix_t::iterator DE9IM::setIntersect(long long id, unsigned int dim)
-{
+matrix_t::iterator DE9IM::setIntersect(long long id, unsigned int dim) {
     dim += 1;
     matrix_t::iterator it;
     if ((it = matrix.find(id)) != matrix.end()) {
@@ -28,8 +24,7 @@ matrix_t::iterator DE9IM::setIntersect(long long id, unsigned int dim)
     return it;
 }
 
-matrix_t::iterator DE9IM::setII(long long id, unsigned int dim)
-{
+matrix_t::iterator DE9IM::setII(long long id, unsigned int dim) {
     dim += 1;
     matrix_t::iterator it;
     if ((it = matrix.find(id)) != matrix.end())
@@ -39,8 +34,7 @@ matrix_t::iterator DE9IM::setII(long long id, unsigned int dim)
     return it;
 }
 
-matrix_t::iterator DE9IM::setEI(long long id, unsigned int dim)
-{
+matrix_t::iterator DE9IM::setEI(long long id, unsigned int dim) {
     dim += 1;
     matrix_t::iterator it;
     if ((it = matrix.find(id)) != matrix.end())
@@ -50,8 +44,7 @@ matrix_t::iterator DE9IM::setEI(long long id, unsigned int dim)
     return it;
 }
 
-matrix_t::iterator DE9IM::setIE(long long id, unsigned int dim)
-{
+matrix_t::iterator DE9IM::setIE(long long id, unsigned int dim) {
     dim += 1;
     matrix_t::iterator it;
     if ((it = matrix.find(id)) != matrix.end())
@@ -61,8 +54,7 @@ matrix_t::iterator DE9IM::setIE(long long id, unsigned int dim)
     return it;
 }
 
-matrix_t::iterator DE9IM::setEB(long long id, unsigned int dim)
-{
+matrix_t::iterator DE9IM::setEB(long long id, unsigned int dim) {
     dim += 1;
     matrix_t::iterator it;
     if ((it = matrix.find(id)) != matrix.end())
@@ -72,8 +64,7 @@ matrix_t::iterator DE9IM::setEB(long long id, unsigned int dim)
     return it;
 }
 
-matrix_t::iterator DE9IM::setBE(long long id, unsigned int dim)
-{
+matrix_t::iterator DE9IM::setBE(long long id, unsigned int dim) {
     dim += 1;
     matrix_t::iterator it;
     if ((it = matrix.find(id)) != matrix.end())
@@ -83,44 +74,37 @@ matrix_t::iterator DE9IM::setBE(long long id, unsigned int dim)
     return it;
 }
 
-void DE9IM::setIntersect(matrix_t::iterator &it, unsigned int dim)
-{
+void DE9IM::setIntersect(matrix_t::iterator &it, unsigned int dim) {
     dim += 1;
     it->second |= MAX(it->second & INTERSECT, dim << 0);
 }
 
-void DE9IM::setII(matrix_t::iterator &it, unsigned int dim)
-{
+void DE9IM::setII(matrix_t::iterator &it, unsigned int dim) {
     dim += 1;
     it->second |= MAX(it->second & II, dim << 2);
 }
 
-void DE9IM::setEI(matrix_t::iterator &it, unsigned int dim)
-{
+void DE9IM::setEI(matrix_t::iterator &it, unsigned int dim) {
     dim += 1;
     it->second |= MAX(it->second & EI, dim << 4);
 }
 
-void DE9IM::setIE(matrix_t::iterator &it, unsigned int dim)
-{
+void DE9IM::setIE(matrix_t::iterator &it, unsigned int dim) {
     dim += 1;
     it->second |= MAX(it->second & IE, dim << 6);
 }
 
-void DE9IM::setEB(matrix_t::iterator &it, unsigned int dim)
-{
+void DE9IM::setEB(matrix_t::iterator &it, unsigned int dim) {
     dim += 1;
     it->second |= MAX(it->second & EB, dim << 8);
 }
 
-void DE9IM::setBE(matrix_t::iterator &it, unsigned int dim)
-{
+void DE9IM::setBE(matrix_t::iterator &it, unsigned int dim) {
     dim += 1;
     it->second |= MAX(it->second & BE, dim << 10);
 }
 
-list<long> DE9IM::equals()
-{
+list<long> DE9IM::equals() {
     /*II && !IE && !BE && !EI && !EB*/
     list<long> resultset = list<long>();
 
@@ -135,14 +119,12 @@ list<long> DE9IM::equals()
 
 /*TODO: in order to implement disjoint geometry reporting, we 
         need access here to all geometries under consideration*/
-list<long> DE9IM::disjoint()
-{
+list<long> DE9IM::disjoint() {
     /*!intersect*/
     return list<long>();
 }
 
-list<long> DE9IM::meets()
-{
+list<long> DE9IM::meets() {
     /*!II && intersect*/
     list<long> resultset = list<long>();
 
@@ -155,8 +137,7 @@ list<long> DE9IM::meets()
     return resultset;
 }
 
-list<long> DE9IM::contains()
-{
+list<long> DE9IM::contains() {
     /*II && !EI && !EB*/
     list<long> resultset = list<long>();
 
@@ -169,8 +150,7 @@ list<long> DE9IM::contains()
     return resultset;
 }
 
-list<long> DE9IM::covers()
-{
+list<long> DE9IM::covers() {
     /*intersect && !EI && !EB*/
     list<long> resultset = list<long>();
 
@@ -183,8 +163,7 @@ list<long> DE9IM::covers()
     return resultset;
 }
 
-list<long> DE9IM::intersects()
-{
+list<long> DE9IM::intersects() {
     /*II || IB || BI || BB*/
     list<long> resultset = list<long>();
 
@@ -197,8 +176,7 @@ list<long> DE9IM::intersects()
     return resultset;
 }
 
-list<long> DE9IM::within()
-{
+list<long> DE9IM::within() {
     /*II && !IE && !BE*/
     list<long> resultset = list<long>();
 
@@ -211,8 +189,7 @@ list<long> DE9IM::within()
     return resultset;
 }
 
-list<long> DE9IM::coveredBy()
-{
+list<long> DE9IM::coveredBy() {
     /*intersect && !IE && !BE*/
     list<long> resultset = list<long>();
 
@@ -225,8 +202,7 @@ list<long> DE9IM::coveredBy()
     return resultset;
 }
 
-list<long> DE9IM::overlaps()
-{
+list<long> DE9IM::overlaps() {
     int dim_a = dim(query), dim_b;
 
     list<long> resultset = list<long>();

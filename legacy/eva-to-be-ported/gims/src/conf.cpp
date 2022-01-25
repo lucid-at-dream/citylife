@@ -2,8 +2,7 @@
 
 conf::config_t configuration;
 
-void printUsage()
-{
+void printUsage() {
     std::cout << "ToQueMidaS - Topological Querying Middleware System" << std::endl
               << std::endl
               << "Usage: toquemidas [options]" << std::endl
@@ -13,8 +12,7 @@ void printUsage()
               << "  -c FILE, --config-file=FILE   load configurations from FILE" << std::endl;
 }
 
-bool blankLine(char *line)
-{
+bool blankLine(char *line) {
     int i = 0;
     while (line[i] == '\t' || line[i] == ' ')
         i++;
@@ -23,8 +21,7 @@ bool blankLine(char *line)
     return true;
 }
 
-void conf::printCurrentConfiguration()
-{
+void conf::printCurrentConfiguration() {
     std::cout << "==== BEGIN Current Configuration ====" << std::endl;
     std::cout << "Quadtree: " << std::endl;
     std::cout << "max_points_per_node " << configuration.max_points_per_node << std::endl;
@@ -51,8 +48,7 @@ void conf::printCurrentConfiguration()
     std::cout << "==== END Current Configuration ====" << std::endl;
 }
 
-int conf::readConfigurationFiles(int argc, char **argv)
-{
+int conf::readConfigurationFiles(int argc, char **argv) {
     //verify if an help message was requested
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
@@ -109,16 +105,14 @@ int conf::readConfigurationFiles(int argc, char **argv)
     return 0;
 }
 
-void conf::setDefaults()
-{
+void conf::setDefaults() {
     configuration.max_points_per_node = 1024;
     configuration.projection_srid = 3395;
     configuration.approximationType = 2;
     configuration.NGON_SIZE = 5;
 }
 
-int conf::loadConfigurationFile(char *fname)
-{
+int conf::loadConfigurationFile(char *fname) {
     FILE *f = fopen(fname, "r");
 
     char *line = (char *)malloc(256 * sizeof(char));
@@ -139,8 +133,7 @@ int conf::loadConfigurationFile(char *fname)
     return 0;
 }
 
-void conf::parseCfgLine(char *line)
-{
+void conf::parseCfgLine(char *line) {
     int i = 0;
     while (line[i] != ' ')
         i++;
@@ -188,8 +181,7 @@ void conf::parseCfgLine(char *line)
     }
 }
 
-void conf::freeConf()
-{
+void conf::freeConf() {
     for (std::list<db_conf>::iterator it = configuration.db_confs.begin(); it != configuration.db_confs.end(); it++) {
         free(it->keyword);
         free(it->value);

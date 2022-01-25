@@ -15,8 +15,7 @@ using namespace std;
 
 #define MAX_N 10000
 
-namespace ivbalaban
-{
+namespace ivbalaban {
 typedef struct {
     int type;
     GIMS_Point *pt;

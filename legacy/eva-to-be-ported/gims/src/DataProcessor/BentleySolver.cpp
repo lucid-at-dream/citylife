@@ -4,8 +4,7 @@
 #define THRESHOLD 20
 #define THRESHOLD2 1000
 
-list<GIMS_Geometry *> BentleySolver::solve(GIMS_MultiLineString *A, GIMS_MultiLineString *B)
-{
+list<GIMS_Geometry *> BentleySolver::solve(GIMS_MultiLineString *A, GIMS_MultiLineString *B) {
     bool disjoint = true;
     for (int i = 0; disjoint && i < A->size; i++) {
         for (int j = 0; disjoint && j < B->size; j++) {
@@ -26,13 +25,11 @@ list<GIMS_Geometry *> BentleySolver::solve(GIMS_MultiLineString *A, GIMS_MultiLi
         return linesweep(A, B);
 }
 
-bool cmp(GIMS_LineSegment a, GIMS_LineSegment b)
-{
+bool cmp(GIMS_LineSegment a, GIMS_LineSegment b) {
     return a.osm_id < b.osm_id;
 }
 
-bool compare(Event a, Event b)
-{
+bool compare(Event a, Event b) {
     if (a.pt->x < b.pt->x - ERR_MARGIN) {
         return false;
     } else if (a.pt->x < b.pt->x + ERR_MARGIN && a.pt->x > b.pt->x - ERR_MARGIN) {
@@ -61,8 +58,7 @@ bool compare(Event a, Event b)
         return true;
 }
 
-bool lscmp(GIMS_LineSegment &a, GIMS_LineSegment &b)
-{
+bool lscmp(GIMS_LineSegment &a, GIMS_LineSegment &b) {
     if (a.p1->x < b.p1->x)
         return true;
     else if (a.p1->x == b.p1->x) {
@@ -88,8 +84,7 @@ bool lscmp(GIMS_LineSegment &a, GIMS_LineSegment &b)
     return false;
 }
 
-list<GIMS_Geometry *> BentleySolver::bruteforce(GIMS_MultiLineString *A, GIMS_MultiLineString *B)
-{
+list<GIMS_Geometry *> BentleySolver::bruteforce(GIMS_MultiLineString *A, GIMS_MultiLineString *B) {
     list<GIMS_Geometry *> intersections;
     for (int i = 0; i < A->size; i++) {
         for (int j = 0; j < A->list[i]->size - 1; j++) {
@@ -109,8 +104,7 @@ list<GIMS_Geometry *> BentleySolver::bruteforce(GIMS_MultiLineString *A, GIMS_Mu
     return intersections;
 }
 
-double BentleySolver::inputMLS(evset &eventQueue, GIMS_MultiLineString *mls, int id)
-{
+double BentleySolver::inputMLS(evset &eventQueue, GIMS_MultiLineString *mls, int id) {
     double max_x = -1e100;
     int count = 1;
     for (int i = 0; i < mls->size; i++) {
@@ -156,8 +150,7 @@ double BentleySolver::inputMLS(evset &eventQueue, GIMS_MultiLineString *mls, int
     return max_x;
 }
 
-GIMS_Point *getrp(GIMS_LineSegment &ls)
-{
+GIMS_Point *getrp(GIMS_LineSegment &ls) {
     if (ls.p1->x < ls.p2->x)
         return ls.p2;
     else if (ls.p1->x > ls.p2->x)
@@ -171,8 +164,7 @@ GIMS_Point *getrp(GIMS_LineSegment &ls)
     return 0;
 }
 
-bool fktp_cmp(GIMS_LineSegment &a, GIMS_LineSegment &b)
-{
+bool fktp_cmp(GIMS_LineSegment &a, GIMS_LineSegment &b) {
     GIMS_Point *arp = getrp(a), *brp = getrp(b);
 
     if (arp->x < brp->x)
@@ -188,8 +180,7 @@ bool fktp_cmp(GIMS_LineSegment &a, GIMS_LineSegment &b)
     return false;
 }
 
-void insert(lsset &l, GIMS_LineSegment &ls)
-{
+void insert(lsset &l, GIMS_LineSegment &ls) {
     for (lsset::iterator it = l.begin(); it != l.end(); it++) {
         if (!fktp_cmp(*it, ls)) {
             l.insert(it, ls);
@@ -199,8 +190,7 @@ void insert(lsset &l, GIMS_LineSegment &ls)
     l.push_back(ls);
 }
 
-list<GIMS_Geometry *> BentleySolver::linesweep(GIMS_MultiLineString *A, GIMS_MultiLineString *B)
-{
+list<GIMS_Geometry *> BentleySolver::linesweep(GIMS_MultiLineString *A, GIMS_MultiLineString *B) {
     list<GIMS_Geometry *> intersections;
     evset eventQueue(&compare);
 
@@ -265,8 +255,7 @@ list<GIMS_Geometry *> BentleySolver::linesweep(GIMS_MultiLineString *A, GIMS_Mul
 double sweepLineX = 0;
 double sweepLineY = 0;
 
-mpf_class BentleySolver::getYatX(GIMS_LineSegment *l)
-{
+mpf_class BentleySolver::getYatX(GIMS_LineSegment *l) {
     mpf_class p1x = l->p1->x, p1y = l->p1->y, p2x = l->p2->x, p2y = l->p2->y;
 
     if (p1x == p2x) {
@@ -289,8 +278,7 @@ mpf_class BentleySolver::getYatX(GIMS_LineSegment *l)
     return fy.get_d();
 }
 
-int BentleySolver::BO_cmp_linesegs(GIMS_LineSegment *a, GIMS_LineSegment *b)
-{
+int BentleySolver::BO_cmp_linesegs(GIMS_LineSegment *a, GIMS_LineSegment *b) {
     if (a->p1->x < b->p1->x)
         return 1;
     else if (a->p1->x == b->p1->x) {
@@ -316,8 +304,7 @@ int BentleySolver::BO_cmp_linesegs(GIMS_LineSegment *a, GIMS_LineSegment *b)
     return 0;
 }
 
-bool BentleySolver::BO_compare(BO_Event a, BO_Event b)
-{
+bool BentleySolver::BO_compare(BO_Event a, BO_Event b) {
     if (a.pt->x < b.pt->x - ERR_MARGIN) {
         return true;
 
@@ -355,8 +342,7 @@ bool BentleySolver::BO_compare(BO_Event a, BO_Event b)
     return BO_cmp_linesegs(a.ls->list[0], b.ls->list[0]) > 0 ? true : false;
 }
 
-bool BentleySolver::BO_lscmp(GIMS_LineSegment **ls1, GIMS_LineSegment **ls2)
-{
+bool BentleySolver::BO_lscmp(GIMS_LineSegment **ls1, GIMS_LineSegment **ls2) {
     GIMS_LineSegment *a = *ls1, *b = *ls2;
 
     mpf_class ay = getYatX(a), by = getYatX(b);
@@ -370,8 +356,7 @@ bool BentleySolver::BO_lscmp(GIMS_LineSegment **ls1, GIMS_LineSegment **ls2)
     return false;
 }
 
-GIMS_Point *BentleySolver::report(list<GIMS_Geometry *> &intersections, GIMS_LineSegment *a, GIMS_LineSegment *b)
-{
+GIMS_Point *BentleySolver::report(list<GIMS_Geometry *> &intersections, GIMS_LineSegment *a, GIMS_LineSegment *b) {
     GIMS_Geometry *g = a->intersects(b);
 
     if (g == NULL) {
@@ -389,8 +374,7 @@ GIMS_Point *BentleySolver::report(list<GIMS_Geometry *> &intersections, GIMS_Lin
     return NULL;
 }
 
-bool BentleySolver::newIntersectionBOEvent(BO_evset &eventQueue, GIMS_Point *int_p, GIMS_LineSegment *a, GIMS_LineSegment *b)
-{
+bool BentleySolver::newIntersectionBOEvent(BO_evset &eventQueue, GIMS_Point *int_p, GIMS_LineSegment *a, GIMS_LineSegment *b) {
     GIMS_MultiLineSegment *mls = new GIMS_MultiLineSegment(2);
     mls->append(a);
     mls->append(b);
@@ -420,8 +404,7 @@ bool BentleySolver::newIntersectionBOEvent(BO_evset &eventQueue, GIMS_Point *int
     }
 }
 
-list<GIMS_Geometry *> BentleySolver::bentley(GIMS_MultiLineString *A, GIMS_MultiLineString *B)
-{
+list<GIMS_Geometry *> BentleySolver::bentley(GIMS_MultiLineString *A, GIMS_MultiLineString *B) {
     list<GIMS_Geometry *> intersections;
 
     BO_evset eventQueue(&BO_compare);

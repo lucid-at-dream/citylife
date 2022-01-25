@@ -10,8 +10,7 @@ using namespace std;
 void benchmark(spatialIndex *, list<GIMS_Geometry *> &, list<GIMS_Geometry *> &, list<GIMS_Geometry *> &);
 void validate(spatialIndex *, list<GIMS_Geometry *> &, list<GIMS_Geometry *> &, list<GIMS_Geometry *> &);
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     //1. load configuration
     if (loadConfiguration(argc, argv))
         return -1;
@@ -107,9 +106,7 @@ int main(int argc, char **argv)
     shutdownTunaSolver();
 }
 
-void validate(spatialIndex *index, list<GIMS_Geometry *> &query_points, list<GIMS_Geometry *> &query_lines,
-              list<GIMS_Geometry *> &query_polygons)
-{
+void validate(spatialIndex *index, list<GIMS_Geometry *> &query_points, list<GIMS_Geometry *> &query_lines, list<GIMS_Geometry *> &query_polygons) {
     //perform benchmarks
     FILE *f;
     list<GIMS_Geometry *>::iterator it;
@@ -521,9 +518,7 @@ void validate(spatialIndex *index, list<GIMS_Geometry *> &query_points, list<GIM
     fclose(f);
 }
 
-void benchmark(spatialIndex *index, list<GIMS_Geometry *> &query_points, list<GIMS_Geometry *> &query_lines,
-               list<GIMS_Geometry *> &query_polygons)
-{
+void benchmark(spatialIndex *index, list<GIMS_Geometry *> &query_points, list<GIMS_Geometry *> &query_lines, list<GIMS_Geometry *> &query_polygons) {
     //perform benchmarks
     list<GIMS_Geometry *>::iterator it;
     clock_t start, stop;

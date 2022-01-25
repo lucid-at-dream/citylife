@@ -10,8 +10,7 @@ int port = 9999;
 // Declared functions
 void printHelp(FILE *stream);
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     // Parse arguments
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--port") == 0) {
@@ -32,8 +31,7 @@ int main(int argc, char **argv)
     return 0;
 }
 
-void printHelp(FILE *stream)
-{
+void printHelp(FILE *stream) {
     fprintf(stream, "=== Usage -- Authentication microservice from Citylife ===\n");
     fprintf(stream, "auth.exe [-p|--port port] [-h|--help]\n");
     fprintf(stream, "\n");

@@ -8,8 +8,7 @@
 #include "logger.h"
 #include "worker_pool.h"
 
-socket_server *server_new(unsigned short port)
-{
+socket_server *server_new(unsigned short port) {
     info("server.c: Creating a new server bound to port %d", port);
     socket_server *new_server = (socket_server *)calloc(1, sizeof(socket_server));
     new_server->server_port = port;
@@ -17,14 +16,12 @@ socket_server *server_new(unsigned short port)
     return new_server;
 }
 
-void server_stop(socket_server *server)
-{
+void server_stop(socket_server *server) {
     info("server.c: Stopping the server");
     server->stop = 1;
 }
 
-void server_start(socket_server *server, char *(*handle_request)(char *))
-{
+void server_start(socket_server *server, char *(*handle_request)(char *)) {
     server->server_address.sin_family = AF_INET;
     server->server_address.sin_addr.s_addr = htonl(INADDR_ANY);
     server->server_address.sin_port = htons(server->server_port);

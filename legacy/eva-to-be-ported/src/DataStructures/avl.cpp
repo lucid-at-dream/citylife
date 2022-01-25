@@ -1,8 +1,7 @@
 #include "avl.hpp"
 
 //constructor
-AVLNode::AVLNode(GIMS_Geometry *data)
-{
+AVLNode::AVLNode(GIMS_Geometry *data) {
     this->data = data;
     this->left = NULL;
     this->right = NULL;
@@ -11,8 +10,7 @@ AVLNode::AVLNode(GIMS_Geometry *data)
 }
 
 //destructor
-AVLNode::~AVLNode()
-{
+AVLNode::~AVLNode() {
     if (this->left != NULL)
         delete this->left;
     if (this->right != NULL)
@@ -20,8 +18,7 @@ AVLNode::~AVLNode()
 }
 
 //tree like printing function
-void AVLNode::prettyPrint()
-{
+void AVLNode::prettyPrint() {
     list<pair<int, AVLNode *> > queue = list<pair<int, AVLNode *> >();
     queue.push_back(pair<int, AVLNode *>(0, this));
 
@@ -54,8 +51,7 @@ void AVLNode::prettyPrint()
 }
 
 //prints the elements in preorder
-void AVLNode::preOrder()
-{
+void AVLNode::preOrder() {
     cout << this->data << "(" << height << "), ";
     if (this->left != NULL)
         this->left->preOrder();
@@ -64,22 +60,19 @@ void AVLNode::preOrder()
 }
 
 //updates the node height
-void AVLNode::updateHeight()
-{
+void AVLNode::updateHeight() {
     int hleft = this->left != NULL ? this->left->height : 0, hright = this->right != NULL ? this->right->height : 0;
     this->height = hleft > hright ? hleft + 1 : hright + 1;
 }
 
 //returns the balance factor of the tree rooted at this node
-int AVLNode::getBalance()
-{
+int AVLNode::getBalance() {
     int hleft = this->left != NULL ? this->left->height : 0, hright = this->right != NULL ? this->right->height : 0;
     return hleft - hright;
 }
 
 //retrieves the data corresponding to the given key
-GIMS_Geometry *AVLNode::find(long long key)
-{
+GIMS_Geometry *AVLNode::find(long long key) {
     AVLNode *aux = this;
     int compar;
     while (aux != NULL) {
@@ -96,8 +89,7 @@ GIMS_Geometry *AVLNode::find(long long key)
 }
 
 //inserts a given item in the tree
-int AVLNode::insert(GIMS_Geometry *item)
-{
+int AVLNode::insert(GIMS_Geometry *item) {
     int compar = KEYCMP(item->id, this->data->id);
 
     int added = 0;
@@ -151,8 +143,7 @@ int AVLNode::insert(GIMS_Geometry *item)
 }
 
 /*TODO. height update is buggy!!*/
-AVLNode *AVLNode::remove(long long item)
-{
+AVLNode *AVLNode::remove(long long item) {
     AVLNode *removedNode = NULL;
 
     int compar = KEYCMP(item, this->data->id);
@@ -266,8 +257,7 @@ AVLNode *AVLNode::remove(long long item)
     return removedNode;
 }
 
-void AVLNode::rebalanceAfterRemove()
-{
+void AVLNode::rebalanceAfterRemove() {
     //update node height
     int hleft = this->left != NULL ? this->left->height : 0, hright = this->right != NULL ? this->right->height : 0;
     this->height = hleft > hright ? hleft + 1 : hright + 1;
@@ -301,8 +291,7 @@ void AVLNode::rebalanceAfterRemove()
         this->parent->rebalanceAfterRemove();
 }
 
-void AVLNode::rotateLeft()
-{
+void AVLNode::rotateLeft() {
     // Perform rotation
     AVLNode *aux = this->right->left;
     this->right->left = this;
@@ -323,8 +312,7 @@ void AVLNode::rotateLeft()
     this->parent->updateHeight();
 }
 
-void AVLNode::rotateRight()
-{
+void AVLNode::rotateRight() {
     // Perform rotation
     AVLNode *aux = this->left->right;
     this->left->right = this;
@@ -347,8 +335,7 @@ void AVLNode::rotateRight()
 
 /*AVL TREE*/
 
-AVLTree::iterator AVLTree::begin()
-{
+AVLTree::iterator AVLTree::begin() {
     if (this->root == NULL)
         return this->end();
     AVLNode *aux = this->root;
@@ -358,65 +345,55 @@ AVLTree::iterator AVLTree::begin()
     return iterator(aux);
 }
 
-AVLTree::iterator AVLTree::end()
-{
+AVLTree::iterator AVLTree::end() {
     return iterator(NULL);
 }
 
-void AVLTree::preOrder()
-{
+void AVLTree::preOrder() {
     this->root->preOrder();
 }
 
-void AVLTree::prettyPrint()
-{
+void AVLTree::prettyPrint() {
     this->root->prettyPrint();
 }
 
-GIMS_Geometry *AVLTree::top()
-{
+GIMS_Geometry *AVLTree::top() {
     if (this->root == NULL)
         return NULL;
     return this->root->data;
 }
 
 //constructor
-AVLTree::AVLTree()
-{
+AVLTree::AVLTree() {
     this->root = NULL;
     this->nnodes = 0;
 }
 
 //destructor
-AVLTree::~AVLTree()
-{
+AVLTree::~AVLTree() {
     if (this->root != NULL)
         delete this->root;
 }
 
 //function definitions
-int AVLTree::size()
-{
+int AVLTree::size() {
     return this->nnodes;
 }
 
 /*TODO: !Optimize! this can be done in linear time with in order traversals*/
 //merges the given tree into this tree.
-void AVLTree::merge(AVLTree *tree)
-{
+void AVLTree::merge(AVLTree *tree) {
     for (AVLTree::iterator it = tree->begin(); it != tree->end(); it++)
         this->insert(*it);
 }
 
-GIMS_Geometry *AVLTree::find(long long key)
-{
+GIMS_Geometry *AVLTree::find(long long key) {
     if (this->root == NULL)
         return NULL;
     return this->root->find(key);
 }
 
-void AVLTree::insert(GIMS_Geometry *item)
-{
+void AVLTree::insert(GIMS_Geometry *item) {
     //insert
     if (this->root == NULL) {
         this->root = new AVLNode(item);
@@ -428,8 +405,7 @@ void AVLTree::insert(GIMS_Geometry *item)
         this->root = this->root->parent;
 }
 
-AVLNode *AVLTree::remove(long long item)
-{
+AVLNode *AVLTree::remove(long long item) {
     if (this->root == NULL)
         return NULL;
 

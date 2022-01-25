@@ -3,23 +3,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-authenticator *authenticator_new()
-{
+authenticator *authenticator_new() {
     info("authenticator.c: creating a new authenticator struct");
     authenticator *auth = (authenticator *)calloc(1, sizeof(authenticator));
     auth->auth_table = map_new(16);
     return auth;
 }
 
-void authenticator_destroy(authenticator *auth)
-{
+void authenticator_destroy(authenticator *auth) {
     info("authenticator.c: destroying authenticator struct");
     map_destroy_dealloc(auth->auth_table, 1, 1);
     free(auth);
 }
 
-result add_user(authenticator *auth, char *user, char *password)
-{
+result add_user(authenticator *auth, char *user, char *password) {
     result r;
 
     if (map_get(auth->auth_table, user) != NULL) {
@@ -37,8 +34,7 @@ result add_user(authenticator *auth, char *user, char *password)
     return r;
 }
 
-result authenticate(authenticator *auth, char *user, char *token)
-{
+result authenticate(authenticator *auth, char *user, char *token) {
     result r;
 
     char *stored_password = map_get(auth->auth_table, user);
@@ -64,8 +60,7 @@ result authenticate(authenticator *auth, char *user, char *token)
     return r;
 }
 
-result change_password(authenticator *auth, char *user, char *token, char *new_password)
-{
+result change_password(authenticator *auth, char *user, char *token, char *new_password) {
     result r;
 
     if (authenticate(auth, user, token).result == AUTH_SUCCESS) {
@@ -82,8 +77,7 @@ result change_password(authenticator *auth, char *user, char *token, char *new_p
     return r;
 }
 
-result del_user(authenticator *auth, char *user, char *token)
-{
+result del_user(authenticator *auth, char *user, char *token) {
     result r;
 
     if (authenticate(auth, user, token).result == AUTH_SUCCESS) {

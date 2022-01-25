@@ -11,8 +11,7 @@ double sweepline_x; //x value of the current sweepline
 double vstrip[2] = { 0, 0 }; //x interval that defines the current vertical strip under analysis
 iset intersections(&geom_set_cmp); //set of intersections
 
-list<GIMS_Geometry *> ivbalaban::balaban(GIMS_MultiLineString *A, GIMS_MultiLineString *B)
-{
+list<GIMS_Geometry *> ivbalaban::balaban(GIMS_MultiLineString *A, GIMS_MultiLineString *B) {
     //printf("Beggining balaban's algorithm\n");
 
     GIMS_MultiLineString *input[2] = { A, B };
@@ -33,8 +32,7 @@ list<GIMS_Geometry *> ivbalaban::balaban(GIMS_MultiLineString *A, GIMS_MultiLine
     for (GIMS_MultiLineString *mls : input) {
         for (int i = 0; i < mls->size; i++) {
             for (int j = 0; j < mls->list[i]->size - 1; j++) {
-                double x1 = mls->list[i]->list[j]->x, y1 = mls->list[i]->list[j]->y, x2 = mls->list[i]->list[j + 1]->x,
-                       y2 = mls->list[i]->list[j + 1]->y;
+                double x1 = mls->list[i]->list[j]->x, y1 = mls->list[i]->list[j]->y, x2 = mls->list[i]->list[j + 1]->x, y2 = mls->list[i]->list[j + 1]->y;
 
                 //printf("in: %lf %lf %lf %lf\n",x1,y1,x2,y2);
 
@@ -136,21 +134,18 @@ list<GIMS_Geometry *> ivbalaban::balaban(GIMS_MultiLineString *A, GIMS_MultiLine
     return ret;
 }
 
-void ivbalaban::setOrderReferenceLine(double x)
-{
+void ivbalaban::setOrderReferenceLine(double x) {
     sweepline_x = x;
 }
 
-void ivbalaban::setStrip(double b, double e)
-{
+void ivbalaban::setStrip(double b, double e) {
     vstrip[0] = b;
     vstrip[1] = e;
 }
 
 //Balaban's algorithm main recursive function.
 //complexity: O( Nlog^2(N) + K )
-void ivbalaban::TreeSearch(oset &L_v, uset &I_v, int b, int e, oset &R_v)
-{
+void ivbalaban::TreeSearch(oset &L_v, uset &I_v, int b, int e, oset &R_v) {
     double bx = xevents[b].endpoints[0]->pt->x, ex = xevents[e].endpoints[0]->pt->x;
 #ifdef DEBUG
     printf("\n============\n");
@@ -272,8 +267,7 @@ void ivbalaban::TreeSearch(oset &L_v, uset &I_v, int b, int e, oset &R_v)
 #endif
 }
 
-void ivbalaban::findIntersectionsAtLine(oset &A, oset &B, double x)
-{
+void ivbalaban::findIntersectionsAtLine(oset &A, oset &B, double x) {
     setOrderReferenceLine(x);
     oset::iterator i = A.begin(), j = B.begin();
 
@@ -293,8 +287,7 @@ void ivbalaban::findIntersectionsAtLine(oset &A, oset &B, double x)
     }
 }
 
-void ivbalaban::findIntersectionSegmentStaircase(oset &A, oset::iterator it, GIMS_LineSegment seg)
-{
+void ivbalaban::findIntersectionSegmentStaircase(oset &A, oset::iterator it, GIMS_LineSegment seg) {
     if (it != A.end())
         reportIntersection(*it, seg);
 
@@ -316,8 +309,7 @@ void ivbalaban::findIntersectionSegmentStaircase(oset &A, oset::iterator it, GIM
     }
 }
 
-void ivbalaban::o_findint(oset A, oset B)
-{
+void ivbalaban::o_findint(oset A, oset B) {
     if (A.empty() || B.empty())
         return;
 
@@ -338,8 +330,7 @@ void ivbalaban::o_findint(oset A, oset B)
     }
 }
 
-void ivbalaban::u_findint(oset A, uset B)
-{
+void ivbalaban::u_findint(oset A, uset B) {
     if (A.empty() || B.empty())
         return;
 
@@ -360,8 +351,7 @@ void ivbalaban::u_findint(oset A, uset B)
 
 //finds the intersections between L and R and
 //complexity: O( L + int(L) )
-void ivbalaban::searchStrip(oset &L, oset &R)
-{
+void ivbalaban::searchStrip(oset &L, oset &R) {
 #ifdef DEBUG
     printf("===== searchStrip (%lf %lf)=====\n", vstrip[0], vstrip[1]);
     printf("L:\n");
@@ -396,8 +386,7 @@ void ivbalaban::searchStrip(oset &L, oset &R)
 
 //merges A and B into another empty oset R.
 //complexity: O(A + B)
-void ivbalaban::merge(oset &A, oset &B, oset &R)
-{
+void ivbalaban::merge(oset &A, oset &B, oset &R) {
     oset::iterator i = A.begin();
     oset::iterator j = B.begin();
 
@@ -420,8 +409,7 @@ void ivbalaban::merge(oset &A, oset &B, oset &R)
     }
 }
 
-bool ivbalaban::isSpanning(const GIMS_LineSegment &l)
-{
+bool ivbalaban::isSpanning(const GIMS_LineSegment &l) {
     if (l.p1->x <= vstrip[0] && l.p2->x >= vstrip[1])
         return true;
     return false;
@@ -429,8 +417,7 @@ bool ivbalaban::isSpanning(const GIMS_LineSegment &l)
 
 //splits the ordered oset L<_x into oset Q and oset Ll
 //complexity: O(L)
-void ivbalaban::split(oset &L, oset &Q, oset &Ll)
-{
+void ivbalaban::split(oset &L, oset &Q, oset &Ll) {
     oset::iterator Q_last = Q.end();
 
     for (oset::iterator it = L.begin(); it != L.end(); it++) {
@@ -443,13 +430,11 @@ void ivbalaban::split(oset &L, oset &Q, oset &Ll)
 }
 
 //comparison functions
-bool ivbalaban::ls_cmp(const GIMS_LineSegment &a, const GIMS_LineSegment &b)
-{
+bool ivbalaban::ls_cmp(const GIMS_LineSegment &a, const GIMS_LineSegment &b) {
     double y1 = getYatX(a, sweepline_x), y2 = getYatX(b, sweepline_x);
     return y1 < y2;
 }
-bool ivbalaban::geom_set_cmp(const GIMS_Geometry *_a, const GIMS_Geometry *_b)
-{
+bool ivbalaban::geom_set_cmp(const GIMS_Geometry *_a, const GIMS_Geometry *_b) {
     if (_a->type == POINT && _b->type == POINT) {
         GIMS_Point *a = (GIMS_Point *)_a, *b = (GIMS_Point *)_b;
         return a->x != b->x ? a->x < b->x : a->y < b->y;
@@ -466,8 +451,7 @@ bool ivbalaban::geom_set_cmp(const GIMS_Geometry *_a, const GIMS_Geometry *_b)
         return _a->type < _b->type;
     }
 }
-int ivbalaban::pt_cmp(const GIMS_Point &a, const GIMS_Point &b)
-{
+int ivbalaban::pt_cmp(const GIMS_Point &a, const GIMS_Point &b) {
     if (a.x < b.x)
         return -1;
     else if (a.x == b.x)
@@ -480,8 +464,7 @@ int ivbalaban::pt_cmp(const GIMS_Point &a, const GIMS_Point &b)
     else
         return 1;
 }
-bool ivbalaban::ls_set_cmp(const GIMS_LineSegment &a, const GIMS_LineSegment &b)
-{
+bool ivbalaban::ls_set_cmp(const GIMS_LineSegment &a, const GIMS_LineSegment &b) {
     int c1 = pt_cmp(*(a.p1), *(b.p1)), c2 = pt_cmp(*(a.p2), *(b.p2));
     if (c1 < 0 || (c1 == 0 && c2 < 0))
         return true;
@@ -490,8 +473,7 @@ bool ivbalaban::ls_set_cmp(const GIMS_LineSegment &a, const GIMS_LineSegment &b)
 
 //compare two endpoints for sorting.
 //complexity: O(1)
-int ivbalaban::endpt_cmp(const void *_a, const void *_b)
-{
+int ivbalaban::endpt_cmp(const void *_a, const void *_b) {
     endpoint a = *((endpoint *)_a);
     endpoint b = *((endpoint *)_b);
 
@@ -510,8 +492,7 @@ int ivbalaban::endpt_cmp(const void *_a, const void *_b)
 }
 
 //utility functions
-bool ivbalaban::reportIntersection(const GIMS_LineSegment &A, const GIMS_LineSegment &B)
-{
+bool ivbalaban::reportIntersection(const GIMS_LineSegment &A, const GIMS_LineSegment &B) {
     GIMS_Geometry *it = ((GIMS_LineSegment)A).intersects(&B);
 
     if (it == NULL)
@@ -541,8 +522,7 @@ bool ivbalaban::reportIntersection(const GIMS_LineSegment &A, const GIMS_LineSeg
     }
     return inStrip;
 }
-bool ivbalaban::intersectsWithinStrip(const GIMS_LineSegment &A, const GIMS_LineSegment &B)
-{
+bool ivbalaban::intersectsWithinStrip(const GIMS_LineSegment &A, const GIMS_LineSegment &B) {
     GIMS_Geometry *it = ((GIMS_LineSegment)A).intersects(&B);
 
     if (it == NULL)
@@ -566,8 +546,7 @@ bool ivbalaban::intersectsWithinStrip(const GIMS_LineSegment &A, const GIMS_Line
         }
     }
 }
-double ivbalaban::getYatX(const GIMS_LineSegment &ls, double x)
-{
+double ivbalaban::getYatX(const GIMS_LineSegment &ls, double x) {
     if (ls.p1->y == ls.p2->y)
         return ls.p1->y;
 
@@ -577,8 +556,7 @@ double ivbalaban::getYatX(const GIMS_LineSegment &ls, double x)
 }
 
 //input perturbation
-GIMS_Geometry *ivbalaban::revertSkewness(const GIMS_Geometry *g)
-{
+GIMS_Geometry *ivbalaban::revertSkewness(const GIMS_Geometry *g) {
     if (g->type == POINT) {
         GIMS_Point *p = (GIMS_Point *)g;
         return new GIMS_Point(p->x - skewness * p->y, p->y);
@@ -587,25 +565,19 @@ GIMS_Geometry *ivbalaban::revertSkewness(const GIMS_Geometry *g)
         return new GIMS_LineSegment((GIMS_Point *)revertSkewness(l->p1), (GIMS_Point *)revertSkewness(l->p2));
     }
 }
-void ivbalaban::applySkewness(GIMS_Point &p)
-{
+void ivbalaban::applySkewness(GIMS_Point &p) {
     p.x += skewness * p.y;
 }
 
 //verbose functions
-void ivbalaban::dumplineseg(GIMS_LineSegment seg)
-{
+void ivbalaban::dumplineseg(GIMS_LineSegment seg) {
     printf("%.4lf %.4lf <> %.4lf %.4lf", seg.p1->x, seg.p1->y, seg.p2->x, seg.p2->y);
 }
-void ivbalaban::printoset(oset &s)
-{
+void ivbalaban::printoset(oset &s) {
     for (oset::iterator it = s.begin(); it != s.end(); it++)
-        printf("p1: %.4lf %.4lf, p2: %.4lf %.4lf, y at %.4lf: %.4lf\n", it->p1->x, it->p1->y, it->p2->x, it->p2->y, sweepline_x,
-               getYatX(*it, sweepline_x));
+        printf("p1: %.4lf %.4lf, p2: %.4lf %.4lf, y at %.4lf: %.4lf\n", it->p1->x, it->p1->y, it->p2->x, it->p2->y, sweepline_x, getYatX(*it, sweepline_x));
 }
-void ivbalaban::printuset(uset &s)
-{
+void ivbalaban::printuset(uset &s) {
     for (uset::iterator it = s.begin(); it != s.end(); it++)
-        printf("p1: %.4lf %.4lf, p2: %.4lf %.4lf, y at %.4lf: %.4lf\n", it->p1->x, it->p1->y, it->p2->x, it->p2->y, sweepline_x,
-               getYatX(*it, sweepline_x));
+        printf("p1: %.4lf %.4lf, p2: %.4lf %.4lf, y at %.4lf: %.4lf\n", it->p1->x, it->p1->y, it->p2->x, it->p2->y, sweepline_x, getYatX(*it, sweepline_x));
 }

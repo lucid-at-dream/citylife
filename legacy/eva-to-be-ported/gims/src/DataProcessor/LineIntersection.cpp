@@ -1,8 +1,7 @@
 #include "LineIntersection.hpp"
 
 //helper functions for the linestring intersection matrix construction
-void DE9IM_mls_ls(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_LineString *other)
-{
+void DE9IM_mls_ls(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_LineString *other) {
     BentleySolver bs;
 
     GIMS_MultiLineString *other_mls = new GIMS_MultiLineString(1);
@@ -121,8 +120,7 @@ void DE9IM_mls_ls(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_LineString
         (*it)->deepDelete();
 }
 
-void DE9IM_mls_mls(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_MultiLineString *other)
-{
+void DE9IM_mls_mls(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_MultiLineString *other) {
     BentleySolver bs;
     list<GIMS_Geometry *> intersections = bs.solve(query, other);
 

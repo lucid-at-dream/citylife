@@ -11,8 +11,7 @@ typedef struct q_op {
     int size;
 } q_op;
 
-char test_queue_add_pop()
-{
+char test_queue_add_pop() {
     q_op ops[] = { { -1, NULL, 0 }, { -1, NULL, 0 }, { 1, "a", 1 },   { 1, "b", 2 },   { 1, "c", 3 },   { -1, "a", 2 },
                    { -1, "b", 1 },  { -1, "c", 0 },  { -1, NULL, 0 }, { 1, "aa", 1 },  { 1, "bb", 2 },  { 1, "cc", 3 },
                    { -1, "aa", 2 }, { -1, "bb", 1 }, { 1, "dd", 2 },  { -1, "cc", 1 }, { -1, "dd", 0 }, { 1, "mem check", 1 } };
@@ -46,8 +45,7 @@ char test_queue_add_pop()
 
 test test_suite[] = { { "Test adding and popping several items from a queue", test_queue_add_pop } };
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     suite_report report = run_test_suite(test_suite, sizeof(test_suite) / sizeof(test));
 
     if (report.failures > 0) {

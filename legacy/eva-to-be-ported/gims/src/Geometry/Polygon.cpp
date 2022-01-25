@@ -1,7 +1,6 @@
 #include "Geometry.hpp"
 
-int GIMS_Polygon::getPointCount()
-{
+int GIMS_Polygon::getPointCount() {
     int total = 0;
     if (this->externalRing != NULL)
         total += this->externalRing->getPointCount();
@@ -10,8 +9,7 @@ int GIMS_Polygon::getPointCount()
     return total;
 }
 
-void GIMS_Polygon::deepDelete()
-{
+void GIMS_Polygon::deepDelete() {
     if (externalRing != NULL) {
         this->externalRing->deepDelete();
         this->externalRing = NULL;
@@ -23,8 +21,7 @@ void GIMS_Polygon::deepDelete()
     delete this;
 }
 
-void GIMS_Polygon::deleteClipped()
-{
+void GIMS_Polygon::deleteClipped() {
     if (!isClippedCopy)
         return;
 
@@ -39,13 +36,11 @@ void GIMS_Polygon::deleteClipped()
     delete this;
 }
 
-GIMS_BoundingBox *GIMS_Polygon::getExtent()
-{
+GIMS_BoundingBox *GIMS_Polygon::getExtent() {
     return this->computeBBox();
 }
 
-double GIMS_Polygon::area()
-{
+double GIMS_Polygon::area() {
     double area = 0;
 
     if (externalRing == NULL)
@@ -85,8 +80,7 @@ double GIMS_Polygon::area()
     return area;
 }
 
-string GIMS_Polygon::toWkt()
-{
+string GIMS_Polygon::toWkt() {
     string wkt = string("POLYGON(");
     char buff[100];
     for (int i = 0; i < this->externalRing->list[0]->size; i++) {
@@ -118,16 +112,14 @@ string GIMS_Polygon::toWkt()
     return wkt;
 }
 
-GIMS_Polygon *GIMS_Polygon::clone()
-{
+GIMS_Polygon *GIMS_Polygon::clone() {
     GIMS_Polygon *fresh = new GIMS_Polygon(this->externalRing->clone(), this->internalRings->clone());
     fresh->id = this->id;
     fresh->approximation = this->approximation;
     return fresh;
 }
 
-GIMS_Geometry *GIMS_Polygon::clipToBox(GIMS_BoundingBox *box)
-{
+GIMS_Geometry *GIMS_Polygon::clipToBox(GIMS_BoundingBox *box) {
 #ifndef DONTUSEAPPROXIMATIONS
     if (this->approximation) {
         if (this->approximation->isInside(box))
@@ -157,22 +149,19 @@ GIMS_Geometry *GIMS_Polygon::clipToBox(GIMS_BoundingBox *box)
         return NULL;
 }
 
-void GIMS_Polygon::appendExternalRing(GIMS_LineString *er)
-{
+void GIMS_Polygon::appendExternalRing(GIMS_LineString *er) {
     if (this->externalRing == NULL)
         this->externalRing = new GIMS_MultiLineString(1);
     this->externalRing->append(er);
 }
 
-void GIMS_Polygon::appendInternalRing(GIMS_LineString *ir)
-{
+void GIMS_Polygon::appendInternalRing(GIMS_LineString *ir) {
     if (this->internalRings == NULL)
         this->internalRings = new GIMS_MultiLineString(1);
     this->internalRings->append(ir);
 }
 
-GIMS_BoundingBox *GIMS_Polygon::computeBBox()
-{
+GIMS_BoundingBox *GIMS_Polygon::computeBBox() {
     double maxx = -1e100, minx = 1e100, maxy = -1e100, miny = 1e100;
 
     for (int i = 0; i < externalRing->size; i++) {
@@ -194,8 +183,7 @@ GIMS_BoundingBox *GIMS_Polygon::computeBBox()
 
 /*Returns 0 if the point is outside the polygon, 
   1 if it lies inside and 2 if it lies on the polygon's border.*/
-char GIMS_Polygon::containsPointWithinDomain(GIMS_Point *querypoint, GIMS_BoundingBox *domain)
-{
+char GIMS_Polygon::containsPointWithinDomain(GIMS_Point *querypoint, GIMS_BoundingBox *domain) {
 #ifndef DONTUSEAPPROXIMATIONS
     if (this->approximation && !this->approximation->containsPoint(querypoint))
         return 0;
@@ -282,8 +270,7 @@ char GIMS_Polygon::containsPointWithinDomain(GIMS_Point *querypoint, GIMS_Boundi
     }
 }
 
-GIMS_Polygon::GIMS_Polygon(GIMS_MultiLineString *externalRing, GIMS_MultiLineString *internalRings, bool computeApproximation)
-{
+GIMS_Polygon::GIMS_Polygon(GIMS_MultiLineString *externalRing, GIMS_MultiLineString *internalRings, bool computeApproximation) {
     this->type = POLYGON;
     this->hasOwnAppr = false;
     this->isClippedCopy = false;
@@ -295,8 +282,7 @@ GIMS_Polygon::GIMS_Polygon(GIMS_MultiLineString *externalRing, GIMS_MultiLineStr
     }
 }
 
-GIMS_Polygon::GIMS_Polygon(int ext_alloc, int int_alloc)
-{
+GIMS_Polygon::GIMS_Polygon(int ext_alloc, int int_alloc) {
     this->id = 0;
     this->type = POLYGON;
     this->hasOwnAppr = false;
@@ -306,8 +292,7 @@ GIMS_Polygon::GIMS_Polygon(int ext_alloc, int int_alloc)
     this->approximation = NULL;
 }
 
-GIMS_Polygon::GIMS_Polygon()
-{
+GIMS_Polygon::GIMS_Polygon() {
     this->id = 0;
     this->type = POLYGON;
     this->hasOwnAppr = false;
@@ -316,8 +301,7 @@ GIMS_Polygon::GIMS_Polygon()
     this->approximation = NULL;
 }
 
-GIMS_Polygon::~GIMS_Polygon()
-{
+GIMS_Polygon::~GIMS_Polygon() {
     if (this->externalRing)
         delete this->externalRing;
     if (this->internalRings)
@@ -326,32 +310,28 @@ GIMS_Polygon::~GIMS_Polygon()
         delete this->approximation;
 }
 
-int GIMS_MultiPolygon::getPointCount()
-{
+int GIMS_MultiPolygon::getPointCount() {
     int total = 0;
     for (int i = 0; i < size; i++)
         total += list[i]->getPointCount();
     return total;
 }
 
-void GIMS_MultiPolygon::deepDelete()
-{
+void GIMS_MultiPolygon::deepDelete() {
     if (this->list != NULL)
         for (int i = 0; i < this->size; i++)
             this->list[i]->deepDelete();
     delete this;
 }
 
-void GIMS_MultiPolygon::deleteClipped()
-{
+void GIMS_MultiPolygon::deleteClipped() {
     for (int i = 0; i < this->size; i++) {
         this->list[i]->deleteClipped();
     }
     delete this;
 }
 
-void GIMS_MultiPolygon::append(GIMS_Polygon *p)
-{
+void GIMS_MultiPolygon::append(GIMS_Polygon *p) {
     this->size++;
     if (this->size > this->allocatedSize) {
         this->list = (GIMS_Polygon **)realloc(this->list, this->size * sizeof(GIMS_Polygon *));
@@ -360,8 +340,7 @@ void GIMS_MultiPolygon::append(GIMS_Polygon *p)
     this->list[size - 1] = p;
 }
 
-string GIMS_MultiPolygon::toWkt()
-{
+string GIMS_MultiPolygon::toWkt() {
     string wkt = string("MULTIPOLYGON(");
     char buff[100];
     for (int k = 0; k < this->size; k++) {
@@ -395,8 +374,7 @@ string GIMS_MultiPolygon::toWkt()
     return wkt;
 }
 
-GIMS_MultiPolygon *GIMS_MultiPolygon::clone()
-{
+GIMS_MultiPolygon *GIMS_MultiPolygon::clone() {
     GIMS_MultiPolygon *fresh = new GIMS_MultiPolygon(this->allocatedSize);
     memcpy(fresh->list, this->list, this->size * sizeof(GIMS_Polygon *));
     fresh->size = this->size;
@@ -404,8 +382,7 @@ GIMS_MultiPolygon *GIMS_MultiPolygon::clone()
     return fresh;
 }
 
-GIMS_Geometry *GIMS_MultiPolygon::clipToBox(GIMS_BoundingBox *box)
-{
+GIMS_Geometry *GIMS_MultiPolygon::clipToBox(GIMS_BoundingBox *box) {
     if (this->list == NULL)
         return NULL;
 
@@ -424,16 +401,14 @@ GIMS_Geometry *GIMS_MultiPolygon::clipToBox(GIMS_BoundingBox *box)
     return clipped;
 }
 
-GIMS_MultiPolygon::GIMS_MultiPolygon()
-{
+GIMS_MultiPolygon::GIMS_MultiPolygon() {
     this->id = 0;
     this->type = MULTIPOLYGON;
     this->size = this->allocatedSize = 0;
     this->list = NULL;
 }
 
-GIMS_MultiPolygon::GIMS_MultiPolygon(int size)
-{
+GIMS_MultiPolygon::GIMS_MultiPolygon(int size) {
     this->type = MULTIPOLYGON;
     this->id = 0;
     this->size = 0;
@@ -441,8 +416,7 @@ GIMS_MultiPolygon::GIMS_MultiPolygon(int size)
     this->list = (GIMS_Polygon **)malloc(size * sizeof(GIMS_Polygon *));
 }
 
-GIMS_MultiPolygon::~GIMS_MultiPolygon()
-{
+GIMS_MultiPolygon::~GIMS_MultiPolygon() {
     if (this->list)
         free(this->list);
 }

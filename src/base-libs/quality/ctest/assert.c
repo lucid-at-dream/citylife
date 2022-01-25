@@ -3,8 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-char assert_int_equals(char *assertion, int num1, int num2)
-{
+char assert_int_equals(char *assertion, int num1, int num2) {
     if (num1 != num2) {
         printf("%s > got [%d], expected [%d]\n", assertion, num1, num2);
         return 1;
@@ -12,8 +11,7 @@ char assert_int_equals(char *assertion, int num1, int num2)
     return 0;
 }
 
-char assert_null(char *assertion, void *ptr)
-{
+char assert_null(char *assertion, void *ptr) {
     if (ptr != NULL) {
         printf("%s > got [%p]\n", assertion, ptr);
         return 1;
@@ -21,8 +19,7 @@ char assert_null(char *assertion, void *ptr)
     return 0;
 }
 
-char assert_not_null(char *assertion, void *ptr)
-{
+char assert_not_null(char *assertion, void *ptr) {
     if (ptr == NULL) {
         printf("%s > got [%p]\n", assertion, ptr);
         return 1;
@@ -30,8 +27,7 @@ char assert_not_null(char *assertion, void *ptr)
     return 0;
 }
 
-char assert_true(char *assertion, void *value)
-{
+char assert_true(char *assertion, void *value) {
     if (!value) {
         printf("%sn", assertion);
         return 1;
@@ -39,8 +35,7 @@ char assert_true(char *assertion, void *value)
     return 0;
 }
 
-char assert_false(char *assertion, void *value)
-{
+char assert_false(char *assertion, void *value) {
     if (value) {
         printf("%sn", assertion);
         return 1;
@@ -48,8 +43,7 @@ char assert_false(char *assertion, void *value)
     return 0;
 }
 
-char assert_int_less_than(char *assertion, int num1, int num2)
-{
+char assert_int_less_than(char *assertion, int num1, int num2) {
     if (num1 >= num2) {
         printf("%s > was expecting [%d] to be less than [%d]\n", assertion, num1, num2);
         return 1;
@@ -57,8 +51,7 @@ char assert_int_less_than(char *assertion, int num1, int num2)
     return 0;
 }
 
-char assert_str_equals(char *assertion, char *str1, char *str2)
-{
+char assert_str_equals(char *assertion, char *str1, char *str2) {
     if (str1 == str2) {
         return 0;
     }
@@ -77,8 +70,7 @@ char assert_str_equals(char *assertion, char *str1, char *str2)
     return 0;
 }
 
-char assert_substr_in(char *assertion, char *str1, char *str2)
-{
+char assert_substr_in(char *assertion, char *str1, char *str2) {
     int size1 = strlen(str1), size2 = strlen(str2);
 
     if (size1 > size2) {
@@ -108,8 +100,7 @@ char assert_substr_in(char *assertion, char *str1, char *str2)
     return 1;
 }
 
-char assert_float_less_than(char *assertion, float n1, float n2)
-{
+char assert_float_less_than(char *assertion, float n1, float n2) {
     if (n1 < n2) {
         return 0;
     } else {
@@ -118,8 +109,7 @@ char assert_float_less_than(char *assertion, float n1, float n2)
     }
 }
 
-char assert_double_equals(char *assertion, double num1, double num2)
-{
+char assert_double_equals(char *assertion, double num1, double num2) {
     if (num1 != num2) {
         printf("%s > got [%lf], expected [%lf]\n", assertion, num1, num2);
         return 1;

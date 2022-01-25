@@ -1,63 +1,53 @@
 #include "Geometry.hpp"
 
-bool GIMS_LineSegment::operator==(const GIMS_LineSegment &other) const
-{
+bool GIMS_LineSegment::operator==(const GIMS_LineSegment &other) const {
     if (this->p1->equals(other.p1) && this->p2->equals(other.p2))
         return true;
     return false;
 }
 
-int GIMS_LineSegment::getPointCount()
-{
+int GIMS_LineSegment::getPointCount() {
     return 2;
 }
 
-void GIMS_LineSegment::deleteClipped()
-{
+void GIMS_LineSegment::deleteClipped() {
 }
 
-void GIMS_LineSegment::deepDelete()
-{
+void GIMS_LineSegment::deepDelete() {
     delete this->p1;
     delete this->p2;
     delete this;
 }
 
-string GIMS_LineSegment::toWkt()
-{
+string GIMS_LineSegment::toWkt() {
     char buff[100];
     sprintf(buff, "LINESTRING(%lf %lf, %lf %lf)", this->p1->x, this->p1->y, this->p2->x, this->p2->y);
     return buff;
 }
 
-GIMS_LineSegment *GIMS_LineSegment::clone()
-{
+GIMS_LineSegment *GIMS_LineSegment::clone() {
     GIMS_LineSegment *fresh = new GIMS_LineSegment(this->p1->clone(), this->p2->clone());
     fresh->id = this->id;
     return fresh;
 }
 
-GIMS_LineSegment::GIMS_LineSegment()
-{
+GIMS_LineSegment::GIMS_LineSegment() {
     this->type = LINESEGMENT;
     this->id = 0;
 }
 
-GIMS_LineSegment::GIMS_LineSegment(GIMS_Point *p1, GIMS_Point *p2)
-{
+GIMS_LineSegment::GIMS_LineSegment(GIMS_Point *p1, GIMS_Point *p2) {
     this->id = 0;
     this->type = LINESEGMENT;
     this->p1 = p1;
     this->p2 = p2;
 }
 
-bool GIMS_LineSegment::isCoveredBy(std::list<GIMS_LineSegment *> &linesegments, bool copy)
-{
+bool GIMS_LineSegment::isCoveredBy(std::list<GIMS_LineSegment *> &linesegments, bool copy) {
     return false;
 }
 
-bool GIMS_LineSegment::coversPoint(GIMS_Point *pt)
-{
+bool GIMS_LineSegment::coversPoint(GIMS_Point *pt) {
     double miny = p2->y < p1->y ? p2->y : p1->y, maxy = p2->y > p1->y ? p2->y : p1->y, minx = p2->x < p1->x ? p2->x : p1->x,
            maxx = p2->x > p1->x ? p2->x : p1->x;
 
@@ -86,16 +76,14 @@ bool GIMS_LineSegment::coversPoint(GIMS_Point *pt)
     return false;
 }
 
-GIMS_LineSegment::~GIMS_LineSegment()
-{
+GIMS_LineSegment::~GIMS_LineSegment() {
 }
 
 /*returns the point contained in this line segment that is both inside the give
   bounding box "range" and is closer to point "pt" than any other point in the
   line segment. it is assumed that the line segment allways has some portion of 
   it inside the given range.*/
-GIMS_Point GIMS_LineSegment::closestPointWithinRange(GIMS_BoundingBox *range, GIMS_Point *pt)
-{
+GIMS_Point GIMS_LineSegment::closestPointWithinRange(GIMS_BoundingBox *range, GIMS_Point *pt) {
     bool p1inside = this->p1->isInsideBox(range), p2inside = this->p2->isInsideBox(range);
 
     /*if this line segment is fully within the given range we can solve the 
@@ -150,10 +138,8 @@ GIMS_Point GIMS_LineSegment::closestPointWithinRange(GIMS_BoundingBox *range, GI
         /*for each line that forms the bounding box, compute the value of t in
           the line equation l(t) = p1 + t*(p2-p1), that results in an intersection.*/
 
-        double t_int_ymax = (ymax - this->p1->y) / (this->p2->y - this->p1->y),
-               t_int_ymin = (ymin - this->p1->y) / (this->p2->y - this->p1->y),
-               t_int_xmax = (xmax - this->p1->x) / (this->p2->x - this->p1->x),
-               t_int_xmin = (xmin - this->p1->x) / (this->p2->x - this->p1->x);
+        double t_int_ymax = (ymax - this->p1->y) / (this->p2->y - this->p1->y), t_int_ymin = (ymin - this->p1->y) / (this->p2->y - this->p1->y),
+               t_int_xmax = (xmax - this->p1->x) / (this->p2->x - this->p1->x), t_int_xmin = (xmin - this->p1->x) / (this->p2->x - this->p1->x);
 
         /*there are at most two of this values of t within the range [0,1], that
           is, contained in the line segment. There's also at least one within 
@@ -199,8 +185,7 @@ GIMS_Point GIMS_LineSegment::closestPointWithinRange(GIMS_BoundingBox *range, GI
     return pt->getClosestPoint(&clipped);
 }
 
-GIMS_Geometry *GIMS_LineSegment::intersects(const GIMS_LineSegment *other)
-{
+GIMS_Geometry *GIMS_LineSegment::intersects(const GIMS_LineSegment *other) {
     if (this->p1 == NULL || this->p2 == NULL) {
         printf("got NULL points\n");
         return NULL;
@@ -218,8 +203,8 @@ GIMS_Geometry *GIMS_LineSegment::intersects(const GIMS_LineSegment *other)
                 return NULL;
 
             //Is there an overlap in the y axis?
-            double top_this = MAX(this->p1->y, this->p2->y), bottom_this = MIN(this->p1->y, this->p2->y),
-                   top_other = MAX(other->p1->y, other->p2->y), bottom_other = MIN(other->p1->y, other->p2->y);
+            double top_this = MAX(this->p1->y, this->p2->y), bottom_this = MIN(this->p1->y, this->p2->y), top_other = MAX(other->p1->y, other->p2->y),
+                   bottom_other = MIN(other->p1->y, other->p2->y);
 
             //the linesegments simply touch
             if (top_other < bottom_this + ERR_MARGIN && top_other > bottom_this - ERR_MARGIN)
@@ -231,8 +216,7 @@ GIMS_Geometry *GIMS_LineSegment::intersects(const GIMS_LineSegment *other)
             if (top_this < bottom_other - ERR_MARGIN || top_other < bottom_this - ERR_MARGIN)
                 return NULL;
             else
-                return new GIMS_LineSegment(new GIMS_Point(int_x, MIN(top_this, top_other)),
-                                            new GIMS_Point(int_x, MAX(bottom_this, bottom_other)));
+                return new GIMS_LineSegment(new GIMS_Point(int_x, MIN(top_this, top_other)), new GIMS_Point(int_x, MAX(bottom_this, bottom_other)));
 
         }
 
@@ -280,8 +264,8 @@ GIMS_Geometry *GIMS_LineSegment::intersects(const GIMS_LineSegment *other)
                 return NULL;
 
             //Is there an overlap in the y axis?
-            double right_this = MAX(this->p1->x, this->p2->x), left_this = MIN(this->p1->x, this->p2->x),
-                   right_other = MAX(other->p1->x, other->p2->x), left_other = MIN(other->p1->x, other->p2->x);
+            double right_this = MAX(this->p1->x, this->p2->x), left_this = MIN(this->p1->x, this->p2->x), right_other = MAX(other->p1->x, other->p2->x),
+                   left_other = MIN(other->p1->x, other->p2->x);
 
             //the linesegments simply touch
             if (right_other < left_this + ERR_MARGIN && right_other > left_this - ERR_MARGIN)
@@ -293,8 +277,7 @@ GIMS_Geometry *GIMS_LineSegment::intersects(const GIMS_LineSegment *other)
             if (right_this < left_other + ERR_MARGIN || right_other < left_this + ERR_MARGIN)
                 return NULL;
             else
-                return new GIMS_LineSegment(new GIMS_Point(MIN(right_this, right_other), int_y),
-                                            new GIMS_Point(MAX(left_this, left_other), int_y));
+                return new GIMS_LineSegment(new GIMS_Point(MIN(right_this, right_other), int_y), new GIMS_Point(MAX(left_this, left_other), int_y));
 
         }
 
@@ -352,8 +335,8 @@ GIMS_Geometry *GIMS_LineSegment::intersects(const GIMS_LineSegment *other)
         //if these are segments from the same line
         if (b1 == b2) {
             //Is there an overlap in the x axis?
-            double right_this = MAX(this->p1->x, this->p2->x), left_this = MIN(this->p1->x, this->p2->x),
-                   right_other = MAX(other->p1->x, other->p2->x), left_other = MIN(other->p1->x, other->p2->x);
+            double right_this = MAX(this->p1->x, this->p2->x), left_this = MIN(this->p1->x, this->p2->x), right_other = MAX(other->p1->x, other->p2->x),
+                   left_other = MIN(other->p1->x, other->p2->x);
 
             //the linesegments simply touch
             if (right_other < left_this + ERR_MARGIN && right_other > left_this - ERR_MARGIN)
@@ -399,10 +382,8 @@ GIMS_Geometry *GIMS_LineSegment::intersects(const GIMS_LineSegment *other)
     return NULL;
 }
 
-GIMS_Geometry *GIMS_LineSegment::clipToBox(GIMS_BoundingBox *box)
-{
-    GIMS_Point upperLeft = GIMS_Point(box->lowerLeft->x, box->upperRight->y),
-               lowerRight = GIMS_Point(box->upperRight->x, box->lowerLeft->y);
+GIMS_Geometry *GIMS_LineSegment::clipToBox(GIMS_BoundingBox *box) {
+    GIMS_Point upperLeft = GIMS_Point(box->lowerLeft->x, box->upperRight->y), lowerRight = GIMS_Point(box->upperRight->x, box->lowerLeft->y);
 
     GIMS_Point *squarePoints[] = { &upperLeft, box->upperRight, &lowerRight, box->lowerLeft };
 
@@ -444,26 +425,22 @@ GIMS_Geometry *GIMS_LineSegment::clipToBox(GIMS_BoundingBox *box)
 }
 
 /* From here we define the LineString class */
-int GIMS_LineString::getPointCount()
-{
+int GIMS_LineString::getPointCount() {
     return size;
 }
 
-void GIMS_LineString::deepDelete()
-{
+void GIMS_LineString::deepDelete() {
     if (this->list != NULL)
         for (int i = 0; i < this->size; i++)
             delete this->list[i];
     delete this;
 }
 
-void GIMS_LineString::deleteClipped()
-{
+void GIMS_LineString::deleteClipped() {
     delete this;
 }
 
-bool GIMS_LineString::coversPoint(GIMS_Point *pt)
-{
+bool GIMS_LineString::coversPoint(GIMS_Point *pt) {
     for (int i = 0; i < this->size - 1; i++) {
         if (this->getLineSegment(i).coversPoint(pt))
             return true;
@@ -471,8 +448,7 @@ bool GIMS_LineString::coversPoint(GIMS_Point *pt)
     return false;
 }
 
-GIMS_LineString::GIMS_LineString(int size)
-{
+GIMS_LineString::GIMS_LineString(int size) {
     this->type = LINESTRING;
     this->list = (GIMS_Point **)malloc(size * sizeof(GIMS_Point *));
     this->allocatedSize = size;
@@ -482,8 +458,7 @@ GIMS_LineString::GIMS_LineString(int size)
     this->bbox.upperRight = new GIMS_Point(-1e10, -1e10);
 }
 
-GIMS_LineString::GIMS_LineString()
-{
+GIMS_LineString::GIMS_LineString() {
     this->type = LINESTRING;
     this->list = NULL;
     this->allocatedSize = 0;
@@ -493,16 +468,14 @@ GIMS_LineString::GIMS_LineString()
     this->bbox.upperRight = new GIMS_Point(-1e10, -1e10);
 }
 
-GIMS_LineString::~GIMS_LineString()
-{
+GIMS_LineString::~GIMS_LineString() {
     if (this->list != NULL)
         free(this->list);
     delete this->bbox.lowerLeft;
     delete this->bbox.upperRight;
 }
 
-int GIMS_LineString::indexOf(GIMS_Point *p)
-{
+int GIMS_LineString::indexOf(GIMS_Point *p) {
     for (int i = 0; i < this->size; i++) {
         if (p->equals(this->list[i]))
             return i;
@@ -510,8 +483,7 @@ int GIMS_LineString::indexOf(GIMS_Point *p)
     return -1;
 }
 
-string GIMS_LineString::toWkt()
-{
+string GIMS_LineString::toWkt() {
     string wkt = string("LINESTRING(");
     char buff[100];
     for (int i = 0; i < this->size; i++) {
@@ -521,8 +493,7 @@ string GIMS_LineString::toWkt()
     return wkt;
 }
 
-GIMS_LineString *GIMS_LineString::clone()
-{
+GIMS_LineString *GIMS_LineString::clone() {
     GIMS_LineString *newList = new GIMS_LineString(this->allocatedSize);
     newList->size = this->size;
     memcpy(newList->list, this->list, this->size * sizeof(GIMS_Point *));
@@ -530,13 +501,11 @@ GIMS_LineString *GIMS_LineString::clone()
     return newList;
 }
 
-bool GIMS_LineString::isCoveredBy(std::list<GIMS_LineSegment *> &linesegments, bool copy)
-{
+bool GIMS_LineString::isCoveredBy(std::list<GIMS_LineSegment *> &linesegments, bool copy) {
     return false;
 }
 
-GIMS_Geometry *GIMS_LineString::clipToBox(GIMS_BoundingBox *box)
-{
+GIMS_Geometry *GIMS_LineString::clipToBox(GIMS_BoundingBox *box) {
     if (box->isDisjoint(&bbox))
         return NULL;
 
@@ -573,15 +542,13 @@ GIMS_Geometry *GIMS_LineString::clipToBox(GIMS_BoundingBox *box)
     return clipped;
 }
 
-GIMS_LineSegment GIMS_LineString::getLineSegment(int index)
-{
+GIMS_LineSegment GIMS_LineString::getLineSegment(int index) {
     GIMS_LineSegment ls = GIMS_LineSegment(this->list[index], this->list[index + 1]);
     ls.id = this->id;
     return ls;
 }
 
-void GIMS_LineString::appendPoint(GIMS_Point *p)
-{
+void GIMS_LineString::appendPoint(GIMS_Point *p) {
     this->size += 1;
 
     //update bounding box
@@ -604,8 +571,7 @@ void GIMS_LineString::appendPoint(GIMS_Point *p)
 
 /*The ring class. We can take advantage of everything that was defined for LineString*/
 
-GIMS_Ring::GIMS_Ring(int size)
-{
+GIMS_Ring::GIMS_Ring(int size) {
     this->type = RING;
     this->size = 0;
     this->allocatedSize = size;
@@ -613,31 +579,26 @@ GIMS_Ring::GIMS_Ring(int size)
     this->id = 0;
 }
 
-GIMS_Ring::GIMS_Ring()
-{
+GIMS_Ring::GIMS_Ring() {
     this->type = RING;
     this->size = this->allocatedSize = 0;
     this->list = NULL;
     this->id = 0;
 }
 
-GIMS_Geometry *GIMS_MultiLineSegment::clipToBox(GIMS_BoundingBox *)
-{
+GIMS_Geometry *GIMS_MultiLineSegment::clipToBox(GIMS_BoundingBox *) {
     return NULL;
 }
 
-GIMS_Geometry *GIMS_MultiLineSegment::clone()
-{
+GIMS_Geometry *GIMS_MultiLineSegment::clone() {
     return NULL;
 }
 
-int GIMS_MultiLineSegment::getPointCount()
-{
+int GIMS_MultiLineSegment::getPointCount() {
     return size * 2;
 }
 
-string GIMS_MultiLineSegment::toWkt()
-{
+string GIMS_MultiLineSegment::toWkt() {
     string wkt = string("MULTILINESTRING(");
     char buff[100];
 
@@ -650,21 +611,18 @@ string GIMS_MultiLineSegment::toWkt()
     return wkt;
 }
 
-void GIMS_MultiLineSegment::deleteClipped()
-{
+void GIMS_MultiLineSegment::deleteClipped() {
     for (int i = 0; i < size; i++)
         list[i]->deleteClipped();
     delete this;
 }
-void GIMS_MultiLineSegment::deepDelete()
-{
+void GIMS_MultiLineSegment::deepDelete() {
     for (int i = 0; i < size; i++)
         list[i]->deepDelete();
     delete this;
 }
 
-void GIMS_MultiLineSegment::append(GIMS_LineSegment *l)
-{
+void GIMS_MultiLineSegment::append(GIMS_LineSegment *l) {
     this->size += 1;
     if (this->size > this->allocatedSize) {
         this->list = (GIMS_LineSegment **)realloc(this->list, this->size * sizeof(GIMS_LineSegment *));
@@ -673,8 +631,7 @@ void GIMS_MultiLineSegment::append(GIMS_LineSegment *l)
     this->list[this->size - 1] = l;
 }
 
-GIMS_MultiLineSegment::GIMS_MultiLineSegment(int size)
-{
+GIMS_MultiLineSegment::GIMS_MultiLineSegment(int size) {
     this->type = MULTILINESTRING;
     this->size = 0;
     this->allocatedSize = size;
@@ -682,31 +639,27 @@ GIMS_MultiLineSegment::GIMS_MultiLineSegment(int size)
     this->id = 0;
 }
 
-GIMS_MultiLineSegment::GIMS_MultiLineSegment()
-{
+GIMS_MultiLineSegment::GIMS_MultiLineSegment() {
     this->type = MULTILINESTRING;
     this->size = this->allocatedSize = 0;
     this->list = NULL;
     this->id = 0;
 }
 
-GIMS_MultiLineSegment::~GIMS_MultiLineSegment()
-{
+GIMS_MultiLineSegment::~GIMS_MultiLineSegment() {
     if (list != NULL)
         free(list);
 }
 
 /*The MultiLineString class.*/
-int GIMS_MultiLineString::getPointCount()
-{
+int GIMS_MultiLineString::getPointCount() {
     int total = 0;
     for (int i = 0; i < size; i++)
         total += list[i]->size;
     return total;
 }
 
-bool GIMS_MultiLineString::coversPoint(GIMS_Point *pt)
-{
+bool GIMS_MultiLineString::coversPoint(GIMS_Point *pt) {
     for (int i = 0; i < this->size; i++) {
         if (this->list[i]->coversPoint(pt))
             return true;
@@ -714,16 +667,14 @@ bool GIMS_MultiLineString::coversPoint(GIMS_Point *pt)
     return false;
 }
 
-void GIMS_MultiLineString::deepDelete()
-{
+void GIMS_MultiLineString::deepDelete() {
     if (this->list != NULL)
         for (int i = 0; i < this->size; i++)
             this->list[i]->deepDelete();
     delete this;
 }
 
-void GIMS_MultiLineString::deleteClipped()
-{
+void GIMS_MultiLineString::deleteClipped() {
     if (this->list != NULL)
         for (int i = 0; i < this->size; i++) {
             this->list[i]->deleteClipped();
@@ -731,8 +682,7 @@ void GIMS_MultiLineString::deleteClipped()
     delete this;
 }
 
-string GIMS_MultiLineString::toWkt()
-{
+string GIMS_MultiLineString::toWkt() {
     string wkt = string("MULTILINESTRING(");
     char buff[100];
 
@@ -749,21 +699,18 @@ string GIMS_MultiLineString::toWkt()
     return wkt;
 }
 
-GIMS_MultiLineString *GIMS_MultiLineString::clone()
-{
+GIMS_MultiLineString *GIMS_MultiLineString::clone() {
     GIMS_MultiLineString *fresh = new GIMS_MultiLineString(this->size);
     memcpy(fresh->list, this->list, this->size * sizeof(GIMS_LineString *));
     fresh->id = this->id;
     return fresh;
 }
 
-bool GIMS_MultiLineString::isCoveredBy(std::list<GIMS_LineSegment *> &linesegments, bool copy)
-{
+bool GIMS_MultiLineString::isCoveredBy(std::list<GIMS_LineSegment *> &linesegments, bool copy) {
     return false;
 }
 
-int GIMS_MultiLineString::indexOf(GIMS_Point *p)
-{
+int GIMS_MultiLineString::indexOf(GIMS_Point *p) {
     int index = 0, rel;
     for (int i = 0; i < this->size; i++) {
         if ((rel = this->list[i]->indexOf(p)) > -1)
@@ -774,8 +721,7 @@ int GIMS_MultiLineString::indexOf(GIMS_Point *p)
     return -1;
 }
 
-GIMS_Point *GIMS_MultiLineString::getPoint(int index)
-{
+GIMS_Point *GIMS_MultiLineString::getPoint(int index) {
     for (int i = 0; i < this->size; i++) {
         if (index < this->list[i]->size)
             return this->list[i]->list[index];
@@ -785,8 +731,7 @@ GIMS_Point *GIMS_MultiLineString::getPoint(int index)
     return NULL;
 }
 
-GIMS_Point *GIMS_MultiLineString::getNextPoint(int index)
-{
+GIMS_Point *GIMS_MultiLineString::getNextPoint(int index) {
     for (int i = 0; i < this->size; i++) {
         if (index < this->list[i]->size)
             if (index + 1 < this->list[i]->size)
@@ -799,8 +744,7 @@ GIMS_Point *GIMS_MultiLineString::getNextPoint(int index)
     return NULL;
 }
 
-GIMS_Point *GIMS_MultiLineString::getPrevPoint(int index)
-{
+GIMS_Point *GIMS_MultiLineString::getPrevPoint(int index) {
     for (int i = 0; i < this->size; i++) {
         if (index < this->list[i]->size)
             if (index - 1 > 0)
@@ -813,8 +757,7 @@ GIMS_Point *GIMS_MultiLineString::getPrevPoint(int index)
     return NULL;
 }
 
-GIMS_Geometry *GIMS_MultiLineString::clipToBox(GIMS_BoundingBox *box)
-{
+GIMS_Geometry *GIMS_MultiLineString::clipToBox(GIMS_BoundingBox *box) {
     GIMS_MultiLineString *clipped = NULL;
     for (int i = 0; i < this->size; i++) {
         GIMS_MultiLineString *partial = (GIMS_MultiLineString *)this->list[i]->clipToBox(box);
@@ -830,8 +773,7 @@ GIMS_Geometry *GIMS_MultiLineString::clipToBox(GIMS_BoundingBox *box)
     return clipped;
 }
 
-void GIMS_MultiLineString::merge(GIMS_MultiLineString *mls)
-{
+void GIMS_MultiLineString::merge(GIMS_MultiLineString *mls) {
     int prevSize = this->size;
     this->size = this->size + mls->size;
     if (this->size > this->allocatedSize) {
@@ -841,8 +783,7 @@ void GIMS_MultiLineString::merge(GIMS_MultiLineString *mls)
     memcpy(this->list + prevSize, mls->list, mls->size * sizeof(GIMS_LineString *));
 }
 
-void GIMS_MultiLineString::append(GIMS_LineString *l)
-{
+void GIMS_MultiLineString::append(GIMS_LineString *l) {
     this->size += 1;
     if (this->size > this->allocatedSize) {
         this->list = (GIMS_LineString **)realloc(this->list, this->size * sizeof(GIMS_LineString *));
@@ -851,8 +792,7 @@ void GIMS_MultiLineString::append(GIMS_LineString *l)
     this->list[this->size - 1] = l;
 }
 
-GIMS_MultiLineString::GIMS_MultiLineString(int size)
-{
+GIMS_MultiLineString::GIMS_MultiLineString(int size) {
     this->type = MULTILINESTRING;
     this->size = 0;
     this->allocatedSize = size;
@@ -860,16 +800,14 @@ GIMS_MultiLineString::GIMS_MultiLineString(int size)
     this->id = 0;
 }
 
-GIMS_MultiLineString::GIMS_MultiLineString()
-{
+GIMS_MultiLineString::GIMS_MultiLineString() {
     this->type = MULTILINESTRING;
     this->size = this->allocatedSize = 0;
     this->list = NULL;
     this->id = 0;
 }
 
-GIMS_MultiLineString::~GIMS_MultiLineString()
-{
+GIMS_MultiLineString::~GIMS_MultiLineString() {
     if (this->list != NULL)
         free(this->list);
 }

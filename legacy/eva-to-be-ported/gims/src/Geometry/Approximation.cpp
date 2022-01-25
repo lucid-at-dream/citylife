@@ -13,8 +13,7 @@ appr_intersection calcIntersection(GIMS_ConvexHullAproximation *A, GIMS_ConvexHu
 GIMS_Point *map0;
 
 /*return the area of the convex hull*/
-double GIMS_ConvexHullAproximation::getArea()
-{
+double GIMS_ConvexHullAproximation::getArea() {
     GIMS_Point *p1 = hull[N - 1], *p2;
     double area = 0;
     for (int i = 0; i < N; i++) {
@@ -27,13 +26,11 @@ double GIMS_ConvexHullAproximation::getArea()
 }
 
 /*return the amount of area of the approximation that is not common with the covered polygon*/
-double GIMS_ConvexHullAproximation::getFalseArea()
-{
+double GIMS_ConvexHullAproximation::getFalseArea() {
     return this->falsearea;
 }
 
-bool GIMS_ConvexHullAproximation::isDisjoint(GIMS_BoundingBox *box)
-{
+bool GIMS_ConvexHullAproximation::isDisjoint(GIMS_BoundingBox *box) {
     for (int i = 0; i < N; i++) {
         GIMS_Point *p1 = hull[i], *p2 = hull[(i + 1) % N];
         GIMS_LineSegment l = GIMS_LineSegment(p1, p2);
@@ -47,8 +44,7 @@ bool GIMS_ConvexHullAproximation::isDisjoint(GIMS_BoundingBox *box)
     return true;
 }
 
-bool GIMS_ConvexHullAproximation::isInside(GIMS_BoundingBox *box)
-{
+bool GIMS_ConvexHullAproximation::isInside(GIMS_BoundingBox *box) {
     for (int i = 0; i < N; i++) {
         if (!hull[i]->isInsideBox(box))
             return false;
@@ -56,8 +52,7 @@ bool GIMS_ConvexHullAproximation::isInside(GIMS_BoundingBox *box)
     return true;
 }
 
-bool GIMS_ConvexHullAproximation::containsApproximation(GIMS_Approximation *appr)
-{
+bool GIMS_ConvexHullAproximation::containsApproximation(GIMS_Approximation *appr) {
     GIMS_ConvexHullAproximation *other = (GIMS_ConvexHullAproximation *)appr;
     for (int i = 0; i < other->N; i++) {
         if (!this->containsPoint(other->hull[i]))
@@ -66,8 +61,7 @@ bool GIMS_ConvexHullAproximation::containsApproximation(GIMS_Approximation *appr
     return true;
 }
 
-bool GIMS_ConvexHullAproximation::containsPolygon(GIMS_Polygon *p)
-{
+bool GIMS_ConvexHullAproximation::containsPolygon(GIMS_Polygon *p) {
     for (int i = 0; i < p->externalRing->size; i++) {
         for (int j = 0; j < p->externalRing->list[i]->size; j++) {
             if (!this->containsPoint(p->externalRing->list[i]->list[j]))
@@ -77,15 +71,13 @@ bool GIMS_ConvexHullAproximation::containsPolygon(GIMS_Polygon *p)
     return true;
 }
 
-int mod(int n, int m)
-{
+int mod(int n, int m) {
     if (n >= 0)
         return n % m;
     return m + n % m;
 }
 
-bool GIMS_ConvexHullAproximation::containsPoint(GIMS_Point *pt)
-{
+bool GIMS_ConvexHullAproximation::containsPoint(GIMS_Point *pt) {
     for (int i = 0; i < N; i++) {
         GIMS_Point *a = hull[mod(i, N)], *b = hull[mod(i + 1, N)];
         if (ccw(a, b, pt) > ERR_MARGIN)
@@ -94,14 +86,12 @@ bool GIMS_ConvexHullAproximation::containsPoint(GIMS_Point *pt)
     return true;
 }
 
-appr_intersection GIMS_ConvexHullAproximation::intersection(GIMS_Approximation *other)
-{
+appr_intersection GIMS_ConvexHullAproximation::intersection(GIMS_Approximation *other) {
     return calcIntersection(this, (GIMS_ConvexHullAproximation *)other);
 }
 
 /*Build the convex hull based on a polygon*/
-GIMS_ConvexHullAproximation::GIMS_ConvexHullAproximation(GIMS_Polygon *polygon)
-{
+GIMS_ConvexHullAproximation::GIMS_ConvexHullAproximation(GIMS_Polygon *polygon) {
     GIMS_Point **ch_points = (GIMS_Point **)malloc(polygon->externalRing->getPointCount() * sizeof(GIMS_Point *));
 
     int count = 0;
@@ -122,14 +112,12 @@ GIMS_ConvexHullAproximation::GIMS_ConvexHullAproximation(GIMS_Polygon *polygon)
     this->falsearea = this->getArea() - polygon->area();
 }
 
-GIMS_ConvexHullAproximation::~GIMS_ConvexHullAproximation()
-{
+GIMS_ConvexHullAproximation::~GIMS_ConvexHullAproximation() {
     if (this->hull != NULL)
         free(this->hull);
 }
 
-bool GIMS_ConvexHullAproximation::isDisjointFromApproximation(GIMS_Approximation *other)
-{
+bool GIMS_ConvexHullAproximation::isDisjointFromApproximation(GIMS_Approximation *other) {
     bool found = false;
     for (int i = 0; i < this->N; i++) {
         found = true;
@@ -148,8 +136,7 @@ bool GIMS_ConvexHullAproximation::isDisjointFromApproximation(GIMS_Approximation
     return false;
 }
 
-appr_intersection calcIntersection(GIMS_ConvexHullAproximation *A, GIMS_ConvexHullAproximation *B)
-{
+appr_intersection calcIntersection(GIMS_ConvexHullAproximation *A, GIMS_ConvexHullAproximation *B) {
     /*Create a polygon with the convex hull A*/
     GIMS_LineString *ringA = new GIMS_LineString(A->N + 1);
     memcpy(ringA->list, A->hull, A->N * sizeof(GIMS_Point *));
@@ -201,18 +188,15 @@ appr_intersection calcIntersection(GIMS_ConvexHullAproximation *A, GIMS_ConvexHu
     return its;
 }
 
-double angle_v(GIMS_Point &v1, GIMS_Point &v2)
-{
-    double dp = v1.x * v2.x + v1.y * v2.y, nv1 = sqrt(v1.x * v1.x + v1.y * v1.y), nv2 = sqrt(v2.x * v2.x + v2.y * v2.y),
-           cosine = dp / (nv1 * nv2);
+double angle_v(GIMS_Point &v1, GIMS_Point &v2) {
+    double dp = v1.x * v2.x + v1.y * v2.y, nv1 = sqrt(v1.x * v1.x + v1.y * v1.y), nv2 = sqrt(v2.x * v2.x + v2.y * v2.y), cosine = dp / (nv1 * nv2);
     return acos(cosine > 1 ? 1.0 : cosine < -1 ? -1.0 : cosine);
 }
 
 /*given a line defined by point (p1) and vector(v1) and a point (p2)
 returns -1 if p2 is to the right of the line, 1 if is to the left and 0 if it is
 on the line*/
-char side(GIMS_Point &p1, GIMS_Point &v1, GIMS_Point &p2)
-{
+char side(GIMS_Point &p1, GIMS_Point &v1, GIMS_Point &p2) {
     GIMS_Point aux;
     aux.x = v1.x + p1.x;
     aux.y = v1.y + p1.y;
@@ -225,13 +209,11 @@ char side(GIMS_Point &p1, GIMS_Point &v1, GIMS_Point &p2)
     return 0;
 }
 
-int rcmp(const void *a, const void *b)
-{
+int rcmp(const void *a, const void *b) {
     return -asdfcmp(a, b);
 }
 
-int asdfcmp(const void *a, const void *b)
-{
+int asdfcmp(const void *a, const void *b) {
     GIMS_Point *p1 = *((GIMS_Point **)(a));
     GIMS_Point *p2 = *((GIMS_Point **)(b));
 
@@ -245,13 +227,11 @@ int asdfcmp(const void *a, const void *b)
 }
 
 /*ccw >0, cw <0, cl =0*/
-double ccw(GIMS_Point *p1, GIMS_Point *p2, GIMS_Point *p3)
-{
+double ccw(GIMS_Point *p1, GIMS_Point *p2, GIMS_Point *p3) {
     return (p2->x - p1->x) * (p3->y - p1->y) - (p2->y - p1->y) * (p3->x - p1->x);
 }
 
-int graham_scan(GIMS_Point **map, int N)
-{
+int graham_scan(GIMS_Point **map, int N) {
     int i;
 
     /*find point with lowest y*/

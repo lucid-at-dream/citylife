@@ -3,13 +3,7 @@
 #include "map.h"
 #include "list.h"
 
-typedef enum _service_arg_type {
-    BINARY_ARG,
-    STRING_ARG,
-    INTEGER_ARG,
-    DOUBLE_ARG,
-    UNKNOWN_ARG
-} service_arg_type;
+typedef enum _service_arg_type { BINARY_ARG, STRING_ARG, INTEGER_ARG, DOUBLE_ARG, UNKNOWN_ARG } service_arg_type;
 
 typedef struct _service_endpoint_arg {
     char *name;
