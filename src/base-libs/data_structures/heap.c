@@ -1,6 +1,7 @@
 #include "heap.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 heap_node *heap_node_new();
 void heap_node_destroy(heap_node *n);
@@ -23,6 +24,7 @@ heap *heap_new(int (*compare)(const void *a, const void *b)) {
 }
 
 void *heap_peek(heap *h) {
+    printf("Peeking root: %d\n", h->root);
     return h->root->item;
 }
 
@@ -145,9 +147,105 @@ void heap_decrease_key(heap *h, heap_node *x, void *new_item) {
 }
 
 void *heap_pop(heap *h) {
-    void *tmp = h->root->item;
-    h->root->item = NULL;
-    return tmp;
+
+    // Find the node x of minimum key mong the children of the root.
+    list_node *list_el_x = h->root->children->head;
+
+    if (list_el_x == NULL) {
+        printf("Last element in the heap!\n");
+        void *item = h->root->item;
+        heap_node_destroy(h->root);
+        h->root = NULL;
+        return item;
+    }
+
+    list_node *tmp = list_el_x->next;
+    while(tmp != NULL) {
+        if (h->compare(tmp->value, list_el_x->value) < 0) {
+            list_el_x = tmp;
+        }
+        tmp = tmp->next;
+    }
+
+    heap_node *x = (heap_node *)(list_el_x->value);
+    list_del_element(h->root->children, list_el_x->value);
+
+    // If x is active then make x passive and all active children of x become active roots.
+    if (x->is_active) {
+        x->is_active = 0;
+    }
+
+    printf("X had before %d children\n", x->children->size);
+    printf("Root has %d children\n", h->root->children->size);
+
+    // Make each of the other children of z a child of x.
+
+    printf("Heap children head: %d\n", h->root->children->head);
+    while(h->root->children->head != NULL) {
+        printf("Heap children head: %d\n", h->root->children->head);
+        heap_node *child_node = h->root->children->head->value;
+        if (is_linkable(child_node)) {
+            list_append(x->children, child_node);
+        } else {
+            list_prepend(x->children, child_node);
+        }
+        child_node->parent = x;
+        list_del_first(h->root->children);
+    }
+
+    printf("X has now %d children\n", x->children->size);
+
+    // Make the passive linkable children of x the rightmost children of x.
+    list_node *x_child = x->children->head;
+    list_node *first_linkable_node_found = NULL;
+    while (x_child && x_child->next != NULL) {
+        if (is_linkable(x_child->value)) {
+
+            if (!first_linkable_node_found) {
+                first_linkable_node_found = x_child;
+            } else {
+                if (first_linkable_node_found == x_child) {
+                    break;
+                }
+            }
+
+            list_node *prev = x_child->prev;
+            list_node *next = x_child->next;
+
+            if (prev != NULL) {
+                x_child->prev->next = x_child->next;
+            }
+
+            // Move linkable child to the rightmost position of the list
+            x_child->next->prev = x_child->prev;
+            x->children->tail->next = x_child;
+            x_child->prev = x->children->tail;
+            x_child->next = NULL;
+            x->children->tail = x_child;
+
+            x_child = next;
+        } else {
+            x_child = x_child->next;
+        }
+    }
+
+    // Remove x from Q
+
+    // Destroy z
+    void *item = h->root->item;
+    heap_node_destroy(h->root);
+    h->root = x;
+
+    printf("Old root: %d\n", item);
+    printf("New root: %d\n", x->item);
+
+    // Repeat twice: move the front node y on Q to the back; link the two rightmost children of y to x, if they are passive.
+
+    // Do a loss reduction if possible.
+
+    // Do active root reductions and root degree reductions in any order until none of either is possible.
+
+    return item;
 }
 
 void heap_destroy(heap *h) {

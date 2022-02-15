@@ -17,6 +17,7 @@ typedef struct list_node_t {
 typedef struct list_t {
     list_node *head;
     list_node *tail;
+    int size;
 } list;
 
 /**

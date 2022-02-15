@@ -3,7 +3,10 @@
 #define ASSERT_INT_EQUALS(msg, expected, actual) assertion_error += assert_int_equals(msg, expected, actual);
 
 #define ASSERT_TRUE(msg, expr) assertion_error += assert_true(msg, expr);
+
 #define ASSERT_FALSE(msg, expr) assertion_error += assert_false(msg, expr);
+
+#define ASSERT_NULL(msg, ptr) assertion_error += assert_null(msg, ptr);
 
 char assert_null(char *assertion, void *ptr);
 char assert_not_null(char *assertion, void *ptr);
