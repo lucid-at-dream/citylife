@@ -24,7 +24,6 @@ heap *heap_new(int (*compare)(const void *a, const void *b)) {
 }
 
 void *heap_peek(heap *h) {
-    printf("Peeking root: %d\n", h->root);
     return h->root->item;
 }
 
@@ -152,7 +151,6 @@ void *heap_pop(heap *h) {
     list_node *list_el_x = h->root->children->head;
 
     if (list_el_x == NULL) {
-        printf("Last element in the heap!\n");
         void *item = h->root->item;
         heap_node_destroy(h->root);
         h->root = NULL;
@@ -175,14 +173,9 @@ void *heap_pop(heap *h) {
         x->is_active = 0;
     }
 
-    printf("X had before %d children\n", x->children->size);
-    printf("Root has %d children\n", h->root->children->size);
-
     // Make each of the other children of z a child of x.
 
-    printf("Heap children head: %d\n", h->root->children->head);
     while(h->root->children->head != NULL) {
-        printf("Heap children head: %d\n", h->root->children->head);
         heap_node *child_node = h->root->children->head->value;
         if (is_linkable(child_node)) {
             list_append(x->children, child_node);
@@ -192,8 +185,6 @@ void *heap_pop(heap *h) {
         child_node->parent = x;
         list_del_first(h->root->children);
     }
-
-    printf("X has now %d children\n", x->children->size);
 
     // Make the passive linkable children of x the rightmost children of x.
     list_node *x_child = x->children->head;
@@ -235,9 +226,6 @@ void *heap_pop(heap *h) {
     void *item = h->root->item;
     heap_node_destroy(h->root);
     h->root = x;
-
-    printf("Old root: %d\n", item);
-    printf("New root: %d\n", x->item);
 
     // Repeat twice: move the front node y on Q to the back; link the two rightmost children of y to x, if they are passive.
 

@@ -17,6 +17,13 @@ map *parse_command_line(map *args, int arg_desc_count, arg_t *arg_desc, int argc
 map *parse_config_file(map *args, char *path, int arg_desc_count, arg_t *arg_desc);
 char parse_argument_value_pair(map *args, arg_t *desc, char *value);
 
+typedef struct _parse_status {
+    int arg_desc_count;
+    arg_t *arg_desc;
+    map *args;
+    char *msg;
+} parse_status;
+
 __attribute__((noreturn)) void elegant_exit(int arg_desc_count, arg_t *arg_desc, map *args, char *msg, ...) {
     va_list argptr;
     va_start(argptr, msg);
@@ -64,6 +71,7 @@ map *load_config(int arg_desc_count, arg_t *arg_desc, int argc, char **argv) {
 
         if (strcmp(desc, _config_help_arg_desc.short_name) == 0 || strcmp(desc, _config_help_arg_desc.long_name) == 0) {
             print_usage(arg_desc_count, arg_desc);
+            deallocate_arg_map(arg_desc_count, arg_desc, args);
             pthread_exit(EXIT_SUCCESS);
         }
     }
@@ -80,7 +88,7 @@ char is_blank_line(const char *line) {
     return 1;
 }
 
-void parse_config_file_line(map *args, char *line, int arg_desc_count, arg_t *arg_desc) {
+int parse_config_file_line(map *args, char *line, int arg_desc_count, arg_t *arg_desc) {
     int first_whitespace_index = 0;
     while (line[first_whitespace_index] != ' ' && first_whitespace_index < 2048) {
         first_whitespace_index++;
@@ -97,13 +105,7 @@ void parse_config_file_line(map *args, char *line, int arg_desc_count, arg_t *ar
         }
     }
 
-    if (arg_parse_status == -10) {
-        elegant_exit(arg_desc_count, arg_desc, args, "Configuration property '%s' is not known.\n", line);
-    }
-
-    if (arg_parse_status < 0) {
-        elegant_exit(arg_desc_count, arg_desc, args, "Error parsing config file line: %s", line);
-    }
+    return arg_parse_status; 
 }
 
 map *parse_config_file(map *args, char *path, int arg_desc_count, arg_t *arg_desc) {
@@ -120,7 +122,19 @@ map *parse_config_file(map *args, char *path, int arg_desc_count, arg_t *arg_des
             if (line[nbytes - 1] == '\n') {
                 line[nbytes - 1] = '\0';
             }
-            parse_config_file_line(args, line, arg_desc_count, arg_desc);
+            
+            
+            int arg_parse_status = parse_config_file_line(args, line, arg_desc_count, arg_desc);
+
+            if (arg_parse_status == -10) {
+                free(line);
+                fclose(f);
+                elegant_exit(arg_desc_count, arg_desc, args, "Configuration property '%s' is not known.\n", line);
+            } else if (arg_parse_status < 0) {
+                free(line);
+                fclose(f);
+                elegant_exit(arg_desc_count, arg_desc, args, "Error parsing config file line: %s", line);
+            }
         }
     }
 
