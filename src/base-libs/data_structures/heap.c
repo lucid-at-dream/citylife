@@ -114,7 +114,6 @@ void heap_decrease_key(heap *h, heap_node *x, void *new_item) {
     }
 
     // if x.key < z.key swap the items in x and z
-    // TODO: Notice how key and item are two separate things, requires changing the struct =/
     heap_node *z = h->root;
     if (h->compare(x->item, z->item) < 0) {
         void *tmp = x->item;
@@ -151,25 +150,33 @@ void heap_decrease_key(heap *h, heap_node *x, void *new_item) {
 }
 
 void *heap_pop(heap *h) {
-    // Find the node x of minimum key mong the children of the root.
-    list_node *list_el_x = h->root->children->head;
 
-    if (list_el_x == NULL) {
+    // Return root if heap is empty.
+    if (h->root->children->size == 0) {
         void *item = h->root->item;
         heap_node_destroy(h->root);
         h->root = NULL;
+        h->size = 0;
         return item;
     }
 
+    // TODO: How do we make sure it's O(1)? Invariants?
+    // Find the node x of minimum key mong the children of the root.
+    list_node *list_el_x = h->root->children->head;
+    heap_node *x = (heap_node *)(list_el_x->value);
+
     list_node *tmp = list_el_x->next;
     while (tmp != NULL) {
-        if (h->compare(tmp->value, list_el_x->value) < 0) {
+        heap_node *tmp_node = (heap_node *)(tmp->value);
+        if (h->compare(tmp_node->item, x->item) < 0) {
             list_el_x = tmp;
+            x = tmp_node;
         }
         tmp = tmp->next;
     }
-
-    heap_node *x = (heap_node *)(list_el_x->value);
+    
+    // TODO: Refactor to make this O(1), since we have the list node it should be fairly easy.
+    // Delete the min child from the root's children's list
     list_del_element(h->root->children, list_el_x->value);
 
     // If x is active then make x passive and all active children of x become active roots.
@@ -256,12 +263,13 @@ void *heap_pop(heap *h) {
     void *item = h->root->item;
     heap_node_destroy(h->root);
     h->root = x;
+    h->size--;
 
-    // Repeat twice: move the front node y on Q to the back; link the two rightmost children of y to x, if they are passive.
+    // TODO Repeat twice: move the front node y on Q to the back; link the two rightmost children of y to x, if they are passive.
 
-    // Do a loss reduction if possible.
+    // TODO Do a loss reduction if possible.
 
-    // Do active root reductions and root degree reductions in any order until none of either is possible.
+    // TODO Do active root reductions and root degree reductions in any order until none of either is possible.
 
     return item;
 }
@@ -369,6 +377,12 @@ void active_root_reduction(heap *h, heap_node *active_root_x, heap_node *active_
  * of the root decreases by two and the number of active roots increases by one.
  */
 char root_degree_reduction(heap *h) {
+
+    // Will not be able to find the three rightmost linkable children if there are less than 3 children
+    if (h->root->children->size < 3) {
+        return 0;
+    }
+
     // Find the three rightmost passive linkable children of the root.
     heap_node *three_linkable_rightmost_nodes[3];
 
