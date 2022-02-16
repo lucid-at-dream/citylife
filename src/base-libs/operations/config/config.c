@@ -18,13 +18,6 @@ map *parse_command_line(map *args, int arg_desc_count, arg_t *arg_desc, int argc
 map *parse_config_file(map *args, char *path, int arg_desc_count, arg_t *arg_desc);
 char parse_argument_value_pair(map *args, arg_t *desc, char *value);
 
-typedef struct _parse_status {
-    int arg_desc_count;
-    arg_t *arg_desc;
-    map *args;
-    char *msg;
-} parse_status;
-
 __attribute__((noreturn)) void elegant_exit(int arg_desc_count, arg_t *arg_desc, map *args, char *msg, ...) {
     va_list argptr;
     va_start(argptr, msg);
@@ -51,7 +44,7 @@ map *load_config(int arg_desc_count, arg_t *arg_desc, int argc, char **argv) {
     // Check if a configuration file has been given.
     for (int i = 0; i < argc; i++) {
         if (strlen(argv[i]) < 2) {
-            elegant_exit(arg_desc_count, arg_desc, args, "Bad argument: %s\n", argv[i]);
+            elegant_exit(arg_desc_count, arg_desc, args, "Bad argument: %s", argv[i]);
         }
 
         const char *desc;
@@ -106,17 +99,17 @@ int parse_config_file_line(map *args, char *line, int arg_desc_count, arg_t *arg
         }
     }
 
-    return arg_parse_status; 
+    return arg_parse_status;
 }
 
 map *parse_config_file(map *args, char *path, int arg_desc_count, arg_t *arg_desc) {
-    info("Loading configuration from file %s\n", path);
+    info("Loading configuration from file %s", path);
 
     FILE *f = fopen(path, "r");
 
     if (f == NULL) {
         int errsv = errno;
-        error("Failed to open the specified config file %s.\n", path);
+        error("Failed to open the specified config file %s.", path);
         elegant_exit(arg_desc_count, arg_desc, args, "System error %d: %s", errsv, strerror(errsv));
     }
 
@@ -139,7 +132,7 @@ map *parse_config_file(map *args, char *path, int arg_desc_count, arg_t *arg_des
                 free(line);
                 fclose(f);
                 if (arg_parse_status == -10) {
-                    elegant_exit(arg_desc_count, arg_desc, args, "Configuration property '%s' is not known.\n", tmp_line);
+                    elegant_exit(arg_desc_count, arg_desc, args, "Configuration property '%s' is not known.", tmp_line);
                 } else {
                     elegant_exit(arg_desc_count, arg_desc, args, "Error parsing config file line: %s", tmp_line);
                 }
@@ -214,7 +207,7 @@ map *parse_command_line(map *args, int arg_desc_count, arg_t *arg_desc, int argc
         // Check if config parse resulted in error. If so, exit elegantly.
         if (config_parse_status < 0) {
             map_destroy(arg_desc_map);
-            elegant_exit(arg_desc_count, arg_desc, args, "Failed to parse argument %s\n", desc->long_name);
+            elegant_exit(arg_desc_count, arg_desc, args, "Failed to parse argument %s", desc->long_name);
         }
     }
 
