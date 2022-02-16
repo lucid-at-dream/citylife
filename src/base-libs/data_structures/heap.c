@@ -20,6 +20,7 @@ void two_node_loss_reduction(heap *h, heap_node *a, heap_node *b);
 heap *heap_new(int (*compare)(const void *a, const void *b)) {
     heap *h = (heap *)calloc(1, sizeof(heap));
     h->compare = compare;
+    h->Q = queue_new();
     return h;
 }
 
@@ -53,7 +54,7 @@ heap *heap_meld(heap *h1, heap *h2) {
     }
 
     // Make all nodes in the tree rooted at x passive
-    // TODO: Do this implicitly, as described in Section 6, so that it takes O81) time.)
+    // TODO: Do this implicitly, as described in Section 6, so that it takes O(1) time.)
     list_node *child = x->root->children->head;
     while (child != NULL) {
         ((heap_node *)(child->value))->is_active = 0;
@@ -75,19 +76,23 @@ heap *heap_meld(heap *h1, heap *h2) {
         discarded_heap = x;
     }
 
+    // Make v a child of u
     list_append(u->children, v);
     v->parent = u;
 
+    // update the queue Q, set it to Qx + v + Qy
+    queue *Q = x->Q;
+    queue_add(Q, v);
+    queue_merge_into(Q, y->Q);
+    final_heap->Q = Q;
+
     free(discarded_heap);
 
-    // TODO: update the queue Q
-
-    // TODO: find active roots
-    // active_root_reduction(final_heap, )
-
-    // Do a root degree reduction to the extent possible
+    // Do an active root reduction and a root degree reduction to the extent possible.
     int transformation_succeeded = 1;
     while (transformation_succeeded > 0) {
+        // TODO: find active roots
+        // active_root_reduction(final_heap, )
         transformation_succeeded = root_degree_reduction(final_heap);
     }
 
@@ -173,7 +178,6 @@ void *heap_pop(heap *h) {
     }
 
     // Make each of the other children of z a child of x.
-
     while (h->root->children->head != NULL) {
         heap_node *child_node = h->root->children->head->value;
         if (is_linkable(child_node)) {
@@ -186,6 +190,7 @@ void *heap_pop(heap *h) {
     }
 
     // Make the passive linkable children of x the rightmost children of x.
+    // TODO: How do we do this in O(1)?
     list_node *x_child = x->children->head;
     list_node *first_linkable_node_found = NULL;
     while (x_child && x_child->next != NULL) {
@@ -219,6 +224,33 @@ void *heap_pop(heap *h) {
     }
 
     // Remove x from Q
+    // TODO: How to we do this in O(1)? :: Hacky O(N) solution for now...
+    queue_item *i = h->Q->head;
+    while(i != NULL) {
+        if (i->content == x) {
+            
+            if (i == h->Q->head) {
+                h->Q->head = i->next;
+            }
+
+            if (i == h->Q->last) {
+                h->Q->last = i->prev;
+            }
+
+            if (i->prev) {
+                i->prev->next = i->next;
+            }
+
+            if (i->next) {
+                i->next->prev = i->prev;
+            }
+
+            h->Q->size--;
+            free(i);
+            break;
+        }
+        i = i->next;
+    }
 
     // Destroy z
     void *item = h->root->item;
@@ -235,6 +267,7 @@ void *heap_pop(heap *h) {
 }
 
 void heap_destroy(heap *h) {
+    queue_del(h->Q);
     if (h->root) {
         heap_node_destroy(h->root);
     }

@@ -19,3 +19,6 @@ queue *queue_new();
 // Add/Pop to/from queue
 void queue_add(queue *, void *);
 void *queue_pop(queue *q);
+
+// Merge other queue into q
+void queue_merge_into(queue *q, queue *other);

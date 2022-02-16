@@ -36,7 +36,28 @@ void queue_add(queue *q, void *item) {
     }
 
     q->size++;
-    return;
+}
+
+void queue_merge_into(queue *q, queue *other) {
+
+    // Merge other into q
+    q->size += other->size;
+    if (q->last) {
+        q->last->next = other->head;
+    }
+    if (other->head) {
+        other->head->prev = q->last;
+    }
+
+    if (other->last) {
+        q->last = other->last;
+    }
+
+    // Delete other
+    other->last = NULL;
+    other->head = NULL;
+    other->size = 0;
+    queue_del(other);
 }
 
 void *queue_pop(queue *q) {
