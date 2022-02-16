@@ -272,16 +272,16 @@ char test_map_delete_non_existing_user() {
 }
 
 test test_suite[] = {
-    { "Test add functionality in maps", test_map_add_get },
-    { "Test map get on empty map", test_map_get_empty_map },
-    { "Test map add 2 elements", test_map_add_2_elements },
-    { "Test adding 2 look alike elements to the map", test_map_add_2_doppleganger_elements },
-    { "Test adding 10K users in a map with 1K bucket lists and retrieving in less than 500ms", test_map_add_get_10000_elements_1000_buckets_500_millis },
-    { "Test adding 10K users in a map with 1 bucket list and retrieving in less than 500ms", test_map_add_get_10000_elements_1_bucket_500_millis },
-    { "Test adding two values for the same key. The last value inserted should be returned.", test_map_add_same_key_twice },
-    { "Test deleting an existing user from a map", test_map_delete_user },
-    { "Test deleting some users among several other users", test_map_delete_user_among_many_users },
-    { "Test deleting a user that does not exist", test_map_delete_non_existing_user }
+    { "Test add functionality in maps", &test_map_add_get },
+    { "Test map get on empty map", &test_map_get_empty_map },
+    { "Test map add 2 elements", &test_map_add_2_elements },
+    { "Test adding 2 look alike elements to the map", &test_map_add_2_doppleganger_elements },
+    { "Test adding 10K users in a map with 1K bucket lists and retrieving in less than 500ms", &test_map_add_get_10000_elements_1000_buckets_500_millis },
+    { "Test adding 10K users in a map with 1 bucket list and retrieving in less than 500ms", &test_map_add_get_10000_elements_1_bucket_500_millis },
+    { "Test adding two values for the same key. The last value inserted should be returned.", &test_map_add_same_key_twice },
+    { "Test deleting an existing user from a map", &test_map_delete_user },
+    { "Test deleting some users among several other users", &test_map_delete_user_among_many_users },
+    { "Test deleting a user that does not exist", &test_map_delete_non_existing_user }
 };
 
 int main(int argc, char **argv) {

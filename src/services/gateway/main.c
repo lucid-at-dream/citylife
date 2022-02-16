@@ -8,6 +8,7 @@ char *register_service(char *args) {
 }
 
 char *proxy_user_request(char *args) {
+    return args;
 }
 
 int main(int argc, char **argv) {

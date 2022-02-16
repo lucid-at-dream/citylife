@@ -105,7 +105,7 @@ char test_create_and_authenticate_user() {
     return assertion_error;
 }
 
-test test_suite[] = { { "Test creating an user and authenticating with it", test_create_and_authenticate_user } };
+test test_suite[] = { { "Test creating an user and authenticating with it", &test_create_and_authenticate_user } };
 
 int main(int argc, char **argv) {
     suite_report report = run_test_suite(test_suite, sizeof(test_suite) / sizeof(test));

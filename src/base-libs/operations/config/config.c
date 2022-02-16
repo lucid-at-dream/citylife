@@ -4,6 +4,7 @@
 #include <string.h>
 #include <pthread.h>
 #include <stdarg.h>
+#include <errno.h>
 
 #include "config.h"
 #include "logger.h"
@@ -113,6 +114,12 @@ map *parse_config_file(map *args, char *path, int arg_desc_count, arg_t *arg_des
 
     FILE *f = fopen(path, "r");
 
+    if (f == NULL) {
+        int errsv = errno;
+        error("Failed to open the specified config file %s.\n", path);
+        elegant_exit(arg_desc_count, arg_desc, args, "System error %d: %s", errsv, strerror(errsv));
+    }
+
     size_t size = sizeof(char) * 2048;
     char *line = (char *)malloc(size);
 
@@ -122,18 +129,20 @@ map *parse_config_file(map *args, char *path, int arg_desc_count, arg_t *arg_des
             if (line[nbytes - 1] == '\n') {
                 line[nbytes - 1] = '\0';
             }
-            
-            
+               
             int arg_parse_status = parse_config_file_line(args, line, arg_desc_count, arg_desc);
 
-            if (arg_parse_status == -10) {
+            // Exit if parse error.
+            if (arg_parse_status < 0) {
+                char tmp_line[1024];
+                snprintf(tmp_line, 1024, "%s", line);
                 free(line);
                 fclose(f);
-                elegant_exit(arg_desc_count, arg_desc, args, "Configuration property '%s' is not known.\n", line);
-            } else if (arg_parse_status < 0) {
-                free(line);
-                fclose(f);
-                elegant_exit(arg_desc_count, arg_desc, args, "Error parsing config file line: %s", line);
+                if (arg_parse_status == -10) {
+                    elegant_exit(arg_desc_count, arg_desc, args, "Configuration property '%s' is not known.\n", tmp_line);
+                } else {
+                    elegant_exit(arg_desc_count, arg_desc, args, "Error parsing config file line: %s", tmp_line);
+                }
             }
         }
     }

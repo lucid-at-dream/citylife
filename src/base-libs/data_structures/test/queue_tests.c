@@ -43,7 +43,7 @@ char test_queue_add_pop() {
     return 0;
 }
 
-test test_suite[] = { { "Test adding and popping several items from a queue", test_queue_add_pop } };
+test test_suite[] = { { "Test adding and popping several items from a queue", &test_queue_add_pop } };
 
 int main(int argc, char **argv) {
     suite_report report = run_test_suite(test_suite, sizeof(test_suite) / sizeof(test));

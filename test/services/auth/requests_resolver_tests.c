@@ -77,8 +77,8 @@ char test_requests_resolve_ensure_correct_callbacks_are_called() {
 }
 
 test test_suite[] = {
-    { "Test parsing requests with different actions", test_requests_resolve_ensure_correct_callbacks_are_called },
-    { "Test parsing a well formed request", test_requests_resolve_parse_well_formed_request },
+    { "Test parsing requests with different actions", &test_requests_resolve_ensure_correct_callbacks_are_called },
+    { "Test parsing a well formed request", &test_requests_resolve_parse_well_formed_request },
 };
 
 int main(int argc, char **argv) {

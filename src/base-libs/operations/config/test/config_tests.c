@@ -87,10 +87,10 @@ char test_unparseable_float_in_config_file() {
     // Get the name of the temporary file created
     char *argv[] = { "test", "-c", f.name };
 
-    map *args = load_config(sizeof(arg_desc) / sizeof(arg_t), arg_desc, sizeof(argv) / sizeof(char *), argv);
+    load_config(sizeof(arg_desc) / sizeof(arg_t), arg_desc, sizeof(argv) / sizeof(char *), argv);
 
-    // Close config file descriptor, this may cause deletion of the file.
-    fclose(f.ptr);
+    // Always return 1 since this error should make the program exit.
+    return 1;
 }
 
 char test_unparseable_int_in_config_file() {
@@ -106,10 +106,10 @@ char test_unparseable_int_in_config_file() {
     // Get the name of the temporary file created
     char *argv[] = { "test", "-c", f.name };
 
-    map *args = load_config(sizeof(arg_desc) / sizeof(arg_t), arg_desc, sizeof(argv) / sizeof(char *), argv);
+    load_config(sizeof(arg_desc) / sizeof(arg_t), arg_desc, sizeof(argv) / sizeof(char *), argv);
 
-    // Close config file descriptor, this may cause deletion of the file.
-    fclose(f.ptr);
+    // Always return 1 since this error should make the program exit.
+    return 1;
 }
 
 char test_unrecognized_arguments_in_config_file() {
@@ -125,10 +125,10 @@ char test_unrecognized_arguments_in_config_file() {
     // Get the name of the temporary file created
     char *argv[] = { "test", "-c", f.name };
 
-    map *args = load_config(sizeof(arg_desc) / sizeof(arg_t), arg_desc, sizeof(argv) / sizeof(char *), argv);
+    load_config(sizeof(arg_desc) / sizeof(arg_t), arg_desc, sizeof(argv) / sizeof(char *), argv);
 
-    // Close config file descriptor, this may cause deletion of the file.
-    fclose(f.ptr);
+    // Always return 1 since this error should make the program exit.
+    return 1;
 }
 
 char test_command_line_arguments_take_precedence_over_config_file() {
@@ -164,7 +164,7 @@ char test_help_message_and_clean_exit_on_provided_flag() {
 
     char *argv[] = { "test", "--help" };
 
-    map *args = load_config(sizeof(arg_desc) / sizeof(arg_t), arg_desc, sizeof(argv) / sizeof(char *), argv);
+    load_config(sizeof(arg_desc) / sizeof(arg_t), arg_desc, sizeof(argv) / sizeof(char *), argv);
 
     // Always return 1 since --help should make the program exit.
     return 1;
@@ -183,10 +183,10 @@ char test_not_providing_mandatory_arguments() {
     // Get the name of the temporary file created
     char *argv[] = { "test", "-c", f.name };
 
-    map *args = load_config(sizeof(arg_desc) / sizeof(arg_t), arg_desc, sizeof(argv) / sizeof(char *), argv);
+    load_config(sizeof(arg_desc) / sizeof(arg_t), arg_desc, sizeof(argv) / sizeof(char *), argv);
 
-    // Close config file descriptor, this may cause deletion of the file.
-    fclose(f.ptr);
+    // Always return 1 since this error should make the program exit.
+    return 1;
 }
 
 char test_single_string_argument_in_long_form_happy_path() {
@@ -341,13 +341,10 @@ char test_parsing_non_existent_argument() {
 
     char *argv[] = { "test", "--nonexistent", "100" };
 
-    map *args = load_config(sizeof(arg_desc) / sizeof(arg_t), arg_desc, sizeof(argv) / sizeof(char *), argv);
+    load_config(sizeof(arg_desc) / sizeof(arg_t), arg_desc, sizeof(argv) / sizeof(char *), argv);
 
-    // Clean up
-    deallocate_arg_map(sizeof(arg_desc) / sizeof(arg_t), arg_desc, args);
-
-    // Return test status
-    return 0;
+    // Always return 1 since this error should make the program exit.
+    return 1;
 }
 
 char test_parsing_string_as_integer_throws_error() {
@@ -355,13 +352,10 @@ char test_parsing_string_as_integer_throws_error() {
 
     char *argv[] = { "test", "--integer", "my string" };
 
-    map *args = load_config(sizeof(arg_desc) / sizeof(arg_t), arg_desc, sizeof(argv) / sizeof(char *), argv);
+    load_config(sizeof(arg_desc) / sizeof(arg_t), arg_desc, sizeof(argv) / sizeof(char *), argv);
 
-    // Clean up
-    deallocate_arg_map(sizeof(arg_desc) / sizeof(arg_t), arg_desc, args);
-
-    // Return test status
-    return 0;
+    // Always return 1 since this error should make the program exit.
+    return 1;
 }
 
 char test_parsing_float_as_integer_throws_error() {
@@ -369,13 +363,10 @@ char test_parsing_float_as_integer_throws_error() {
 
     char *argv[] = { "test", "--integer", "100.01" };
 
-    map *args = load_config(sizeof(arg_desc) / sizeof(arg_t), arg_desc, sizeof(argv) / sizeof(char *), argv);
+    load_config(sizeof(arg_desc) / sizeof(arg_t), arg_desc, sizeof(argv) / sizeof(char *), argv);
 
-    // Clean up
-    deallocate_arg_map(sizeof(arg_desc) / sizeof(arg_t), arg_desc, args);
-
-    // Return test status
-    return 0;
+    // Always return 1 since this error should make the program exit.
+    return 1;
 }
 
 char test_parsing_string_as_float_throws_error() {
@@ -383,34 +374,44 @@ char test_parsing_string_as_float_throws_error() {
 
     char *argv[] = { "test", "--float", "my string" };
 
-    map *args = load_config(sizeof(arg_desc) / sizeof(arg_t), arg_desc, sizeof(argv) / sizeof(char *), argv);
+    load_config(sizeof(arg_desc) / sizeof(arg_t), arg_desc, sizeof(argv) / sizeof(char *), argv);
 
-    // Clean up
-    deallocate_arg_map(sizeof(arg_desc) / sizeof(arg_t), arg_desc, args);
-
-    // Return test status
-    return 0;
+    // Always return 1 since this error should make the program exit.
+    return 1;
 }
 
-test test_suite[] = { { "Test single program argument, single argument given, happy path", test_single_string_argument_in_long_form_happy_path },
-                      { "Test two program arguments, two arguments given, happy path", test_two_string_arguments_in_long_form_happy_path },
-                      { "Test parsing an integer argument given in the long form", test_one_integer_argument_in_long_form_happy_path },
-                      { "Test parsing an float argument given in the long form", test_one_double_argument_in_long_form_happy_path },
-                      { "Test parsing a flag argument given in the long form", test_one_flag_argument_in_long_form_happy_path },
-                      { "Test parsing all argument types all in short form", test_all_argument_types_in_short_form_happy_path },
-                      { "Test parsing the same argument twice times", test_parsing_same_argument_twice },
-                      { "Test that trying to parse a non existing argument ends up in error", test_parsing_non_existent_argument, EXIT_FAILURE },
-                      { "Test that trying to parse a string as an integer ends in error", test_parsing_string_as_integer_throws_error, EXIT_FAILURE },
-                      { "Test that trying to parse a float as an integer ends in error", test_parsing_float_as_integer_throws_error, EXIT_FAILURE },
-                      { "Test that trying to parse a string as a float ends in error", test_parsing_string_as_float_throws_error, EXIT_FAILURE },
-                      { "Test that a help message is printed when -h or --help are passed as arguments", test_help_message_and_clean_exit_on_provided_flag, EXIT_SUCCESS },
-                      { "Test that not providing a value for a mandatory argument results in error", test_not_providing_mandatory_arguments, EXIT_FAILURE },
-                      { "Test that it is possible to parse configuration from file", test_load_config_from_file },
-                      { "Test that providing a malformated float value in config file results in error", test_unparseable_float_in_config_file, EXIT_FAILURE },
-                      { "Test that providing a malformated integer value in config file results in error", test_unparseable_int_in_config_file, EXIT_FAILURE },
-                      { "Test that providing invalid arguments in config file results in error", test_unrecognized_arguments_in_config_file, EXIT_FAILURE },
-                      { "Test that command line arguments take precedence over config file ones",
-                        test_command_line_arguments_take_precedence_over_config_file } };
+char test_specifying_non_existing_file() {
+    arg_t arg_desc[] = { { "i", "integer", INTEGER } };
+
+    // Get the name of the temporary file created
+    char *argv[] = { "test", "-c", "/this/file/does/not/exist" };
+
+    load_config(sizeof(arg_desc) / sizeof(arg_t), arg_desc, sizeof(argv) / sizeof(char *), argv);
+
+    // Always return 1 since this error should make the program exit.
+    return 1;
+}
+
+test test_suite[] = { { "Test single program argument, single argument given, happy path", &test_single_string_argument_in_long_form_happy_path },
+                      { "Test two program arguments, two arguments given, happy path", &test_two_string_arguments_in_long_form_happy_path },
+                      { "Test parsing an integer argument given in the long form", &test_one_integer_argument_in_long_form_happy_path },
+                      { "Test parsing an float argument given in the long form", &test_one_double_argument_in_long_form_happy_path },
+                      { "Test parsing a flag argument given in the long form", &test_one_flag_argument_in_long_form_happy_path },
+                      { "Test parsing all argument types all in short form", &test_all_argument_types_in_short_form_happy_path },
+                      { "Test parsing the same argument twice times", &test_parsing_same_argument_twice },
+                      { "Test that trying to parse a non existing argument ends up in error", &test_parsing_non_existent_argument, EXIT_FAILURE },
+                      { "Test that trying to parse a string as an integer ends in error", &test_parsing_string_as_integer_throws_error, EXIT_FAILURE },
+                      { "Test that trying to parse a float as an integer ends in error", &test_parsing_float_as_integer_throws_error, EXIT_FAILURE },
+                      { "Test that trying to parse a string as a float ends in error", &test_parsing_string_as_float_throws_error, EXIT_FAILURE },
+                      { "Test that a help message is printed when -h or --help are passed as arguments", &test_help_message_and_clean_exit_on_provided_flag, EXIT_SUCCESS },
+                      { "Test that not providing a value for a mandatory argument results in error", &test_not_providing_mandatory_arguments, EXIT_FAILURE },
+                      { "Test that it is possible to parse configuration from file", &test_load_config_from_file },
+                      { "Test that providing a malformated float value in config file results in error", &test_unparseable_float_in_config_file, EXIT_FAILURE },
+                      { "Test that providing a malformated integer value in config file results in error", &test_unparseable_int_in_config_file, EXIT_FAILURE },
+                      { "Test that providing invalid arguments in config file results in error", &test_unrecognized_arguments_in_config_file, EXIT_FAILURE },
+                      { "Test that command line arguments take precedence over config file ones", &test_command_line_arguments_take_precedence_over_config_file },
+                      { "Test that specifying a non existing config files causes program to shut down.", test_specifying_non_existing_file, EXIT_FAILURE },
+};
 
 int main(int argc, char **argv) {
     suite_report report = run_test_suite(test_suite, sizeof(test_suite) / sizeof(test));

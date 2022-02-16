@@ -78,7 +78,7 @@ char test_connect_to_server() {
     return 0;
 }
 
-test test_suite[] = { { "Test that it is possible to exchange a message with the server", test_connect_to_server } };
+test test_suite[] = { { "Test that it is possible to exchange a message with the server", &test_connect_to_server } };
 
 int main(int argc, char **argv) {
     suite_report report = run_test_suite(test_suite, sizeof(test_suite) / sizeof(test));

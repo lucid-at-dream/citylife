@@ -19,4 +19,4 @@ TEST_CASE(test_new_service_from_valid_json, {
     service_dealloc(svc);
 })
 
-TEST_SUITE(RUN_TEST("Create a new service from a valid json service registration request.", test_new_service_from_valid_json))
+TEST_SUITE(RUN_TEST("Create a new service from a valid json service registration request.", &test_new_service_from_valid_json))

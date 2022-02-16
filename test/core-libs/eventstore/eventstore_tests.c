@@ -32,4 +32,4 @@ TEST_CASE(event_store_log_one_event, {
     event_schema_del(schema);
 })
 
-TEST_SUITE(RUN_TEST("Test logging 10 events in the event store", event_store_log_one_event))
+TEST_SUITE(RUN_TEST("Test logging 10 events in the event store", &event_store_log_one_event))

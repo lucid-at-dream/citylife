@@ -90,7 +90,7 @@ char test_worker_pool_parallel_summation() {
     return 0;
 }
 
-test test_suite[] = { { "Test summing some numbers in parallel", test_worker_pool_parallel_summation } };
+test test_suite[] = { { "Test summing some numbers in parallel", &test_worker_pool_parallel_summation } };
 
 int main(int argc, char **argv) {
     suite_report report = run_test_suite(test_suite, sizeof(test_suite) / sizeof(test));

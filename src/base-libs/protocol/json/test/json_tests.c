@@ -58,4 +58,4 @@ TEST_CASE(test_parse_json_with_nested_dictionaries, {
     json_dealloc(parsed_json);
 })
 
-TEST_SUITE(RUN_TEST("Parse a Json with only dictionaries, nested.", test_parse_json_with_nested_dictionaries))
+TEST_SUITE(RUN_TEST("Parse a Json with only dictionaries, nested.", &test_parse_json_with_nested_dictionaries))
