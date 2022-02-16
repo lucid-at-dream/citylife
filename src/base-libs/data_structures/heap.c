@@ -146,7 +146,6 @@ void heap_decrease_key(heap *h, heap_node *x, void *new_item) {
 }
 
 void *heap_pop(heap *h) {
-
     // Find the node x of minimum key mong the children of the root.
     list_node *list_el_x = h->root->children->head;
 
@@ -158,7 +157,7 @@ void *heap_pop(heap *h) {
     }
 
     list_node *tmp = list_el_x->next;
-    while(tmp != NULL) {
+    while (tmp != NULL) {
         if (h->compare(tmp->value, list_el_x->value) < 0) {
             list_el_x = tmp;
         }
@@ -175,7 +174,7 @@ void *heap_pop(heap *h) {
 
     // Make each of the other children of z a child of x.
 
-    while(h->root->children->head != NULL) {
+    while (h->root->children->head != NULL) {
         heap_node *child_node = h->root->children->head->value;
         if (is_linkable(child_node)) {
             list_append(x->children, child_node);
@@ -191,7 +190,6 @@ void *heap_pop(heap *h) {
     list_node *first_linkable_node_found = NULL;
     while (x_child && x_child->next != NULL) {
         if (is_linkable(x_child->value)) {
-
             if (!first_linkable_node_found) {
                 first_linkable_node_found = x_child;
             } else {

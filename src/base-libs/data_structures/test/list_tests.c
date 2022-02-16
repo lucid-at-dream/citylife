@@ -129,7 +129,6 @@ TEST_CASE(apply_a_function_on_each_element_of_the_list, {
 })
 
 TEST_CASE(delete_head_make_sure_head_is_updated, {
-
     list *l = list_new();
 
     for (int i = 0; i < 5; i++) {

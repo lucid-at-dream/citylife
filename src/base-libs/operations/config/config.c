@@ -122,7 +122,7 @@ map *parse_config_file(map *args, char *path, int arg_desc_count, arg_t *arg_des
             if (line[nbytes - 1] == '\n') {
                 line[nbytes - 1] = '\0';
             }
-               
+
             int arg_parse_status = parse_config_file_line(args, line, arg_desc_count, arg_desc);
 
             // Exit if parse error.
