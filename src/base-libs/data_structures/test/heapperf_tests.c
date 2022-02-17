@@ -17,7 +17,7 @@ int int_compare(const void *a, const void *b) {
 }
 
 PERF_TEST(test_heap_sort_of_random_elements, {
-    int total_elements = 1000;
+    int total_elements = 100;
     
     heap *h = heap_new(int_compare);
 

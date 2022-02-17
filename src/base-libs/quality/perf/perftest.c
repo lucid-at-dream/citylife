@@ -83,6 +83,8 @@ void run_performance_test_suite(perf_test *test_suite, int suite_size) {
         info("P99999: %.2lfns - %.2lfns", report.mean - report.p99999, report.mean + report.p99999);
 
         printf("========= Finished executing test %d: %s\n", count + 1, t->description);
+
+        free(iteration_report);
     }
 }
 
@@ -100,7 +102,7 @@ iteration_report *runPerfTest(perf_test *t) {
     long elapsedNanos;
     struct timespec start, end;
 
-    iteration_report *report = malloc(sizeof(iteration_report));
+    iteration_report *report = calloc(1, sizeof(iteration_report));
 
     long long int measurements[samples_count];
 

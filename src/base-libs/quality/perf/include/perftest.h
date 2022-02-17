@@ -23,7 +23,8 @@ void run_performance_test_suite(perf_test *test_suite, int suite_size);
 #define PERF_TEST_SUITE(tests...)                                                           \
     perf_test test_suite[] = { tests };                                                     \
     int main(int argc, char **argv) {                                                       \
-        run_performance_test_suite(test_suite, sizeof(test_suite) / sizeof(perf_test));          \
+        run_performance_test_suite(test_suite, sizeof(test_suite) / sizeof(perf_test));     \
+        return 0;                                                                           \
     }
 
 #define PERF_TEST(name, body)\
