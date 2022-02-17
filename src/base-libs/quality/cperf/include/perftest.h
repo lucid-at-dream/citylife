@@ -8,6 +8,18 @@ typedef struct _perf_test {
     char (*test_impl)(void);
 } perf_test;
 
+typedef struct _perf_report {
+    double mean;
+    double standard_deviation;
+    double standard_error;
+    double p90;
+    double p95;
+    double p99;
+    double p999;
+    double p9999;
+    double p99999;
+} perf_report;
+
 /**
  * Executes a test suite, received as an array of tests.
  *

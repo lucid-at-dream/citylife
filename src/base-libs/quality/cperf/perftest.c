@@ -7,6 +7,8 @@
 #include <math.h>
 
 #include "perftest.h"
+#include "perf_exporter.h"
+#include "console_exporter.h"
 #include "logger.h"
 
 typedef struct _iteration_report {
@@ -14,25 +16,20 @@ typedef struct _iteration_report {
     double standard_deviation;
 } iteration_report;
 
-typedef struct _overall_report {
-    double mean;
-    double standard_deviation;
-    double standard_error;
-    double p90;
-    double p95;
-    double p99;
-    double p999;
-    double p9999;
-    double p99999;
-} overall_report;
-
 iteration_report *runPerfTest(perf_test *t);
 
 int samples_count = 50;
 int iterations_count = 20;
 
+exporter *setup_exporters() {
+    exporter *exporters = register_exporter(NULL, &export_to_console, &log_final_summary);
+    return exporters;
+}
+
 void run_performance_test_suite(perf_test *test_suite, int suite_size) {
-    
+
+    exporter *exporters = setup_exporters();
+
     int count = 0;
     for (; count < suite_size; count++) {
         perf_test *t = test_suite + count;
@@ -49,9 +46,11 @@ void run_performance_test_suite(perf_test *test_suite, int suite_size) {
 
         free(thread);
 
-        overall_report report;
+        perf_report report;
         report.mean = iteration_report->mean;
         report.standard_deviation = iteration_report->standard_deviation;
+        free(iteration_report);
+
         report.standard_error = report.standard_deviation / sqrt(samples_count);
 
         double z_p90 = 1.2816;
@@ -72,20 +71,11 @@ void run_performance_test_suite(perf_test *test_suite, int suite_size) {
         double z_p99999 = 4.2649;
         report.p99999 = z_p99999 * report.standard_error;
 
-        info("Mean: %.2lfns", report.mean);
-        info("Standard Deviation: %.2lfns", report.standard_deviation);
-        info("Standard Error of the Mean: %.2lfns", report.standard_error);
-        info("P90: %.2lfns - %.2lfns", report.mean - report.p90, report.mean + report.p90);
-        info("P95: %.2lfns - %.2lfns", report.mean - report.p95, report.mean + report.p95);
-        info("P99: %.2lfns - %.2lfns", report.mean - report.p99, report.mean + report.p99);
-        info("P999: %.2lfns - %.2lfns", report.mean - report.p999, report.mean + report.p999);
-        info("P9999: %.2lfns - %.2lfns", report.mean - report.p9999, report.mean + report.p9999);
-        info("P99999: %.2lfns - %.2lfns", report.mean - report.p99999, report.mean + report.p99999);
-
         printf("========= Finished executing test %d: %s\n", count + 1, t->description);
 
-        free(iteration_report);
+        process_report(exporters, *t, report);
     }
+    finalize_report(exporters);
 }
 
 
