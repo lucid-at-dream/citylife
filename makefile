@@ -1,6 +1,8 @@
 .PHONY: setup build test sonar clean
 
-default: test
+TEST=map_tests
+
+default: build
 
 setup:
 	meson setup build
@@ -15,6 +17,9 @@ test: build
 	sed -i 's|path="|path="src/|g' build/coverage.xml
 	cat build/meson-logs/testlog-valgrind.txt
 
+bench: build
+	meson test --benchmark -C build --verbose
+
 sonar: clean
 	build-wrapper-linux-x86-64 --out-dir bw-output make test
 	sonar-scanner -X
@@ -23,3 +28,9 @@ clean:
 	rm -rf build || true
 	rm -rf .scannerwork || true
 	rm -rf bw-output || true
+
+debug-test:
+	meson test ${TEST} --gdb -C build
+
+solo-test:
+	meson test ${TEST} --print-errorlogs -C build

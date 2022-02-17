@@ -60,6 +60,26 @@ foreach p : test_files
 endforeach
 
 
+## Build citylife-base performance tests
+test_files = run_command(
+    'find', 'src/base-libs', '-name', '*.c', '-and', '-path', '*/perf/*', '-printf', '%p %f\n'
+).stdout().strip().split('\n')
+
+foreach p : test_files
+    filename = p.split(' ')[0]
+    testname = p.split(' ')[1].split('.')[0]
+
+    exe = executable(
+        testname, filename,
+        link_with: base_lib,
+        dependencies: [base_dep, base_deps]
+    )
+
+    benchmark(testname, exe)
+endforeach
+
+
+
 
 ### Build citylife-core
 
