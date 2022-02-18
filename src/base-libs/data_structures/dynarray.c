@@ -6,7 +6,7 @@ dynarray *dynarray_new() {
     return (dynarray *)calloc(1, sizeof(dynarray));
 }
 
-dynarray *dynarray_destroy(dynarray *ar) {
+void dynarray_destroy(dynarray *ar) {
     if (ar->data != NULL) {
         free(ar->data);
     }
@@ -34,8 +34,6 @@ void dynarray_del(dynarray *ar, int idx) {
     }
 
     ar->size -= 1;
-
-    return NULL;
 }
 
 void *dynarray_get(dynarray *ar, int idx) {
