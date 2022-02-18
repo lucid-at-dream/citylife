@@ -16,4 +16,4 @@ wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scann
 
 unzip sonar-scanner-cli-${scanner_version}-linux.zip
 
-mv sonar-scanner-${scanner_version} sonar-scanner
+mv sonar-scanner-${scanner_version}-linux sonar-scanner
