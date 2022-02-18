@@ -1,6 +1,6 @@
 #pragma once
 
-#define ASSERT_INT_EQUALS(msg, expected, actual) assertion_error += assert_int_equals(msg, expected, actual);
+#define ASSERT_INT_EQUALS(msg, actual, expected) assertion_error += assert_int_equals(msg, actual, expected);
 
 #define ASSERT_TRUE(msg, expr) assertion_error += assert_true(msg, expr);
 

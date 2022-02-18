@@ -31,13 +31,16 @@ void *heap_peek(heap *h) {
 heap *heap_push(heap *h, void *item) {
     heap_node *n = heap_node_new();
     n->item = item;
+    n->size = 0;
 
     if (h->root == NULL) {
         h->root = n;
+        h->size = 1;
         return h;
     } else {
         heap *x = heap_new(h->compare);
         x->root = n;
+        x->size = 1;
         return heap_meld(h, x);
     }
 }
@@ -77,8 +80,7 @@ heap *heap_meld(heap *h1, heap *h2) {
     }
 
     // Make v a child of u
-    list_append(u->children, v);
-    v->parent = u;
+    link(v, u);
 
     // update the queue Q, set it to Qx + v + Qy
     queue *Q = x->Q;
@@ -86,6 +88,8 @@ heap *heap_meld(heap *h1, heap *h2) {
     queue_merge_into(Q, y->Q);
     final_heap->Q = Q;
 
+    // Discard the irrelevant heap & update final_heap size
+    final_heap->size += discarded_heap->size;
     free(discarded_heap);
 
     // Do an active root reduction and a root degree reduction to the extent possible.
@@ -338,6 +342,7 @@ void link(heap_node *x, heap_node *y) {
         list_append(y->children, x);
     }
     x->parent = y;
+    y->size = x->size + 1;
 }
 
 /**
