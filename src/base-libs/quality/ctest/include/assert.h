@@ -23,6 +23,6 @@ char assert_float_less_than(char *assertin, float n1, float n2);
 
 char assert_double_equals(char *assertion, double num1, double num2);
 
-char assert_true(char *assertion, void *value);
+char assert_true(char *assertion, int value);
 
-char assert_false(char *assertion, void *value);
+char assert_false(char *assertion, int value);

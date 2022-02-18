@@ -7,8 +7,6 @@
 #include "assert.h"
 #include "map.h"
 
-
-
 char test_map_add_get_10000_elements_N_buckets_1000_millis(int buckets) {
     int n_elements = 10000;
     char *NAME_PREFIX = "zemanel";
@@ -55,15 +53,9 @@ char test_map_add_get_10000_elements_N_buckets_1000_millis(int buckets) {
     return assertion_result;
 }
 
-PERF_TEST(test_map_add_get_10000_elements_1_buckets, {
-    test_map_add_get_10000_elements_N_buckets_1000_millis(1);
-})
+PERF_TEST(test_map_add_get_10000_elements_1_buckets, { test_map_add_get_10000_elements_N_buckets_1000_millis(1); })
 
-PERF_TEST(test_map_add_get_10000_elements_1000_buckets, {
-    test_map_add_get_10000_elements_N_buckets_1000_millis(1000);
-})
+PERF_TEST(test_map_add_get_10000_elements_1000_buckets, { test_map_add_get_10000_elements_N_buckets_1000_millis(1000); })
 
-PERF_TEST_SUITE(
-    RUN_PERF_TEST("Test getting 10000 elements from a map starting with 1 bucket", &test_map_add_get_10000_elements_1_buckets),
-    RUN_PERF_TEST("Test getting 10000 elements from a map starting with 1000 bucket", &test_map_add_get_10000_elements_1000_buckets), 
-)
+PERF_TEST_SUITE(RUN_PERF_TEST("Test getting 10000 elements from a map starting with 1 bucket", &test_map_add_get_10000_elements_1_buckets),
+                RUN_PERF_TEST("Test getting 10000 elements from a map starting with 1000 bucket", &test_map_add_get_10000_elements_1000_buckets), )

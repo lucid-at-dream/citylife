@@ -27,7 +27,7 @@ char assert_not_null(char *assertion, void *ptr) {
     return 0;
 }
 
-char assert_true(char *assertion, void *value) {
+char assert_true(char *assertion, int value) {
     if (!value) {
         printf("%s\n", assertion);
         return 1;
@@ -35,7 +35,7 @@ char assert_true(char *assertion, void *value) {
     return 0;
 }
 
-char assert_false(char *assertion, void *value) {
+char assert_false(char *assertion, int value) {
     if (value) {
         printf("%s\n", assertion);
         return 1;

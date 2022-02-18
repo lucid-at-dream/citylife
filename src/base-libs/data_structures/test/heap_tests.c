@@ -17,6 +17,30 @@ int int_compare(const void *a, const void *b) {
     return 0;
 }
 
+char check_heap_order(heap_node *n, int (*cmp)(const void *, const void *)) {
+    char assertion_error = 0;
+    if (n == NULL || n->children == NULL || n->children->size == 0) {
+        return assertion_error;
+    }
+
+    list_node *c_ln = n->children->head;
+    while (c_ln != NULL) {
+        heap_node *c = c_ln->value;
+        int result = cmp(n->item, c->item);
+        assertion_error += ASSERT_TRUE("Heap order is satisfied", result <= 0);
+        assertion_error += check_heap_order(c, cmp);
+        c_ln = c_ln->next;
+    }
+
+    return assertion_error;
+}
+
+char validate_invariants(heap *h) {
+    char assertion_error = 0;
+    assertion_error += check_heap_order(h->root, h->compare);
+    return assertion_error;
+}
+
 TEST_CASE(test_destroy_empty_heap, {
     heap *h = heap_new(int_compare);
     heap_destroy(h);
@@ -37,6 +61,7 @@ TEST_CASE(test_heap_push_multiple_elements_in_reverse_order_assert_min_peek, {
 
     for (int i = 10; i >= 0; i--) {
         h = heap_push(h, i);
+        ASSERT_TRUE("All invariants are satisfied", validate_invariants(h) == 0);
     }
 
     ASSERT_INT_EQUALS("Peek of heap returns minimum value in heap.", (int)heap_peek(h), 0);
@@ -48,10 +73,15 @@ TEST_CASE(test_heap_push_multiple_elements_in_random_order_assert_min_peek, {
     heap *h = heap_new(int_compare);
 
     h = heap_push(h, 1);
+    ASSERT_TRUE("All invariants are satisfied", validate_invariants(h) == 0);
     h = heap_push(h, 4);
+    ASSERT_TRUE("All invariants are satisfied", validate_invariants(h) == 0);
     h = heap_push(h, 3);
+    ASSERT_TRUE("All invariants are satisfied", validate_invariants(h) == 0);
     h = heap_push(h, 0);
+    ASSERT_TRUE("All invariants are satisfied", validate_invariants(h) == 0);
     h = heap_push(h, 2);
+    ASSERT_TRUE("All invariants are satisfied", validate_invariants(h) == 0);
 
     ASSERT_INT_EQUALS("Peek of heap returns minimum value in heap.", (int)heap_peek(h), 0);
 
@@ -63,6 +93,7 @@ TEST_CASE(test_heap_push_multiple_elements_assert_min_popped, {
 
     for (int i = 0; i < 10; i++) {
         h = heap_push(h, i);
+        ASSERT_TRUE("All invariants are satisfied", validate_invariants(h) == 0);
     }
 
     for (int i = 0; i < 10; i++) {
@@ -71,13 +102,15 @@ TEST_CASE(test_heap_push_multiple_elements_assert_min_popped, {
 
         int popped = (int)heap_pop(h);
         ASSERT_INT_EQUALS("Pop of heap with returns the minimum value in the heap.", popped, i);
+
+        ASSERT_TRUE("All invariants are satisfied", validate_invariants(h) == 0);
     }
 
     heap_destroy(h);
 })
 
 TEST_CASE(test_heap_sort_of_random_elements, {
-    int total_elements = 1000;
+    int total_elements = 200;
 
     heap *h = heap_new(int_compare);
 
@@ -86,6 +119,7 @@ TEST_CASE(test_heap_sort_of_random_elements, {
     for (int i = 0; i < total_elements; i++) {
         int r = (int)random();
         h = heap_push(h, r);
+        ASSERT_TRUE("All invariants are satisfied", validate_invariants(h) == 0);
     }
 
     long int previous_value = -__INT_MAX__;
@@ -93,6 +127,7 @@ TEST_CASE(test_heap_sort_of_random_elements, {
     for (int i = 0; i < total_elements; i++) {
         int popped = (int)heap_pop(h);
         ASSERT_TRUE("Heap sort gets elements to increasing order", popped >= previous_value);
+        ASSERT_TRUE("All invariants are satisfied", validate_invariants(h) == 0);
         previous_value = popped;
     }
 
