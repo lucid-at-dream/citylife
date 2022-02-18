@@ -2,7 +2,7 @@
 
 #include "perf_exporter.h"
 
-void register_exporter(dynarray *exporters, void (*per_report)(perf_test, perf_report), void(*final_report)(void)) {
+void register_exporter(dynarray *exporters, void (*per_report)(perf_test, perf_report), void (*final_report)(void)) {
     exporter *e = (exporter *)malloc(sizeof(exporter));
 
     e->process_report = per_report;

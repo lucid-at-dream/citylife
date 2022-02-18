@@ -1,0 +1,30 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Install dependencies
+      run: sh install_build_dependencies.sh
+    
+    - name: Build
+      run: make build      
+      
+    - name: Run Tests
+      run: make test
+      
+    - name: Run Benchmarks
+      run: make bench
+
+    - name: Run Sonar Analysis
+      run: make sonar

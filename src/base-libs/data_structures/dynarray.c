@@ -24,14 +24,13 @@ void dynarray_add(dynarray *ar, void *el) {
 }
 
 void dynarray_del(dynarray *ar, int idx) {
-
     if (idx >= ar->size) {
         return; // TODO: Some sort of error handling would be nice
     }
 
     ar->data[idx] = NULL;
     for (int i = idx; i < ar->size - 1; i++) {
-        ar->data[i] = ar->data[i+1];
+        ar->data[i] = ar->data[i + 1];
     }
 
     ar->size -= 1;

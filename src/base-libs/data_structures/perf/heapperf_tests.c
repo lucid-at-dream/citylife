@@ -18,7 +18,7 @@ int int_compare(const void *a, const void *b) {
 
 PERF_TEST(test_heap_sort_of_random_elements, {
     int total_elements = 100;
-    
+
     heap *h = heap_new(int_compare);
 
     srandom(0);
@@ -37,6 +37,4 @@ PERF_TEST(test_heap_sort_of_random_elements, {
 
 // TODO: For every write operation of the heap, assert the invariants.
 
-PERF_TEST_SUITE(
-    RUN_PERF_TEST("Test heap sorting several random elements.", &test_heap_sort_of_random_elements),
-)
+PERF_TEST_SUITE(RUN_PERF_TEST("Test heap sorting several random elements.", &test_heap_sort_of_random_elements), )

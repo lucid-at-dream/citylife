@@ -78,7 +78,7 @@ TEST_CASE(test_heap_push_multiple_elements_assert_min_popped, {
 
 TEST_CASE(test_heap_sort_of_random_elements, {
     int total_elements = 1000;
-    
+
     heap *h = heap_new(int_compare);
 
     srandom(0);
@@ -101,11 +101,9 @@ TEST_CASE(test_heap_sort_of_random_elements, {
 
 // TODO: For every write operation of the heap, assert the invariants.
 
-TEST_SUITE(
-    RUN_TEST("Test destroying an empty heap.", &test_destroy_empty_heap),
-    RUN_TEST("Test push pop of an item in a heap works.", &test_heap_push_one_then_peek_assert_equals),
-    RUN_TEST("Test push multiple items in reverse order and check min.", &test_heap_push_multiple_elements_in_reverse_order_assert_min_peek),
-    RUN_TEST("Test push multiple items in random order and check min.", &test_heap_push_multiple_elements_in_random_order_assert_min_peek),
-    RUN_TEST("Test push multiple items in order and pop min all of them.", &test_heap_push_multiple_elements_assert_min_popped),
-    RUN_TEST("Test heap sorting several random elements.", &test_heap_sort_of_random_elements),
-)
+TEST_SUITE(RUN_TEST("Test destroying an empty heap.", &test_destroy_empty_heap),
+           RUN_TEST("Test push pop of an item in a heap works.", &test_heap_push_one_then_peek_assert_equals),
+           RUN_TEST("Test push multiple items in reverse order and check min.", &test_heap_push_multiple_elements_in_reverse_order_assert_min_peek),
+           RUN_TEST("Test push multiple items in random order and check min.", &test_heap_push_multiple_elements_in_random_order_assert_min_peek),
+           RUN_TEST("Test push multiple items in order and pop min all of them.", &test_heap_push_multiple_elements_assert_min_popped),
+           RUN_TEST("Test heap sorting several random elements.", &test_heap_sort_of_random_elements), )

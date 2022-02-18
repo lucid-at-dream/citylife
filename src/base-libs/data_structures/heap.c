@@ -150,7 +150,6 @@ void heap_decrease_key(heap *h, heap_node *x, void *new_item) {
 }
 
 void *heap_pop(heap *h) {
-
     // Return root if heap is empty.
     if (h->root->children->size == 0) {
         void *item = h->root->item;
@@ -174,7 +173,7 @@ void *heap_pop(heap *h) {
         }
         tmp = tmp->next;
     }
-    
+
     // TODO: Refactor to make this O(1), since we have the list node it should be fairly easy.
     // Delete the min child from the root's children's list
     list_del_element(h->root->children, list_el_x->value);
@@ -233,9 +232,8 @@ void *heap_pop(heap *h) {
     // Remove x from Q
     // TODO: How to we do this in O(1)? :: Hacky O(N) solution for now...
     queue_item *i = h->Q->head;
-    while(i != NULL) {
+    while (i != NULL) {
         if (i->content == x) {
-            
             if (i == h->Q->head) {
                 h->Q->head = i->next;
             }
@@ -377,7 +375,6 @@ void active_root_reduction(heap *h, heap_node *active_root_x, heap_node *active_
  * of the root decreases by two and the number of active roots increases by one.
  */
 char root_degree_reduction(heap *h) {
-
     // Will not be able to find the three rightmost linkable children if there are less than 3 children
     if (h->root->children->size < 3) {
         return 0;

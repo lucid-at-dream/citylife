@@ -31,7 +31,6 @@ dynarray *setup_exporters() {
 }
 
 void run_performance_test_suite(perf_test *test_suite, int suite_size) {
-
     dynarray *exporters = setup_exporters();
 
     int count = 0;
@@ -43,7 +42,7 @@ void run_performance_test_suite(perf_test *test_suite, int suite_size) {
         iteration_report *iteration_report;
 
         pthread_t *thread = (pthread_t *)calloc(1, sizeof(pthread_t));
-        
+
         pthread_create(thread, NULL, runPerfTest, t);
 
         pthread_join(*thread, &iteration_report);
@@ -79,11 +78,10 @@ void run_performance_test_suite(perf_test *test_suite, int suite_size) {
 
         process_report(exporters, *t, report);
     }
-    
+
     finalize_report(exporters);
     dynarray_destroy(exporters);
 }
-
 
 /**
  * Executes the before test, test, and after test routines. If any of 
@@ -94,7 +92,6 @@ void run_performance_test_suite(perf_test *test_suite, int suite_size) {
  * @return 0 if the test succeeded, something else on failure.
  */
 iteration_report *runPerfTest(perf_test *t) {
-
     long elapsedNanos;
     struct timespec start, end;
 
@@ -103,14 +100,14 @@ iteration_report *runPerfTest(perf_test *t) {
     long long int measurements[samples_count];
 
     for (int i = 0; i < samples_count; i++) {
-        clock_gettime(CLOCK_MONOTONIC,&start);
+        clock_gettime(CLOCK_MONOTONIC, &start);
         t->test_impl();
-        clock_gettime(CLOCK_MONOTONIC,&end);
+        clock_gettime(CLOCK_MONOTONIC, &end);
 
         long long int end_total_ns = end.tv_sec * 1000 * 1000 * 1000 + end.tv_nsec;
         long long int start_total_ns = start.tv_sec * 1000 * 1000 * 1000 + start.tv_nsec;
 
-        measurements[i] =  end_total_ns - start_total_ns;
+        measurements[i] = end_total_ns - start_total_ns;
 
         // Update mean
         report->mean = report->mean * ((double)i / (double)(i + 1)) + measurements[i] / (double)(i + 1);
@@ -127,5 +124,3 @@ iteration_report *runPerfTest(perf_test *t) {
 
     return report;
 }
-
-

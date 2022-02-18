@@ -39,7 +39,6 @@ void queue_add(queue *q, void *item) {
 }
 
 void queue_merge_into(queue *q, queue *other) {
-
     // Merge other into q
     q->size += other->size;
     if (q->last) {
