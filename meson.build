@@ -19,7 +19,7 @@ base_deps = [
 
 # Find "base-libs" source files
 base_source_files = run_command(
-    'find', 'src/base-libs', '-name', '*.c', '-and', '-not', '-path', '*/test/*'
+    'find', 'src/base-libs', '-name', '*.c', '-and', '-not', '-path', '*/test/*', '-and', '-not', '-path', '*/perf/*'
 ).stdout().strip().split('\n')
 
 # Find "base-libs" include directories
@@ -60,7 +60,7 @@ foreach p : test_files
 endforeach
 
 
-## Build citylife-base performance tests
+## Benchmark citylife-base
 test_files = run_command(
     'find', 'src/base-libs', '-name', '*.c', '-and', '-path', '*/perf/*', '-printf', '%p %f\n'
 ).stdout().strip().split('\n')
@@ -70,7 +70,7 @@ foreach p : test_files
     testname = p.split(' ')[1].split('.')[0]
 
     exe = executable(
-        testname, filename,
+        testname, filename, 
         link_with: base_lib,
         dependencies: [base_dep, base_deps]
     )

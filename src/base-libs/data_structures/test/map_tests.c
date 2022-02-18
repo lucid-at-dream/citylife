@@ -86,67 +86,6 @@ char test_map_add_2_doppleganger_elements() {
     return assertion_result;
 }
 
-char test_map_add_get_10000_elements_N_buckets_1000_millis(int buckets) {
-    int n_elements = 10000;
-    char *NAME_PREFIX = "zemanel";
-    char *PASS_PREFIX = "zemanel_";
-
-    char *users[n_elements];
-    char *passes[n_elements];
-
-    map *m = map_new(buckets);
-
-    clock_t start = clock();
-
-    for (int i = 0; i < n_elements; i++) {
-        char *user = (char *)calloc(20, sizeof(char));
-        char *pass = (char *)calloc(20, sizeof(char));
-
-        users[i] = user;
-        passes[i] = pass;
-
-        snprintf(user, 20, "%s%d", NAME_PREFIX, i);
-        snprintf(pass, 20, "%s%d", PASS_PREFIX, i);
-
-        map_set(m, user, pass);
-    }
-
-    char lookup_user[20];
-    char expected_pass[20];
-    char assertion_result = 0;
-    for (int i = 0; i < n_elements; i++) {
-        snprintf(lookup_user, 20, "%s%d", NAME_PREFIX, i);
-        snprintf(expected_pass, 20, "%s%d", PASS_PREFIX, i);
-
-        char *retrieved_password = map_get(m, lookup_user);
-        assertion_result |= assert_str_equals("Retrieved password should equal added password", expected_pass, retrieved_password);
-        if (assertion_result) {
-            break;
-        }
-    }
-
-    clock_t stop = clock();
-    double time_taken = ((double)(stop - start)) / CLOCKS_PER_SEC;
-
-    assertion_result |= assert_float_less_than("Add/Get of 10K elements should take less than 500ms", time_taken, 1);
-
-    for (int i = 0; i < n_elements; i++) {
-        free(users[i]);
-        free(passes[i]);
-    }
-    map_destroy(m);
-
-    return assertion_result;
-}
-
-char test_map_add_get_10000_elements_1_bucket_1000_millis() {
-    return test_map_add_get_10000_elements_N_buckets_1000_millis(1);
-}
-
-char test_map_add_get_10000_elements_1000_buckets_1000_millis() {
-    return test_map_add_get_10000_elements_N_buckets_1000_millis(1000);
-}
-
 char test_map_add_same_key_twice() {
     char *KEY = new_string("key");
     char *VALUE_1 = new_string("v1");
@@ -276,8 +215,6 @@ test test_suite[] = {
     { "Test map get on empty map", &test_map_get_empty_map },
     { "Test map add 2 elements", &test_map_add_2_elements },
     { "Test adding 2 look alike elements to the map", &test_map_add_2_doppleganger_elements },
-    { "Test adding 10K users in a map with 1K bucket lists and retrieving in less than 500ms", &test_map_add_get_10000_elements_1000_buckets_1000_millis },
-    { "Test adding 10K users in a map with 1 bucket list and retrieving in less than 500ms", &test_map_add_get_10000_elements_1_bucket_1000_millis },
     { "Test adding two values for the same key. The last value inserted should be returned.", &test_map_add_same_key_twice },
     { "Test deleting an existing user from a map", &test_map_delete_user },
     { "Test deleting some users among several other users", &test_map_delete_user_among_many_users },
