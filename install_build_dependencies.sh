@@ -10,11 +10,10 @@ wget https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
 
 unzip build-wrapper-linux-x86.zip
 
-export PATH="$PATH:$(pwd)/build-wrapper-linux-x86"
+scanner_version="4.6.1.2450"
 
-wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.2.0.1227.zip
+wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${scanner_version}-linux.zip
 
-unzip sonar-scanner-cli-3.2.0.1227.zip
+unzip sonar-scanner-cli-${scanner_version}.zip
 
-export PATH="$PATH:$(pwd)/sonar-scanner-3.2.0.1227/bin"
-
+mv sonar-scanner-${scanner_version} sonar-scanner

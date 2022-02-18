@@ -23,8 +23,8 @@ bench: build
 ci: build test bench
 
 sonar: clean
-	build-wrapper-linux-x86-64 --out-dir bw-output make test
-	sonar-scanner -X
+	build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir bw-output make test
+	sonar-scanner/bin/sonar-scanner -X
 
 clean:
 	rm -rf build || true
