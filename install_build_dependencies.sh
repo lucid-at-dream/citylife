@@ -14,6 +14,6 @@ scanner_version="4.6.1.2450"
 
 wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${scanner_version}-linux.zip
 
-unzip sonar-scanner-cli-${scanner_version}.zip
+unzip sonar-scanner-cli-${scanner_version}-linux.zip
 
 mv sonar-scanner-${scanner_version} sonar-scanner
