@@ -20,6 +20,8 @@ test: build
 bench: build
 	meson test --benchmark -C build --verbose
 
+ci: build test bench
+
 sonar: clean
 	build-wrapper-linux-x86-64 --out-dir bw-output make test
 	sonar-scanner -X

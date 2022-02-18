@@ -9,7 +9,9 @@
 #include "perftest.h"
 #include "perf_exporter.h"
 #include "console_exporter.h"
+#include "json_exporter.h"
 #include "logger.h"
+#include "dynarray.h"
 
 typedef struct _iteration_report {
     double mean;
@@ -21,14 +23,16 @@ iteration_report *runPerfTest(perf_test *t);
 int samples_count = 50;
 int iterations_count = 20;
 
-exporter *setup_exporters() {
-    exporter *exporters = register_exporter(NULL, &export_to_console, &log_final_summary);
+dynarray *setup_exporters() {
+    dynarray *exporters = dynarray_new();
+    register_exporter(exporters, &export_to_console, &log_final_summary);
+    register_exporter(exporters, &save_report_json, &finalize_json_report);
     return exporters;
 }
 
 void run_performance_test_suite(perf_test *test_suite, int suite_size) {
 
-    exporter *exporters = setup_exporters();
+    dynarray *exporters = setup_exporters();
 
     int count = 0;
     for (; count < suite_size; count++) {
@@ -75,7 +79,9 @@ void run_performance_test_suite(perf_test *test_suite, int suite_size) {
 
         process_report(exporters, *t, report);
     }
+    
     finalize_report(exporters);
+    dynarray_destroy(exporters);
 }
 
 

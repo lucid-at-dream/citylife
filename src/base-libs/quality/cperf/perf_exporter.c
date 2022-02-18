@@ -2,39 +2,24 @@
 
 #include "perf_exporter.h"
 
-exporter *register_exporter(exporter **exporters_ptr, void (*per_report)(perf_test, perf_report), void(*final_report)(void)) {
+void register_exporter(dynarray *exporters, void (*per_report)(perf_test, perf_report), void(*final_report)(void)) {
+    exporter *e = (exporter *)malloc(sizeof(exporter));
 
-    exporter *exporters;
-    if (exporters == NULL) {
-        exporters = (exporter *)calloc(1, sizeof(exporter));
-    } else {
-        exporters = *exporters_ptr;
-    }
-    
-    int i = sizeof(*exporters) / sizeof(exporter);
+    e->process_report = per_report;
+    e->finalize = final_report;
 
-    exporter e = {
-        per_report,
-        final_report
-    };
-
-    exporters[i-1] = e;
-
-    return exporters;
+    dynarray_add(exporters, e);
 }
 
-void process_report(exporter *exporters, perf_test test, perf_report report) {
-    int size = sizeof(*exporters) / sizeof(exporter);
-
-    for (int i = 0; i < size; i++) {
-        exporters[i].process_report(test, report);
+void process_report(dynarray *exporters, perf_test test, perf_report report) {
+    for (int i = 0; i < exporters->size; i++) {
+        ((exporter *)dynarray_get(exporters, i))->process_report(test, report);
     }
 }
 
-void finalize_report(exporter *exporters) {
-    int size = sizeof(*exporters) / sizeof(exporter);
-
-    for (int i = 0; i < size; i++) {
-        exporters[i].finalize();
+void finalize_report(dynarray *exporters) {
+    for (int i = 0; i < exporters->size; i++) {
+        ((exporter *)dynarray_get(exporters, i))->finalize();
+        free(dynarray_get(exporters, i));
     }
 }
