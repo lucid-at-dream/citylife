@@ -7,7 +7,7 @@ typedef struct _dynarray {
 } dynarray;
 
 dynarray *dynarray_new();
-dynarray *dynarray_destroy(dynarray *);
+void dynarray_destroy(dynarray *);
 
 void dynarray_add(dynarray *ar, void *el);
 void dynarray_del(dynarray *ar, int idx);
