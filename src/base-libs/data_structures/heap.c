@@ -46,6 +46,7 @@ heap *heap_push(heap *h, void *item) {
 }
 
 heap *heap_meld(heap *h1, heap *h2) {
+    
     // x->size <= y->size
     heap *x, *y;
     if (h1->root->size <= h2->root->size) {
@@ -57,7 +58,7 @@ heap *heap_meld(heap *h1, heap *h2) {
     }
 
     // Make all nodes in the tree rooted at x passive
-    // TODO: Do this implicitly, as described in Section 6, so that it takes O(1) time.)
+    // TODO: Make use of the active records to achieve O(1)
     list_node *child = x->root->children->head;
     while (child != NULL) {
         ((heap_node *)(child->value))->is_active = 0;
@@ -66,41 +67,40 @@ heap *heap_meld(heap *h1, heap *h2) {
 
     // u->key < v->key
     heap_node *u, *v;
-    heap *final_heap, *discarded_heap;
-    if (y->compare(x->root->item, y->root->item) < 0) {
+    heap *lesser_key_heap, *larger_key_heap;
+    if (x->compare(x->root->item, y->root->item) < 0) {
         u = x->root;
         v = y->root;
-        final_heap = x;
-        discarded_heap = y;
+        lesser_key_heap = x;
+        larger_key_heap = y;
     } else {
         u = y->root;
         v = x->root;
-        final_heap = y;
-        discarded_heap = x;
+        lesser_key_heap = y;
+        larger_key_heap = x;
     }
 
+    // O(1) Since v is a root node with no parent
     // Make v a child of u
     link(v, u);
 
+    // O(1) Since these are all just pointer operations
     // update the queue Q, set it to Qx + v + Qy
     queue *Q = x->Q;
     v->position_in_q = queue_add(Q, v);
     queue_merge_into(Q, y->Q);
-    final_heap->Q = Q;
+    lesser_key_heap->Q = Q;
 
-    // Discard the irrelevant heap & update final_heap size
-    final_heap->size += discarded_heap->size;
-    free(discarded_heap);
+    // Discard the irrelevant heap & update lesser_key_heap size
+    lesser_key_heap->size += larger_key_heap->size;
+    free(larger_key_heap);
 
     // Do an active root reduction and a root degree reduction to the extent possible.
-    int transformation_succeeded = 1;
-    while (transformation_succeeded > 0) {
-        // TODO: find active roots
-        // active_root_reduction(final_heap, )
-        transformation_succeeded = root_degree_reduction(final_heap);
-    }
+    
+    // TODO: active_root_reduction(lesser_key_heap, )
+    root_degree_reduction(lesser_key_heap);
 
-    return final_heap;
+    return lesser_key_heap;
 }
 
 void heap_decrease_key(heap *h, heap_node *x, void *new_item) {

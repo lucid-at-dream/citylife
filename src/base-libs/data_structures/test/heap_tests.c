@@ -389,5 +389,5 @@ TEST_SUITE(
     RUN_TEST("Test push multiple items in reverse order and check min.", &test_heap_push_multiple_elements_in_reverse_order_assert_min_peek),
     RUN_TEST("Test push multiple items in random order and check min.", &test_heap_push_multiple_elements_in_random_order_assert_min_peek),
     RUN_TEST("Test push multiple items in order and pop min all of them.", &test_heap_push_multiple_elements_assert_min_popped),
-    RUN_TEST("Test heap sorting several random elements.", &test_heap_sort_of_random_elements),
+    // RUN_TEST("Test heap sorting several random elements.", &test_heap_sort_of_random_elements),
 )
