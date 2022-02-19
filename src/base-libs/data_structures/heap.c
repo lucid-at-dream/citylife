@@ -125,15 +125,16 @@ void heap_decrease_key(heap *h, heap_node *x, void *new_item) {
         z->item = tmp;
     }
 
+    // Let y be the parent of x
     heap_node *y = x->parent;
 
     // Make x a child of the root
-    list_append(z->children, x);
-    x->parent = z;
+    link(x, h->root);
 
     // If x was an active node but not an active root
-    if (x->is_active && x->parent->is_active) {
+    if (x->is_active && y->is_active) {
         // x becomes an active root with loss zero and the rank of y is decreased by one
+        x->is_active = 1;
         x->loss = 0;
         y->rank--;
     }
@@ -150,11 +151,22 @@ void heap_decrease_key(heap *h, heap_node *x, void *new_item) {
     // TODO:
     // Finally, do six active root reductions and four root degree reductions to the extent possible.
 
-    root_degree_reduction(h);
+    // TODO: six active root reductions
+
+    int rdr_count = 0;
+    while(root_degree_reduction(h) && rdr_count < 4) {
+        rdr_count++;
+    }
 }
 
 void *heap_pop(heap *h) {
-    // Return root if heap is empty.
+
+    // Return NULL if heap is empty.
+    if (h->root == NULL) {
+        return NULL;
+    }
+
+    // Return root if single node heap.
     if (h->root->children->size == 0) {
         void *item = h->root->item;
         heap_node_destroy(h->root);
@@ -163,8 +175,8 @@ void *heap_pop(heap *h) {
         return item;
     }
 
-    // TODO: How do we make sure it's O(1)? Invariants?
-    // Find the node x of minimum key mong the children of the root.
+    // O(R) == O(log(N))
+    // Find the node x of minimum key among the children of the root.
     list_node *list_el_x = h->root->children->head;
     heap_node *x = (heap_node *)(list_el_x->value);
 
@@ -178,9 +190,9 @@ void *heap_pop(heap *h) {
         tmp = tmp->next;
     }
 
-    // TODO: Refactor to make this O(1), since we have the list node it should be fairly easy.
+    // O(1)
     // Delete the min child from the root's children's list
-    list_del_element(h->root->children, list_el_x->value);
+    list_del_node(h->root->children, list_el_x);
 
     // If x is active then make x passive and all active children of x become active roots.
     if (x->is_active) {
@@ -467,7 +479,6 @@ void two_node_loss_reduction(heap *h, heap_node *a, heap_node *b) {
     x->rank++;
     x->loss = y->loss = 0;
 
-    z->degree--;
     z->rank--;
     if (!is_active_root(z)) {
         z->loss++;

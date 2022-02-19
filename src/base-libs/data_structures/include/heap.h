@@ -7,17 +7,14 @@ typedef struct _heap_node {
     // Number of nodes below this one
     int size;
 
-    // Number of children
-    int degree;
-
     // is active or passive?
-    char is_active;
+    char is_active; // TODO: Make this a pointer to an active record
 
     // Number of active children (if the node is active)
-    int rank;
+    int rank; // TODO: Should this be a pointer to the rank list?
 
     // ??? Total loss of an heap is the sum of the loss over all active nodes
-    unsigned loss;
+    unsigned loss; // TODO: Is this being correctly updated?
 
     // The item being stored in this heap node
     void *item;

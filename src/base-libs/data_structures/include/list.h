@@ -76,6 +76,13 @@ void list_prepend(list *, void *);
 char list_del_element(list *, void *);
 
 /**
+ * Delete the specified node n from list l.
+ * Note that no checks are done to verify whether n is indeed contained in the specified list l.
+ * complexity: O(1)
+ */
+char list_del_node(list *l, list_node *n);
+
+/**
  * Check if the list is empty.
  * Returns 1 if is empty and 0 otherwise.
  * complexity: O(1)

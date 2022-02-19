@@ -117,6 +117,22 @@ void list_prepend(list *l, void *value) {
     l->size += 1;
 }
 
+char list_del_node(list *l, list_node *n) {
+    if (n->prev != NULL) {
+        n->prev->next = n->next;
+    } else {
+        l->head = n->next; // n was the head of the list.
+    }
+    if (n->next != NULL) {
+        n->next->prev = n->prev;
+    } else {
+        l->tail = n->prev; // n was the tail of the list.
+    }
+    free(n);
+    l->size -= 1;
+    return 1;
+}
+
 char list_del_element(list *l, void *value) {
     list_node *tmp = l->head;
     while (tmp != NULL && tmp->value != value) {
@@ -124,19 +140,7 @@ char list_del_element(list *l, void *value) {
     }
 
     if (tmp != NULL) {
-        if (tmp->prev != NULL) {
-            tmp->prev->next = tmp->next;
-        } else {
-            l->head = tmp->next; // tmp was the head of the list.
-        }
-        if (tmp->next != NULL) {
-            tmp->next->prev = tmp->prev;
-        } else {
-            l->tail = tmp->prev; // tmp was the tail of the list.
-        }
-        free(tmp);
-        l->size -= 1;
-        return 1;
+        return list_del_node(l, tmp);
     }
 
     return 0; // Element not found;

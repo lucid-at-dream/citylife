@@ -20,8 +20,7 @@ typedef struct _iteration_report {
 
 iteration_report *runPerfTest(perf_test *t);
 
-int samples_count = 50;
-int iterations_count = 20;
+int samples_count = 100;
 
 dynarray *setup_exporters() {
     dynarray *exporters = dynarray_new();
