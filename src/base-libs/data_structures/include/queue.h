@@ -17,8 +17,11 @@ void queue_del(queue *q);
 queue *queue_new();
 
 // Add/Pop to/from queue
-void queue_add(queue *, void *);
+queue_item *queue_add(queue *, void *);
 void *queue_pop(queue *q);
 
 // Merge other queue into q
 void queue_merge_into(queue *q, queue *other);
+
+// Delete an element from the queue in O(1)
+void queue_remove_node(queue *q, queue_item *n);

@@ -84,7 +84,7 @@ heap *heap_meld(heap *h1, heap *h2) {
 
     // update the queue Q, set it to Qx + v + Qy
     queue *Q = x->Q;
-    queue_add(Q, v);
+    v->position_in_q = queue_add(Q, v);
     queue_merge_into(Q, y->Q);
     final_heap->Q = Q;
 
@@ -196,82 +196,30 @@ void *heap_pop(heap *h) {
 
     // If x is active then make x passive and all active children of x become active roots.
     if (x->is_active) {
-        x->is_active = 0;
+        x->is_active = 0; // TODO: Use active records
     }
 
-    // Make each of the other children of z a child of x.
+    // O(R) == O(log(N))
+    // Make each of the other children of the root a child of x.
     while (h->root->children->head != NULL) {
         heap_node *child_node = h->root->children->head->value;
+        
         if (is_linkable(child_node)) {
             list_append(x->children, child_node);
         } else {
             list_prepend(x->children, child_node);
         }
+
         child_node->parent = x;
         list_del_first(h->root->children);
     }
 
     // Make the passive linkable children of x the rightmost children of x.
-    // TODO: How do we do this in O(1)?
-    list_node *x_child = x->children->head;
-    list_node *first_linkable_node_found = NULL;
-    while (x_child && x_child->next != NULL) {
-        if (is_linkable(x_child->value)) {
-            if (!first_linkable_node_found) {
-                first_linkable_node_found = x_child;
-            } else {
-                if (first_linkable_node_found == x_child) {
-                    break;
-                }
-            }
+    // TODO: Is this condition be already satisfied by the prepend vs append logic above?
 
-            list_node *prev = x_child->prev;
-            list_node *next = x_child->next;
-
-            if (prev != NULL) {
-                x_child->prev->next = x_child->next;
-            }
-
-            // Move linkable child to the rightmost position of the list
-            x_child->next->prev = x_child->prev;
-            x->children->tail->next = x_child;
-            x_child->prev = x->children->tail;
-            x_child->next = NULL;
-            x->children->tail = x_child;
-
-            x_child = next;
-        } else {
-            x_child = x_child->next;
-        }
-    }
-
+    // O(1)
     // Remove x from Q
-    // TODO: How to we do this in O(1)? :: Hacky O(N) solution for now...
-    queue_item *i = h->Q->head;
-    while (i != NULL) {
-        if (i->content == x) {
-            if (i == h->Q->head) {
-                h->Q->head = i->next;
-            }
-
-            if (i == h->Q->last) {
-                h->Q->last = i->prev;
-            }
-
-            if (i->prev) {
-                i->prev->next = i->next;
-            }
-
-            if (i->next) {
-                i->next->prev = i->prev;
-            }
-
-            h->Q->size--;
-            free(i);
-            break;
-        }
-        i = i->next;
-    }
+    queue_remove_node(h->Q, x->position_in_q);
 
     // Destroy z
     void *item = h->root->item;

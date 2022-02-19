@@ -22,7 +22,7 @@ void queue_del(queue *q) {
     free(q);
 }
 
-void queue_add(queue *q, void *item) {
+queue_item *queue_add(queue *q, void *item) {
     queue_item *item_to_add = item_new(item);
 
     if (q->size == 0) {
@@ -36,6 +36,32 @@ void queue_add(queue *q, void *item) {
     }
 
     q->size++;
+    return item_to_add;
+}
+
+void queue_remove_node(queue *q, queue_item *n) {
+    if (n == NULL) {
+        return NULL;
+    }
+    
+    if (n == q->head) {
+        q->head = n->next;
+    }
+
+    if (n == q->last) {
+        q->last = n->prev;
+    }
+
+    if (n->prev) {
+        n->prev->next = n->next;
+    }
+
+    if (n->next) {
+        n->next->prev = n->prev;
+    }
+
+    q->size--;
+    free(n);
 }
 
 void queue_merge_into(queue *q, queue *other) {
