@@ -9,6 +9,7 @@ void heap_node_destroy(heap_node *n);
 // Node property checks
 char is_linkable(heap_node *x);
 char is_active_root(heap_node *x);
+char is_active(heap_node *x);
 
 // Transformations
 void link(heap_node *x, heap_node *y);
@@ -58,12 +59,7 @@ heap *heap_meld(heap *h1, heap *h2) {
     }
 
     // Make all nodes in the tree rooted at x passive
-    // TODO: Make use of the active records to achieve O(1)
-    list_node *child = x->root->children->head;
-    while (child != NULL) {
-        ((heap_node *)(child->value))->is_active = 0;
-        child = child->next;
-    }
+    x->active_record.is_active = 0;
 
     // u->key < v->key
     heap_node *u, *v;
@@ -93,7 +89,7 @@ heap *heap_meld(heap *h1, heap *h2) {
 
     // Discard the irrelevant heap & update lesser_key_heap size
     lesser_key_heap->size += larger_key_heap->size;
-    free(larger_key_heap);
+    free(larger_key_heap); // TODO: After this, there will be nodes pointing at an active record that has been deallocated.
 
     // Do an active root reduction and a root degree reduction to the extent possible.
     
@@ -132,15 +128,15 @@ void heap_decrease_key(heap *h, heap_node *x, void *new_item) {
     link(x, h->root);
 
     // If x was an active node but not an active root
-    if (x->is_active && y->is_active) {
-        // x becomes an active root with loss zero and the rank of y is decreased by one
-        x->is_active = 1;
+    // x becomes an active root with loss zero and the rank of y is decreased by one
+    // Note: since x is active and the root (its new parent) is always passive, x naturally becomes an active root.
+    if (is_active(x) && is_active(y)) {
         x->loss = 0;
         y->rank--;
     }
 
     // If y is active but not an active root
-    if (y->is_active && y->parent->is_active) {
+    if (is_active(y) && !is_active_root(y)) {
         // the loss of y is increased by one.
         y->loss++;
     }
@@ -195,12 +191,16 @@ void *heap_pop(heap *h) {
     list_del_node(h->root->children, list_el_x);
 
     // If x is active then make x passive and all active children of x become active roots.
-    if (x->is_active) {
-        x->is_active = 0; // TODO: Use active records
+    if (is_active(x)) {
+        // Make x passive
+        // Note: By making x passive, all active children of x become active roots.
+        x->activity->ref_count -= 1;
+        x->activity = NULL;
     }
 
     // O(R) == O(log(N))
     // Make each of the other children of the root a child of x.
+    // Make the passive linkable children of x the rightmost children of x. // TODO: Is this condition be already satisfied by the prepend vs append logic above?
     while (h->root->children->head != NULL) {
         heap_node *child_node = h->root->children->head->value;
         
@@ -213,9 +213,6 @@ void *heap_pop(heap *h) {
         child_node->parent = x;
         list_del_first(h->root->children);
     }
-
-    // Make the passive linkable children of x the rightmost children of x.
-    // TODO: Is this condition be already satisfied by the prepend vs append logic above?
 
     // O(1)
     // Remove x from Q
@@ -265,10 +262,10 @@ void heap_node_destroy(heap_node *n) {
  * A passive node is linkable if all its children are passive.
  */
 char is_linkable(heap_node *x) {
-    if (!x->is_active) {
+    if (!is_active(x)) {
         list_node *child = x->children->head;
         while (child != NULL) {
-            if (((heap_node *)(child->value))->is_active) {
+            if (is_active(child->value)) {
                 return 0;
             }
             child = child->next;
@@ -279,7 +276,11 @@ char is_linkable(heap_node *x) {
 }
 
 char is_active_root(heap_node *x) {
-    return x->is_active && !x->parent->is_active;
+    return is_active(x) && !is_active(x->parent);
+}
+
+char is_active(heap_node *x) {
+    return x->activity != NULL && x->activity->is_active;
 }
 
 /**
@@ -294,7 +295,7 @@ void link(heap_node *x, heap_node *y) {
         list_del_node(x->parent->children, x->relative_position_to_siblings);
     }
 
-    if (x->is_active) {
+    if (is_active(x)) {
         // Prepend to y's child list
         x->relative_position_to_siblings = list_prepend(y->children, x);
     } else {
@@ -328,7 +329,7 @@ void active_root_reduction(heap *h, heap_node *active_root_x, heap_node *active_
     heap_node *rightmost_child = (heap_node *)list_get_last(lesser_root->children);
 
     // If z exists and is passive
-    if (rightmost_child != NULL && !rightmost_child->is_active) {
+    if (rightmost_child != NULL && !is_active(rightmost_child)) {
         link(rightmost_child, h->root); // Make z child of the root
     }
 }
@@ -367,7 +368,8 @@ char root_degree_reduction(heap *h) {
     heap_node *x = three_linkable_rightmost_nodes[0], *y = three_linkable_rightmost_nodes[1], *z = three_linkable_rightmost_nodes[2];
 
     // Mark x and y as active
-    x->is_active = y->is_active = 1;
+    x->activity = &(h->active_record); h->active_record.ref_count += 1;
+    y->activity = &(h->active_record); h->active_record.ref_count += 1;
 
     // Link z to y and link y to x
     link(z, y);
@@ -390,12 +392,14 @@ char root_degree_reduction(heap *h) {
  */
 void one_node_loss_reduction(heap *h, heap_node *x) {
     // applies if x->is_active && x->loss >= 2
+    if (!is_active(x) || x->loss < 2) {
+        return; // Nothing to do.
+    }
 
     heap_node *y = x->parent;
 
     // link x to the root and make it and active root with loss zero
     link(x, h->root);
-    x->is_active = 1;
     x->loss = 0;
 
     // decrease y rank by one

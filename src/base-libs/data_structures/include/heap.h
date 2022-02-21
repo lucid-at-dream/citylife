@@ -3,12 +3,20 @@
 #include "queue.h"
 #include "list.h"
 
+typedef struct _active_record {
+    // Nodes pointing to this record are active if and only if the flag is true.
+    char is_active;
+
+    // The number of nodes pointing to the record. If flag is false and ref-count is 0, then the node can be free'd
+    int ref_count;
+} active_record;
+
 typedef struct _heap_node {
     // Number of nodes below this one
     int size;
 
     // is active or passive?
-    char is_active; // TODO: Make this a pointer to an active record
+    active_record *activity;
 
     // Number of active children (if the node is active)
     int rank; // TODO: Should this be a pointer to the rank list?
@@ -41,6 +49,8 @@ typedef struct _heap {
 
     // Returns -1 if a < b, 1 if a > b and 0 if they're equal
     int (*compare)(const void *a, const void *b);
+
+    active_record active_record;
 
     // All nodes except the root are kept in this queue
     queue *Q;

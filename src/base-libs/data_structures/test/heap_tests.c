@@ -18,6 +18,10 @@ int int_compare(const void *a, const void *b) {
     return 0;
 }
 
+char is_active(heap_node *n) {
+    return n->activity != NULL && n->activity->is_active;
+}
+
 char check_node_structure(heap_node *node) {
     char assertion_error = 0;
 
@@ -26,8 +30,8 @@ char check_node_structure(heap_node *node) {
 
         while (c_ln != NULL) {
             heap_node *c = c_ln->value;
-            if (c->is_active) {
-                ASSERT_TRUE("No passive nodes to the left of active nodes", c_ln->prev == NULL || ((heap_node *)(c_ln->prev->value))->is_active);
+            if (is_active(c)) {
+                ASSERT_TRUE("No passive nodes to the left of active nodes", c_ln->prev == NULL || is_active(c_ln->prev->value));
             }
 
             assertion_error += check_node_structure(c);
@@ -47,7 +51,7 @@ char check_active_nodes_active_child_rank_plus_loss(heap_node *node) {
 
         while (c_ln != NULL) {
             heap_node *c = c_ln->value;
-            if (!c->is_active && !rightmost_found) {
+            if (!is_active(c) && !rightmost_found) {
                 rightmost_active_child = c_ln->prev;
                 rightmost_found = 1;
             }
@@ -59,7 +63,7 @@ char check_active_nodes_active_child_rank_plus_loss(heap_node *node) {
         }
         
         // Assert rank+loss of active children for active nodes.
-        if (node->is_active) {
+        if (is_active(node)) {
             int i = 0;
             while (rightmost_active_child != NULL) {
                 heap_node *c = rightmost_active_child->value;
@@ -72,10 +76,10 @@ char check_active_nodes_active_child_rank_plus_loss(heap_node *node) {
 }
 
 char is_linkable(heap_node *x) {
-    if (!x->is_active) {
+    if (!is_active(x)) {
         list_node *child = x->children->head;
         while (child != NULL) {
-            if (((heap_node *)(child->value))->is_active) {
+            if (is_active(child->value)) {
                 return 0;
             }
             child = child->next;
@@ -93,7 +97,7 @@ char check_structure(heap* h) {
 
     char assertion_error = 0;
 
-    ASSERT_FALSE("Root node is passive", h->root->is_active);
+    ASSERT_FALSE("Root node is passive", is_active(h->root));
 
     if (h->root->children != NULL && h->root->children->tail != NULL) {
         list_node *c_ln = h->root->children->tail;
@@ -186,7 +190,7 @@ char check_heap_order(heap_node *n, int (*cmp)(const void *, const void *)) {
 }
 
 char is_active_root(heap_node *x) {
-    return x->is_active && !x->parent->is_active; // heap->root is always passive. Should never NULL derreference.
+    return is_active(x) && !is_active(x->parent); // heap->root is always passive. Should never NULL derreference.
 }
 
 int count_active_roots(heap_node *n) {
