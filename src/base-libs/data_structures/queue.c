@@ -41,7 +41,7 @@ queue_item *queue_add(queue *q, void *item) {
 
 void queue_remove_node(queue *q, queue_item *n) {
     if (n == NULL) {
-        return NULL;
+        return;
     }
     
     if (n == q->head) {

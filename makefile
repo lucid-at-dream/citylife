@@ -1,7 +1,5 @@
 .PHONY: setup build test sonar clean
 
-TEST=map_tests
-
 default: build
 
 setup:
