@@ -60,13 +60,13 @@ void *list_del_last(list *);
  * Append an element to the end of the list with the given value.
  * complexity: O(1)
  */
-void list_append(list *, void *);
+list_node *list_append(list *, void *);
 
 /**
  * Prepend an element to the begining of the list with the given value.
  * complexity: O(1)
  */
-void list_prepend(list *, void *);
+list_node *list_prepend(list *, void *);
 
 /**
  * Delete the first element from the list with the given value.

@@ -205,9 +205,9 @@ void *heap_pop(heap *h) {
         heap_node *child_node = h->root->children->head->value;
         
         if (is_linkable(child_node)) {
-            list_append(x->children, child_node);
+            child_node->relative_position_to_siblings = list_append(x->children, child_node);
         } else {
-            list_prepend(x->children, child_node);
+            child_node->relative_position_to_siblings = list_prepend(x->children, child_node);
         }
 
         child_node->parent = x;
@@ -221,7 +221,7 @@ void *heap_pop(heap *h) {
     // Remove x from Q
     queue_remove_node(h->Q, x->position_in_q);
 
-    // Destroy z
+    // Destroy the root node and set it to x
     void *item = h->root->item;
     heap_node_destroy(h->root);
     h->root = x;
@@ -291,15 +291,15 @@ char is_active_root(heap_node *x) {
 void link(heap_node *x, heap_node *y) {
     // remove x from its parent's child list
     if (x->parent != NULL) {
-        list_del_element(x->parent->children, x);
+        list_del_node(x->parent->children, x->relative_position_to_siblings);
     }
 
     if (x->is_active) {
         // Prepend to y's child list
-        list_prepend(y->children, x);
+        x->relative_position_to_siblings = list_prepend(y->children, x);
     } else {
         // Append to y's child list
-        list_append(y->children, x);
+        x->relative_position_to_siblings = list_append(y->children, x);
     }
     x->parent = y;
     y->size = x->size + 1;
@@ -329,8 +329,7 @@ void active_root_reduction(heap *h, heap_node *active_root_x, heap_node *active_
 
     // If z exists and is passive
     if (rightmost_child != NULL && !rightmost_child->is_active) {
-        list_append(h->root->children, rightmost_child); // Make z child of the root
-        list_del_last(lesser_root->children); // Remove it from x's child list
+        link(rightmost_child, h->root); // Make z child of the root
     }
 }
 
@@ -375,8 +374,8 @@ char root_degree_reduction(heap *h) {
     link(y, x);
 
     // Make x the leftmost child of the root
-    list_del_element(h->root->children, x);
-    list_prepend(h->root->children, x);
+    list_del_node(h->root->children, x->relative_position_to_siblings);
+    x->relative_position_to_siblings = list_prepend(h->root->children, x);
 
     // Assign both x and y loss zero, and rank one and zero respectively
     x->loss = y->loss = 0;

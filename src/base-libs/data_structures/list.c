@@ -82,7 +82,7 @@ list_node *new_node_with_value(void *value) {
     return new_node;
 }
 
-void list_append(list *l, void *value) {
+list_node *list_append(list *l, void *value) {
     list_node *new_node = new_node_with_value(value);
 
     if (l->head == NULL) {
@@ -99,22 +99,27 @@ void list_append(list *l, void *value) {
     }
 
     l->size += 1;
+    return new_node;
 }
 
-void list_prepend(list *l, void *value) {
+list_node *list_prepend(list *l, void *value) {
     list_node *new_node = new_node_with_value(value);
 
     // If the list is empty set head = tail
     if (l->head == NULL) {
         l->tail = new_node;
         l->head = new_node;
+        new_node->prev = NULL;
+        new_node->next = NULL;
     } else {
+        new_node->prev = NULL;
         new_node->next = l->head;
         l->head->prev = new_node;
         l->head = new_node;
     }
 
     l->size += 1;
+    return new_node;
 }
 
 char list_del_node(list *l, list_node *n) {

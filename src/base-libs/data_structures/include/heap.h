@@ -22,6 +22,10 @@ typedef struct _heap_node {
     // The parent of the node
     struct _heap_node *parent;
 
+    // The relative position of the node with respect to its siblings in the parent node.
+    list_node *relative_position_to_siblings; // TODO: Update and use this value
+
+    // The node's position in heap->Q
     queue_item *position_in_q;
 
     // List of the children of this node
