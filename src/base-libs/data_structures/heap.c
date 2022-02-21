@@ -307,34 +307,8 @@ void link(heap_node *x, heap_node *y) {
 }
 
 /**
- * In this transform the number of active roots is decreased by one and the
- * degree of the root possibly increased by one. 
- */
-void active_root_reduction(heap *h, heap_node *active_root_x, heap_node *active_root_y) {
-    // Compare root keys
-    int rel = h->compare(active_root_x->item, active_root_y->item);
-    heap_node *lesser_root, *larger_root;
-    if (rel < 0) {
-        lesser_root = active_root_x;
-        larger_root = active_root_y;
-    } else {
-        lesser_root = active_root_y;
-        larger_root = active_root_x;
-    }
-
-    link(larger_root, lesser_root);
-    lesser_root->rank++;
-
-    // Get rightmost child of x (call it z).
-    heap_node *rightmost_child = (heap_node *)list_get_last(lesser_root->children);
-
-    // If z exists and is passive
-    if (rightmost_child != NULL && !is_active(rightmost_child)) {
-        link(rightmost_child, h->root); // Make z child of the root
-    }
-}
-
-/**
+ * O(1)
+ * 
  * In this transform both x and y change from being passive to active with loss
  * zero, both get one more child, and x becomes a new active root. The degree
  * of the root decreases by two and the number of active roots increases by one.
@@ -390,7 +364,7 @@ char root_degree_reduction(heap *h) {
         three_linkable_rightmost_nodes[1] = three_linkable_rightmost_nodes[2];
         three_linkable_rightmost_nodes[2] = tmp;
     }
-    
+
     heap_node *x = three_linkable_rightmost_nodes[0], *y = three_linkable_rightmost_nodes[1], *z = three_linkable_rightmost_nodes[2];
 
     // Mark x and y as active
@@ -411,6 +385,34 @@ char root_degree_reduction(heap *h) {
     y->rank = 0;
 
     return 1;
+}
+
+/**
+ * In this transform the number of active roots is decreased by one and the
+ * degree of the root possibly increased by one.
+ */
+void active_root_reduction(heap *h, heap_node *active_root_x, heap_node *active_root_y) {
+    // Compare root keys
+    int rel = h->compare(active_root_x->item, active_root_y->item);
+    heap_node *lesser_root, *larger_root;
+    if (rel < 0) {
+        lesser_root = active_root_x;
+        larger_root = active_root_y;
+    } else {
+        lesser_root = active_root_y;
+        larger_root = active_root_x;
+    }
+
+    link(larger_root, lesser_root);
+    lesser_root->rank++;
+
+    // Get rightmost child of x (call it z).
+    heap_node *rightmost_child = (heap_node *)list_get_last(lesser_root->children);
+
+    // If z exists and is passive
+    if (rightmost_child != NULL && !is_active(rightmost_child)) {
+        link(rightmost_child, h->root); // Make z child of the root
+    }
 }
 
 /**
