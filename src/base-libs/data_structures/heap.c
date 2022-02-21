@@ -305,7 +305,7 @@ char is_active_root(heap_node *x) {
 }
 
 char is_active(heap_node *x) {
-    return x->activity != NULL && x->activity->is_active;
+    return x != NULL && x->activity != NULL && x->activity->is_active;
 }
 
 /**
