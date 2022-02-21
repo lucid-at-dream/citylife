@@ -354,8 +354,10 @@ char root_degree_reduction(heap *h) {
         if (is_linkable(child->value)) {
             three_linkable_rightmost_nodes[idx] = child->value;
             idx++;
+        } else {
+            break;
         }
-        child = child->next;
+        child = child->prev;
     }
 
     // Unable to apply transformation
@@ -364,7 +366,31 @@ char root_degree_reduction(heap *h) {
     }
 
     // sort them by key: x.key < y.key < z.key
-    qsort(three_linkable_rightmost_nodes, 3, sizeof(heap_node *), h->compare); // TODO: This is comparing the nodes, not the items
+
+    // if a[0] > a[1], switch them
+    if (h->compare(three_linkable_rightmost_nodes[0]->item, three_linkable_rightmost_nodes[1]->item) > 0) {
+        heap_node *tmp = three_linkable_rightmost_nodes[0];
+        three_linkable_rightmost_nodes[0] = three_linkable_rightmost_nodes[1];
+        three_linkable_rightmost_nodes[1] = tmp;
+    }
+
+    // if a[0] > a[2], make a[0] = a[2]; a[1] = a[0]; a[2] = a[1]
+    if (h->compare(three_linkable_rightmost_nodes[0]->item, three_linkable_rightmost_nodes[2]->item) > 0) {
+        heap_node *tmp0 = three_linkable_rightmost_nodes[0];
+        three_linkable_rightmost_nodes[0] = three_linkable_rightmost_nodes[2];
+
+        heap_node *tmp1 = three_linkable_rightmost_nodes[1];
+        three_linkable_rightmost_nodes[1] = tmp0;
+        three_linkable_rightmost_nodes[2] = tmp1;
+    }
+
+    // if a[1] > a[2], switch them
+    if (h->compare(three_linkable_rightmost_nodes[1]->item, three_linkable_rightmost_nodes[2]->item) > 0) {
+        heap_node *tmp = three_linkable_rightmost_nodes[1];
+        three_linkable_rightmost_nodes[1] = three_linkable_rightmost_nodes[2];
+        three_linkable_rightmost_nodes[2] = tmp;
+    }
+    
     heap_node *x = three_linkable_rightmost_nodes[0], *y = three_linkable_rightmost_nodes[1], *z = three_linkable_rightmost_nodes[2];
 
     // Mark x and y as active
