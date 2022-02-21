@@ -108,10 +108,10 @@ char check_structure(heap* h) {
             c = c_ln != NULL ? c_ln->value : NULL;
         }
 
-        while(c != NULL) {
+        while(c_ln != NULL) {
+            c = c_ln->value;
             ASSERT_FALSE("Linkable nodes are the rightmost children of the root", is_linkable(c));
             c_ln = c_ln->prev;
-            c = c_ln->value;
         }
     }
 
@@ -360,12 +360,13 @@ TEST_CASE(test_heap_push_multiple_elements_assert_min_popped, {
     heap_destroy(h);
 })
 
-TEST_CASE(test_heap_sort_of_random_elements, {
-    int total_elements = 200;
+char test_heap_sort_of_random_elements(int seed, int N) {
+    int total_elements = N;
+    char assertion_error = 0;
 
     heap *h = heap_new(int_compare);
 
-    srandom(0);
+    srandom(seed);
 
     for (int i = 0; i < total_elements; i++) {
         int r = (int)random();
@@ -383,7 +384,29 @@ TEST_CASE(test_heap_sort_of_random_elements, {
     }
 
     heap_destroy(h);
-})
+
+    return assertion_error;
+}
+
+TEST_CASE(test_heap_sort_0, {
+    assertion_error = test_heap_sort_of_random_elements(0, 250);
+});
+
+TEST_CASE(test_heap_sort_1, {
+    assertion_error = test_heap_sort_of_random_elements(1, 250);
+});
+
+TEST_CASE(test_heap_sort_2, {
+    assertion_error = test_heap_sort_of_random_elements(2, 250);
+});
+
+TEST_CASE(test_heap_sort_3, {
+    assertion_error = test_heap_sort_of_random_elements(3, 250);
+});
+
+TEST_CASE(test_heap_sort_4, {
+    assertion_error = test_heap_sort_of_random_elements(4, 250);
+});
 
 // TODO: For every write operation of the heap, assert the invariants.
 
@@ -393,5 +416,9 @@ TEST_SUITE(
     RUN_TEST("Test push multiple items in reverse order and check min.", &test_heap_push_multiple_elements_in_reverse_order_assert_min_peek),
     RUN_TEST("Test push multiple items in random order and check min.", &test_heap_push_multiple_elements_in_random_order_assert_min_peek),
     RUN_TEST("Test push multiple items in order and pop min all of them.", &test_heap_push_multiple_elements_assert_min_popped),
-    // RUN_TEST("Test heap sorting several random elements.", &test_heap_sort_of_random_elements),
+    // RUN_TEST("Test heap sorting several random elements.", &test_heap_sort_0),
+    // RUN_TEST("Test heap sorting several random elements.", &test_heap_sort_1),
+    // RUN_TEST("Test heap sorting several random elements.", &test_heap_sort_2),
+    // RUN_TEST("Test heap sorting several random elements.", &test_heap_sort_3),
+    // RUN_TEST("Test heap sorting several random elements.", &test_heap_sort_4),
 )

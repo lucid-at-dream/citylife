@@ -22,6 +22,9 @@ heap *heap_new(int (*compare)(const void *a, const void *b)) {
     heap *h = (heap *)calloc(1, sizeof(heap));
     h->compare = compare;
     h->Q = queue_new();
+    h->active_record = (active_record *)calloc(1, sizeof(active_record));
+    h->active_record->is_active = 1;
+    h->root = NULL;
     return h;
 }
 
@@ -32,7 +35,6 @@ void *heap_peek(heap *h) {
 heap *heap_push(heap *h, void *item) {
     heap_node *n = heap_node_new();
     n->item = item;
-    n->size = 0;
 
     if (h->root == NULL) {
         h->root = n;
@@ -59,7 +61,11 @@ heap *heap_meld(heap *h1, heap *h2) {
     }
 
     // Make all nodes in the tree rooted at x passive
-    x->active_record.is_active = 0;
+    x->active_record->is_active = 0;
+    if (x->active_record->ref_count == 0) {
+        free(x->active_record);
+        x->active_record = y->active_record;
+    }
 
     // u->key < v->key
     heap_node *u, *v;
@@ -89,7 +95,7 @@ heap *heap_meld(heap *h1, heap *h2) {
 
     // Discard the irrelevant heap & update lesser_key_heap size
     lesser_key_heap->size += larger_key_heap->size;
-    free(larger_key_heap); // TODO: After this, there will be nodes pointing at an active record that has been deallocated.
+    free(larger_key_heap);
 
     // Do an active root reduction and a root degree reduction to the extent possible.
     
@@ -194,8 +200,13 @@ void *heap_pop(heap *h) {
     if (is_active(x)) {
         // Make x passive
         // Note: By making x passive, all active children of x become active roots.
-        x->activity->ref_count -= 1;
+        active_record *a_record = x->activity;
+        a_record->ref_count -= 1;
+        if (!a_record->is_active && a_record->ref_count == 0) {
+            free(a_record);
+        }
         x->activity = NULL;
+    } else {
     }
 
     // O(R) == O(log(N))
@@ -235,19 +246,29 @@ void *heap_pop(heap *h) {
 
 void heap_destroy(heap *h) {
     queue_del(h->Q);
-    if (h->root) {
+
+    if (h->root != NULL) {
         heap_node_destroy(h->root);
     }
+
+
+    if (h->active_record->ref_count <= 0) {
+        free(h->active_record);
+    }
+
     free(h);
 }
 
 heap_node *heap_node_new() {
     heap_node *n = (heap_node *)calloc(1, sizeof(heap_node));
     n->children = list_new();
+    n->size = 0;
+    n->activity = NULL;
     return n;
 }
 
 void heap_node_destroy(heap_node *n) {
+    
     list_node *child = n->children->head;
     while (child != NULL) {
         heap_node_destroy(child->value);
@@ -255,6 +276,10 @@ void heap_node_destroy(heap_node *n) {
     }
 
     list_destroy(n->children);
+    
+    if (is_active(n)) {
+        n->activity->ref_count -= 1;
+    }
     free(n);
 }
 
@@ -368,8 +393,8 @@ char root_degree_reduction(heap *h) {
     heap_node *x = three_linkable_rightmost_nodes[0], *y = three_linkable_rightmost_nodes[1], *z = three_linkable_rightmost_nodes[2];
 
     // Mark x and y as active
-    x->activity = &(h->active_record); h->active_record.ref_count += 1;
-    y->activity = &(h->active_record); h->active_record.ref_count += 1;
+    x->activity = h->active_record; h->active_record->ref_count += 1;
+    y->activity = h->active_record; h->active_record->ref_count += 1;
 
     // Link z to y and link y to x
     link(z, y);

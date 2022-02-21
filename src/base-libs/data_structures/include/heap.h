@@ -50,7 +50,7 @@ typedef struct _heap {
     // Returns -1 if a < b, 1 if a > b and 0 if they're equal
     int (*compare)(const void *a, const void *b);
 
-    active_record active_record;
+    active_record *active_record;
 
     // All nodes except the root are kept in this queue
     queue *Q;
