@@ -19,7 +19,7 @@ int int_compare(const void *a, const void *b) {
 }
 
 char is_active(heap_node *n) {
-    return n->activity != NULL && n->activity->is_active;
+    return n != NULL && n->activity != NULL && n->activity->is_active;
 }
 
 char check_node_structure(heap_node *node) {
