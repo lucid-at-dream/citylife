@@ -67,7 +67,8 @@ char check_active_nodes_active_child_rank_plus_loss(heap_node *node) {
             int i = 0;
             while (rightmost_active_child != NULL) {
                 heap_node *c = rightmost_active_child->value;
-                ASSERT_TRUE("i-th rightmost active child has rank+loss at least i-1", c->rank + c->loss <= i);
+                rank_list_record *rank = c->rank->value;
+                ASSERT_TRUE("i-th rightmost active child has rank+loss at least i-1", rank->value + c->loss <= i);
                 rightmost_active_child = rightmost_active_child->prev;
             }
         }

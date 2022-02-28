@@ -18,14 +18,71 @@ char root_degree_reduction(heap *h);
 void one_node_loss_reduction(heap *h, heap_node *x);
 void two_node_loss_reduction(heap *h, heap_node *a, heap_node *b);
 
+// Node rank operations
+void increase_node_rank(heap *h, heap_node *n);
+void decrease_node_rank(heap *h, heap_node *n);
+void set_node_rank(heap *h, heap_node *n, int rank_value);
+void new_rank_list_record(heap *h);
+
 heap *heap_new(int (*compare)(const void *a, const void *b)) {
     heap *h = (heap *)calloc(1, sizeof(heap));
     h->compare = compare;
+    h->root = NULL;
+
     h->Q = queue_new();
+    
     h->active_record = (active_record *)calloc(1, sizeof(active_record));
     h->active_record->is_active = 1;
-    h->root = NULL;
+
+    h->rank_list = list_new();
+    new_rank_list_record(h); // Create rank 0 record
+
     return h;
+}
+
+void free_rank_list(void **record) {
+    free(*record);
+}
+
+void heap_destroy(heap *h) {
+    queue_del(h->Q);
+
+    if (h->root != NULL) {
+        heap_node_destroy(h->root);
+    }
+
+    if (h->active_record->ref_count <= 0) {
+        free(h->active_record);
+    }
+
+    list_foreach(h->rank_list, free_rank_list);
+    list_destroy(h->rank_list);
+
+    free(h);
+}
+
+heap_node *heap_node_new() {
+    heap_node *n = (heap_node *)calloc(1, sizeof(heap_node));
+    n->children = list_new();
+    n->size = 0;
+    n->activity = NULL;
+    return n;
+}
+
+void heap_node_destroy(heap_node *n) {
+    
+    list_node *child = n->children->head;
+    while (child != NULL) {
+        heap_node_destroy(child->value);
+        child = child->next;
+    }
+
+    list_destroy(n->children);
+    
+    if (is_active(n)) {
+        n->activity->ref_count -= 1;
+    }
+    free(n);
 }
 
 void *heap_peek(heap *h) {
@@ -93,8 +150,12 @@ heap *heap_meld(heap *h1, heap *h2) {
     queue_merge_into(Q, y->Q);
     lesser_key_heap->Q = Q;
 
-    // Discard the irrelevant heap & update lesser_key_heap size
+    // Update lesser_key_heap size
     lesser_key_heap->size += larger_key_heap->size;
+    
+    // Discard the irrelevant heap
+    list_foreach(larger_key_heap->rank_list, free_rank_list);
+    list_destroy(larger_key_heap->rank_list);
     free(larger_key_heap);
 
     // Do an active root reduction and a root degree reduction to the extent possible.
@@ -138,7 +199,7 @@ void heap_decrease_key(heap *h, heap_node *x, void *new_item) {
     // Note: since x is active and the root (its new parent) is always passive, x naturally becomes an active root.
     if (is_active(x) && is_active(y)) {
         x->loss = 0;
-        y->rank--;
+        decrease_node_rank(h, y);
     }
 
     // If y is active but not an active root
@@ -242,45 +303,6 @@ void *heap_pop(heap *h) {
     // TODO Do active root reductions and root degree reductions in any order until none of either is possible.
 
     return item;
-}
-
-void heap_destroy(heap *h) {
-    queue_del(h->Q);
-
-    if (h->root != NULL) {
-        heap_node_destroy(h->root);
-    }
-
-
-    if (h->active_record->ref_count <= 0) {
-        free(h->active_record);
-    }
-
-    free(h);
-}
-
-heap_node *heap_node_new() {
-    heap_node *n = (heap_node *)calloc(1, sizeof(heap_node));
-    n->children = list_new();
-    n->size = 0;
-    n->activity = NULL;
-    return n;
-}
-
-void heap_node_destroy(heap_node *n) {
-    
-    list_node *child = n->children->head;
-    while (child != NULL) {
-        heap_node_destroy(child->value);
-        child = child->next;
-    }
-
-    list_destroy(n->children);
-    
-    if (is_active(n)) {
-        n->activity->ref_count -= 1;
-    }
-    free(n);
 }
 
 /**
@@ -392,6 +414,11 @@ char root_degree_reduction(heap *h) {
 
     heap_node *x = three_linkable_rightmost_nodes[0], *y = three_linkable_rightmost_nodes[1], *z = three_linkable_rightmost_nodes[2];
 
+    // Assign both x and y loss zero, and rank one and zero respectively
+    x->loss = y->loss = 0;
+    set_node_rank(h, x, 1);
+    set_node_rank(h, y, 0);
+
     // Mark x and y as active
     x->activity = h->active_record; h->active_record->ref_count += 1;
     y->activity = h->active_record; h->active_record->ref_count += 1;
@@ -403,11 +430,6 @@ char root_degree_reduction(heap *h) {
     // Make x the leftmost child of the root
     list_del_node(h->root->children, x->relative_position_to_siblings);
     x->relative_position_to_siblings = list_prepend(h->root->children, x);
-
-    // Assign both x and y loss zero, and rank one and zero respectively
-    x->loss = y->loss = 0;
-    x->rank = 1;
-    y->rank = 0;
 
     return 1;
 }
@@ -429,7 +451,7 @@ void active_root_reduction(heap *h, heap_node *active_root_x, heap_node *active_
     }
 
     link(larger_root, lesser_root);
-    lesser_root->rank++;
+    increase_node_rank(h, lesser_root);
 
     // Get rightmost child of x (call it z).
     heap_node *rightmost_child = (heap_node *)list_get_last(lesser_root->children);
@@ -456,7 +478,7 @@ void one_node_loss_reduction(heap *h, heap_node *x) {
     x->loss = 0;
 
     // decrease y rank by one
-    y->rank--;
+    decrease_node_rank(h, y);
 
     // if y is not an active root the loss of y is increased by one.
     if (!is_active_root(y)) {
@@ -480,11 +502,97 @@ void two_node_loss_reduction(heap *h, heap_node *a, heap_node *b) {
     heap_node *z = y->parent;
 
     link(y, x);
-    x->rank++;
+    increase_node_rank(h, x);
     x->loss = y->loss = 0;
 
-    z->rank--;
+    decrease_node_rank(h, z);
     if (!is_active_root(z)) {
         z->loss++;
     }
+}
+
+void increase_node_rank(heap *h, heap_node *n) {
+
+    if (!is_active(n)) {
+        return; // Not Applicable
+    }
+
+    if (is_active_root(n) || n->loss > 0) {
+        // Node rank points to a fix-list node.
+        // TODO: How do we handle this scenario?
+        return; // TODO: Fix-List
+    }
+    
+    rank_list_record *current_rank = (rank_list_record *)(n->rank->value);
+    current_rank->ref_count--;
+
+    if (n->rank->prev == NULL) {
+        // There's no rank node for the rank we want, must be created
+        new_rank_list_record(h);
+    }
+
+    list_node *target_rank = n->rank->prev;
+    ((rank_list_record *)(target_rank->value))->ref_count += 1;
+    n->rank = target_rank;
+}
+
+void decrease_node_rank(heap *h, heap_node *n) {
+
+    if (!is_active(n)) {
+        return; // Not Applicable
+    }
+
+    if (is_active_root(n) || n->loss > 0) {
+        // Node rank points to a fix-list node.
+        // TODO: How do we handle this scenario?
+        return; // TODO: Fix-List
+    }
+
+    if (n->rank->next == NULL) {
+        // Node is already at rank 0 and cannot be decreased any further
+        return;
+    }
+
+    list_node *old_rank = n->rank;
+    rank_list_record *old_rank_node = old_rank->value;
+    old_rank_node->ref_count--;
+
+    n->rank = n->rank->next;
+    rank_list_record *new_rank_node = n->rank->value;
+    new_rank_node->ref_count++;
+}
+
+void set_node_rank(heap *h, heap_node *n, int rank_value) {
+
+    char active = is_active(n);
+
+    if (is_active_root(n) || (active && n->loss > 0)) {
+        // Node rank points to a fix-list node.
+        // TODO: How do we handle this scenario?
+        // TODO: Fix-List
+
+    } else if (active){
+        // Then n->rank should be pointing to a rank list node.
+        rank_list_record *old_rank_node = n->rank->value;
+        old_rank_node->ref_count--;
+    }
+
+    n->rank = h->rank_list->tail; // Set the node's rank to 0;
+    for (int i = 0; i < rank_value; i++) { // Increase node's rank as needed.
+        if (n->rank->prev == NULL) {
+            // There's no rank node for the rank we want, must be created
+            new_rank_list_record(h);
+        }        
+        n->rank = n->rank->prev;
+    }
+    rank_list_record *new_rank_node = n->rank->value;
+    new_rank_node->ref_count++;
+}
+
+void new_rank_list_record(heap *h) {
+    rank_list_record *new_rank = calloc(1, sizeof(rank_list_record));
+    new_rank->active_roots = NULL; // TODO: Fix-List
+    new_rank->loss = NULL; // TODO: Fix-List
+    new_rank->ref_count = 0;
+    list_prepend(h->rank_list, new_rank);
 }

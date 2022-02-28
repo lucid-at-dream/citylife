@@ -22,16 +22,19 @@ struct _fix_list_record {
     heap_node *node;
 
     // A pointer to the record in the rank-list corresponding to the rank of this node.
-    rank_list_record *rank;
+    list_node *rank;
 };
 
 struct _rank_list_record {
     
+    // The rank to which this rank record refers to.
+    int value;
+
     // A pointer to a record in the fix-list for an active node with rank r and positive loss. NULL if no such node exists.
-    fix_list_record *loss;
+    list_node *loss;
     
     // A pointer to a record in the fix-list for an active root with rank r. NULL if no such node exists.
-    fix_list_record *active_roots;
+    list_node *active_roots;
     
     // The number of node records and fix-list records pointing to this record. 
     // If the leftmost record on the rank-list gets a ref-count = 0, then the record is deleted from the rank-list and is freed.
@@ -39,26 +42,31 @@ struct _rank_list_record {
 };
 
 struct _heap_node {
+
+    // The item being stored in this heap node
+    void *item;
+
+    // If the node is passive, the value of the pointer is not defined.
+    // If the node is an active root or an active node with positive loss (i.e. it is on the fix-list), rank
+    // points to the corresponding record in the fix-list.
+    // Otherwise rank points to the record in the rank-list corresponding to the rank of the node.
+    // (The cases can be distinguished using the active field of the node and the parent together with the loss field). 
+    list_node *rank; // TODO: Maintain this up to date.
+
     // Number of nodes below this one
     int size;
-
-    // is active or passive?
-    active_record *activity;
-
-    // Number of active children (if the node is active)
-    int rank; // TODO: Should this be a pointer to the rank list?
 
     // ??? Total loss of an heap is the sum of the loss over all active nodes
     unsigned loss; // TODO: Is this being correctly updated?
 
-    // The item being stored in this heap node
-    void *item;
+    // is active or passive?
+    active_record *activity;
 
     // The parent of the node
     struct _heap_node *parent;
 
     // The relative position of the node with respect to its siblings in the parent node.
-    list_node *relative_position_to_siblings; // TODO: Update and use this value
+    list_node *relative_position_to_siblings;
 
     // The node's position in heap->Q
     queue_item *position_in_q;
@@ -84,7 +92,7 @@ struct _heap {
     queue *Q;
 
     // A pointer to the rightmost record in the rank-list.
-    list *rank_list;
+    list *rank_list; // TODO: Maintain this up to date.
 
     // A pointer to the rightmost node in the fix-list
     list *fix_list;
