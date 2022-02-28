@@ -3,6 +3,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+// TODO: Maintain fix-list up to date
+// TODO: Review transformations and add the article's text as comments
+// TODO: Apply transformations when possible
+// TODO: Implement an heap push operation without having to meld (optimization)
+
 heap_node *heap_node_new();
 void heap_node_destroy(heap_node *n);
 
@@ -309,7 +314,15 @@ void *heap_pop(heap *h) {
  * A passive node is linkable if all its children are passive.
  */
 char is_linkable(heap_node *x) {
+    if (x == NULL) {
+        return 0;
+    }
+
     if (!is_active(x)) {
+        if (x->children == NULL) {
+            return 1;
+        }
+
         list_node *child = x->children->head;
         while (child != NULL) {
             if (is_active(child->value)) {
@@ -523,6 +536,11 @@ void increase_node_rank(heap *h, heap_node *n) {
         return; // TODO: Fix-List
     }
     
+    if (n->rank == NULL) {
+        // Unexpected! An active node with loss <= 0 should be pointing to a rank record.
+        return;
+    }
+
     rank_list_record *current_rank = (rank_list_record *)(n->rank->value);
     current_rank->ref_count--;
 
@@ -546,6 +564,11 @@ void decrease_node_rank(heap *h, heap_node *n) {
         // Node rank points to a fix-list node.
         // TODO: How do we handle this scenario?
         return; // TODO: Fix-List
+    }
+
+    if (n->rank == NULL) {
+        // Unexpected! An active node with loss <= 0 should be pointing to a rank record.
+        return;
     }
 
     if (n->rank->next == NULL) {
@@ -578,6 +601,12 @@ void set_node_rank(heap *h, heap_node *n, int rank_value) {
     }
 
     n->rank = h->rank_list->tail; // Set the node's rank to 0;
+
+    if (n->rank == NULL) {
+        // Error. This should never happen.
+        return;
+    }
+
     for (int i = 0; i < rank_value; i++) { // Increase node's rank as needed.
         if (n->rank->prev == NULL) {
             // There's no rank node for the rank we want, must be created

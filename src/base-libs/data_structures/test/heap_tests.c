@@ -77,7 +77,15 @@ char check_active_nodes_active_child_rank_plus_loss(heap_node *node) {
 }
 
 char is_linkable(heap_node *x) {
+    if (x == NULL) {
+        return 0;
+    }
+
     if (!is_active(x)) {
+        if (x->children == NULL) {
+            return 1;
+        }
+
         list_node *child = x->children->head;
         while (child != NULL) {
             if (is_active(child->value)) {
