@@ -235,7 +235,7 @@ char check_total_number_of_active_roots(heap *h) {
 
     int active_root_count = count_active_roots(h->root);
 
-    ASSERT_TRUE("The total number of active roots is at most R + 1", active_root_count <= R + 1);
+    ASSERT_INT_LESS_THAN("The total number of active roots is at most R + 1", active_root_count, R + 2);
     
     return assertion_error;
 }
@@ -284,7 +284,7 @@ char check_root_degree(heap *h) {
     double R = 2 * log2(h->size) + 6;
 
     if (h->root->children != NULL) {
-        ASSERT_TRUE("The maximum degree of the root is R + 3", h->root->children->size <= R + 3);
+        ASSERT_INT_LESS_THAN("The maximum degree of the root is R + 3", h->root->children->size, R + 4);
     }
 
     return assertion_error;

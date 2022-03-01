@@ -2,6 +2,8 @@
 
 #define ASSERT_INT_EQUALS(msg, actual, expected) assertion_error += assert_int_equals(msg, actual, expected);
 
+#define ASSERT_INT_LESS_THAN(msg, actual, expected) assertion_error += assert_int_less_than(msg, actual, expected);
+
 #define ASSERT_TRUE(msg, expr) assertion_error += assert_true(msg, expr);
 
 #define ASSERT_FALSE(msg, expr) assertion_error += assert_false(msg, expr);
