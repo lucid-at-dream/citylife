@@ -42,6 +42,8 @@ heap *heap_new(int (*compare)(const void *a, const void *b)) {
     h->rank_list = list_new();
     new_rank_list_record(h); // Create rank 0 record
 
+    h->fix_list = list_new();
+
     return h;
 }
 
@@ -62,6 +64,8 @@ void heap_destroy(heap *h) {
 
     list_foreach(h->rank_list, free_rank_list);
     list_destroy(h->rank_list);
+
+    list_destroy(h->fix_list);
 
     free(h);
 }
@@ -162,6 +166,7 @@ heap *heap_meld(heap *h1, heap *h2) {
     // Discard the irrelevant heap
     list_foreach(larger_key_heap->rank_list, free_rank_list);
     list_destroy(larger_key_heap->rank_list);
+    list_destroy(larger_key_heap->fix_list);
     free(larger_key_heap);
 
     // Do an active root reduction and a root degree reduction to the extent possible.

@@ -17,14 +17,6 @@ struct _active_record {
     int ref_count;
 };
 
-struct _fix_list_record {
-    // A pointer to the node record for the node.
-    heap_node *node;
-
-    // A pointer to the record in the rank-list corresponding to the rank of this node.
-    list_node *rank;
-};
-
 struct _rank_list_record {
     
     // The rank to which this rank record refers to.
@@ -51,12 +43,12 @@ struct _heap_node {
     // points to the corresponding record in the fix-list.
     // Otherwise rank points to the record in the rank-list corresponding to the rank of the node.
     // (The cases can be distinguished using the active field of the node and the parent together with the loss field). 
-    list_node *rank; // TODO: Maintain this up to date.
+    list_node *rank;
 
     // Number of nodes below this one
     int size;
 
-    // ??? Total loss of an heap is the sum of the loss over all active nodes
+    // Total loss of an heap is the sum of the loss over all active nodes
     unsigned loss; // TODO: Is this being correctly updated?
 
     // is active or passive?
@@ -92,9 +84,33 @@ struct _heap {
     queue *Q;
 
     // A pointer to the rightmost record in the rank-list.
-    list *rank_list; // TODO: Maintain this up to date.
+    list *rank_list;
 
-    // A pointer to the rightmost node in the fix-list
+    /* We maintain all active nodes that potentially could participate in one of the transformations from 
+     * Section 3 (i.e. active roots and active nodes with positive loss) in a list called fix-list. Each node
+     * with rank k on the fixlist points to node k of the rank-list. The fix-list is divided left-to-right 
+     * into four parts (1-4), where Parts 1-2 contain active roots and Parts 3-4 contain nodes with positive loss.
+     * 
+     * Part 1 
+     * contains the active roots of active-root transformable ranks. All the active roots of the same rank
+     * are adjacent, and one of the nodes has a pointer from the corresponding node of the rank-list.
+     * 
+     * Part 2 
+     * contains the remaining active roots. Each node has a pointer from the corresponding node of the rank-list. 
+     * 
+     * Part 3 
+     * contains active nodes with loss one and a rank that is not loss-transformable. Each node of this part has
+     * a pointer from the corresponding node of the rank-list. 
+     * 
+     * Part 4
+     * contains all the active nodes of loss transformable rank. As in Part 1, all nodes of equal rank are adjacent
+     * and one of the nodes is pointed to by the corresponding node of the rank-list. Observe that for some ranks 
+     * there may exist only one node in Part 4 (because if the loss of a node is at least two, its rank is loss-transformable).
+     *
+     * Notes:
+     *  - We call a rank active-root transformable, if there are at least two active roots of that rank. 
+     *  - We call a rank loss transformable, if the total loss of the nodes of that rank is at least two.
+     */
     list *fix_list;
 
     // A pointer to the leftmost node in the fix-list with a positive loss, if such a node exists. Otherwise it is NULL.
