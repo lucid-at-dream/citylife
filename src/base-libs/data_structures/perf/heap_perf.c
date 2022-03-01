@@ -23,9 +23,10 @@ PERF_TEST(test_heap_sort_of_random_elements, {
 
     srandom(0);
 
+    heap_node *node;
     for (int i = 0; i < total_elements; i++) {
         int r = (int)random();
-        h = heap_push(h, r);
+        h = heap_push(h, r, &node);
     }
 
     for (int i = 0; i < total_elements; i++) {

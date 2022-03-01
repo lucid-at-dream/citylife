@@ -105,7 +105,7 @@ heap *heap_new(int (*compare)(const void *a, const void *b));
 
 void heap_destroy(heap *h);
 
-heap *heap_push(heap *h, void *item);
+heap *heap_push(heap *h, void *item, heap_node **node);
 
 heap *heap_meld(heap *h1, heap *h2);
 

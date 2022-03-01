@@ -94,9 +94,10 @@ void *heap_peek(heap *h) {
     return h->root->item;
 }
 
-heap *heap_push(heap *h, void *item) {
+heap *heap_push(heap *h, void *item, heap_node **node) {
     heap_node *n = heap_node_new();
     n->item = item;
+    *node = n;
 
     if (h->root == NULL) {
         h->root = n;
