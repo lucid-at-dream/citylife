@@ -31,6 +31,8 @@ TEST_CASE(test_point_parsing, {
     assertion_error += test_parse_single_point(876.3234,1368.32173);
 })
 
+// TODO: Add coverage for the remaining data structures
+
 TEST_SUITE(
     RUN_TEST("Test parsing points.", &test_point_parsing),
 )
