@@ -3,7 +3,7 @@
 
   #include "geometry.h"
 
-  #include "y.tab.h"
+  #include "wkt.y.tab.h"
 
   extern geometry *geom;
 
@@ -23,7 +23,7 @@
 "("                           colno += strlen(yytext); return _LPAR_;
 ")"                           colno += strlen(yytext); return _RPAR_;
 
-[-+]?[0-9]*\.?[0-9]+          yylval.numberlit=atof(yytext); colno += strlen(yytext); return _NUMBERLIT_;
+[-+]?[0-9]*\.?[0-9]+          yylval.numberlit=strtold(yytext, NULL); colno += strlen(yytext); return _NUMBERLIT_;
 
 <<EOF>>                     return 0;
 
@@ -33,7 +33,7 @@
 
 %%
 
-geometry *lyWktParse(char *wkt){
+geometry *geometry_from_wkt(char *wkt){
     YY_BUFFER_STATE buff = yy_scan_string(wkt);
     yyparse();
     yy_delete_buffer(buff);

@@ -1,4 +1,6 @@
 %{
+    #include <stdlib.h>
+    #include <stdio.h>
     #include "geometry.h"
     #include "dynarray.h"
 
@@ -12,6 +14,10 @@
 
     geometry *geom;
 %}
+
+%code requires {
+   #include "geometry.h"
+}
 
 %token _POINT_
 %token _LINESTRING_
@@ -27,7 +33,7 @@
 %token <numberlit> _NUMBERLIT_
 
 %union{
-    double numberlit;
+    long double numberlit;
     geometry *g;
     point *pt;
     line_string *ls;
@@ -50,14 +56,42 @@
 
 %% 
 
-start: _POINT_           _LPAR_ point_def           _RPAR_ {geom = $3;}
-     | _LINESTRING_      _LPAR_ linestring_def      _RPAR_ {geom = $3;}
-     | _POLYGON_         _LPAR_ polygon_def         _RPAR_ {geom = $3;}
-     | _MULTIPOINT_      _LPAR_ multipoint_def      _RPAR_ {geom = $3;}
-     | _MULTILINESTRING_ _LPAR_ multilinestring_def _RPAR_ {geom = $3;}
-     | _MULTIPOLYGON_    _LPAR_ multipolygon_def    _RPAR_ {geom = $3;}
-     | _COLLECTION_      _LPAR_ collection_def      _RPAR_ {geom = $3;}
-     ;
+start: _POINT_           _LPAR_ point_def           _RPAR_ {
+        geometric_object obj;
+        obj.p = $3;
+        geom = geometry_new(POINT, obj);
+    }
+    | _LINESTRING_      _LPAR_ linestring_def      _RPAR_ {
+        geometric_object obj;
+        obj.ls = $3;
+        geom = geometry_new(LINESTRING, obj);
+    }
+    | _POLYGON_         _LPAR_ polygon_def         _RPAR_ {
+        geometric_object obj;
+        obj.pol = $3;
+        geom = geometry_new(POLYGON, obj);
+    }
+    | _MULTIPOINT_      _LPAR_ multipoint_def      _RPAR_ {
+        geometric_object obj;
+        obj.mp = $3;
+        geom = geometry_new(MULTIPOINT, obj);
+    }
+    | _MULTILINESTRING_ _LPAR_ multilinestring_def _RPAR_ {
+        geometric_object obj;
+        obj.mls = $3;
+        geom = geometry_new(MULTILINESTRING, obj);
+    }
+    | _MULTIPOLYGON_    _LPAR_ multipolygon_def    _RPAR_ {
+        geometric_object obj;
+        obj.mpol = $3;
+        geom = geometry_new(MULTIPOLYGON, obj);
+    }
+    | _COLLECTION_      _LPAR_ collection_def      _RPAR_ {
+        geometric_object obj;
+        obj.gc = $3;
+        geom = geometry_new(GEOMETRYCOLLECTION, obj);
+    }
+    ;
 
 point_def: _NUMBERLIT_ _NUMBERLIT_ { $$ = point_new($1, $2); }
          ;
@@ -119,7 +153,7 @@ multilinestring_def: _LPAR_ linestring_def _RPAR_ {
 
 multipolygon_def: _LPAR_ polygon_def _RPAR_ {
                       multi_polygon *mp = multi_polygon_new();
-                      dynarray_add(multi_polygon->polygon_list, $2);
+                      dynarray_add(mp->polygon_list, $2);
                       $$ = mp;
                   }
                 | multipolygon_def _COMMA_ _LPAR_ polygon_def _RPAR_ {

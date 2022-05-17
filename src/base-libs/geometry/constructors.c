@@ -13,14 +13,14 @@ geometry_collection *geometry_collection_new() {
     return new;
 }
 
-polygon *polygon_new(line_string *external_ring, dynarray *internal_rings) {
+polygon *polygon_new(line_string *external_ring, multi_line_string *internal_rings) {
     polygon *new = (polygon *)calloc(1, sizeof(polygon));
     new->external_ring = external_ring;
     new->internal_rings = internal_rings;
     return new;
 }
 
-point *point_new(double x, double y) {
+point *point_new(long double x, long double y) {
     point *new = (point *)calloc(1, sizeof(point));
     new->x = x;
     new->y = y;

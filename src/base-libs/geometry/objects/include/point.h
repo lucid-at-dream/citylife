@@ -1,7 +1,7 @@
 #pragma once
 
 typedef struct _point {
-    double x, y;
+    long double x, y;
 } point;
 
-point *point_new(double x, double y);
+point *point_new(long double x, long double y);
