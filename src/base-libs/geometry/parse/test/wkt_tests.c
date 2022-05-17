@@ -8,7 +8,7 @@
 #include <stdio.h>
 
 char test_parse_single_point(long double x, long double y) {
-    int assertion_error = 0;
+    char assertion_error = 0;
 
     char buff[128] = "";
     sprintf(buff, "POINT(%LF %LF)", x, y);

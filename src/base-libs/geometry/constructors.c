@@ -1,6 +1,8 @@
 #include "geometry.h"
 #include "dynarray.h"
 
+#include <stdlib.h>
+
 multi_point *multi_point_new() {
     multi_point *new = (multi_point *)calloc(1, sizeof(multi_point));
     new->point_list = dynarray_new();
