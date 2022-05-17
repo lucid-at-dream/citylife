@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 char assert_int_equals(char *assertion, int num1, int num2) {
     if (num1 != num2) {
@@ -112,6 +113,16 @@ char assert_float_less_than(char *assertion, float n1, float n2) {
 char assert_double_equals(char *assertion, double num1, double num2) {
     if (num1 != num2) {
         printf("%s > got [%lf], expected [%lf]\n", assertion, num1, num2);
+        return 1;
+    }
+    return 0;
+}
+
+char assert_long_double_equals(char *assertion, long double num1, long double num2, long double epsilon) {
+    char are_equal = num1 == num2 || fabsl(num1 - num2) <= epsilon;
+    
+    if (!are_equal) {
+        printf("%s > got [%LF], expected [%LF]\n", assertion, num1, num2);
         return 1;
     }
     return 0;

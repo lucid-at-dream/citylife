@@ -33,7 +33,7 @@
 
 %%
 
-geometry *geometry_from_wkt(char *wkt){
+geometry *geometry_from_wkt(char *wkt) {
     YY_BUFFER_STATE buff = yy_scan_string(wkt);
     yyparse();
     yy_delete_buffer(buff);

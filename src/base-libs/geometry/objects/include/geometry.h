@@ -43,3 +43,4 @@ typedef struct _geometry {
 } geometry;
 
 geometry *geometry_new();
+geometry *geometry_from_wkt(char *wkt);
