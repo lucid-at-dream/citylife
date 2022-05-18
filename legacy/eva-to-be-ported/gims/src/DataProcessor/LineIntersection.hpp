@@ -1,9 +1,9 @@
 #ifndef _LINEINTERSECTION_HPP_
 #define _LINEINTERSECTION_HPP_
 
-#include "Geometry.hpp"
-#include "DE9IM.hpp"
 #include "BentleySolver.hpp"
+#include "DE9IM.hpp"
+#include "Geometry.hpp"
 #include <list>
 
 using namespace std;

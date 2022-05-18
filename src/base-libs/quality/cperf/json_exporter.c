@@ -3,12 +3,13 @@
 #include <stdio.h>
 #include <time.h>
 
-#include "perftest.h"
 #include "dynarray.h"
+#include "perftest.h"
 
 dynarray *reports = NULL;
 
-void save_report_json(perf_test test, perf_report report) {
+void save_report_json(perf_test test, perf_report report)
+{
     // Build report's json text
     char *json = calloc(8096, sizeof(char));
 
@@ -29,13 +30,15 @@ void save_report_json(perf_test test, perf_report report) {
              report.p99999);
 
     // Save report's json in memory
-    if (reports == NULL) {
+    if (reports == NULL)
+    {
         reports = dynarray_new();
     }
     dynarray_add(reports, json);
 }
 
-void finalize_json_report() {
+void finalize_json_report()
+{
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
 
@@ -47,11 +50,13 @@ void finalize_json_report() {
 
     fwrite("[\n", sizeof(char), 2, f);
 
-    for (int i = 0; i < reports->size; i++) {
+    for (int i = 0; i < reports->size; i++)
+    {
         char *report = dynarray_get(reports, i);
         fwrite(report, sizeof(char), strnlen(report, 8096), f);
 
-        if (i != reports->size - 1) {
+        if (i != reports->size - 1)
+        {
             fwrite(",", sizeof(char), 2, f);
         }
     }

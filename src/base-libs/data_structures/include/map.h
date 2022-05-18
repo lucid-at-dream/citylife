@@ -1,20 +1,24 @@
 #pragma once
 
-typedef struct _map_entry {
+typedef struct _map_entry
+{
     char *key;
     void *value;
 } map_entry;
 
-typedef struct _bucket {
+typedef struct _bucket
+{
     map_entry entry;
     struct _bucket *next;
 } bucket;
 
-typedef struct _bucket_list {
+typedef struct _bucket_list
+{
     bucket *begin;
 } bucket_list;
 
-typedef struct _map {
+typedef struct _map
+{
     int capacity;
     int size;
     bucket_list *table;

@@ -1,19 +1,20 @@
+#include <math.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <sys/wait.h>
-#include <pthread.h>
-#include <math.h>
+#include <unistd.h>
 
-#include "perftest.h"
-#include "perf_exporter.h"
 #include "console_exporter.h"
+#include "dynarray.h"
 #include "json_exporter.h"
 #include "logger.h"
-#include "dynarray.h"
+#include "perf_exporter.h"
+#include "perftest.h"
 
-typedef struct _iteration_report {
+typedef struct _iteration_report
+{
     double mean;
     double standard_deviation;
 } iteration_report;
@@ -22,18 +23,21 @@ iteration_report *runPerfTest(perf_test *t);
 
 int samples_count = 100;
 
-dynarray *setup_exporters() {
+dynarray *setup_exporters()
+{
     dynarray *exporters = dynarray_new();
     register_exporter(exporters, &export_to_console, &log_final_summary);
     register_exporter(exporters, &save_report_json, &finalize_json_report);
     return exporters;
 }
 
-void run_performance_test_suite(perf_test *test_suite, int suite_size) {
+void run_performance_test_suite(perf_test *test_suite, int suite_size)
+{
     dynarray *exporters = setup_exporters();
 
     int count = 0;
-    for (; count < suite_size; count++) {
+    for (; count < suite_size; count++)
+    {
         perf_test *t = test_suite + count;
 
         printf("========= Running test %d: '%s'\n", count + 1, t->description);
@@ -90,7 +94,8 @@ void run_performance_test_suite(perf_test *test_suite, int suite_size) {
  * @param t The test that will be executed
  * @return 0 if the test succeeded, something else on failure.
  */
-iteration_report *runPerfTest(perf_test *t) {
+iteration_report *runPerfTest(perf_test *t)
+{
     long elapsedNanos;
     struct timespec start, end;
 
@@ -98,7 +103,8 @@ iteration_report *runPerfTest(perf_test *t) {
 
     long long int measurements[samples_count];
 
-    for (int i = 0; i < samples_count; i++) {
+    for (int i = 0; i < samples_count; i++)
+    {
         clock_gettime(CLOCK_MONOTONIC, &start);
         t->test_impl();
         clock_gettime(CLOCK_MONOTONIC, &end);
@@ -115,7 +121,8 @@ iteration_report *runPerfTest(perf_test *t) {
     }
 
     double differences_sum = 0;
-    for (int i = 0; i < samples_count; i++) {
+    for (int i = 0; i < samples_count; i++)
+    {
         differences_sum += (measurements[i] - report->mean) * (measurements[i] - report->mean);
     }
 

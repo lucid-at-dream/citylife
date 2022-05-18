@@ -3,12 +3,14 @@
 /**
  * The test implementation and a verbose description displayed in the build logs.
  */
-typedef struct _perf_test {
+typedef struct _perf_test
+{
     char *description;
     char (*test_impl)(void);
 } perf_test;
 
-typedef struct _perf_report {
+typedef struct _perf_report
+{
     double mean;
     double standard_deviation;
     double standard_error;
@@ -34,18 +36,24 @@ void run_performance_test_suite(perf_test *test_suite, int suite_size);
  */
 #define PERF_TEST_SUITE(tests...)                                                                                                                              \
     perf_test test_suite[] = { tests };                                                                                                                        \
-    int main(int argc, char **argv) {                                                                                                                          \
+    int main(int argc, char **argv)                                                                                                                            \
+    {                                                                                                                                                          \
         run_performance_test_suite(test_suite, sizeof(test_suite) / sizeof(perf_test));                                                                        \
         return 0;                                                                                                                                              \
     }
 
 #define PERF_TEST(name, body)                                                                                                                                  \
-    char name() {                                                                                                                                              \
-        { body }                                                                                                                                               \
+    char name()                                                                                                                                                \
+    {                                                                                                                                                          \
+        {                                                                                                                                                      \
+            body                                                                                                                                               \
+        }                                                                                                                                                      \
     }
 
 /**
  * Utility macro to simplify writing unit test scripts.
  */
 #define RUN_PERF_TEST(d, t)                                                                                                                                    \
-    { d, t }
+    {                                                                                                                                                          \
+        d, t                                                                                                                                                   \
+    }

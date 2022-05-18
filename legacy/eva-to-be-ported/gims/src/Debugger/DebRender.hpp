@@ -1,25 +1,27 @@
 #ifndef _DebRender_HPP
 #define _DebRender_HPP
 
-#include "SystemBase.hpp"
 #include "Geometry.hpp"
-#include <cairomm/cairomm.h>
+#include "SystemBase.hpp"
 #include <cairo.h>
-#include <gtkmm.h>
+#include <cairomm/cairomm.h>
 #include <cmath>
 #include <functional>
+#include <gtkmm.h>
 #include <list>
 
 using namespace std;
 using namespace GIMS_GEOMETRY;
 
-class DebugRenderable {
+class DebugRenderable
+{
 public:
     virtual void debugRender(Cairo::RefPtr<Cairo::Context>) = 0;
     virtual void onClick(double x, double y) = 0;
 };
 
-class DebRenderer {
+class DebRenderer
+{
 private:
     Gtk::Window *window;
     Gtk::DrawingArea *darea;

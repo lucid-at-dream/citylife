@@ -1,16 +1,17 @@
 #ifndef _DBCONNECTION_HPP_
 #define _DBCONNECTION_HPP_
 
-#include "SystemBase.hpp"
 #include "Geometry.hpp"
+#include "SystemBase.hpp"
+#include "conf.hpp"
 #include "libpq-fe.h"
 #include <list>
-#include "conf.hpp"
 
 using namespace std;
 using namespace GIMS_GEOMETRY;
 
-class PGConnection {
+class PGConnection
+{
     PGconn *connection;
 
 public:
@@ -23,9 +24,13 @@ public:
 
 /*TODO: put the following fields as configuration options*/
 #define KEYWORDS                                                                                                                                               \
-    { "hostaddr", "dbname", "user" }
+    {                                                                                                                                                          \
+        "hostaddr", "dbname", "user"                                                                                                                           \
+    }
 #define VALUES                                                                                                                                                 \
-    { "127.0.0.1", "portugal", "magisu" }
+    {                                                                                                                                                          \
+        "127.0.0.1", "portugal", "magisu"                                                                                                                      \
+    }
 
 /* dbconnection is a connection to a postgresql database. The configurations assumed
  * are the ones specified in the configuration file.*/

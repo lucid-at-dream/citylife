@@ -2,4 +2,10 @@
 
 #include <varchar.h>
 
-typedef enum { SEQUENTIAL, INTEGER, TIMESTAMP, VARCHAR } data_type;
+typedef enum
+{
+    SEQUENTIAL,
+    INTEGER,
+    TIMESTAMP,
+    VARCHAR
+} data_type;

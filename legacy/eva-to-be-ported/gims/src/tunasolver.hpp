@@ -2,11 +2,11 @@
 #define _TUNASOLVER_HPP_
 
 #include "DBConnection.hpp"
-#include "SystemBase.hpp"
-#include "Geometry.hpp"
 #include "DE9IM.hpp"
-#include "conf.hpp"
 #include "DebRender.hpp"
+#include "Geometry.hpp"
+#include "SystemBase.hpp"
+#include "conf.hpp"
 
 class spatialIndex;
 using namespace GIMS_GEOMETRY;
@@ -36,7 +36,8 @@ int filter_linestring(GIMS_Geometry *obj);
 /* Clear Up */
 void shutdownTunaSolver();
 
-class spatialIndex : public DebugRenderable {
+class spatialIndex : public DebugRenderable
+{
 public:
     virtual void insert(GIMS_Geometry *) = 0;
     virtual void insert(list<GIMS_Geometry *> *geom) = 0;

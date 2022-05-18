@@ -2,19 +2,23 @@
 
 #include <stdlib.h>
 
-queue_item *item_new(void *content) {
+queue_item *item_new(void *content)
+{
     queue_item *item = (queue_item *)calloc(1, sizeof(queue_item));
     item->content = content;
     return item;
 }
 
-queue *queue_new() {
+queue *queue_new()
+{
     queue *q = (queue *)calloc(1, sizeof(queue));
     return q;
 }
 
-void queue_del(queue *q) {
-    while (q->last != NULL) {
+void queue_del(queue *q)
+{
+    while (q->last != NULL)
+    {
         queue_item *tmp = q->last;
         q->last = q->last->prev;
         free(tmp);
@@ -22,13 +26,17 @@ void queue_del(queue *q) {
     free(q);
 }
 
-queue_item *queue_add(queue *q, void *item) {
+queue_item *queue_add(queue *q, void *item)
+{
     queue_item *item_to_add = item_new(item);
 
-    if (q->size == 0) {
+    if (q->size == 0)
+    {
         q->head = q->last = item_to_add;
         item_to_add->next = item_to_add->prev = NULL;
-    } else {
+    }
+    else
+    {
         q->last->next = item_to_add;
         item_to_add->prev = q->last;
         item_to_add->next = NULL;
@@ -39,24 +47,30 @@ queue_item *queue_add(queue *q, void *item) {
     return item_to_add;
 }
 
-void queue_remove_node(queue *q, queue_item *n) {
-    if (n == NULL) {
+void queue_remove_node(queue *q, queue_item *n)
+{
+    if (n == NULL)
+    {
         return;
     }
-    
-    if (n == q->head) {
+
+    if (n == q->head)
+    {
         q->head = n->next;
     }
 
-    if (n == q->last) {
+    if (n == q->last)
+    {
         q->last = n->prev;
     }
 
-    if (n->prev) {
+    if (n->prev)
+    {
         n->prev->next = n->next;
     }
 
-    if (n->next) {
+    if (n->next)
+    {
         n->next->prev = n->prev;
     }
 
@@ -64,17 +78,21 @@ void queue_remove_node(queue *q, queue_item *n) {
     free(n);
 }
 
-void queue_merge_into(queue *q, queue *other) {
+void queue_merge_into(queue *q, queue *other)
+{
     // Merge other into q
     q->size += other->size;
-    if (q->last) {
+    if (q->last)
+    {
         q->last->next = other->head;
     }
-    if (other->head) {
+    if (other->head)
+    {
         other->head->prev = q->last;
     }
 
-    if (other->last) {
+    if (other->last)
+    {
         q->last = other->last;
     }
 
@@ -85,17 +103,22 @@ void queue_merge_into(queue *q, queue *other) {
     queue_del(other);
 }
 
-void *queue_pop(queue *q) {
+void *queue_pop(queue *q)
+{
     queue_item *item = q->head;
 
-    if (item == NULL) {
+    if (item == NULL)
+    {
         return NULL;
     }
 
     q->head = q->head->next;
-    if (q->head != NULL) {
+    if (q->head != NULL)
+    {
         q->head->prev = NULL;
-    } else {
+    }
+    else
+    {
         q->last = NULL;
     }
 

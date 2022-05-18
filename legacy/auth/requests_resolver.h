@@ -3,14 +3,16 @@
 #include "auth_verbs.h"
 #include "jasmine/jsmn.h"
 
-typedef struct _auth_request {
+typedef struct _auth_request
+{
     auth_verb action;
     char *session_token;
     char *username;
     char *password;
 } auth_request;
 
-typedef struct _requests_resolver {
+typedef struct _requests_resolver
+{
     char *(*callbacks[AUTH_VERBS_COUNT])(auth_request *);
 } requests_resolver;
 

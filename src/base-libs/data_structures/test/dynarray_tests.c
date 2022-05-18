@@ -1,5 +1,5 @@
-#include "test.h"
 #include "assert.h"
+#include "test.h"
 
 #include "dynarray.h"
 
@@ -8,12 +8,14 @@
 TEST_CASE(test_dynarray_add_get_items, {
     dynarray *ar = dynarray_new();
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 10; i++)
+    {
         dynarray_add(ar, i);
         ASSERT_INT_EQUALS("Dynamic array size is correctly incremented after an insertion", i + 1, ar->size);
     }
 
-    for (int i = 9; i >= 0; i--) {
+    for (int i = 9; i >= 0; i--)
+    {
         ASSERT_INT_EQUALS("Elements are correctly added to the dynamic array", i, dynarray_get(ar, i));
     }
 
@@ -23,7 +25,8 @@ TEST_CASE(test_dynarray_add_get_items, {
 TEST_CASE(test_dynarray_add_del_get_items, {
     dynarray *ar = dynarray_new();
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 10; i++)
+    {
         dynarray_add(ar, i);
     }
     ASSERT_INT_EQUALS("Dynamic array size is correct after a few consecutive insertions", 10, ar->size);
@@ -46,7 +49,8 @@ TEST_CASE(test_dynarray_add_del_get_items, {
 TEST_CASE(test_dynarray_add_set_del_get_items, {
     dynarray *ar = dynarray_new();
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 10; i++)
+    {
         dynarray_add(ar, i);
     }
 

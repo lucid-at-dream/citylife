@@ -1,15 +1,16 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <stdlib.h>
 
-#include <test.h>
 #include <assert.h>
 #include <map.h>
+#include <test.h>
 
 char *new_string(char *);
 
-char test_map_add_get() {
+char test_map_add_get()
+{
     char *ZE_NAME = new_string("ze");
     char *ZE_PASS = new_string("ze_");
 
@@ -26,7 +27,8 @@ char test_map_add_get() {
     return assertion_result;
 }
 
-char test_map_get_empty_map() {
+char test_map_get_empty_map()
+{
     map *m = map_new(16);
     char *ze = map_get(m, "ze");
     map_destroy(m);
@@ -34,7 +36,8 @@ char test_map_get_empty_map() {
     return assert_null("Retrieving a value from an empty map should yield a NULL pointer.", ze);
 }
 
-char test_map_add_2_elements() {
+char test_map_add_2_elements()
+{
     char *ZE_NAME = new_string("ze");
     char *ZE_PASS = new_string("ze_");
     char *MARIA_NAME = new_string("maria");
@@ -60,7 +63,8 @@ char test_map_add_2_elements() {
     return assertion_result;
 }
 
-char test_map_add_2_doppleganger_elements() {
+char test_map_add_2_doppleganger_elements()
+{
     char *ZE_NAME = new_string("zemanel");
     char *ZE_PASS = new_string("zemanel_");
     char *ZE_DOP_NAME = new_string("zemaneli");
@@ -86,7 +90,8 @@ char test_map_add_2_doppleganger_elements() {
     return assertion_result;
 }
 
-char test_map_add_same_key_twice() {
+char test_map_add_same_key_twice()
+{
     char *KEY = new_string("key");
     char *VALUE_1 = new_string("v1");
     char *VALUE_2 = new_string("v2");
@@ -108,7 +113,8 @@ char test_map_add_same_key_twice() {
     return assertion_result;
 }
 
-char test_map_delete_user() {
+char test_map_delete_user()
+{
     char *CONST_KEY = "key";
     char *KEY = new_string(CONST_KEY);
     char *VALUE = new_string("v1");
@@ -118,7 +124,8 @@ char test_map_delete_user() {
     map_set(m, KEY, VALUE);
     char *result = map_get(m, CONST_KEY);
 
-    if (assert_str_equals("Value is correctly inserted in the map.", result, VALUE)) {
+    if (assert_str_equals("Value is correctly inserted in the map.", result, VALUE))
+    {
         free(KEY);
         free(VALUE);
         map_destroy(m);
@@ -128,7 +135,8 @@ char test_map_delete_user() {
     map_del(m, CONST_KEY);
     result = map_get(m, CONST_KEY);
 
-    if (assert_str_equals("Value is correctly deleted from the map.", result, NULL)) {
+    if (assert_str_equals("Value is correctly deleted from the map.", result, NULL))
+    {
         free(KEY);
         free(VALUE);
         map_destroy(m);
@@ -141,7 +149,8 @@ char test_map_delete_user() {
     return 0;
 }
 
-char test_map_delete_user_among_many_users() {
+char test_map_delete_user_among_many_users()
+{
     int n_keys = 1000;
     char *KEY_PREFIX = "k_";
     char *VALUE_PREFIX = "v_";
@@ -151,7 +160,8 @@ char test_map_delete_user_among_many_users() {
 
     map *m = map_new(16);
 
-    for (int i = 0; i < n_keys; i++) {
+    for (int i = 0; i < n_keys; i++)
+    {
         char *key = (char *)malloc(10 * sizeof(char));
         char *value = (char *)malloc(10 * sizeof(char));
 
@@ -168,18 +178,21 @@ char test_map_delete_user_among_many_users() {
     char *value_to_rm = (char *)calloc(10, sizeof(char));
 
     char assertion_result = 0;
-    for (int i = 50; i < 1000; i += 50) {
+    for (int i = 50; i < 1000; i += 50)
+    {
         snprintf(key_to_rm, 10, "k_%d", i);
         snprintf(value_to_rm, 10, "v_%d", i);
 
         char *stored_value = map_get(m, key_to_rm);
-        if (assertion_result |= assert_str_equals("Value is correctly inserted in the map.", stored_value, value_to_rm)) {
+        if (assertion_result |= assert_str_equals("Value is correctly inserted in the map.", stored_value, value_to_rm))
+        {
             break;
         }
 
         map_del(m, key_to_rm);
         stored_value = map_get(m, key_to_rm);
-        if (assertion_result |= assert_str_equals("Value is correctly deleted from the map.", stored_value, NULL)) {
+        if (assertion_result |= assert_str_equals("Value is correctly deleted from the map.", stored_value, NULL))
+        {
             break;
         }
     }
@@ -187,7 +200,8 @@ char test_map_delete_user_among_many_users() {
     free(key_to_rm);
     free(value_to_rm);
 
-    for (int i = 0; i < n_keys; i++) {
+    for (int i = 0; i < n_keys; i++)
+    {
         free(keys[i]);
         free(values[i]);
     }
@@ -196,7 +210,8 @@ char test_map_delete_user_among_many_users() {
     return assertion_result;
 }
 
-char test_map_delete_non_existing_user() {
+char test_map_delete_non_existing_user()
+{
     map *m = map_new(1);
 
     map_set(m, "aa", "aa");
@@ -219,17 +234,20 @@ test test_suite[] = { { "Test add functionality in maps", &test_map_add_get },
                       { "Test deleting some users among several other users", &test_map_delete_user_among_many_users },
                       { "Test deleting a user that does not exist", &test_map_delete_non_existing_user } };
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     suite_report report = run_test_suite(test_suite, sizeof(test_suite) / sizeof(test));
 
-    if (report.failures > 0) {
+    if (report.failures > 0)
+    {
         return -1;
     }
 
     return 0;
 }
 
-char *new_string(char *string) {
+char *new_string(char *string)
+{
     int max_size = 100;
     int buff_size = strlen(string) + 1 < max_size ? strlen(string) + 1 : max_size;
     char *ns = (char *)calloc(buff_size, sizeof(char));

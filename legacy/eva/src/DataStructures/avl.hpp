@@ -1,18 +1,19 @@
 #ifndef _AVL_HPP_
 #define _AVL_HPP_
 
+#include "Geometry.hpp"
+#include <cmath>
 #include <cstdlib>
 #include <iostream>
 #include <list>
-#include <cmath>
-#include "Geometry.hpp"
 
 #define KEYCMP(x, y) ((x) > (y) ? 1 : (x) < (y) ? -1 : 0)
 
 using namespace GIMS_GEOMETRY;
 using namespace std;
 
-class AVLNode {
+class AVLNode
+{
 public:
     AVLNode *parent;
     AVLNode *left;
@@ -44,69 +45,86 @@ public:
     void rotateRight();
 };
 
-class AVLTree {
+class AVLTree
+{
 private:
     int nnodes;
     AVLNode *root;
 
 public:
     /*container iterator*/
-    class iterator {
+    class iterator
+    {
     private:
         AVLNode *node;
 
     public:
-        iterator(AVLNode *n) {
+        iterator(AVLNode *n)
+        {
             this->node = n;
         }
 
-        iterator operator++(int) {
+        iterator operator++(int)
+        {
             this->next();
             return *this;
         }
 
-        bool operator==(const iterator &rhs) {
+        bool operator==(const iterator &rhs)
+        {
             return this->equals(rhs);
         }
 
-        bool operator!=(const iterator &rhs) {
+        bool operator!=(const iterator &rhs)
+        {
             return !(this->equals(rhs));
         }
 
-        GIMS_Geometry *operator*() {
+        GIMS_Geometry *operator*()
+        {
             return this->getData();
         }
 
-        void next() {
+        void next()
+        {
             /*the next in order sucessor is the leftmost leaf of the right subtree.*/
-            if (node->right != NULL) {
+            if (node->right != NULL)
+            {
                 this->node = this->node->right;
                 while (this->node->left != NULL)
                     this->node = this->node->left;
 
                 /*if there's no right subtree, then we need to go up.*/
-            } else {
-                if (this->node->parent != NULL) {
+            }
+            else
+            {
+                if (this->node->parent != NULL)
+                {
                     if (this->node == this->node->parent->left)
                         this->node = this->node->parent;
-                    else {
+                    else
+                    {
                         while (this->node->parent != NULL && this->node == this->node->parent->right)
                             this->node = this->node->parent;
                         this->node = this->node->parent;
                     }
-                } else {
+                }
+                else
+                {
                     this->node = NULL;
                 }
             }
         }
 
-        bool equals(iterator it) {
+        bool equals(iterator it)
+        {
             if (this->node == it.node)
                 return true;
             return false;
         }
 
-        GIMS_Geometry *getData() {
+        GIMS_Geometry *getData()
+        {
             return node->data;
         }
     };

@@ -2,7 +2,8 @@
 
 #include "dynarray.h"
 
-typedef struct _multi_polygon {
+typedef struct _multi_polygon
+{
     dynarray *polygon_list;
 } multi_polygon;
 

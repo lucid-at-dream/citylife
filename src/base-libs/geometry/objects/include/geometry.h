@@ -1,17 +1,18 @@
 #pragma once
 
-#include "point.h"
-#include "multi_point.h"
+#include "geometry_collection.h"
 #include "line_string.h"
 #include "multi_line_string.h"
-#include "polygon.h"
+#include "multi_point.h"
 #include "multi_polygon.h"
-#include "geometry_collection.h"
+#include "point.h"
+#include "polygon.h"
 
-typedef enum _geometry_type {
+typedef enum _geometry_type
+{
     // envolving polygon (aka envelope)
     BOUNDINGBOX = 1 << 0,
-    
+
     //Elementary datatypes
     POINT = 1 << 1,
     LINESTRING = 1 << 2,
@@ -22,12 +23,13 @@ typedef enum _geometry_type {
     MULTIPOINT = 1 << 5,
     MULTILINESTRING = 1 << 6,
     MULTIPOLYGON = 1 << 7,
-    
+
     //collections
     GEOMETRYCOLLECTION = 1 << 8
 } geometry_type;
 
-typedef union _geometric_object {
+typedef union _geometric_object
+{
     point *p;
     multi_point *mp;
     line_string *ls;
@@ -37,7 +39,8 @@ typedef union _geometric_object {
     geometry_collection *gc;
 } geometric_object;
 
-typedef struct _geometry {
+typedef struct _geometry
+{
     geometry_type type;
     geometric_object object;
 } geometry;

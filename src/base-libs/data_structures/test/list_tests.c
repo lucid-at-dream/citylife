@@ -1,5 +1,5 @@
-#include "test.h"
 #include "assert.h"
+#include "test.h"
 
 #include "list.h"
 
@@ -20,14 +20,16 @@ TEST_CASE(test_list_add_item_delete_item, {
 TEST_CASE(test_list_append_and_delete_first, {
     list *l = list_new();
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 10; i++)
+    {
         list_append(l, i);
     }
 
     ASSERT_INT_EQUALS("First item is 0", list_get_first(l), 0);
     ASSERT_INT_EQUALS("Last item is 9", list_get_last(l), 9);
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 10; i++)
+    {
         int value = (int)list_del_first(l);
         ASSERT_INT_EQUALS("The response should be the same as the data sent over.", value, i);
     }
@@ -42,11 +44,13 @@ TEST_CASE(test_list_append_and_delete_first, {
 TEST_CASE(test_list_prepend_and_delete_first, {
     list *l = list_new();
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 10; i++)
+    {
         list_prepend(l, i);
     }
 
-    for (int i = 9; i >= 0; i--) {
+    for (int i = 9; i >= 0; i--)
+    {
         int value = (int)list_del_first(l);
         ASSERT_INT_EQUALS("The response should be the same as the data sent over.", value, i);
     }
@@ -59,7 +63,8 @@ TEST_CASE(test_list_prepend_and_delete_first, {
 TEST_CASE(test_list_delete_specific_element, {
     list *l = list_new();
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 10; i++)
+    {
         list_prepend(l, i);
     }
 
@@ -69,7 +74,8 @@ TEST_CASE(test_list_delete_specific_element, {
     // TODO: This is not retrieving the last digit because the last one is "0" which matches with the NULL check -.-
     int count = 0;
     int value;
-    while (!list_is_empty(l)) {
+    while (!list_is_empty(l))
+    {
         value = list_del_first(l);
         count += 1;
     }
@@ -82,11 +88,13 @@ TEST_CASE(test_list_delete_specific_element, {
 TEST_CASE(test_list_with_negative_numbers, {
     list *l = list_new();
 
-    for (int i = 0; i > -10; i--) {
+    for (int i = 0; i > -10; i--)
+    {
         list_prepend(l, i);
     }
 
-    for (int i = 0; i > -10; i--) {
+    for (int i = 0; i > -10; i--)
+    {
         int value = list_del_last(l);
         ASSERT_INT_EQUALS("List of 10 elements should have 9 after 1 is deleted", value, i);
     }
@@ -100,27 +108,31 @@ TEST_CASE(test_list_with_negative_numbers, {
 TEST_CASE(destroy_non_empty_list_check_memory_leaks, {
     list *l = list_new();
 
-    for (int i = 0; i > -10; i--) {
+    for (int i = 0; i > -10; i--)
+    {
         list_prepend(l, i);
     }
 
     list_destroy(l);
 })
 
-void increment_element(int *element) {
+void increment_element(int *element)
+{
     (*element) += 1;
 }
 
 TEST_CASE(apply_a_function_on_each_element_of_the_list, {
     list *l = list_new();
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 10; i++)
+    {
         list_append(l, i);
     }
 
     list_foreach(l, increment_element);
 
-    for (int i = 1; i <= 10; i++) {
+    for (int i = 1; i <= 10; i++)
+    {
         int value = list_del_first(l);
         ASSERT_INT_EQUALS("Value must have been incremented by foreach cycle", value, i);
     }
@@ -131,7 +143,8 @@ TEST_CASE(apply_a_function_on_each_element_of_the_list, {
 TEST_CASE(delete_head_make_sure_head_is_updated, {
     list *l = list_new();
 
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 5; i++)
+    {
         list_append(l, i);
     }
 
@@ -144,7 +157,8 @@ TEST_CASE(delete_head_make_sure_head_is_updated, {
 TEST_CASE(delete_tail_make_sure_tail_is_updated, {
     list *l = list_new();
 
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 5; i++)
+    {
         list_append(l, i);
     }
 

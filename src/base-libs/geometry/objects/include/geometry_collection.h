@@ -2,7 +2,8 @@
 
 #include "dynarray.h"
 
-typedef struct _geometry_collection {
+typedef struct _geometry_collection
+{
     dynarray *geometry_list;
 } geometry_collection;
 

@@ -5,7 +5,8 @@
 /**
  * Represents a node in a linked list.
  */
-typedef struct list_node_t {
+typedef struct list_node_t
+{
     struct list_node_t *next;
     struct list_node_t *prev;
     void *value;
@@ -14,7 +15,8 @@ typedef struct list_node_t {
 /**
  * Linked list base structure.
  */
-typedef struct list_t {
+typedef struct list_t
+{
     list_node *head;
     list_node *tail;
     int size;

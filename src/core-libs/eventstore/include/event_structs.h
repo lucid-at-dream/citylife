@@ -9,7 +9,8 @@
 /**
  * Defines the structure of an event store.
  */
-typedef struct _event_store {
+typedef struct _event_store
+{
     list *events;
 } event_store;
 
@@ -31,14 +32,16 @@ typedef struct _event_index_config event_index_config;
 /**
  * Defines the structure of an event.
  */
-typedef struct _event {
+typedef struct _event
+{
     map *fields;
 } event;
 
 /**
  * Defines a field in the schema.
  */
-typedef struct _field_config {
+typedef struct _field_config
+{
     data_type type;
     char *name;
 } field_config;
@@ -46,6 +49,7 @@ typedef struct _field_config {
 /**
  * Defines the schema of an event.
  */
-typedef struct _event_schema {
+typedef struct _event_schema
+{
     list *fields;
 } event_schema;

@@ -1,9 +1,9 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
-#include "map.h"
 #include "logger.h"
+#include "map.h"
 
 // private destructors
 void bucket_list_destroy(bucket *b, char dealloc_keys, char dealloc_vals);
@@ -20,7 +20,8 @@ unsigned calc_hash(const char *key);
 unsigned int qhashmurmur3_32(const void *data, size_t nbytes);
 
 // Function definitions
-map *map_new(int capacity) {
+map *map_new(int capacity)
+{
     debug("map.c: Creating new map with capacity %d", capacity);
     map *m = (map *)malloc(sizeof(map));
     m->capacity = capacity;
@@ -29,7 +30,8 @@ map *map_new(int capacity) {
     return m;
 }
 
-bucket *bucket_new(char *key, void *value) {
+bucket *bucket_new(char *key, void *value)
+{
     map_entry entry = { key, value };
     bucket *new_bucket = (bucket *)calloc(1, sizeof(bucket));
     new_bucket->entry = entry;
@@ -37,10 +39,12 @@ bucket *bucket_new(char *key, void *value) {
     return new_bucket;
 }
 
-void map_set(map *m, char *key, void *value) {
+void map_set(map *m, char *key, void *value)
+{
     debug("map.c: Setting value of key %s to %s", key, value);
 
-    if (should_resize(m)) {
+    if (should_resize(m))
+    {
         resize_map(m, calc_next_resize(m));
     }
 
@@ -48,15 +52,18 @@ void map_set(map *m, char *key, void *value) {
     bucket_list *list = m->table + index;
     bucket *buck = list->begin;
 
-    if (buck == NULL) {
+    if (buck == NULL)
+    {
         debug("map.c: Adding new entry to the map at index %d", index);
         m->size++;
         list->begin = bucket_new(key, value);
         return;
     }
 
-    while (buck != NULL) {
-        if (strcmp(buck->entry.key, key) == 0) {
+    while (buck != NULL)
+    {
+        if (strcmp(buck->entry.key, key) == 0)
+        {
             debug("map.c: Updating existing entry in the map at index %d", index);
             // TODO: Add a some flag to allow freeing existing values.
             // free(buck->entry.value);
@@ -64,7 +71,8 @@ void map_set(map *m, char *key, void *value) {
             return;
         }
 
-        if (buck->next == NULL) {
+        if (buck->next == NULL)
+        {
             debug("map.c: Adding new entry to the map at index %d", index);
             buck->next = bucket_new(key, value);
             m->size++;
@@ -75,27 +83,32 @@ void map_set(map *m, char *key, void *value) {
     }
 }
 
-void *map_get(map *m, char *key) {
+void *map_get(map *m, char *key)
+{
     debug("map.c: Looking for key %s in the map", key);
 
     int index = get_index(m, key);
 
     bucket_list *list = m->table + index;
 
-    if (list == NULL) {
+    if (list == NULL)
+    {
         debug("map.c: Couldn't find %s, the map is currently empty.", key);
         return NULL;
     }
 
     bucket *buck = list->begin;
 
-    if (buck == NULL) {
+    if (buck == NULL)
+    {
         debug("map.c: Couldn't find %s, there are no buckets at position %d", key, index);
         return NULL;
     }
 
-    while (buck != NULL) {
-        if (strcmp(buck->entry.key, key) == 0) {
+    while (buck != NULL)
+    {
+        if (strcmp(buck->entry.key, key) == 0)
+        {
             debug("map.c: Found a match for key %s in the map", key);
             return buck->entry.value;
         }
@@ -105,27 +118,35 @@ void *map_get(map *m, char *key) {
     return NULL;
 }
 
-void map_del(map *m, char *key) {
+void map_del(map *m, char *key)
+{
     map_del_dealloc(m, key, 0, 0);
 }
 
-void map_del_dealloc(map *m, char *key, char dealloc_key, char dealloc_value) {
+void map_del_dealloc(map *m, char *key, char dealloc_key, char dealloc_value)
+{
     int index = get_index(m, key);
 
     bucket_list *list = m->table + index;
 
     bucket *buck = list->begin;
 
-    if (buck == NULL) {
+    if (buck == NULL)
+    {
         return;
     }
 
     bucket *prev = NULL;
-    while (buck != NULL) {
-        if (strcmp(buck->entry.key, key) == 0) {
-            if (prev != NULL) {
+    while (buck != NULL)
+    {
+        if (strcmp(buck->entry.key, key) == 0)
+        {
+            if (prev != NULL)
+            {
                 prev->next = buck->next;
-            } else {
+            }
+            else
+            {
                 list->begin = buck->next;
             }
             break;
@@ -134,40 +155,49 @@ void map_del_dealloc(map *m, char *key, char dealloc_key, char dealloc_value) {
         buck = buck->next;
     }
 
-    if (buck != NULL) {
-        if (dealloc_key) {
+    if (buck != NULL)
+    {
+        if (dealloc_key)
+        {
             free(buck->entry.key);
         }
 
-        if (dealloc_value) {
+        if (dealloc_value)
+        {
             free(buck->entry.value);
         }
         free(buck);
     }
 }
 
-void map_iter_keys(map *m, void (*callback)(map *, void *, void *), void *callback_args) {
+void map_iter_keys(map *m, void (*callback)(map *, void *, void *), void *callback_args)
+{
     bucket *curr_bucket;
 
-    for (int i = 0; i < m->capacity; i++) {
+    for (int i = 0; i < m->capacity; i++)
+    {
         curr_bucket = m->table[i].begin;
 
-        while (curr_bucket != NULL) {
+        while (curr_bucket != NULL)
+        {
             callback(m, curr_bucket->entry.key, callback_args);
             curr_bucket = curr_bucket->next;
         }
     }
 }
 
-char should_resize(map *m) {
+char should_resize(map *m)
+{
     return m->size > m->capacity * 4;
 }
 
-unsigned int calc_next_resize(map *m) {
+unsigned int calc_next_resize(map *m)
+{
     unsigned prev_size = 1;
     unsigned resize = 1;
 
-    while (resize <= m->size) {
+    while (resize <= m->size)
+    {
         int aux = resize;
         resize = prev_size + resize;
         prev_size = aux;
@@ -176,26 +206,31 @@ unsigned int calc_next_resize(map *m) {
     return resize;
 }
 
-void resize_map(map *m, unsigned int new_size) {
+void resize_map(map *m, unsigned int new_size)
+{
     // Create a new map
     map *aux_map = map_new(new_size);
 
     // Copy the contents of the current one to the new map.
-    for (int i = 0; i < m->capacity && aux_map->size < m->size; i++) {
+    for (int i = 0; i < m->capacity && aux_map->size < m->size; i++)
+    {
         if (m->table + i == NULL)
             continue;
 
         bucket *b = m->table[i].begin;
 
-        while (b != NULL) {
+        while (b != NULL)
+        {
             map_set(aux_map, b->entry.key, b->entry.value);
             b = b->next;
         }
     }
 
     // Destroy old table
-    for (int i = 0; i < m->capacity; i++) {
-        if (m->table + i != NULL) {
+    for (int i = 0; i < m->capacity; i++)
+    {
+        if (m->table + i != NULL)
+        {
             bucket_list_destroy(m->table[i].begin, 0, 0);
         }
     }
@@ -207,17 +242,21 @@ void resize_map(map *m, unsigned int new_size) {
     free(aux_map);
 }
 
-void map_display(map *m) {
-    for (int i = 0; i < m->capacity; i++) {
+void map_display(map *m)
+{
+    for (int i = 0; i < m->capacity; i++)
+    {
         printf("%d: ", i);
         bucket_list *list = m->table + i;
 
-        if (list == NULL) {
+        if (list == NULL)
+        {
             continue;
         }
 
         bucket *buck = list->begin;
-        while (buck != NULL) {
+        while (buck != NULL)
+        {
             printf(" %s - ", buck->entry.key);
             buck = buck->next;
         }
@@ -225,37 +264,47 @@ void map_display(map *m) {
     }
 }
 
-unsigned calc_hash(const char *key) {
+unsigned calc_hash(const char *key)
+{
     return qhashmurmur3_32(key, strlen(key));
 }
 
-unsigned get_index(map *m, char *key) {
+unsigned get_index(map *m, char *key)
+{
     unsigned int hash = calc_hash(key);
     return hash % m->capacity;
 }
 
-void bucket_list_destroy(bucket *b, char dealloc_keys, char dealloc_vals) {
-    if (b == NULL) {
+void bucket_list_destroy(bucket *b, char dealloc_keys, char dealloc_vals)
+{
+    if (b == NULL)
+    {
         return;
     }
     bucket_list_destroy(b->next, dealloc_keys, dealloc_vals);
 
-    if (dealloc_keys) {
+    if (dealloc_keys)
+    {
         free(b->entry.key);
     }
-    if (dealloc_vals) {
+    if (dealloc_vals)
+    {
         free(b->entry.value);
     }
     free(b);
 }
 
-void map_destroy(map *m) {
+void map_destroy(map *m)
+{
     map_destroy_dealloc(m, 0, 0);
 }
 
-void map_destroy_dealloc(map *m, char dealloc_keys, char dealloc_vals) {
-    for (int i = 0; i < m->capacity; i++) {
-        if (m->table[i].begin != NULL) {
+void map_destroy_dealloc(map *m, char dealloc_keys, char dealloc_vals)
+{
+    for (int i = 0; i < m->capacity; i++)
+    {
+        if (m->table[i].begin != NULL)
+        {
             bucket_list_destroy(m->table[i].begin, dealloc_keys, dealloc_vals);
         }
     }
@@ -283,7 +332,8 @@ void map_destroy_dealloc(map *m, char dealloc_keys, char dealloc_vals) {
  *  in 2012 and published it as a part of qLibc component.
  * @endcode
  */
-unsigned int qhashmurmur3_32(const void *data, size_t nbytes) {
+unsigned int qhashmurmur3_32(const void *data, size_t nbytes)
+{
     if (data == NULL || nbytes == 0)
         return 0;
 
@@ -298,7 +348,8 @@ unsigned int qhashmurmur3_32(const void *data, size_t nbytes) {
 
     int i;
     unsigned int k;
-    for (i = 0; i < nblocks; i++) {
+    for (i = 0; i < nblocks; i++)
+    {
         k = blocks[i];
 
         k *= c1;
@@ -311,7 +362,8 @@ unsigned int qhashmurmur3_32(const void *data, size_t nbytes) {
     }
 
     k = 0;
-    switch (nbytes & 3) {
+    switch (nbytes & 3)
+    {
     case 3:
         k ^= tail[2] << 16;
     case 2:

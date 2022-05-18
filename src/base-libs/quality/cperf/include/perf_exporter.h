@@ -1,9 +1,10 @@
 #pragma once
 
-#include "perftest.h"
 #include "dynarray.h"
+#include "perftest.h"
 
-typedef struct _exporter {
+typedef struct _exporter
+{
     void (*process_report)(perf_test test, perf_report report);
     void (*finalize)(void);
 } exporter;

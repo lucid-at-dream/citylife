@@ -1,17 +1,20 @@
 #include "config.h"
-#include "server.h"
 #include "json.h"
+#include "server.h"
 #include <stdio.h>
 
-char *register_service(char *args) {
+char *register_service(char *args)
+{
     return args;
 }
 
-char *proxy_user_request(char *args) {
+char *proxy_user_request(char *args)
+{
     return args;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     arg_t arg_desc[] = { { "sp", "service-registry-port", INTEGER, OPTIONAL, "The port where the gateway will be listening for service registrations" },
                          { "rp", "rest-api-port", INTEGER, OPTIONAL, "The port where the gateway will be listening for REST requests" } };
 

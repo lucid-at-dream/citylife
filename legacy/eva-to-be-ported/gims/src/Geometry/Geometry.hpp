@@ -1,21 +1,23 @@
 #ifndef _GIMS_GEOMETRY_HPP_
 #define _GIMS_GEOMETRY_HPP_
 
+#include "SystemBase.hpp"
+#include "conf.hpp"
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
-#include <string>
-#include "SystemBase.hpp"
+#include <gmpxx.h>
 #include <iostream>
 #include <list>
 #include <set>
-#include <gmpxx.h>
-#include "conf.hpp"
+#include <string>
 
 using namespace std;
 
-namespace GIMS_GEOMETRY {
-enum GeometryType {
+namespace GIMS_GEOMETRY
+{
+enum GeometryType
+{
     //envolving quad (aka envelope)
     BOUNDINGBOX = 1 << 0,
     //Elementary datatypes
@@ -33,7 +35,8 @@ enum GeometryType {
     LINESEGMENT = 1 << 9,
 };
 
-enum GIMS_Side {
+enum GIMS_Side
+{
     RIGHT = 1 << 0,
     LEFT = 1 << 1,
     ALIGNED = 1 << 2,
@@ -51,7 +54,8 @@ class GIMS_MultiPolygon;
 class GIMS_GeometryCollection;
 class GIMS_LineSegment;
 
-class GIMS_Geometry {
+class GIMS_Geometry
+{
 public:
     GeometryType type;
     long long id; //our id
@@ -67,12 +71,14 @@ public:
     virtual void deepDelete() = 0;
 };
 
-typedef struct _appr_intersection {
+typedef struct _appr_intersection
+{
     bool intersects;
     double area;
 } appr_intersection;
 
-class GIMS_Approximation {
+class GIMS_Approximation
+{
 public:
     int N;
     double falsearea;
@@ -91,7 +97,8 @@ public:
     virtual ~GIMS_Approximation();
 };
 
-class GIMS_MBNgon : public GIMS_Approximation {
+class GIMS_MBNgon : public GIMS_Approximation
+{
 public:
     bool isDisjoint(GIMS_BoundingBox *);
     bool isInside(GIMS_BoundingBox *);
@@ -109,7 +116,8 @@ public:
     ~GIMS_MBNgon();
 };
 
-class GIMS_ConvexHullAproximation : public GIMS_Approximation {
+class GIMS_ConvexHullAproximation : public GIMS_Approximation
+{
 public:
     bool isDisjoint(GIMS_BoundingBox *);
     bool isInside(GIMS_BoundingBox *);
@@ -127,7 +135,8 @@ public:
     ~GIMS_ConvexHullAproximation();
 };
 
-class GIMS_MBR : public GIMS_Approximation {
+class GIMS_MBR : public GIMS_Approximation
+{
 public:
     GIMS_BoundingBox *box;
 
@@ -144,7 +153,8 @@ public:
     ~GIMS_MBR();
 };
 
-class GIMS_BoundingBox : public GIMS_Geometry {
+class GIMS_BoundingBox : public GIMS_Geometry
+{
 public:
     GIMS_Point *lowerLeft, *upperRight;
 
@@ -168,7 +178,8 @@ public:
     ~GIMS_BoundingBox();
 };
 
-class GIMS_GeometryCollection : public GIMS_Geometry {
+class GIMS_GeometryCollection : public GIMS_Geometry
+{
 public:
     int size;
     int allocatedSize;
@@ -186,7 +197,8 @@ public:
     ~GIMS_GeometryCollection();
 };
 
-class GIMS_LineSegment : public GIMS_Geometry {
+class GIMS_LineSegment : public GIMS_Geometry
+{
 public:
     GIMS_Point *p1, *p2;
 
@@ -206,7 +218,8 @@ public:
     ~GIMS_LineSegment();
 };
 
-class GIMS_LineString : public GIMS_Geometry {
+class GIMS_LineString : public GIMS_Geometry
+{
 public:
     GIMS_Point **list;
     int size;
@@ -229,13 +242,15 @@ public:
     ~GIMS_LineString();
 };
 
-class GIMS_Ring : public GIMS_LineString {
+class GIMS_Ring : public GIMS_LineString
+{
 public:
     GIMS_Ring(int size);
     GIMS_Ring();
 };
 
-class GIMS_MultiLineSegment : public GIMS_Geometry {
+class GIMS_MultiLineSegment : public GIMS_Geometry
+{
 public:
     GIMS_LineSegment **list;
     int size;
@@ -253,7 +268,8 @@ public:
     ~GIMS_MultiLineSegment();
 };
 
-class GIMS_MultiLineString : public GIMS_Geometry {
+class GIMS_MultiLineString : public GIMS_Geometry
+{
 public:
     GIMS_LineString **list;
     int size;
@@ -278,7 +294,8 @@ public:
     ~GIMS_MultiLineString();
 };
 
-class GIMS_Point : public GIMS_Geometry {
+class GIMS_Point : public GIMS_Geometry
+{
 public:
     double x, y;
     bool extractedFromDatabase;
@@ -301,7 +318,8 @@ public:
     ~GIMS_Point();
 };
 
-class GIMS_MultiPoint : public GIMS_Geometry {
+class GIMS_MultiPoint : public GIMS_Geometry
+{
 public:
     int size;
     int allocatedSize;
@@ -319,7 +337,8 @@ public:
     ~GIMS_MultiPoint();
 };
 
-class GIMS_Polygon : public GIMS_Geometry {
+class GIMS_Polygon : public GIMS_Geometry
+{
 public:
     GIMS_MultiLineString *externalRing, *internalRings;
 
@@ -345,7 +364,8 @@ public:
     ~GIMS_Polygon();
 };
 
-class GIMS_MultiPolygon : public GIMS_Geometry {
+class GIMS_MultiPolygon : public GIMS_Geometry
+{
 public:
     int size;
     int allocatedSize;

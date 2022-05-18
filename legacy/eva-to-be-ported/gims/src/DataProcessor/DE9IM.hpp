@@ -16,7 +16,8 @@ using namespace GIMS_GEOMETRY;
 #define DIM_EB(x) (((((x)&EB) >> 8) - 1))
 #define DIM_BE(x) (((((x)&BE) >> 10) - 1))
 
-enum IntersectionType {
+enum IntersectionType
+{
     INTERSECT = 3 << 0, /*geometries that intersect the query geometry*/
     II = 3 << 2, /*geometries whose interior intersects query's interior*/
     EI = 3 << 4, /*geometries whose interior intersects query's exterior*/
@@ -27,7 +28,8 @@ enum IntersectionType {
 
 typedef map<long long, unsigned int> matrix_t;
 
-class DE9IM {
+class DE9IM
+{
 public:
     GIMS_Geometry *query;
     matrix_t matrix;

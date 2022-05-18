@@ -1,27 +1,31 @@
 #ifndef _CONF_HPP_
 #define _CONF_HPP_
 
-#include <stdio.h>
-#include <sys/stat.h>
-#include <pwd.h>
-#include <string>
-#include <string.h>
 #include <iostream>
 #include <list>
+#include <pwd.h>
+#include <stdio.h>
+#include <string.h>
+#include <string>
+#include <sys/stat.h>
 
-inline bool verifyFileExistance(const std::string &fname) {
+inline bool verifyFileExistance(const std::string &fname)
+{
     struct stat buffer;
     return (stat(fname.c_str(), &buffer) == 0);
 }
 bool blankLine(char *line);
 
-namespace conf {
-typedef struct _db_conf {
+namespace conf
+{
+typedef struct _db_conf
+{
     char *keyword;
     char *value;
 } db_conf;
 
-typedef struct _config_t {
+typedef struct _config_t
+{
     int max_points_per_node;
     int projection_srid;
     int approximationType;

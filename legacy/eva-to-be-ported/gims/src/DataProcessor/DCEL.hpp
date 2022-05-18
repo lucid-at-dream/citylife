@@ -2,14 +2,15 @@
 #define _DCEL_HPP_
 
 #include "Geometry.hpp"
-#include <set>
 #include <math.h>
+#include <set>
 
 class vertex;
 class face;
 class halfedge;
 
-class vertex {
+class vertex
+{
 public:
     GIMS_Point *pt;
     list<halfedge *> incidentEdges;
@@ -17,7 +18,8 @@ public:
 
     vertex();
 
-    static int compare(const vertex &a, const vertex &b) {
+    static int compare(const vertex &a, const vertex &b)
+    {
         long long int ax = a.pt->x * 100000000.0, ay = a.pt->y * 100000000.0, bx = b.pt->x * 100000000.0, by = b.pt->y * 100000000.0;
 
         ax /= 100;
@@ -36,13 +38,16 @@ public:
         return 0;
     }
 };
-struct vertex_cmp {
-    bool operator()(const vertex *a, const vertex *b) const {
+struct vertex_cmp
+{
+    bool operator()(const vertex *a, const vertex *b) const
+    {
         return vertex::compare(*a, *b) > 0;
     }
 };
 
-class halfedge {
+class halfedge
+{
 public:
     halfedge *prev; /*previous half edge*/
     halfedge *next; /*next half edge*/
@@ -56,7 +61,8 @@ public:
 
     halfedge();
 
-    static int compare(const halfedge &a, const halfedge &b) {
+    static int compare(const halfedge &a, const halfedge &b)
+    {
         int first = vertex::compare(*(a.tail), *(b.tail));
         if (first != 0)
             return first;
@@ -64,13 +70,16 @@ public:
         return second;
     }
 };
-struct halfedge_cmp {
-    bool operator()(const halfedge *a, const halfedge *b) const {
+struct halfedge_cmp
+{
+    bool operator()(const halfedge *a, const halfedge *b) const
+    {
         return halfedge::compare(*a, *b) > 0;
     }
 };
 
-class face {
+class face
+{
 public:
     halfedge *boundary;
     int data;
@@ -83,7 +92,8 @@ typedef set<vertex *, vertex_cmp> vertexlist;
 typedef set<halfedge *, halfedge_cmp> halfedgelist;
 typedef list<face *> facelist;
 
-class DCEL {
+class DCEL
+{
 public:
     vertexlist vertexes;
     halfedgelist halfedges;

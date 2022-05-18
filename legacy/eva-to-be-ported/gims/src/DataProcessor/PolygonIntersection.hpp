@@ -1,26 +1,28 @@
 #ifndef _POLYGONINTERSECTION_HPP_
 #define _POLYGONINTERSECTION_HPP_
 
-#include "SystemBase.hpp"
 #include "DCEL.hpp"
-#include "Geometry.hpp"
 #include "DE9IM.hpp"
-#include <set>
-#include <map>
+#include "Geometry.hpp"
+#include "SystemBase.hpp"
 #include <iostream>
 #include <list>
-#include <vector>
+#include <map>
 #include <queue>
+#include <set>
+#include <vector>
 
 using namespace std;
 
 /*structs*/
-typedef struct _pointlist {
+typedef struct _pointlist
+{
     int nnodes, allocated;
     GIMS_Point **nodes;
 } pointlist;
 
-typedef struct _pointmatrix {
+typedef struct _pointmatrix
+{
     int nrows, allocated;
     pointlist **matrix;
 } pointmatrix;
@@ -29,7 +31,8 @@ typedef struct _pointmatrix {
 extern GIMS_Point *__ptlist_cmp__reference__;
 
 /*line intersection stuff*/
-typedef struct _PolygonIntersectionEvent {
+typedef struct _PolygonIntersectionEvent
+{
     GIMS_Point *pt;
     char type;
     GIMS_LineSegment ls;

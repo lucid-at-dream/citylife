@@ -1,25 +1,27 @@
 #ifndef _BENTLEYSOLVER_HPP_
 #define _BENTLEYSOLVER_HPP_
 
+#include "Balaban.hpp"
+#include "DE9IM.hpp"
 #include "Geometry.hpp"
 #include "SystemBase.hpp"
-#include "DE9IM.hpp"
-#include "Balaban.hpp"
-#include <set>
 #include <iostream>
 #include <list>
-#include <vector>
 #include <queue>
+#include <set>
+#include <vector>
 
 using namespace std;
 
-typedef struct _Event {
+typedef struct _Event
+{
     GIMS_Point *pt;
     char type;
     GIMS_LineSegment ls;
 } Event;
 
-typedef struct _BO_Event {
+typedef struct _BO_Event
+{
     GIMS_Point *pt;
     char type;
     GIMS_MultiLineSegment *ls;
@@ -32,7 +34,8 @@ bool lscmp(GIMS_LineSegment &a, GIMS_LineSegment &b);
 typedef list<GIMS_LineSegment> lsset;
 typedef priority_queue<Event, vector<Event>, decltype(&compare)> evset;
 
-class BentleySolver {
+class BentleySolver
+{
 public:
     /*line sweep and bruteforce implementation*/
     double inputMLS(evset &, GIMS_MultiLineString *, int);

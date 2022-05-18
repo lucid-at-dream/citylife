@@ -4,7 +4,8 @@
 
 #include <pthread.h>
 
-typedef struct _worker_pool {
+typedef struct _worker_pool
+{
     int num_threads;
     void (*do_work)(void *);
     pthread_t *threads;

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "queue.h"
 #include "list.h"
+#include "queue.h"
 
 typedef struct _heap heap;
 typedef struct _heap_node heap_node;

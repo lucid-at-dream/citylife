@@ -1,29 +1,48 @@
 #ifndef PMQUADTREE_HPP
 #define PMQUADTREE_HPP
 
-#include "SystemBase.hpp"
-#include "Geometry.hpp"
-#include "DebRender.hpp"
-#include "DE9IM.hpp"
 #include "BentleySolver.hpp"
-#include "conf.hpp"
 #include "DCEL.hpp"
+#include "DE9IM.hpp"
+#include "DebRender.hpp"
+#include "Geometry.hpp"
 #include "LineIntersection.hpp"
-#include "PolygonIntersection.hpp"
 #include "LinePolygonIntersection.hpp"
+#include "PolygonIntersection.hpp"
+#include "SystemBase.hpp"
+#include "conf.hpp"
 #include "tunasolver.hpp"
 
-#include <list>
 #include <cmath>
+#include <list>
 
 using namespace std;
 
-namespace PMQUADTREE {
-enum NodeType { WHITE, GRAY, BLACK };
-enum Quadrant { NW = 0, NE = 1, SE = 2, SW = 3 };
-enum Direction { NORTH, SOUTH, EAST, WEST };
+namespace PMQUADTREE
+{
+enum NodeType
+{
+    WHITE,
+    GRAY,
+    BLACK
+};
+enum Quadrant
+{
+    NW = 0,
+    NE = 1,
+    SE = 2,
+    SW = 3
+};
+enum Direction
+{
+    NORTH,
+    SOUTH,
+    EAST,
+    WEST
+};
 
-class Node {
+class Node
+{
 public:
     NodeType type; //wheter it is a middle node (GRAY), empty leaf node (WHITE) or non-empty leaf node (BLACK)
     GIMS_BoundingBox *square; //the node's bounding square
@@ -73,7 +92,8 @@ public:
     ~Node();
 };
 
-class PMQuadTree : public spatialIndex {
+class PMQuadTree : public spatialIndex
+{
 public:
     Node *root;
     GIMS_Geometry *query;

@@ -1,6 +1,7 @@
 #pragma once
 
-typedef struct _dynarray {
+typedef struct _dynarray
+{
     int size;
     int capacity;
     void **data;

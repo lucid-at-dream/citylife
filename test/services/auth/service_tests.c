@@ -1,24 +1,25 @@
-#include "service.h"
-#include "ctest/test.h"
 #include "ctest/assert.h"
+#include "ctest/test.h"
 #include "logger/logger.h"
+#include "service.h"
 
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <pthread.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <pthread.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <unistd.h>
-#include <signal.h>
 
 int port;
 pthread_t thread_id;
 
 char *send_message_to_server(int port, char *message, char expect_response);
 
-void *run_service_async(void *args) {
+void *run_service_async(void *args)
+{
     int port = *(int *)args;
 
     // Start the service
@@ -27,7 +28,8 @@ void *run_service_async(void *args) {
     return NULL;
 }
 
-char run_before_test() {
+char run_before_test()
+{
     // Assign a random port number to the service
     srand(clock());
     port = rand() % 20000 + 10000;
@@ -40,7 +42,8 @@ char run_before_test() {
     return 0;
 }
 
-char run_after_test() {
+char run_after_test()
+{
     // Stop the service and wait for it to finish
     service_stop();
     send_message_to_server(port, "", 0);
@@ -53,7 +56,8 @@ char run_after_test() {
     return 0;
 }
 
-char *send_message_to_server(int port, char *message, char expect_response) {
+char *send_message_to_server(int port, char *message, char expect_response)
+{
     int msg_size = strlen(message) + 1;
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -67,7 +71,8 @@ char *send_message_to_server(int port, char *message, char expect_response) {
     send(sockfd, message, msg_size * sizeof(char), 0);
 
     char *response = NULL;
-    if (expect_response) {
+    if (expect_response)
+    {
         response = (char *)calloc(1024, sizeof(char));
         read(sockfd, response, 1024 * sizeof(char));
     }
@@ -77,7 +82,8 @@ char *send_message_to_server(int port, char *message, char expect_response) {
     return response;
 }
 
-char test_create_and_authenticate_user() {
+char test_create_and_authenticate_user()
+{
     run_before_test();
 
     int assertion_error = 0;
@@ -107,10 +113,12 @@ char test_create_and_authenticate_user() {
 
 test test_suite[] = { { "Test creating an user and authenticating with it", &test_create_and_authenticate_user } };
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     suite_report report = run_test_suite(test_suite, sizeof(test_suite) / sizeof(test));
 
-    if (report.failures > 0) {
+    if (report.failures > 0)
+    {
         return -1;
     }
 

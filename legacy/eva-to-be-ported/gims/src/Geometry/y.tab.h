@@ -43,7 +43,8 @@ extern int yydebug;
 /* Token type.  */
 #ifndef YYTOKENTYPE
 #define YYTOKENTYPE
-enum yytokentype {
+enum yytokentype
+{
     _POINT_ = 258,
     _LINESTRING_ = 259,
     _POLYGON_ = 260,
@@ -73,7 +74,8 @@ enum yytokentype {
 /* Value type.  */
 #if !defined YYSTYPE && !defined YYSTYPE_IS_DECLARED
 
-union YYSTYPE {
+union YYSTYPE
+{
 #line 35 "src/Geometry/wkt.y" /* yacc.c:1909  */
 
     double numberlit;

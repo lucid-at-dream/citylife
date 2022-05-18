@@ -1,10 +1,10 @@
 #ifndef _LINEPOLYGONINTERSECTION_HPP_
 #define _LINEPOLYGONINTERSECTION_HPP_
 
-#include "Geometry.hpp"
-#include "DE9IM.hpp"
-#include "PolygonIntersection.hpp"
 #include "DCEL.hpp"
+#include "DE9IM.hpp"
+#include "Geometry.hpp"
+#include "PolygonIntersection.hpp"
 
 using namespace std;
 

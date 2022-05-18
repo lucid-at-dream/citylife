@@ -1,9 +1,11 @@
 #include "LinePolygonIntersection.hpp"
 
-GIMS_MultiLineString *clipMultiLineStringInDCEL(DCEL &planargraph, GIMS_BoundingBox *domain) {
+GIMS_MultiLineString *clipMultiLineStringInDCEL(DCEL &planargraph, GIMS_BoundingBox *domain)
+{
     GIMS_MultiLineString *clippedMLS = new GIMS_MultiLineString();
 
-    for (halfedgelist::iterator it = planargraph.halfedges.begin(); it != planargraph.halfedges.end(); it++) {
+    for (halfedgelist::iterator it = planargraph.halfedges.begin(); it != planargraph.halfedges.end(); it++)
+    {
         halfedge *he = *it;
 
         if (!(he->data & (1 | 2)))
@@ -15,7 +17,8 @@ GIMS_MultiLineString *clipMultiLineStringInDCEL(DCEL &planargraph, GIMS_Bounding
 
         bool keepHalfedge = midpoint.isInsideBox(domain);
 
-        if (keepHalfedge) {
+        if (keepHalfedge)
+        {
             GIMS_LineString *ls = new GIMS_LineString(2);
             ls->appendPoint(p1);
             ls->appendPoint(p2);
@@ -26,7 +29,8 @@ GIMS_MultiLineString *clipMultiLineStringInDCEL(DCEL &planargraph, GIMS_Bounding
     return clippedMLS;
 }
 
-DCEL buildPlanarGraph_mlspol(GIMS_MultiLineString *mls, GIMS_Polygon *pol, GIMS_BoundingBox *domain) {
+DCEL buildPlanarGraph_mlspol(GIMS_MultiLineString *mls, GIMS_Polygon *pol, GIMS_BoundingBox *domain)
+{
     DCEL planargraph;
 
     //clip the linestring
@@ -50,7 +54,8 @@ DCEL buildPlanarGraph_mlspol(GIMS_MultiLineString *mls, GIMS_Polygon *pol, GIMS_
 
 #ifdef DEBUG_LS_POL_INT
     cout << "vertexes" << endl;
-    for (vertexlist::iterator it = planargraph.vertexes.begin(); it != planargraph.vertexes.end(); it++) {
+    for (vertexlist::iterator it = planargraph.vertexes.begin(); it != planargraph.vertexes.end(); it++)
+    {
         cout << (*it)->pt->toWkt() << " (";
         printData((*it)->data);
         cout << ")" << endl;
@@ -63,7 +68,8 @@ DCEL buildPlanarGraph_mlspol(GIMS_MultiLineString *mls, GIMS_Polygon *pol, GIMS_
 
 #ifdef DEBUG_LS_POL_INT
     cout << "vertexes" << endl;
-    for (halfedgelist::iterator it = planargraph.halfedges.begin(); it != planargraph.halfedges.end(); it++) {
+    for (halfedgelist::iterator it = planargraph.halfedges.begin(); it != planargraph.halfedges.end(); it++)
+    {
         cout << (*it)->tail->pt->toWkt() << " --- " << (*it)->twin->tail->pt->toWkt() << " (";
         printData((*it)->data);
         cout << ")" << endl;
@@ -83,7 +89,8 @@ DCEL buildPlanarGraph_mlspol(GIMS_MultiLineString *mls, GIMS_Polygon *pol, GIMS_
     return planargraph;
 }
 
-DCEL buildPlanarGraph_polmls(GIMS_Polygon *pol, GIMS_MultiLineString *mls, GIMS_BoundingBox *domain) {
+DCEL buildPlanarGraph_polmls(GIMS_Polygon *pol, GIMS_MultiLineString *mls, GIMS_BoundingBox *domain)
+{
     DCEL planargraph;
 
     //clip the linestring
@@ -120,15 +127,19 @@ DCEL buildPlanarGraph_polmls(GIMS_Polygon *pol, GIMS_MultiLineString *mls, GIMS_
     return planargraph;
 }
 
-void DE9IM_mls_pol(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_Polygon *other, GIMS_BoundingBox *domain) {
+void DE9IM_mls_pol(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_Polygon *other, GIMS_BoundingBox *domain)
+{
     bool disjoint = true;
-    for (int i = 0; disjoint && i < query->size; i++) {
-        if (!(other->approximation->isDisjoint(&(query->list[i]->bbox)))) {
+    for (int i = 0; disjoint && i < query->size; i++)
+    {
+        if (!(other->approximation->isDisjoint(&(query->list[i]->bbox))))
+        {
             disjoint = false;
         }
     }
 
-    if (disjoint) {
+    if (disjoint)
+    {
         matrix_t::iterator matrix_index = resultset->getMatrixIndex(other->id);
         resultset->setIE(matrix_index, 1);
         resultset->setBE(matrix_index, 0);
@@ -144,14 +155,17 @@ void DE9IM_mls_pol(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_Polygon *
     bool hasPointIntersection = false, hasCommonEdges = false, linestringCrossesPolygon = false, polygonHasUniqueEdge = false,
          linestringHasOutsidePoint = false;
 
-    for (vertexlist::iterator it = planargraph.vertexes.begin(); it != planargraph.vertexes.end(); it++) {
+    for (vertexlist::iterator it = planargraph.vertexes.begin(); it != planargraph.vertexes.end(); it++)
+    {
         vertex *v = *it;
-        if (isVertexOfA(v) && isVertexOfB(v)) {
+        if (isVertexOfA(v) && isVertexOfB(v))
+        {
             hasPointIntersection = true;
         }
     }
 
-    for (halfedgelist::iterator it = planargraph.halfedges.begin(); it != planargraph.halfedges.end(); it++) {
+    for (halfedgelist::iterator it = planargraph.halfedges.begin(); it != planargraph.halfedges.end(); it++)
+    {
         halfedge *he = *it;
 
         if (isEdgeOfA(he) && isExteriorEdgeOfB(he))
@@ -177,11 +191,13 @@ void DE9IM_mls_pol(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_Polygon *
 
     matrix_t::iterator matrix_index = resultset->getMatrixIndex(other->id);
 
-    if (linestringCrossesPolygon) {
+    if (linestringCrossesPolygon)
+    {
         resultset->setII(matrix_index, 1);
         resultset->setIntersect(matrix_index, 1);
     }
-    if (linestringHasOutsidePoint) {
+    if (linestringHasOutsidePoint)
+    {
         resultset->setIE(matrix_index, 1);
         resultset->setBE(matrix_index, 0);
     }
@@ -200,15 +216,19 @@ void DE9IM_mls_pol(DE9IM *resultset, GIMS_MultiLineString *query, GIMS_Polygon *
     clearSearchByproducts();
 }
 
-void DE9IM_pol_mls(DE9IM *resultset, GIMS_Polygon *query, GIMS_MultiLineString *other, GIMS_BoundingBox *domain) {
+void DE9IM_pol_mls(DE9IM *resultset, GIMS_Polygon *query, GIMS_MultiLineString *other, GIMS_BoundingBox *domain)
+{
     bool disjoint = true;
-    for (int i = 0; disjoint && i < other->size; i++) {
-        if (!(query->approximation->isDisjoint(&(other->list[i]->bbox)))) {
+    for (int i = 0; disjoint && i < other->size; i++)
+    {
+        if (!(query->approximation->isDisjoint(&(other->list[i]->bbox))))
+        {
             disjoint = false;
         }
     }
 
-    if (disjoint) {
+    if (disjoint)
+    {
         matrix_t::iterator matrix_index = resultset->getMatrixIndex(other->id);
         resultset->setEI(matrix_index, 1);
         resultset->setEB(matrix_index, 0);
@@ -224,14 +244,17 @@ void DE9IM_pol_mls(DE9IM *resultset, GIMS_Polygon *query, GIMS_MultiLineString *
     bool hasPointIntersection = false, hasCommonEdges = false, linestringCrossesPolygon = false, polygonHasUniqueEdge = false,
          linestringHasOutsidePoint = false;
 
-    for (vertexlist::iterator it = planargraph.vertexes.begin(); it != planargraph.vertexes.end(); it++) {
+    for (vertexlist::iterator it = planargraph.vertexes.begin(); it != planargraph.vertexes.end(); it++)
+    {
         vertex *v = *it;
-        if (isVertexOfA(v) && isVertexOfB(v)) {
+        if (isVertexOfA(v) && isVertexOfB(v))
+        {
             hasPointIntersection = true;
         }
     }
 
-    for (halfedgelist::iterator it = planargraph.halfedges.begin(); it != planargraph.halfedges.end(); it++) {
+    for (halfedgelist::iterator it = planargraph.halfedges.begin(); it != planargraph.halfedges.end(); it++)
+    {
         halfedge *he = *it;
 
         if (isEdgeOfB(he) && isExteriorEdgeOfA(he))
@@ -257,11 +280,13 @@ void DE9IM_pol_mls(DE9IM *resultset, GIMS_Polygon *query, GIMS_MultiLineString *
 
     matrix_t::iterator matrix_index = resultset->getMatrixIndex(other->id);
 
-    if (linestringCrossesPolygon) {
+    if (linestringCrossesPolygon)
+    {
         resultset->setII(matrix_index, 1);
         resultset->setIntersect(matrix_index, 1);
     }
-    if (linestringHasOutsidePoint) {
+    if (linestringHasOutsidePoint)
+    {
         resultset->setEI(matrix_index, 1);
         resultset->setEB(matrix_index, 0);
     }
@@ -285,7 +310,8 @@ void DE9IM_pol_mls(DE9IM *resultset, GIMS_Polygon *query, GIMS_MultiLineString *
   already been somewhat tested because there's another copy of it in the polygon 
   intersection... ahaha that's right, two copies in the same file and it is still
   elsewhere too. Anyone with intents of cleaning up this mess is crying right now.*/
-intersectionset findIntersections_mlspol(GIMS_MultiLineString *mls, GIMS_Polygon *pol) {
+intersectionset findIntersections_mlspol(GIMS_MultiLineString *mls, GIMS_Polygon *pol)
+{
     GIMS_MultiLineString *A = mls, *B = pol->externalRing;
 
     intersectionset intersections(&ls_cmp);
@@ -301,25 +327,33 @@ intersectionset findIntersections_mlspol(GIMS_MultiLineString *mls, GIMS_Polygon
     PolygonIntersectionEvent event;
     lsset red, blue;
 
-    while (!eventQueue.empty()) {
+    while (!eventQueue.empty())
+    {
         event = eventQueue.top();
         eventQueue.pop();
         if (event.pt->x > last_x)
             break;
 
-        if (event.type == 0) {
-            if (event.ls.id == 1) { //red
-                for (lsset::iterator it = red.begin(); it != red.end(); it++) {
+        if (event.type == 0)
+        {
+            if (event.ls.id == 1)
+            { //red
+                for (lsset::iterator it = red.begin(); it != red.end(); it++)
+                {
                     GIMS_Geometry *g = event.ls.intersects((&(*it)));
                     addIntersection(intersections, event.ls, *it, g);
                 }
-                for (lsset::iterator it = blue.begin(); it != blue.end(); it++) {
+                for (lsset::iterator it = blue.begin(); it != blue.end(); it++)
+                {
                     GIMS_Geometry *g = event.ls.intersects((&(*it)));
                     addIntersection(intersections, event.ls, *it, g);
                 }
                 insertToActiveSet(red, event.ls);
-            } else { //blue
-                for (lsset::iterator it = red.begin(); it != red.end(); it++) {
+            }
+            else
+            { //blue
+                for (lsset::iterator it = red.begin(); it != red.end(); it++)
+                {
                     GIMS_Geometry *g = event.ls.intersects((&(*it)));
                     addIntersection(intersections, event.ls, *it, g);
                 }
@@ -327,17 +361,25 @@ intersectionset findIntersections_mlspol(GIMS_MultiLineString *mls, GIMS_Polygon
             }
         }
 
-        else if (event.type == 1) {
-            if (event.ls.id == 1) { //red
-                for (lsset::iterator it = red.begin(); it != red.end(); it++) {
-                    if (ls_cmp(*it, event.ls) == 0) {
+        else if (event.type == 1)
+        {
+            if (event.ls.id == 1)
+            { //red
+                for (lsset::iterator it = red.begin(); it != red.end(); it++)
+                {
+                    if (ls_cmp(*it, event.ls) == 0)
+                    {
                         red.erase(it);
                         break;
                     }
                 }
-            } else { //blue
-                for (lsset::iterator it = blue.begin(); it != blue.end(); it++) {
-                    if (ls_cmp(*it, event.ls) == 0) {
+            }
+            else
+            { //blue
+                for (lsset::iterator it = blue.begin(); it != blue.end(); it++)
+                {
+                    if (ls_cmp(*it, event.ls) == 0)
+                    {
                         blue.erase(it);
                         break;
                     }
@@ -351,7 +393,8 @@ intersectionset findIntersections_mlspol(GIMS_MultiLineString *mls, GIMS_Polygon
     return intersections;
 }
 
-intersectionset findIntersections_polmls(GIMS_Polygon *pol, GIMS_MultiLineString *mls) {
+intersectionset findIntersections_polmls(GIMS_Polygon *pol, GIMS_MultiLineString *mls)
+{
     GIMS_MultiLineString *A = pol->externalRing, *B = mls;
 
     intersectionset intersections(&ls_cmp);
@@ -367,26 +410,34 @@ intersectionset findIntersections_polmls(GIMS_Polygon *pol, GIMS_MultiLineString
     lsset red, blue;
 
     PolygonIntersectionEvent event;
-    while (!eventQueue.empty()) {
+    while (!eventQueue.empty())
+    {
         event = eventQueue.top();
         eventQueue.pop();
         if (event.pt->x > last_x)
             break;
 
-        if (event.type == 0) {
-            if (event.ls.id == 1) { //red
-                for (lsset::iterator it = blue.begin(); it != blue.end(); it++) {
+        if (event.type == 0)
+        {
+            if (event.ls.id == 1)
+            { //red
+                for (lsset::iterator it = blue.begin(); it != blue.end(); it++)
+                {
                     GIMS_Geometry *g = event.ls.intersects((&(*it)));
                     addIntersection(intersections, event.ls, *it, g);
                 }
                 insertToActiveSet(red, event.ls);
-            } else { //blue
-                for (lsset::iterator it = red.begin(); it != red.end(); it++) {
+            }
+            else
+            { //blue
+                for (lsset::iterator it = red.begin(); it != red.end(); it++)
+                {
                     GIMS_Geometry *g = event.ls.intersects((&(*it)));
                     addIntersection(intersections, event.ls, *it, g);
                 }
                 //we need this additional step because there may be self intersections in the MLS
-                for (lsset::iterator it = blue.begin(); it != blue.end(); it++) {
+                for (lsset::iterator it = blue.begin(); it != blue.end(); it++)
+                {
                     GIMS_Geometry *g = event.ls.intersects((&(*it)));
                     addIntersection(intersections, event.ls, *it, g);
                 }
@@ -394,17 +445,25 @@ intersectionset findIntersections_polmls(GIMS_Polygon *pol, GIMS_MultiLineString
             }
         }
 
-        else if (event.type == 1) {
-            if (event.ls.id == 1) { //red
-                for (lsset::iterator it = red.begin(); it != red.end(); it++) {
-                    if (ls_cmp(*it, event.ls) == 0) {
+        else if (event.type == 1)
+        {
+            if (event.ls.id == 1)
+            { //red
+                for (lsset::iterator it = red.begin(); it != red.end(); it++)
+                {
+                    if (ls_cmp(*it, event.ls) == 0)
+                    {
                         red.erase(it);
                         break;
                     }
                 }
-            } else { //blue
-                for (lsset::iterator it = blue.begin(); it != blue.end(); it++) {
-                    if (ls_cmp(*it, event.ls) == 0) {
+            }
+            else
+            { //blue
+                for (lsset::iterator it = blue.begin(); it != blue.end(); it++)
+                {
+                    if (ls_cmp(*it, event.ls) == 0)
+                    {
                         blue.erase(it);
                         break;
                     }
@@ -418,8 +477,10 @@ intersectionset findIntersections_polmls(GIMS_Polygon *pol, GIMS_MultiLineString
     return intersections;
 }
 
-void calculateFaceData_polmls(DCEL &dcel, GIMS_Polygon *pol, GIMS_MultiLineString *mls, GIMS_BoundingBox *domain) {
-    for (facelist::iterator it = dcel.faces.begin(); it != dcel.faces.end(); it++) {
+void calculateFaceData_polmls(DCEL &dcel, GIMS_Polygon *pol, GIMS_MultiLineString *mls, GIMS_BoundingBox *domain)
+{
+    for (facelist::iterator it = dcel.faces.begin(); it != dcel.faces.end(); it++)
+    {
         face *f = *it;
 
         halfedge *e = f->boundary;
@@ -427,21 +488,25 @@ void calculateFaceData_polmls(DCEL &dcel, GIMS_Polygon *pol, GIMS_MultiLineStrin
 
         /* associate the data of the bounding edges with the face's data*/
         f->data |= e->data;
-        while (aux != e) {
+        while (aux != e)
+        {
             f->data |= aux->data;
             aux = aux->next;
         }
 
         /* if at this point we don't have information about the face's intersection with either
          * the polygon or the domain, further processing has to be done to determine it.*/
-        if (!(f->data & (2 + 1))) {
+        if (!(f->data & (2 + 1)))
+        {
             aux = aux->next;
-            while (aux != e) {
+            while (aux != e)
+            {
                 double x = aux->tail->pt->x + (aux->twin->tail->pt->x - aux->tail->pt->x) / 2.0,
                        y = aux->tail->pt->y + (aux->twin->tail->pt->y - aux->tail->pt->y) / 2.0;
                 GIMS_Point middlepoint = GIMS_Point(x, y);
 
-                if (pol->containsPointWithinDomain(&middlepoint, domain)) {
+                if (pol->containsPointWithinDomain(&middlepoint, domain))
+                {
                     f->data |= 2;
                     break;
                 }
@@ -455,8 +520,10 @@ void calculateFaceData_polmls(DCEL &dcel, GIMS_Polygon *pol, GIMS_MultiLineStrin
     }
 }
 
-void calculateFaceData_mlspol(DCEL &dcel, GIMS_MultiLineString *mls, GIMS_Polygon *pol, GIMS_BoundingBox *domain) {
-    for (facelist::iterator it = dcel.faces.begin(); it != dcel.faces.end(); it++) {
+void calculateFaceData_mlspol(DCEL &dcel, GIMS_MultiLineString *mls, GIMS_Polygon *pol, GIMS_BoundingBox *domain)
+{
+    for (facelist::iterator it = dcel.faces.begin(); it != dcel.faces.end(); it++)
+    {
         face *f = *it;
 
         halfedge *e = f->boundary;
@@ -464,21 +531,25 @@ void calculateFaceData_mlspol(DCEL &dcel, GIMS_MultiLineString *mls, GIMS_Polygo
 
         /* associate the data of the bounding edges with the face's data*/
         f->data |= e->data;
-        while (aux != e) {
+        while (aux != e)
+        {
             f->data |= aux->data;
             aux = aux->next;
         }
 
         /* if at this point we don't have information about the face's intersection with either
          * the polygon or the domain, further processing has to be done to determine it.*/
-        if (!(f->data & (8 + 4))) {
+        if (!(f->data & (8 + 4)))
+        {
             aux = aux->next;
-            while (aux != e) {
+            while (aux != e)
+            {
                 double x = aux->tail->pt->x + (aux->twin->tail->pt->x - aux->tail->pt->x) / 2.0,
                        y = aux->tail->pt->y + (aux->twin->tail->pt->y - aux->tail->pt->y) / 2.0;
                 GIMS_Point middlepoint = GIMS_Point(x, y);
 
-                if (pol->containsPointWithinDomain(&middlepoint, domain)) {
+                if (pol->containsPointWithinDomain(&middlepoint, domain))
+                {
                     f->data |= 8;
                     break;
                 }

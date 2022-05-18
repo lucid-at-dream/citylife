@@ -1,20 +1,22 @@
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <sys/wait.h>
-#include <pthread.h>
+#include <unistd.h>
 
 #include "test.h"
 
 char runTest(test *t);
 void display_report(suite_report *report);
 
-suite_report run_test_suite(test *test_suite, int suite_size) {
+suite_report run_test_suite(test *test_suite, int suite_size)
+{
     suite_report report = { 0, 0, 0 }; // succeeded, failed, total
 
     int count = 0;
-    for (; count < suite_size; count++) {
+    for (; count < suite_size; count++)
+    {
         test *t = test_suite + count;
 
         printf("========= Running test %d: '%s'\n", count + 1, t->description);
@@ -26,10 +28,13 @@ suite_report run_test_suite(test *test_suite, int suite_size) {
         pthread_join(*thread, &exit_status);
 
         char failed;
-        if (exit_status != t->expected_exit_status) {
+        if (exit_status != t->expected_exit_status)
+        {
             printf("Expected the test to have returned the value %d, got %d instead\n", t->expected_exit_status, exit_status);
             failed = 1;
-        } else {
+        }
+        else
+        {
             failed = 0;
         }
 
@@ -47,7 +52,8 @@ suite_report run_test_suite(test *test_suite, int suite_size) {
     return report;
 }
 
-void display_report(suite_report *report) {
+void display_report(suite_report *report)
+{
     printf("Finished executing %d tests.\n", report->total);
     printf("Tests executed > Success: %d tests | Failure: %d tests\n", report->successes, report->failures);
 }
@@ -60,6 +66,7 @@ void display_report(suite_report *report) {
  * @param t The test that will be executed
  * @return 0 if the test succeeded, something else on failure.
  */
-char runTest(test *t) {
+char runTest(test *t)
+{
     return t->test_impl();
 }

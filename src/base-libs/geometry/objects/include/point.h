@@ -1,6 +1,7 @@
 #pragma once
 
-typedef struct _point {
+typedef struct _point
+{
     long double x, y;
 } point;
 

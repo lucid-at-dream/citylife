@@ -14,9 +14,11 @@ using namespace GIMS_GEOMETRY;
 using namespace PMQUADTREE;
 using namespace std;
 
-namespace {
+namespace
+{
 // The fixture for testing class Foo.
-class PtInPolTest : public ::testing::TestWithParam<int> {
+class PtInPolTest : public ::testing::TestWithParam<int>
+{
 public:
     char cases_input[30][100] = { INPUTS_DIR "1_0",    INPUTS_DIR "1_1",    INPUTS_DIR "1_2",    INPUTS_DIR "1_3",    INPUTS_DIR "1_4",    INPUTS_DIR "1_5",
                                   INPUTS_DIR "1_6",    INPUTS_DIR "1_7",    INPUTS_DIR "1_8",    INPUTS_DIR "1_9",    INPUTS_DIR "100_0",  INPUTS_DIR "100_1",
@@ -32,7 +34,8 @@ public:
 };
 
 // Tests particular cases of input to function goNorth
-TEST_P(PtInPolTest, polygonContainsPoint) {
+TEST_P(PtInPolTest, polygonContainsPoint)
+{
     int curr_test = GetParam();
 
     char *inputText = (char *)malloc(sizeof(char) * 1000000);
@@ -50,7 +53,8 @@ TEST_P(PtInPolTest, polygonContainsPoint) {
     GIMS_BoundingBox *box = p->getExtent();
 
     /*read the points*/
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < N; i++)
+    {
         wkt = strtok(NULL, "\n");
         points[i] = (GIMS_Point *)fromWkt(wkt);
     }
@@ -59,15 +63,21 @@ TEST_P(PtInPolTest, polygonContainsPoint) {
     PMQuadTree *tree = new PMQuadTree(box);
     tree->insert(p);
     char *results = (char *)malloc(N * sizeof(char));
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < N; i++)
+    {
         results[i] = tree->contains(p, points[i]) ? '1' : '0';
     }
 
-    if (curr_test == RENDERTEST) {
-        for (int i = 0; i < N; i++) {
-            if (results[i] == '0') {
+    if (curr_test == RENDERTEST)
+    {
+        for (int i = 0; i < N; i++)
+        {
+            if (results[i] == '0')
+            {
                 tree->renderRed(points[i]);
-            } else {
+            }
+            else
+            {
                 tree->renderGreen(points[i]);
             }
         }
@@ -90,7 +100,8 @@ TEST_P(PtInPolTest, polygonContainsPoint) {
     /*compare the results*/
     wkt = strtok(inputText, "\n");
     EXPECT_EQ(wkt[0], results[0]);
-    for (int i = 1; i < N; i++) {
+    for (int i = 1; i < N; i++)
+    {
         wkt = strtok(NULL, "\n");
         EXPECT_EQ(wkt[0], results[i]);
         delete points[i];

@@ -1,20 +1,22 @@
 
+#include "assert.h"
 #include "config.h"
 #include "map.h"
 #include "test.h"
-#include "assert.h"
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-typedef struct _config_file {
+typedef struct _config_file
+{
     FILE *ptr;
     char name[32];
 } config_file;
 
-config_file write_tmp_config_file(char *config) {
+config_file write_tmp_config_file(char *config)
+{
     // Write the config to a file
     int fd;
     char config_file_name[] = "/tmp/config_tests_XXXXXX";
@@ -32,7 +34,8 @@ config_file write_tmp_config_file(char *config) {
     return tmp_file;
 }
 
-char test_load_config_from_file() {
+char test_load_config_from_file()
+{
     arg_t arg_desc[] = { { "i", "integer", INTEGER }, { "f", "float", FLOAT }, { "g", "flag", FLAG }, { "s", "string", STRING } };
 
     // Create a configuration file
@@ -61,7 +64,8 @@ char test_load_config_from_file() {
     int assertion_error = 0;
     assertion_error += assert_int_equals("Parsed value is the given value", *(int *)map_get(args, "integer"), 10);
     assertion_error += assert_double_equals("Parsed value is the given value", *(double *)map_get(args, "float"), 10.10);
-    if (!map_get(args, "flag")) {
+    if (!map_get(args, "flag"))
+    {
         printf("Expected the flag 'some-flag' to be set and evaluate to true.");
         assertion_error += 1;
     }
@@ -74,7 +78,8 @@ char test_load_config_from_file() {
     return assertion_error;
 }
 
-char test_unparseable_float_in_config_file() {
+char test_unparseable_float_in_config_file()
+{
     arg_t arg_desc[] = { { "i", "integer", INTEGER }, { "f", "float", FLOAT }, { "g", "flag", FLAG }, { "s", "string", STRING } };
 
     // Create a configuration file
@@ -92,7 +97,8 @@ char test_unparseable_float_in_config_file() {
     return 1;
 }
 
-char test_unparseable_int_in_config_file() {
+char test_unparseable_int_in_config_file()
+{
     arg_t arg_desc[] = { { "i", "integer", INTEGER }, { "f", "float", FLOAT }, { "g", "flag", FLAG }, { "s", "string", STRING } };
 
     // Create a configuration file
@@ -110,7 +116,8 @@ char test_unparseable_int_in_config_file() {
     return 1;
 }
 
-char test_unrecognized_arguments_in_config_file() {
+char test_unrecognized_arguments_in_config_file()
+{
     arg_t arg_desc[] = { { "i", "integer", INTEGER }, { "f", "float", FLOAT }, { "g", "flag", FLAG }, { "s", "string", STRING } };
 
     // Create a configuration file
@@ -128,7 +135,8 @@ char test_unrecognized_arguments_in_config_file() {
     return 1;
 }
 
-char test_command_line_arguments_take_precedence_over_config_file() {
+char test_command_line_arguments_take_precedence_over_config_file()
+{
     arg_t arg_desc[] = { { "i", "integer", INTEGER }, { "f", "float", FLOAT }, { "g", "flag", FLAG }, { "s", "string", STRING } };
 
     // Create a configuration file
@@ -156,7 +164,8 @@ char test_command_line_arguments_take_precedence_over_config_file() {
     return assertion_error;
 }
 
-char test_help_message_and_clean_exit_on_provided_flag() {
+char test_help_message_and_clean_exit_on_provided_flag()
+{
     arg_t arg_desc[] = { { "t", "test-arg", STRING } };
 
     char *argv[] = { "test", "--help" };
@@ -167,7 +176,8 @@ char test_help_message_and_clean_exit_on_provided_flag() {
     return 1;
 }
 
-char test_not_providing_mandatory_arguments() {
+char test_not_providing_mandatory_arguments()
+{
     arg_t arg_desc[] = { { "i", "integer", INTEGER, MANDATORY }, { "f", "float", FLOAT }, { "g", "flag", FLAG }, { "s", "string", STRING } };
 
     // Create a configuration file
@@ -185,7 +195,8 @@ char test_not_providing_mandatory_arguments() {
     return 1;
 }
 
-char test_single_string_argument_in_long_form_happy_path() {
+char test_single_string_argument_in_long_form_happy_path()
+{
     arg_t arg_desc[] = { { "t", "test-arg", STRING } };
 
     char *argv[] = { "test", "--test-arg", "some value" };
@@ -199,13 +210,15 @@ char test_single_string_argument_in_long_form_happy_path() {
     deallocate_arg_map(sizeof(arg_desc) / sizeof(arg_t), arg_desc, args);
 
     // Return test status
-    if (assertion_error) {
+    if (assertion_error)
+    {
         return 1;
     }
     return 0;
 }
 
-char test_two_string_arguments_in_long_form_happy_path() {
+char test_two_string_arguments_in_long_form_happy_path()
+{
     arg_t arg_desc[] = { { "t", "test-arg", STRING }, { "o", "other-arg", STRING } };
 
     char *argv[] = { "test", "--test-arg", "some value", "--other-arg", "other value" };
@@ -223,13 +236,15 @@ char test_two_string_arguments_in_long_form_happy_path() {
     deallocate_arg_map(sizeof(arg_desc) / sizeof(arg_t), arg_desc, args);
 
     // Return test status
-    if (assertion_error) {
+    if (assertion_error)
+    {
         return 1;
     }
     return 0;
 }
 
-char test_one_integer_argument_in_long_form_happy_path() {
+char test_one_integer_argument_in_long_form_happy_path()
+{
     arg_t arg_desc[] = { { "i", "int-arg", INTEGER } };
 
     char *argv[] = { "test", "--int-arg", "100" };
@@ -243,13 +258,15 @@ char test_one_integer_argument_in_long_form_happy_path() {
     deallocate_arg_map(sizeof(arg_desc) / sizeof(arg_t), arg_desc, args);
 
     // Return test status
-    if (assertion_error) {
+    if (assertion_error)
+    {
         return 1;
     }
     return 0;
 }
 
-char test_one_double_argument_in_long_form_happy_path() {
+char test_one_double_argument_in_long_form_happy_path()
+{
     arg_t arg_desc[] = { { "i", "float-arg", FLOAT } };
 
     char *argv[] = { "test", "--float-arg", "100.99" };
@@ -263,13 +280,15 @@ char test_one_double_argument_in_long_form_happy_path() {
     deallocate_arg_map(sizeof(arg_desc) / sizeof(arg_t), arg_desc, args);
 
     // Return test status
-    if (assertion_error) {
+    if (assertion_error)
+    {
         return 1;
     }
     return 0;
 }
 
-char test_one_flag_argument_in_long_form_happy_path() {
+char test_one_flag_argument_in_long_form_happy_path()
+{
     arg_t arg_desc[] = { { "i", "some-flag", FLAG } };
 
     char *argv[] = { "test", "--some-flag" };
@@ -277,7 +296,8 @@ char test_one_flag_argument_in_long_form_happy_path() {
     map *args = load_config(sizeof(arg_desc) / sizeof(arg_t), arg_desc, sizeof(argv) / sizeof(char *), argv);
 
     int assertion_error = 0;
-    if (!map_get(args, "some-flag")) {
+    if (!map_get(args, "some-flag"))
+    {
         printf("Expected the flag 'some-flag' to be set and evaluate to true.");
         assertion_error = 1;
     }
@@ -286,13 +306,15 @@ char test_one_flag_argument_in_long_form_happy_path() {
     deallocate_arg_map(sizeof(arg_desc) / sizeof(arg_t), arg_desc, args);
 
     // Return test status
-    if (assertion_error) {
+    if (assertion_error)
+    {
         return 1;
     }
     return 0;
 }
 
-char test_all_argument_types_in_short_form_happy_path() {
+char test_all_argument_types_in_short_form_happy_path()
+{
     arg_t arg_desc[] = { { "i", "integer", INTEGER }, { "f", "float", FLOAT }, { "g", "flag", FLAG }, { "s", "string", STRING } };
 
     char *argv[] = { "test", "-i", "100", "-f", "10.10", "-g", "-s", "my string" };
@@ -303,7 +325,8 @@ char test_all_argument_types_in_short_form_happy_path() {
     int assertion_error = 0;
     assertion_error |= assert_int_equals("Parsed value is the given value", *(int *)map_get(args, "integer"), 100);
     assertion_error |= assert_double_equals("Parsed value is the given value", *(double *)map_get(args, "float"), 10.10);
-    if (!map_get(args, "flag")) {
+    if (!map_get(args, "flag"))
+    {
         printf("Expected the flag 'some-flag' to be set and evaluate to true.");
         assertion_error |= 1;
     }
@@ -316,7 +339,8 @@ char test_all_argument_types_in_short_form_happy_path() {
     return assertion_error;
 }
 
-char test_parsing_same_argument_twice() {
+char test_parsing_same_argument_twice()
+{
     arg_t arg_desc[] = { { "i", "integer", INTEGER } };
 
     char *argv[] = { "test", "--integer", "100", "-i", "10", "--integer", "1000" };
@@ -332,7 +356,8 @@ char test_parsing_same_argument_twice() {
     return assertion_error;
 }
 
-char test_parsing_non_existent_argument() {
+char test_parsing_non_existent_argument()
+{
     arg_t arg_desc[] = { { "i", "integer", INTEGER } };
 
     char *argv[] = { "test", "--nonexistent", "100" };
@@ -343,7 +368,8 @@ char test_parsing_non_existent_argument() {
     return 1;
 }
 
-char test_parsing_string_as_integer_throws_error() {
+char test_parsing_string_as_integer_throws_error()
+{
     arg_t arg_desc[] = { { "i", "integer", INTEGER } };
 
     char *argv[] = { "test", "--integer", "my string" };
@@ -354,7 +380,8 @@ char test_parsing_string_as_integer_throws_error() {
     return 1;
 }
 
-char test_parsing_float_as_integer_throws_error() {
+char test_parsing_float_as_integer_throws_error()
+{
     arg_t arg_desc[] = { { "i", "integer", INTEGER } };
 
     char *argv[] = { "test", "--integer", "100.01" };
@@ -365,7 +392,8 @@ char test_parsing_float_as_integer_throws_error() {
     return 1;
 }
 
-char test_parsing_string_as_float_throws_error() {
+char test_parsing_string_as_float_throws_error()
+{
     arg_t arg_desc[] = { { "f", "float", FLOAT } };
 
     char *argv[] = { "test", "--float", "my string" };
@@ -376,7 +404,8 @@ char test_parsing_string_as_float_throws_error() {
     return 1;
 }
 
-char test_specifying_non_existing_file() {
+char test_specifying_non_existing_file()
+{
     arg_t arg_desc[] = { { "i", "integer", INTEGER } };
 
     // Get the name of the temporary file created
@@ -410,10 +439,12 @@ test test_suite[] = {
     { "Test that specifying a non existing config files causes program to shut down.", &test_specifying_non_existing_file, EXIT_FAILURE },
 };
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     suite_report report = run_test_suite(test_suite, sizeof(test_suite) / sizeof(test));
 
-    if (report.failures > 0) {
+    if (report.failures > 0)
+    {
         return -1;
     }
 

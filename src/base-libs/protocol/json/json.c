@@ -1,11 +1,12 @@
 #include "json.h"
 
-#include "map.h"
 #include "jsmn.h"
+#include "map.h"
 
 json_object *parse_json_element(jsmntok_t *tokens, int *curr_token, char *json);
 
-json_object *parse_json(char *json) {
+json_object *parse_json(char *json)
+{
     // Initialize parser
     jsmn_parser parser;
     jsmn_init(&parser);
@@ -19,15 +20,19 @@ json_object *parse_json(char *json) {
     return parse_json_element(tokens, &parsed_tokens, json);
 }
 
-json_object *parse_json_element(jsmntok_t *tokens, int *curr_token, char *json) {
+json_object *parse_json_element(jsmntok_t *tokens, int *curr_token, char *json)
+{
     jsmntok_t tok = tokens[*curr_token];
 
-    switch (tok.type) {
-    case JSMN_OBJECT: {
+    switch (tok.type)
+    {
+    case JSMN_OBJECT:
+    {
         *curr_token += 1; // Move from obj to key
 
         map *object = map_new(tok.size * 2);
-        for (int count = 0; count < tok.size; count++) {
+        for (int count = 0; count < tok.size; count++)
+        {
             // Extract the key (a string)
             int key_len = tokens[*curr_token].end - tokens[*curr_token].start;
             char *key = (char *)calloc(key_len + 1, sizeof(char));
@@ -52,7 +57,8 @@ json_object *parse_json_element(jsmntok_t *tokens, int *curr_token, char *json) 
         return result;
     }
 
-    case JSMN_ARRAY: {
+    case JSMN_ARRAY:
+    {
         json_object_content content;
         content.array = NULL;
 
@@ -63,7 +69,8 @@ json_object *parse_json_element(jsmntok_t *tokens, int *curr_token, char *json) 
     }
 
     case JSMN_STRING:
-    case JSMN_PRIMITIVE: {
+    case JSMN_PRIMITIVE:
+    {
         int data_len = tok.end - tok.start;
         char *data = (char *)calloc(data_len + 1, sizeof(char));
         strncpy(data, json + tok.start, data_len);
@@ -79,7 +86,8 @@ json_object *parse_json_element(jsmntok_t *tokens, int *curr_token, char *json) 
         return result;
     }
 
-    default: {
+    default:
+    {
         json_object *result = (json_object *)calloc(1, sizeof(json_object));
         result->type = JSON_ERROR;
         return result;
@@ -87,20 +95,25 @@ json_object *parse_json_element(jsmntok_t *tokens, int *curr_token, char *json) 
     }
 }
 
-void free_json_object_values(map *m, char *key, void *args) {
+void free_json_object_values(map *m, char *key, void *args)
+{
     json_object *obj = (json_object *)map_get(m, key);
     json_dealloc(obj);
 }
 
-void json_dealloc(json_object *json) {
-    switch (json->type) {
-    case JSON_PRIMITIVE: {
+void json_dealloc(json_object *json)
+{
+    switch (json->type)
+    {
+    case JSON_PRIMITIVE:
+    {
         free(json->content.data);
         free(json);
         break;
     }
 
-    case JSON_OBJECT: {
+    case JSON_OBJECT:
+    {
         map_iter_keys(json->content.object, free_json_object_values, NULL);
         map_destroy_dealloc(json->content.object, 1, 0);
         free(json);

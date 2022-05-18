@@ -5,7 +5,8 @@
 typedef struct _active_record active_record;
 typedef struct _rank_list_record rank_list_record;
 
-struct _active_record {
+struct _active_record
+{
     // Nodes pointing to this record are active if and only if the flag is true.
     char is_active;
 
@@ -13,24 +14,24 @@ struct _active_record {
     int ref_count;
 };
 
-struct _rank_list_record {
-    
+struct _rank_list_record
+{
     // The rank to which this rank record refers to.
     int value;
 
     // A pointer to a record in the fix-list for an active node with rank r and positive loss. NULL if no such node exists.
     list_node *loss;
-    
+
     // A pointer to a record in the fix-list for an active root with rank r. NULL if no such node exists.
     list_node *active_roots;
-    
-    // The number of node records and fix-list records pointing to this record. 
+
+    // The number of node records and fix-list records pointing to this record.
     // If the leftmost record on the rank-list gets a ref-count = 0, then the record is deleted from the rank-list and is freed.
     int ref_count;
 };
 
-struct _heap_node {
-
+struct _heap_node
+{
     // The item being stored in this heap node
     void *item;
 
@@ -38,7 +39,7 @@ struct _heap_node {
     // If the node is an active root or an active node with positive loss (i.e. it is on the fix-list), rank
     // points to the corresponding record in the fix-list.
     // Otherwise rank points to the record in the rank-list corresponding to the rank of the node.
-    // (The cases can be distinguished using the active field of the node and the parent together with the loss field). 
+    // (The cases can be distinguished using the active field of the node and the parent together with the loss field).
     list_node *rank;
 
     // Number of nodes below this one
@@ -63,7 +64,8 @@ struct _heap_node {
     list *children;
 };
 
-struct _heap {
+struct _heap
+{
     // Total number of nodes in the heap
     int size;
 

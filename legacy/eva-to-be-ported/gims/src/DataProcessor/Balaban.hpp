@@ -1,12 +1,12 @@
 #ifndef _BALABAN_HPP_
 #define _BALABAN_HPP_
 
-#include <set>
+#include "Geometry.hpp"
 #include <list>
+#include <math.h>
+#include <set>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
-#include "Geometry.hpp"
 
 using namespace std;
 
@@ -15,14 +15,17 @@ using namespace std;
 
 #define MAX_N 10000
 
-namespace ivbalaban {
-typedef struct {
+namespace ivbalaban
+{
+typedef struct
+{
     int type;
     GIMS_Point *pt;
     GIMS_LineSegment ls;
 } endpoint;
 
-typedef struct {
+typedef struct
+{
     int nevents;
     endpoint *endpoints[100];
 } xevent;

@@ -1,12 +1,12 @@
-#include "test.h"
 #include "assert.h"
+#include "test.h"
 
 #include "map.h"
 
 #include "json.h"
 
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 TEST_CASE(test_parse_json_with_nested_dictionaries, {
     FILE *f = fopen("test/_resources/json/valid_json_dictionaries.json", "r");

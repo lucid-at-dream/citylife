@@ -2,7 +2,8 @@
 
 #include "logger.h"
 
-void export_to_console(perf_test test, perf_report report) {
+void export_to_console(perf_test test, perf_report report)
+{
     info("= = = = = = Results for test %s = = = = = =", test.description);
     info("Mean: %.2lfns", report.mean);
     info("Standard Deviation: %.2lfns", report.standard_deviation);
@@ -16,6 +17,7 @@ void export_to_console(perf_test test, perf_report report) {
     info("= = = = = = End of Results = = = = = =");
 }
 
-void log_final_summary() {
+void log_final_summary()
+{
     info("End of Benchmarks");
 }

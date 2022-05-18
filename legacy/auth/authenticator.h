@@ -2,13 +2,19 @@
 
 #include "hashmap/map.h"
 
-typedef struct _authenticator {
+typedef struct _authenticator
+{
     map *auth_table;
 } authenticator;
 
-enum result_code { AUTH_SUCCESS, AUTH_ERROR };
+enum result_code
+{
+    AUTH_SUCCESS,
+    AUTH_ERROR
+};
 
-typedef struct _result {
+typedef struct _result
+{
     enum result_code result;
     char *message;
 } result;

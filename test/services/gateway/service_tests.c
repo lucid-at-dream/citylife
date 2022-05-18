@@ -1,10 +1,10 @@
-#include "test.h"
 #include "assert.h"
+#include "test.h"
 
 #include "service.h"
 
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 TEST_CASE(test_new_service_from_valid_json, {
     FILE *f = fopen("test/_resources/gateway/valid_service_registration_request.json", "r");

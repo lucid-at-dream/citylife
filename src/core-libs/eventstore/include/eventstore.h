@@ -1,9 +1,9 @@
 #pragma once
 
-#include "event_structs.h"
-#include "eventschema.h"
-#include "eventindex.h"
 #include "event.h"
+#include "event_structs.h"
+#include "eventindex.h"
+#include "eventschema.h"
 
 /**
  * Allocates an event store based on the specified schema.

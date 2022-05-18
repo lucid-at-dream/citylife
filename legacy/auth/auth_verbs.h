@@ -1,6 +1,14 @@
 #pragma once
 
-enum _auth_verb { AUTH_NEW, AUTH_DELETE, AUTH_CHANGE_PASSWORD, AUTH_AUTH, AUTH_INVALID_REQUEST, AUTH_VERBS_COUNT };
+enum _auth_verb
+{
+    AUTH_NEW,
+    AUTH_DELETE,
+    AUTH_CHANGE_PASSWORD,
+    AUTH_AUTH,
+    AUTH_INVALID_REQUEST,
+    AUTH_VERBS_COUNT
+};
 
 typedef enum _auth_verb auth_verb;
 
