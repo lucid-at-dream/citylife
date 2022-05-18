@@ -9,3 +9,4 @@ typedef struct _polygon {
 } polygon;
 
 polygon *polygon_new(line_string *external_ring, multi_line_string *internal_rings);
+void polygon_destroy(polygon *pol);

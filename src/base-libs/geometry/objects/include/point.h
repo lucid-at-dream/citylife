@@ -5,3 +5,4 @@ typedef struct _point {
 } point;
 
 point *point_new(long double x, long double y);
+void point_destroy(point *p);

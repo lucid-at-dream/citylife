@@ -20,7 +20,7 @@ char test_parse_single_point(long double x, long double y) {
     ASSERT_LF_EQUALS("X coordinate is 1.0", geom->object.p->x, x, 0.0000001);
     ASSERT_LF_EQUALS("Y coordinate is 1.0", geom->object.p->y, y, 0.0000001);
 
-    free(geom->object.p);
+    point_destroy(geom->object.p);
     free(geom);
 
     return assertion_error;
@@ -68,11 +68,9 @@ char test_parse_single_line_string(int size, ...) {
         point *p = dynarray_get(geom->object.ls->vertex_list, i);
         ASSERT_LF_EQUALS("X coordinate is 1.0", p->x, point_list[i].x, 0.0000001);
         ASSERT_LF_EQUALS("Y coordinate is 1.0", p->y, point_list[i].y, 0.0000001);
-        free(p);
     }
 
-    dynarray_destroy(geom->object.ls->vertex_list);
-    free(geom->object.ls);
+    line_string_destroy(geom->object.ls);
     free(geom);
 
     return assertion_error;
@@ -148,9 +146,7 @@ char test_parse_single_polygon(int external_ring_size, int internal_ring_count, 
         point *p = dynarray_get(geom->object.pol->external_ring->vertex_list, i);
         ASSERT_LF_EQUALS("X coordinate is 1.0", p->x, external_ring[i].x, 0.0000001);
         ASSERT_LF_EQUALS("Y coordinate is 1.0", p->y, external_ring[i].y, 0.0000001);
-        free(p);
     }
-    dynarray_destroy(geom->object.pol->external_ring->vertex_list);
 
     for (int i = 0; i < internal_ring_count; i++) {
         line_string *ring = dynarray_get(geom->object.pol->internal_rings->line_string_list, i);
@@ -160,11 +156,11 @@ char test_parse_single_polygon(int external_ring_size, int internal_ring_count, 
             point *p = dynarray_get(ring->vertex_list, j);
             ASSERT_LF_EQUALS("X coordinate is 1.0", p->x, internal_rings[i][j].x, 0.0000001);
             ASSERT_LF_EQUALS("Y coordinate is 1.0", p->y, internal_rings[i][j].y, 0.0000001);
-            free(p);
         }
+        free(internal_rings[i]);
     }
 
-    free(geom->object.pol);
+    polygon_destroy(geom->object.pol);
     free(geom);
 
     return assertion_error;
