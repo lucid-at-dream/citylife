@@ -114,8 +114,8 @@ polygon_def : _LPAR_ linestring_def _RPAR_ {
                   polygon *p = polygon_new($2, NULL);
                   $$ = p;
               }
-            | _LPAR_ linestring_def _RPAR_ _COMMA_ _LPAR_ multilinestring_def _RPAR_ {
-                  polygon *p = polygon_new($2, $6);
+            | _LPAR_ linestring_def _RPAR_ _COMMA_ multilinestring_def {
+                  polygon *p = polygon_new($2, $5);
                   $$ = p;
               }
             ;
