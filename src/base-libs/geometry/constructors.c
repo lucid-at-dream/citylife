@@ -3,13 +3,6 @@
 
 #include <stdlib.h>
 
-multi_point *multi_point_new()
-{
-    multi_point *new = (multi_point *)calloc(1, sizeof(multi_point));
-    new->point_list = dynarray_new();
-    return new;
-}
-
 geometry_collection *geometry_collection_new()
 {
     geometry_collection *new = (geometry_collection *)calloc(1, sizeof(geometry_collection));
