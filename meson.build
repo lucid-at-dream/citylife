@@ -24,7 +24,7 @@ flex = find_program('flex')
 flex_src = custom_target(
     'flex_wkt',
     output : ['wkt.lex.yy.c'],
-    input : 'src/base-libs/geometry/parse/well_known_text.l',
+    input : 'src/base-libs/geometry/wkt_parse/well_known_text.l',
     command : [flex, '-o', '@OUTPUT@', '@INPUT@']
 )
 
@@ -34,7 +34,7 @@ bison = find_program('yacc')
 bison_src = custom_target(
     'bison_wkt',
     output : ['wkt.y.tab.c', 'wkt.y.tab.h'],
-    input : 'src/base-libs/geometry/parse/well_known_text.y',
+    input : 'src/base-libs/geometry/wkt_parse/well_known_text.y',
     command : [bison, '@INPUT@', '-o', '@OUTPUT0@', '--defines=@OUTPUT1@']
 )
 
