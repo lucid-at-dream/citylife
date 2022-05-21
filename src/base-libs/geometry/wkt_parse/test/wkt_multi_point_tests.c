@@ -28,10 +28,10 @@ char test_parse_single_multi_point(char wrap_points, int size, ...)
         point p = va_arg(argptr, point);
         point_list[i] = p;
 
-        if (wrap_points) 
+        if (wrap_points)
         {
             sprintf(point_buffer, "(%LF %LF)", p.x, p.y);
-        } 
+        }
         else
         {
             sprintf(point_buffer, "%LF %LF", p.x, p.y);
@@ -65,22 +65,13 @@ char test_parse_single_multi_point(char wrap_points, int size, ...)
 }
 
 TEST_CASE(test_multi_point_parsing, {
-    
     char wrap_points = 0;
-    assertion_error += test_parse_single_multi_point(
-        wrap_points,
-        3, (point){ 1.2, 3 }, (point){ 4, 5.6 }, (point){ 7, 8 }
-    );
+    assertion_error += test_parse_single_multi_point(wrap_points, 3, (point){ 1.2, 3 }, (point){ 4, 5.6 }, (point){ 7, 8 });
 
     wrap_points = 1;
-    assertion_error += test_parse_single_multi_point(
-        wrap_points,
-        3, (point){ 1.2, 3 }, (point){ 4, 5.6 }, (point){ 7, 8 }
-    );
+    assertion_error += test_parse_single_multi_point(wrap_points, 3, (point){ 1.2, 3 }, (point){ 4, 5.6 }, (point){ 7, 8 });
 })
 
 // TODO: Add negative cases (parse errors) and assert error message relevance
 
-TEST_SUITE(
-    RUN_TEST("Test parsing points", &test_multi_point_parsing),
-)
+TEST_SUITE(RUN_TEST("Test parsing points", &test_multi_point_parsing), )

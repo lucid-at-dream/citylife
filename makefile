@@ -1,8 +1,12 @@
-.PHONY: setup build test sonar clean
+.PHONY: format setup build test sonar clean
 
 default: build
 
-setup:
+format:
+	find . -name "*.h" | xargs clang-format -i
+	find . -name "*.c" | xargs clang-format -i
+
+setup: format
 	meson setup build
 	meson configure -Db_coverage=true build
 

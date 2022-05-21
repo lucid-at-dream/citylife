@@ -98,18 +98,12 @@ char test_parse_single_polygon(int external_ring_size, int internal_ring_count, 
 }
 
 TEST_CASE(test_polygon_parsing, {
-    assertion_error += test_parse_single_polygon(
-        5, 0, (point){ 30, 10 }, (point){ 40, 40 }, (point){ 20, 40 }, (point){ 10, 20 }, (point){ 30, 10 }
-    );
+    assertion_error += test_parse_single_polygon(5, 0, (point){ 30, 10 }, (point){ 40, 40 }, (point){ 20, 40 }, (point){ 10, 20 }, (point){ 30, 10 });
 
-    assertion_error += test_parse_single_polygon(
-        5, 1, (point){ 30, 10 }, (point){ 40, 40 }, (point){ 20, 40 }, (point){ 10, 20 }, (point){ 30, 10 },
-        3, (point){ 30, 10 }, (point){ 40, 40 }, (point){ 20, 40 }
-    );
+    assertion_error += test_parse_single_polygon(5, 1, (point){ 30, 10 }, (point){ 40, 40 }, (point){ 20, 40 }, (point){ 10, 20 }, (point){ 30, 10 }, 3,
+                                                 (point){ 30, 10 }, (point){ 40, 40 }, (point){ 20, 40 });
 })
 
 // TODO: Add negative cases (parse errors) and assert error message relevance
 
-TEST_SUITE(
-    RUN_TEST("Test parsing polygons.", &test_polygon_parsing),
-)
+TEST_SUITE(RUN_TEST("Test parsing polygons.", &test_polygon_parsing), )

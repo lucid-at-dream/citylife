@@ -35,6 +35,4 @@ TEST_CASE(test_point_parsing, {
 
 // TODO: Add negative cases (parse errors) and assert error message relevance
 
-TEST_SUITE(
-    RUN_TEST("Test parsing points.", &test_point_parsing)
-)
+TEST_SUITE(RUN_TEST("Test parsing points.", &test_point_parsing))

@@ -66,6 +66,4 @@ TEST_CASE(test_line_string_parsing, {
 
 // TODO: Add negative cases (parse errors) and assert error message relevance
 
-TEST_SUITE(
-    RUN_TEST("Test parsing linestrings.", &test_line_string_parsing),
-)
+TEST_SUITE(RUN_TEST("Test parsing linestrings.", &test_line_string_parsing), )

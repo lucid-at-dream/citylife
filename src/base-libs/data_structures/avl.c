@@ -1,4 +1,77 @@
-#include "avl.hpp"
+#include "avl.h"
+
+#include <stdlib.h>
+
+avl_node *avl_node_new(void *data);
+void avl_node_destroy(avl_node *node);
+
+avl_tree *tree_new(int (*compare)(const void *, const void *))
+{
+    // TODO
+    return NULL;
+}
+
+void tree_destroy(avl_tree *tree)
+{
+    // TODO
+}
+
+void tree_insert(avl_tree *tree, void *data)
+{
+    // TODO
+}
+
+avl_node *find(avl_tree *tree, void *data, int (*compare)(const void *given_data, const void *node_data))
+{
+    // TODO
+}
+
+void tree_remove(avl_tree *tree, avl_node *node)
+{
+    // TODO
+}
+
+avl_tree *tree_merge(avl_tree *a_tree, avl_tree *another_tree, char overwrite, void *(*merge)(const void *a_tree_data, const void *another_tree_data),
+                     int (*compare)(const void *a_tree_data, const void *another_tree_data))
+{
+    // TODO
+}
+
+// Private functions
+
+avl_node *avl_node_new(void *data)
+{
+    // TODO
+    return NULL;
+}
+
+void avl_node_destroy(avl_node *node)
+{
+    // TODO
+}
+
+/*
+
+//tree like printing function
+//void prettyPrint();
+//prints the elements in preorder
+//void preOrder();
+//updates the node height
+//void updateHeight();
+//returns the balance factor of the tree rooted at this node
+//int getBalance();
+
+
+//retrieves the data corresponding to the given key
+void *avl_find(avl *tree, void *data);
+
+//inserts a given item in the tree
+int insert(GIMS_Geometry *item);
+AVLNode *remove(long long item);
+void rebalanceAfterRemove();
+void rotateLeft();
+void rotateRight();
+
 
 //constructor
 AVLNode::AVLNode(GIMS_Geometry *data)
@@ -169,7 +242,6 @@ int AVLNode::insert(GIMS_Geometry *item)
     return added;
 }
 
-/*TODO. height update is buggy!!*/
 AVLNode *AVLNode::remove(long long item)
 {
     AVLNode *removedNode = NULL;
@@ -189,10 +261,10 @@ AVLNode *AVLNode::remove(long long item)
         return removedNode;
     }
     else
-    { /*this is the node to remove*/
+    {
         removedNode = this;
 
-        /*if there is no offspring, we can delete right away*/
+        //if there is no offspring, we can delete right away
         if (this->left == NULL && this->right == NULL)
         {
             if (this->parent != NULL)
@@ -202,7 +274,7 @@ AVLNode *AVLNode::remove(long long item)
                 else
                     this->parent->right = NULL;
             }
-            /*if there's only one child, we can just replace this node for it*/
+            //if there's only one child, we can just replace this node for it
         }
         else if (this->left != NULL && this->right == NULL)
         {
@@ -228,15 +300,15 @@ AVLNode *AVLNode::remove(long long item)
         }
         else
         {
-            /*if we have two children, we need to fetch the leftmost node of the 
-              right subtree and replace this node for it.*/
+            //if we have two children, we need to fetch the leftmost node of the 
+            //right subtree and replace this node for it.
 
-            /*find it*/
+            // find it
             AVLNode *leftmost = this->right;
             while (leftmost->left != NULL)
                 leftmost = leftmost->left;
 
-            /*remove it*/
+            // remove it
             if (leftmost->parent->right == leftmost)
             {
                 leftmost->parent->right = NULL;
@@ -256,7 +328,7 @@ AVLNode *AVLNode::remove(long long item)
                 }
             }
 
-            /*replace ourselves*/
+            // replace ourselves
             if (this->parent != NULL)
             {
                 if (this->parent->right == this)
@@ -389,8 +461,6 @@ void AVLNode::rotateRight()
     this->parent->updateHeight();
 }
 
-/*AVL TREE*/
-
 AVLTree::iterator AVLTree::begin()
 {
     if (this->root == NULL)
@@ -445,7 +515,6 @@ int AVLTree::size()
     return this->nnodes;
 }
 
-/*TODO: !Optimize! this can be done in linear time with in order traversals*/
 //merges the given tree into this tree.
 void AVLTree::merge(AVLTree *tree)
 {
@@ -494,3 +563,4 @@ AVLNode *AVLTree::remove(long long item)
     }
     return rm;
 }
+*/
