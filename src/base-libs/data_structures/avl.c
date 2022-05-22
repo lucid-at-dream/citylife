@@ -5,25 +5,60 @@
 avl_node *avl_node_new(void *data);
 void avl_node_destroy(avl_node *node);
 
+void tree_node_destroy_recurse(avl_node *node);
+void tree_node_insert_recurse(avl_node *node, avl_node *new_node, int (*compare)(const void *, const void *));
+avl_node *tree_node_find(avl_node *this, void *data, int (*compare)(const void *, const void *));
+void rotateLeft(avl_node *this);
+void rotateRight(avl_node *this);
+
 avl_tree *tree_new(int (*compare)(const void *, const void *))
 {
-    // TODO
-    return NULL;
+    avl_tree *new = (avl_tree *)calloc(1, sizeof(avl_tree));
+    new->compare = compare;
+    return new;
 }
 
 void tree_destroy(avl_tree *tree)
 {
-    // TODO
+    tree_node_destroy_recurse(tree->root);
+    free(tree);
 }
 
 void tree_insert(avl_tree *tree, void *data)
 {
-    // TODO
+    avl_node *new_node = avl_node_new(data);
+
+    if (tree->root == NULL)
+    {
+        tree->root = new_node;
+    }
+    else
+    {
+        tree_node_insert_recurse(tree->root, new_node, tree->compare);
+    }
 }
 
-avl_node *find(avl_tree *tree, void *data, int (*compare)(const void *given_data, const void *node_data))
+avl_node *tree_find(avl_tree *this, void *data, int (*compare)(const void *given_data, const void *node_data))
 {
-    // TODO
+    avl_node *node = this->root;
+
+    while (node != NULL)
+    {
+        int relation = compare(data, node->data);
+        if (relation > 0)
+        {
+            node = node->right;
+        }
+        else if (relation < 0)
+        {
+            node = node->left;
+        }
+        else
+        {
+            return node;
+        }
+    }
+    return NULL;
 }
 
 void tree_remove(avl_tree *tree, avl_node *node)
@@ -41,13 +76,139 @@ avl_tree *tree_merge(avl_tree *a_tree, avl_tree *another_tree, char overwrite, v
 
 avl_node *avl_node_new(void *data)
 {
-    // TODO
-    return NULL;
+    avl_node *new = (avl_node *)calloc(1, sizeof(avl_node));
+    new->data = data;
+    return new;
 }
 
 void avl_node_destroy(avl_node *node)
 {
-    // TODO
+    free(node);
+}
+
+void tree_node_destroy_recurse(avl_node *node)
+{
+    if (node == NULL)
+    {
+        return;
+    }
+
+    tree_node_destroy_recurse(node->left);
+    tree_node_destroy_recurse(node->right);
+
+    avl_node_destroy(node);
+}
+
+void tree_node_insert_recurse(avl_node *this, avl_node *new_node, int (*compare)(const void *, const void *))
+{
+    int compar = compare(new_node->data, this->data);
+
+    // Insert the node
+    if (compar > 0)
+    {
+        if (this->right == NULL)
+        {
+            this->right = new_node;
+            new_node->parent = this;
+        }
+        else
+        {
+            tree_node_insert_recurse(this->right, new_node, compare);
+        }
+    }
+    else if (compar < 0)
+    {
+        if (this->left == NULL)
+        {
+            this->left = new_node;
+            new_node->parent = this;
+        }
+        else
+        {
+            tree_node_insert_recurse(this->left, new_node, compare);
+        }
+    }
+
+    // Update node height
+    int hleft = this->left != NULL ? this->left->height : 0, hright = this->right != NULL ? this->right->height : 0;
+    this->height = hleft > hright ? hleft + 1 : hright + 1;
+
+    // Check if this subtree is unbalanced
+    int balance = hleft - hright;
+
+    // rebalance
+    if (abs(balance) > 1)
+    {
+        // Left branch is too long
+        if (balance > 1)
+        {
+            int relation = compare(new_node->data, this->left->data);
+            if (relation > 0) // Node was inserted in the right subtree of the left node. Rotate subtree left.
+            {
+                rotateLeft(this->left);
+            }
+            rotateRight(this);
+        }
+        else // balance < 1: Right branch is too long
+        {
+            int relation = compare(new_node->data, this->right->data);
+            if (relation < 0)
+            {
+                rotateRight(this->right); // Node was inserted in the left subtree of the right node. Rotate it right.
+            }
+            rotateLeft(this);
+        }
+    }
+}
+
+void rotateLeft(avl_node *this)
+{
+    /*
+    // Perform rotation
+    AVLNode *aux = this->right->left;
+    this->right->left = this;
+    this->right->parent = this->parent;
+    if (this->parent != NULL)
+    {
+        if (this->parent->left == this)
+            this->parent->left = this->right;
+        else
+            this->parent->right = this->right;
+    }
+    this->parent = this->right;
+    this->right = aux;
+    if (aux != NULL)
+        aux->parent = this;
+
+    //  Update heights
+    this->updateHeight();
+    this->parent->updateHeight();
+    */
+}
+
+void rotateRight(avl_node *this)
+{
+    /*
+    // Perform rotation
+    AVLNode *aux = this->left->right;
+    this->left->right = this;
+    this->left->parent = this->parent;
+    if (this->parent != NULL)
+    {
+        if (this->parent->left == this)
+            this->parent->left = this->left;
+        else
+            this->parent->right = this->left;
+    }
+    this->parent = this->left;
+    this->left = aux;
+    if (aux != NULL)
+        aux->parent = this;
+
+    // Update heights
+    this->updateHeight();
+    this->parent->updateHeight();
+    */
 }
 
 /*
@@ -156,91 +317,8 @@ int AVLNode::getBalance()
 //retrieves the data corresponding to the given key
 GIMS_Geometry *AVLNode::find(long long key)
 {
-    AVLNode *aux = this;
-    int compar;
-    while (aux != NULL)
-    {
-        compar = KEYCMP(key, aux->data->id);
-        if (compar > 0)
-        {
-            aux = aux->right;
-        }
-        else if (compar < 0)
-        {
-            aux = aux->left;
-        }
-        else
-        {
-            return aux->data;
-        }
-    }
-    return NULL;
 }
 
-//inserts a given item in the tree
-int AVLNode::insert(GIMS_Geometry *item)
-{
-    int compar = KEYCMP(item->id, this->data->id);
-
-    int added = 0;
-    if (compar > 0)
-    {
-        if (this->right == NULL)
-        {
-            this->right = new AVLNode(item);
-            this->right->parent = this;
-            added = 1;
-        }
-        else
-            added = this->right->insert(item); //check for nullness
-    }
-    else if (compar < 0)
-    {
-        if (this->left == NULL)
-        {
-            this->left = new AVLNode(item);
-            this->left->parent = this;
-            added = 1;
-        }
-        else
-            added = this->left->insert(item); //check for nullness
-    }
-
-    //update node height
-    int hleft = this->left != NULL ? this->left->height : 0, hright = this->right != NULL ? this->right->height : 0;
-    this->height = hleft > hright ? hleft + 1 : hright + 1;
-
-    //check if this subtree is unbalanced
-    int balance = hleft - hright;
-
-    //rebalance
-    if (balance > 1 || balance < -1)
-    {
-        // Left Left Case
-        if (balance > 1 && KEYCMP(item->id, this->left->data->id) < 0)
-            this->rotateRight();
-
-        // Left Right Case
-        else if (balance > 1 && KEYCMP(item->id, this->left->data->id) > 0)
-        {
-            this->left->rotateLeft();
-            this->rotateRight();
-        }
-
-        // Right Right Case
-        else if (balance < -1 && KEYCMP(item->id, this->right->data->id) > 0)
-            this->rotateLeft();
-
-        // Right Left Case
-        else if (balance < -1 && KEYCMP(item->id, this->right->data->id) < 0)
-        {
-            this->right->rotateRight();
-            this->rotateLeft();
-        }
-    }
-
-    return added;
-}
 
 AVLNode *AVLNode::remove(long long item)
 {
@@ -413,52 +491,6 @@ void AVLNode::rebalanceAfterRemove()
 
     if (this->parent != NULL)
         this->parent->rebalanceAfterRemove();
-}
-
-void AVLNode::rotateLeft()
-{
-    // Perform rotation
-    AVLNode *aux = this->right->left;
-    this->right->left = this;
-    this->right->parent = this->parent;
-    if (this->parent != NULL)
-    {
-        if (this->parent->left == this)
-            this->parent->left = this->right;
-        else
-            this->parent->right = this->right;
-    }
-    this->parent = this->right;
-    this->right = aux;
-    if (aux != NULL)
-        aux->parent = this;
-
-    //  Update heights
-    this->updateHeight();
-    this->parent->updateHeight();
-}
-
-void AVLNode::rotateRight()
-{
-    // Perform rotation
-    AVLNode *aux = this->left->right;
-    this->left->right = this;
-    this->left->parent = this->parent;
-    if (this->parent != NULL)
-    {
-        if (this->parent->left == this)
-            this->parent->left = this->left;
-        else
-            this->parent->right = this->left;
-    }
-    this->parent = this->left;
-    this->left = aux;
-    if (aux != NULL)
-        aux->parent = this;
-
-    // Update heights
-    this->updateHeight();
-    this->parent->updateHeight();
 }
 
 AVLTree::iterator AVLTree::begin()

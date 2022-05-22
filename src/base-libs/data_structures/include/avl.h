@@ -13,6 +13,7 @@ typedef struct _avl_tree
 {
     unsigned int size;
     avl_node *root;
+    int (*compare)(const void *, const void *);
 } avl_tree;
 
 /**
@@ -49,7 +50,7 @@ void tree_insert(avl_tree *tree, void *data);
  * is less, equal or greater than the node's data, respectively.
  * @return avl_node* The tree node that contains the found data.
  */
-avl_node *find(avl_tree *tree, void *data, int (*compare)(const void *given_data, const void *node_data));
+avl_node *tree_find(avl_tree *tree, void *data, int (*compare)(const void *given_data, const void *node_data));
 
 /**
  * @brief Removes the given node from the given tree.
