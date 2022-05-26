@@ -3,6 +3,7 @@
 
 #include "avl.h"
 
+#include <math.h>
 #include <stdlib.h>
 
 int int_compare(const void *a, const void *b)
@@ -66,12 +67,14 @@ int int_compare_with_global_counter(const void *a, const void *b)
 TEST_CASE(test_tree_insert_random_assert_logarithmic_comparison_count, {
     avl_tree *tree = tree_new(&int_compare);
 
-    int log_b2_512 = 9;
-    int num_finds = 10;
+    int N = 2047;
 
-    // Insert 512 random elements
+    int num_finds = 10;
+    int max_height = (int)(log(N + num_finds + 2) / log(1.618) - 0.3277);
+
+    // Insert N random elements
     srand(0);
-    for (int i = 0; i < 511 - num_finds; i++)
+    for (int i = 0; i < N - num_finds; i++)
     {
         tree_insert(tree, rand());
     }
@@ -88,7 +91,7 @@ TEST_CASE(test_tree_insert_random_assert_logarithmic_comparison_count, {
     {
         global_comparison_counter = 0;
         tree_find(tree, stuff_to_find[i], int_compare_with_global_counter);
-        ASSERT_INT_LESS_THAN("Number of comparisons should never exceed log2(N)", global_comparison_counter, log_b2_512 + 1);
+        ASSERT_INT_LESS_THAN("Number of comparisons should never exceed log2(N)", global_comparison_counter, max_height + 1);
     }
 
     tree_destroy(tree);
@@ -97,4 +100,4 @@ TEST_CASE(test_tree_insert_random_assert_logarithmic_comparison_count, {
 TEST_SUITE(
         RUN_TEST("Test inserting and retrieving an element.", &test_tree_insert_one_find_one),
         RUN_TEST("Test inserting and retrieving some elements.", &test_tree_insert_some_find_some),
-        RUN_TEST("Test comparison count of find operations", &test_tree_insert_random_assert_logarithmic_comparison_count), )
+        RUN_TEST("Test comparison count of find operations after inserts.", &test_tree_insert_random_assert_logarithmic_comparison_count), )
