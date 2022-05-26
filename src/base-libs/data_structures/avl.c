@@ -6,10 +6,11 @@ avl_node *avl_node_new(void *data);
 void avl_node_destroy(avl_node *node);
 
 void tree_node_destroy_recurse(avl_node *node);
-void tree_node_insert_recurse(avl_node *node, avl_node *new_node, int (*compare)(const void *, const void *));
+void tree_node_insert_recurse(avl_tree *tree, avl_node *node, avl_node *new_node, int (*compare)(const void *, const void *));
 avl_node *tree_node_find(avl_node *this, void *data, int (*compare)(const void *, const void *));
-void rotateLeft(avl_node *this);
-void rotateRight(avl_node *this);
+void rotate_left(avl_tree *tree, avl_node *this);
+void rotate_right(avl_tree *tree, avl_node *this);
+void update_height(avl_node *this);
 
 avl_tree *tree_new(int (*compare)(const void *, const void *))
 {
@@ -34,7 +35,7 @@ void tree_insert(avl_tree *tree, void *data)
     }
     else
     {
-        tree_node_insert_recurse(tree->root, new_node, tree->compare);
+        tree_node_insert_recurse(tree, tree->root, new_node, tree->compare);
     }
 }
 
@@ -99,7 +100,7 @@ void tree_node_destroy_recurse(avl_node *node)
     avl_node_destroy(node);
 }
 
-void tree_node_insert_recurse(avl_node *this, avl_node *new_node, int (*compare)(const void *, const void *))
+void tree_node_insert_recurse(avl_tree *tree, avl_node *this, avl_node *new_node, int (*compare)(const void *, const void *))
 {
     int compar = compare(new_node->data, this->data);
 
@@ -113,7 +114,7 @@ void tree_node_insert_recurse(avl_node *this, avl_node *new_node, int (*compare)
         }
         else
         {
-            tree_node_insert_recurse(this->right, new_node, compare);
+            tree_node_insert_recurse(tree, this->right, new_node, compare);
         }
     }
     else if (compar < 0)
@@ -125,90 +126,140 @@ void tree_node_insert_recurse(avl_node *this, avl_node *new_node, int (*compare)
         }
         else
         {
-            tree_node_insert_recurse(this->left, new_node, compare);
+            tree_node_insert_recurse(tree, this->left, new_node, compare);
         }
     }
 
     // Update node height
-    int hleft = this->left != NULL ? this->left->height : 0, hright = this->right != NULL ? this->right->height : 0;
-    this->height = hleft > hright ? hleft + 1 : hright + 1;
+    update_height(this);
 
     // Check if this subtree is unbalanced
+    int hleft = this->left != NULL ? this->left->height : 0;
+    int hright = this->right != NULL ? this->right->height : 0;
     int balance = hleft - hright;
 
     // rebalance
     if (abs(balance) > 1)
     {
         // Left branch is too long
-        if (balance > 1)
+        if (hleft > hright)
         {
             int relation = compare(new_node->data, this->left->data);
             if (relation > 0) // Node was inserted in the right subtree of the left node. Rotate subtree left.
             {
-                rotateLeft(this->left);
+                rotate_left(tree, this->left);
             }
-            rotateRight(this);
+            rotate_right(tree, this);
         }
-        else // balance < 1: Right branch is too long
+        else // Right branch is too long
         {
             int relation = compare(new_node->data, this->right->data);
             if (relation < 0)
             {
-                rotateRight(this->right); // Node was inserted in the left subtree of the right node. Rotate it right.
+                rotate_right(tree, this->right); // Node was inserted in the left subtree of the right node. Rotate it right.
             }
-            rotateLeft(this);
+            rotate_left(tree, this);
         }
     }
+
+    // Update node height
+    update_height(this);
 }
 
-void rotateLeft(avl_node *this)
+void rotate_left(avl_tree *tree, avl_node *this)
 {
-    /*
-    // Perform rotation
-    AVLNode *aux = this->right->left;
-    this->right->left = this;
-    this->right->parent = this->parent;
-    if (this->parent != NULL)
+    if (this->right == NULL)
     {
-        if (this->parent->left == this)
-            this->parent->left = this->right;
-        else
-            this->parent->right = this->right;
+        return;
     }
-    this->parent = this->right;
-    this->right = aux;
-    if (aux != NULL)
-        aux->parent = this;
 
-    //  Update heights
-    this->updateHeight();
-    this->parent->updateHeight();
-    */
+    avl_node *new_parent = this->right;
+    avl_node *grandfather = this->parent;
+
+    // My right son's left son becomes my right son.
+    this->right = new_parent->left;
+    if (this->right != NULL)
+    {
+        this->right->parent = this;
+    }
+
+    // I become my right child's left son.
+    new_parent->left = this;
+    this->parent = new_parent;
+    new_parent->parent = grandfather;
+
+    if (grandfather != NULL)
+    {
+        if (grandfather->left == this)
+        {
+            grandfather->left = new_parent;
+        }
+        else
+        {
+            grandfather->right = new_parent;
+        }
+    }
+    else
+    {
+        tree->root = new_parent;
+    }
+
+    // Update node height
+    update_height(this);
+    update_height(new_parent);
 }
 
-void rotateRight(avl_node *this)
+void rotate_right(avl_tree *tree, avl_node *this)
 {
-    /*
-    // Perform rotation
-    AVLNode *aux = this->left->right;
-    this->left->right = this;
-    this->left->parent = this->parent;
-    if (this->parent != NULL)
+    if (this->left == NULL)
     {
-        if (this->parent->left == this)
-            this->parent->left = this->left;
-        else
-            this->parent->right = this->left;
+        return;
     }
-    this->parent = this->left;
-    this->left = aux;
-    if (aux != NULL)
-        aux->parent = this;
 
-    // Update heights
-    this->updateHeight();
-    this->parent->updateHeight();
-    */
+    avl_node *aux = this->left->right;
+
+    avl_node *new_parent = this->left;
+    avl_node *grandfather = this->parent;
+
+    // My left son's right son becomes my left son.
+    this->left = new_parent->right;
+    if (this->left != NULL)
+    {
+        this->left->parent = this;
+    }
+
+    // I become my right child's left son.
+    new_parent->right = this;
+    this->parent = new_parent;
+    new_parent->parent = grandfather;
+
+    if (grandfather != NULL)
+    {
+        if (grandfather->left == this)
+        {
+            grandfather->left = new_parent;
+        }
+        else
+        {
+            grandfather->right = new_parent;
+        }
+    }
+    else
+    {
+        tree->root = new_parent;
+    }
+
+    // Update node height
+    update_height(this);
+    update_height(new_parent);
+}
+
+void update_height(avl_node *this)
+{
+    int hleft = this->left != NULL ? this->left->height : 0;
+    int hright = this->right != NULL ? this->right->height : 0;
+
+    this->height = hleft > hright ? hleft + 1 : hright + 1;
 }
 
 /*
@@ -230,8 +281,8 @@ void *avl_find(avl *tree, void *data);
 int insert(GIMS_Geometry *item);
 AVLNode *remove(long long item);
 void rebalanceAfterRemove();
-void rotateLeft();
-void rotateRight();
+void rotate_left();
+void rotate_right();
 
 
 //constructor
@@ -298,13 +349,6 @@ void AVLNode::preOrder()
         this->left->preOrder();
     if (this->right != NULL)
         this->right->preOrder();
-}
-
-//updates the node height
-void AVLNode::updateHeight()
-{
-    int hleft = this->left != NULL ? this->left->height : 0, hright = this->right != NULL ? this->right->height : 0;
-    this->height = hleft > hright ? hleft + 1 : hright + 1;
 }
 
 //returns the balance factor of the tree rooted at this node
@@ -469,24 +513,24 @@ void AVLNode::rebalanceAfterRemove()
 
     // Left Left Case
     if (balance > 1 && this->left->getBalance() >= 0)
-        this->rotateRight();
+        this->rotate_right();
 
     // Left Right Case
     if (balance > 1 && this->left->getBalance() < 0)
     {
-        this->left->rotateLeft();
-        this->rotateRight();
+        this->left->rotate_left();
+        this->rotate_right();
     }
 
     // Right Right Case
     if (balance < -1 && this->right->getBalance() <= 0)
-        this->rotateLeft();
+        this->rotate_left();
 
     // Right Left Case
     if (balance < -1 && this->right->getBalance() > 0)
     {
-        this->right->rotateRight();
-        this->rotateLeft();
+        this->right->rotate_right();
+        this->rotate_left();
     }
 
     if (this->parent != NULL)

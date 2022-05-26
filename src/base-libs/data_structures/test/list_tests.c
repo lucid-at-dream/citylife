@@ -188,6 +188,4 @@ TEST_SUITE(RUN_TEST("Test adding an element to a list and then deleting it.", &t
            RUN_TEST("Test that a routine applied foreach element of the list can change the listed values", &apply_a_function_on_each_element_of_the_list),
            RUN_TEST("Test head is updated to next after deleted", &delete_head_make_sure_head_is_updated),
            RUN_TEST("Test tail is updated to next after deleted", &delete_tail_make_sure_tail_is_updated),
-           RUN_TEST("Test head & tail are updated when all is deleted", &delete_head_and_tail_make_sure_pointers_are_updated),
-
-)
+           RUN_TEST("Test head & tail are updated when all is deleted", &delete_head_and_tail_make_sure_pointers_are_updated), )
