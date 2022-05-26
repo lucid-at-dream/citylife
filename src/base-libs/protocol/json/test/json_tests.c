@@ -10,7 +10,7 @@
 
 TEST_CASE(test_parse_json_with_nested_dictionaries, {
     FILE *f = fopen("test/_resources/json/valid_json_dictionaries.json", "r");
-    char buffer[10240] = { '\0' };
+    char buffer[10240] = {'\0'};
     fread(buffer, sizeof(char), 10240, f);
     fclose(f);
 
@@ -29,9 +29,10 @@ TEST_CASE(test_parse_json_with_nested_dictionaries, {
     map *login = ((json_object *)map_get(methods, "login"))->content.object;
     assertion_error += assert_not_null("Login map exists", login);
 
-    assertion_error +=
-            assert_str_equals("String in third degree dictionary matches", "Creates a new session token for the given user if the user/password is a match",
-                              ((json_object *)map_get(login, "__doc__"))->content.data);
+    assertion_error += assert_str_equals(
+            "String in third degree dictionary matches",
+            "Creates a new session token for the given user if the user/password is a match",
+            ((json_object *)map_get(login, "__doc__"))->content.data);
 
     map *user_param = ((json_object *)map_get(login, "user"))->content.object;
     assert_not_null("user param exists", user_param);
@@ -51,8 +52,8 @@ TEST_CASE(test_parse_json_with_nested_dictionaries, {
     map *token_param = ((json_object *)map_get(logout, "token"))->content.object;
     assert_not_null("token param exists", token_param);
     assertion_error += assert_str_equals("String in fourth degree dictionary matches", ((json_object *)map_get(token_param, "type"))->content.data, "string");
-    assertion_error += assert_str_equals("String in fourth degree dictionary matches", ((json_object *)map_get(token_param, "__doc__"))->content.data,
-                                         "The session token");
+    assertion_error += assert_str_equals(
+            "String in fourth degree dictionary matches", ((json_object *)map_get(token_param, "__doc__"))->content.data, "The session token");
 
     // Dealloc all memory (TODO: Create some manner of doing this without having to know the whole json before hand)
     json_dealloc(parsed_json);

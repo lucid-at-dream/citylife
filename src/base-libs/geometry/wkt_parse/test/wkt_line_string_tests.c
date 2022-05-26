@@ -56,12 +56,12 @@ char test_parse_single_line_string(int size, ...)
 }
 
 TEST_CASE(test_line_string_parsing, {
-    assertion_error += test_parse_single_line_string(3, (point){ 5, 6 }, (point){ 3, 4 }, (point){ 7, 8 });
+    assertion_error += test_parse_single_line_string(3, (point){5, 6}, (point){3, 4}, (point){7, 8});
 
-    assertion_error += test_parse_single_line_string(6, (point){ 5, 6 }, (point){ 3, 4 }, (point){ 7, 8 }, (point){ 321.123, 342 }, (point){ 432.321, 445.432 },
-                                                     (point){ 10, 10 });
+    assertion_error +=
+            test_parse_single_line_string(6, (point){5, 6}, (point){3, 4}, (point){7, 8}, (point){321.123, 342}, (point){432.321, 445.432}, (point){10, 10});
 
-    assertion_error += test_parse_single_line_string(2, (point){ 5, 6 }, (point){ 3, 4 });
+    assertion_error += test_parse_single_line_string(2, (point){5, 6}, (point){3, 4});
 })
 
 // TODO: Add negative cases (parse errors) and assert error message relevance

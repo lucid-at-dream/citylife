@@ -14,13 +14,13 @@ void cenas()
 TEST_CASE(event_store_log_one_event, {
     event_schema *schema = event_schema_new();
 
-    event_schema_add_field(schema, (field_config){ SEQUENTIAL, "event_id" });
-    event_schema_add_field(schema, (field_config){ TIMESTAMP, "request_ts" });
-    event_schema_add_field(schema, (field_config){ TIMESTAMP, "response_ts" });
-    event_schema_add_field(schema, (field_config){ VARCHAR, "service" });
-    event_schema_add_field(schema, (field_config){ VARCHAR, "service_path" });
-    event_schema_add_field(schema, (field_config){ VARCHAR, "request" });
-    event_schema_add_field(schema, (field_config){ VARCHAR, "response" });
+    event_schema_add_field(schema, (field_config){SEQUENTIAL, "event_id"});
+    event_schema_add_field(schema, (field_config){TIMESTAMP, "request_ts"});
+    event_schema_add_field(schema, (field_config){TIMESTAMP, "response_ts"});
+    event_schema_add_field(schema, (field_config){VARCHAR, "service"});
+    event_schema_add_field(schema, (field_config){VARCHAR, "service_path"});
+    event_schema_add_field(schema, (field_config){VARCHAR, "request"});
+    event_schema_add_field(schema, (field_config){VARCHAR, "response"});
 
     event_store *store = event_store_new(schema);
 

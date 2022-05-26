@@ -32,7 +32,7 @@ map *map_new(int capacity)
 
 bucket *bucket_new(char *key, void *value)
 {
-    map_entry entry = { key, value };
+    map_entry entry = {key, value};
     bucket *new_bucket = (bucket *)calloc(1, sizeof(bucket));
     new_bucket->entry = entry;
     new_bucket->next = NULL;

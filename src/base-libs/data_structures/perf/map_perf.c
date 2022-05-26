@@ -61,5 +61,6 @@ PERF_TEST(test_map_add_get_10000_elements_1_buckets, { test_map_add_get_10000_el
 
 PERF_TEST(test_map_add_get_10000_elements_1000_buckets, { test_map_add_get_10000_elements_N_buckets_1000_millis(1000); })
 
-PERF_TEST_SUITE(RUN_PERF_TEST("Test getting 10000 elements from a map starting with 1 bucket", &test_map_add_get_10000_elements_1_buckets),
-                RUN_PERF_TEST("Test getting 10000 elements from a map starting with 1000 bucket", &test_map_add_get_10000_elements_1000_buckets), )
+PERF_TEST_SUITE(
+        RUN_PERF_TEST("Test getting 10000 elements from a map starting with 1 bucket", &test_map_add_get_10000_elements_1_buckets),
+        RUN_PERF_TEST("Test getting 10000 elements from a map starting with 1000 bucket", &test_map_add_get_10000_elements_1000_buckets), )

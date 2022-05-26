@@ -9,8 +9,8 @@
 #include "logger.h"
 
 /* Built-in arguments */
-arg_t _config_help_arg_desc = { "h", "help", FLAG, OPTIONAL, "Display this help message" };
-arg_t _config_cfg_file_arg_desc = { "c", "config", STRING, OPTIONAL, "Load config from the configuration file at the given path" };
+arg_t _config_help_arg_desc = {"h", "help", FLAG, OPTIONAL, "Display this help message"};
+arg_t _config_cfg_file_arg_desc = {"c", "config", STRING, OPTIONAL, "Load config from the configuration file at the given path"};
 
 // Helpers for load config
 map *parse_command_line(map *args, int arg_desc_count, arg_t *arg_desc, int argc, char **argv);

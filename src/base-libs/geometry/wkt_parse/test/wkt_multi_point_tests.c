@@ -66,10 +66,10 @@ char test_parse_single_multi_point(char wrap_points, int size, ...)
 
 TEST_CASE(test_multi_point_parsing, {
     char wrap_points = 0;
-    assertion_error += test_parse_single_multi_point(wrap_points, 3, (point){ 1.2, 3 }, (point){ 4, 5.6 }, (point){ 7, 8 });
+    assertion_error += test_parse_single_multi_point(wrap_points, 3, (point){1.2, 3}, (point){4, 5.6}, (point){7, 8});
 
     wrap_points = 1;
-    assertion_error += test_parse_single_multi_point(wrap_points, 3, (point){ 1.2, 3 }, (point){ 4, 5.6 }, (point){ 7, 8 });
+    assertion_error += test_parse_single_multi_point(wrap_points, 3, (point){1.2, 3}, (point){4, 5.6}, (point){7, 8});
 })
 
 // TODO: Add negative cases (parse errors) and assert error message relevance

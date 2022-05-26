@@ -176,15 +176,16 @@ TEST_CASE(test_heap_sort_4, { assertion_error = test_heap_sort_of_random_element
 
 // TODO: For every write operation of the heap, assert the invariants.
 
-TEST_SUITE(RUN_TEST("Test destroying an empty heap.", &test_destroy_empty_heap),
-           RUN_TEST("Test push pop of an item in a heap works.", &test_heap_push_one_then_peek_assert_equals),
-           RUN_TEST("Test push multiple items in reverse order and check min.", &test_heap_push_multiple_elements_in_reverse_order_assert_min_peek),
-           RUN_TEST("Test push multiple items in random order and check min.", &test_heap_push_multiple_elements_in_random_order_assert_min_peek),
-           RUN_TEST("Test push multiple items in order and pop min all of them.", &test_heap_push_multiple_elements_assert_min_popped),
-           RUN_TEST("Test decrease key operations.", &test_heap_decrease_key_of_elements_in_order),
-           // RUN_TEST("Test heap sorting several random elements.", &test_heap_sort_0),
-           // RUN_TEST("Test heap sorting several random elements.", &test_heap_sort_1),
-           // RUN_TEST("Test heap sorting several random elements.", &test_heap_sort_2),
-           // RUN_TEST("Test heap sorting several random elements.", &test_heap_sort_3),
-           // RUN_TEST("Test heap sorting several random elements.", &test_heap_sort_4),
+TEST_SUITE(
+        RUN_TEST("Test destroying an empty heap.", &test_destroy_empty_heap),
+        RUN_TEST("Test push pop of an item in a heap works.", &test_heap_push_one_then_peek_assert_equals),
+        RUN_TEST("Test push multiple items in reverse order and check min.", &test_heap_push_multiple_elements_in_reverse_order_assert_min_peek),
+        RUN_TEST("Test push multiple items in random order and check min.", &test_heap_push_multiple_elements_in_random_order_assert_min_peek),
+        RUN_TEST("Test push multiple items in order and pop min all of them.", &test_heap_push_multiple_elements_assert_min_popped),
+        RUN_TEST("Test decrease key operations.", &test_heap_decrease_key_of_elements_in_order),
+        // RUN_TEST("Test heap sorting several random elements.", &test_heap_sort_0),
+        // RUN_TEST("Test heap sorting several random elements.", &test_heap_sort_1),
+        // RUN_TEST("Test heap sorting several random elements.", &test_heap_sort_2),
+        // RUN_TEST("Test heap sorting several random elements.", &test_heap_sort_3),
+        // RUN_TEST("Test heap sorting several random elements.", &test_heap_sort_4),
 )

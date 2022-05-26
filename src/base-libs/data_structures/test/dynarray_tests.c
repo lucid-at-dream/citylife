@@ -64,6 +64,7 @@ TEST_CASE(test_dynarray_add_set_del_get_items, {
     dynarray_destroy(ar);
 })
 
-TEST_SUITE(RUN_TEST("Test adding elements to a dynamic array and then getting them.", &test_dynarray_add_get_items),
-           RUN_TEST("Test deleting a few elements from a dynamic array.", &test_dynarray_add_del_get_items),
-           RUN_TEST("Test setting the value of some index", &test_dynarray_add_set_del_get_items), )
+TEST_SUITE(
+        RUN_TEST("Test adding elements to a dynamic array and then getting them.", &test_dynarray_add_get_items),
+        RUN_TEST("Test deleting a few elements from a dynamic array.", &test_dynarray_add_del_get_items),
+        RUN_TEST("Test setting the value of some index", &test_dynarray_add_set_del_get_items), )

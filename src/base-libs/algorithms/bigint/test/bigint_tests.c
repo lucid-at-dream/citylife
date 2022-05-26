@@ -53,8 +53,9 @@ char test_single_word_bigint_increment()
     return 0;
 }
 
-test test_suite[] = { { "Test incrementing a single word big int", &test_single_word_bigint_increment },
-                      { "Test adding two single word big ints", &test_single_word_bigint_add } };
+test test_suite[] = {
+        {"Test incrementing a single word big int", &test_single_word_bigint_increment},
+        {"Test adding two single word big ints", &test_single_word_bigint_add}};
 
 int main(int argc, char **argv)
 {

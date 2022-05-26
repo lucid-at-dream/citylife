@@ -44,18 +44,10 @@ TEST_CASE(test_tree_insert_some_find_some, {
     tree_insert(tree, 2);
 
     avl_node *find_3 = tree_find(tree, 3, int_compare);
-
-    if (find_3 == NULL)
-    {
-        printf("NULL\n");
-    }
-
     int data_3 = (int)(find_3->data);
-    printf("yay: %d\n", data_3);
 
     avl_node *find_4 = tree_find(tree, 4, int_compare);
     int data_4 = (int)(find_4->data);
-    printf("yay: %d\n", data_4);
 
     ASSERT_INT_EQUALS("Node found has the expected value", data_3, 3);
     ASSERT_INT_EQUALS("Node found has the expected value", data_4, 4);
@@ -99,12 +91,10 @@ TEST_CASE(test_tree_insert_random_assert_logarithmic_comparison_count, {
         ASSERT_INT_LESS_THAN("Number of comparisons should never exceed log2(N)", global_comparison_counter, log_b2_512 + 1);
     }
 
-    if (1)
-        printf("hey!");
-
     tree_destroy(tree);
 })
 
-TEST_SUITE(RUN_TEST("Test inserting and retrieving an element.", &test_tree_insert_one_find_one),
-           RUN_TEST("Test inserting and retrieving some elements.", &test_tree_insert_some_find_some),
-           RUN_TEST("Test comparison count of find operations", &test_tree_insert_random_assert_logarithmic_comparison_count), )
+TEST_SUITE(
+        RUN_TEST("Test inserting and retrieving an element.", &test_tree_insert_one_find_one),
+        RUN_TEST("Test inserting and retrieving some elements.", &test_tree_insert_some_find_some),
+        RUN_TEST("Test comparison count of find operations", &test_tree_insert_random_assert_logarithmic_comparison_count), )

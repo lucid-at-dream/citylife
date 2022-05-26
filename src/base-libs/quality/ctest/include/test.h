@@ -33,7 +33,7 @@ suite_report run_test_suite(test *test_suite, int suite_size);
  * Utility macro to simplify writing unit test scripts.
  */
 #define TEST_SUITE(tests...)                                                                                                                                   \
-    test test_suite[] = { tests };                                                                                                                             \
+    test test_suite[] = {tests};                                                                                                                               \
     int main(int argc, char **argv)                                                                                                                            \
     {                                                                                                                                                          \
         suite_report report = run_test_suite(test_suite, sizeof(test_suite) / sizeof(test));                                                                   \

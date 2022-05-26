@@ -8,7 +8,7 @@
 
 TEST_CASE(test_new_service_from_valid_json, {
     FILE *f = fopen("test/_resources/gateway/valid_service_registration_request.json", "r");
-    char buffer[10240] = { '\0' };
+    char buffer[10240] = {'\0'};
     fread(buffer, sizeof(char), 10240, f);
     fclose(f);
 
