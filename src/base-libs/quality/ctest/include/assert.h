@@ -9,6 +9,7 @@
 #define ASSERT_FALSE(msg, expr) assertion_error += assert_false(msg, expr);
 
 #define ASSERT_NULL(msg, ptr) assertion_error += assert_null(msg, ptr);
+#define ASSERT_NOT_NULL(msg, ptr) assertion_error += assert_not_null(msg, ptr);
 
 #define ASSERT_LF_EQUALS(msg, actual, expected, epsilon) assertion_error += assert_long_double_equals(msg, actual, expected, epsilon);
 

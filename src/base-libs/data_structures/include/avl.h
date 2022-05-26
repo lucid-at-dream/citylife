@@ -3,7 +3,7 @@
 typedef struct _avl_node
 {
     void *data;
-    int height;
+    int height; // TODO: only two bits are needed to store the balance factor, we're using 32 :/
     struct _avl_node *parent;
     struct _avl_node *left;
     struct _avl_node *right;
