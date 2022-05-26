@@ -52,7 +52,7 @@ char test_map_add_2_elements()
     char *maria = map_get(m, MARIA_NAME);
 
     char assertion_result = assert_str_equals("Ze's password matches the inserted one.", ze, ZE_PASS) ||
-            assert_str_equals("Maria's password matches the inserted one.", maria, MARIA_PASS);
+        assert_str_equals("Maria's password matches the inserted one.", maria, MARIA_PASS);
 
     free(ZE_NAME);
     free(ZE_PASS);
@@ -79,7 +79,7 @@ char test_map_add_2_doppleganger_elements()
     char *zemanel_dop = map_get(m, ZE_DOP_NAME);
 
     char assertion_result = assert_str_equals("Ze Manel's password matches the inserted one.", zemanel, ZE_PASS) ||
-            assert_str_equals("Ze Maneli's password matches the inserted one.", zemanel_dop, ZE_DOP_PASS);
+        assert_str_equals("Ze Maneli's password matches the inserted one.", zemanel_dop, ZE_DOP_PASS);
 
     free(ZE_NAME);
     free(ZE_PASS);
@@ -226,14 +226,14 @@ char test_map_delete_non_existing_user()
 }
 
 test test_suite[] = {
-        {"Test add functionality in maps", &test_map_add_get},
-        {"Test map get on empty map", &test_map_get_empty_map},
-        {"Test map add 2 elements", &test_map_add_2_elements},
-        {"Test adding 2 look alike elements to the map", &test_map_add_2_doppleganger_elements},
-        {"Test adding two values for the same key. The last value inserted should be returned.", &test_map_add_same_key_twice},
-        {"Test deleting an existing user from a map", &test_map_delete_user},
-        {"Test deleting some users among several other users", &test_map_delete_user_among_many_users},
-        {"Test deleting a user that does not exist", &test_map_delete_non_existing_user}};
+    {"Test add functionality in maps", &test_map_add_get},
+    {"Test map get on empty map", &test_map_get_empty_map},
+    {"Test map add 2 elements", &test_map_add_2_elements},
+    {"Test adding 2 look alike elements to the map", &test_map_add_2_doppleganger_elements},
+    {"Test adding two values for the same key. The last value inserted should be returned.", &test_map_add_same_key_twice},
+    {"Test deleting an existing user from a map", &test_map_delete_user},
+    {"Test deleting some users among several other users", &test_map_delete_user_among_many_users},
+    {"Test deleting a user that does not exist", &test_map_delete_non_existing_user}};
 
 int main(int argc, char **argv)
 {

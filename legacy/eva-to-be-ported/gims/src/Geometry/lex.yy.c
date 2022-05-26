@@ -999,8 +999,8 @@ static int yy_get_next_buffer(void)
                     b->yy_buf_size *= 2;
 
                 b->yy_ch_buf = (char *)
-                        /* Include room in for 2 EOB chars. */
-                        yyrealloc((void *)b->yy_ch_buf, b->yy_buf_size + 2);
+                    /* Include room in for 2 EOB chars. */
+                    yyrealloc((void *)b->yy_ch_buf, b->yy_buf_size + 2);
             }
             else
                 /* Can't grow it, we don't own it. */

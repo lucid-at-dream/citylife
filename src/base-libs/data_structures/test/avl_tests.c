@@ -98,6 +98,6 @@ TEST_CASE(test_tree_insert_random_assert_logarithmic_comparison_count, {
 })
 
 TEST_SUITE(
-        RUN_TEST("Test inserting and retrieving an element.", &test_tree_insert_one_find_one),
-        RUN_TEST("Test inserting and retrieving some elements.", &test_tree_insert_some_find_some),
-        RUN_TEST("Test comparison count of find operations after inserts.", &test_tree_insert_random_assert_logarithmic_comparison_count), )
+    RUN_TEST("Test inserting and retrieving an element.", &test_tree_insert_one_find_one),
+    RUN_TEST("Test inserting and retrieving some elements.", &test_tree_insert_some_find_some),
+    RUN_TEST("Test comparison count of find operations after inserts.", &test_tree_insert_random_assert_logarithmic_comparison_count), )

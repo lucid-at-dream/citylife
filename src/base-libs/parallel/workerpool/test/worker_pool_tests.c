@@ -83,7 +83,7 @@ char test_worker_pool_parallel_summation()
     }
 
     int assertion_error =
-            assert_int_less_than("Execution time in parallel should be less than single threadedly", elapsed_time_multi_thread, elapsed_time_single_thread);
+        assert_int_less_than("Execution time in parallel should be less than single threadedly", elapsed_time_multi_thread, elapsed_time_single_thread);
     if (assertion_error)
     {
         return 1;

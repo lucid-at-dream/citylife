@@ -48,7 +48,7 @@ BreakAfterJavaFieldAnnotations: false
 BreakStringLiterals: false
 ColumnLimit: 160
 CommentPragmas: '^ IWYU pragma:'
-ContinuationIndentWidth: 8
+ContinuationIndentWidth: 4
 DerivePointerAlignment: false
 DisableFormat: false
 ExperimentalAutoDetectBinPacking: false

@@ -229,7 +229,7 @@ char test_two_string_arguments_in_long_form_happy_path()
     char *other_parsed_value = (char *)map_get(args, "other-arg");
 
     int assertion_error = assert_str_equals("Parsed value is the given value.", parsed_value, "some value") &&
-            assert_str_equals("Parsed value is the given value.", other_parsed_value, "other value");
+        assert_str_equals("Parsed value is the given value.", other_parsed_value, "other value");
     ;
 
     // Clean up
@@ -418,25 +418,25 @@ char test_specifying_non_existing_file()
 }
 
 test test_suite[] = {
-        {"Test single program argument, single argument given, happy path", &test_single_string_argument_in_long_form_happy_path},
-        {"Test two program arguments, two arguments given, happy path", &test_two_string_arguments_in_long_form_happy_path},
-        {"Test parsing an integer argument given in the long form", &test_one_integer_argument_in_long_form_happy_path},
-        {"Test parsing an float argument given in the long form", &test_one_double_argument_in_long_form_happy_path},
-        {"Test parsing a flag argument given in the long form", &test_one_flag_argument_in_long_form_happy_path},
-        {"Test parsing all argument types all in short form", &test_all_argument_types_in_short_form_happy_path},
-        {"Test parsing the same argument twice times", &test_parsing_same_argument_twice},
-        {"Test that trying to parse a non existing argument ends up in error", &test_parsing_non_existent_argument, EXIT_FAILURE},
-        {"Test that trying to parse a string as an integer ends in error", &test_parsing_string_as_integer_throws_error, EXIT_FAILURE},
-        {"Test that trying to parse a float as an integer ends in error", &test_parsing_float_as_integer_throws_error, EXIT_FAILURE},
-        {"Test that trying to parse a string as a float ends in error", &test_parsing_string_as_float_throws_error, EXIT_FAILURE},
-        {"Test that a help message is printed when -h or --help are passed as arguments", &test_help_message_and_clean_exit_on_provided_flag, EXIT_SUCCESS},
-        {"Test that not providing a value for a mandatory argument results in error", &test_not_providing_mandatory_arguments, EXIT_FAILURE},
-        {"Test that it is possible to parse configuration from file", &test_load_config_from_file},
-        {"Test that providing a malformated float value in config file results in error", &test_unparseable_float_in_config_file, EXIT_FAILURE},
-        {"Test that providing a malformated integer value in config file results in error", &test_unparseable_int_in_config_file, EXIT_FAILURE},
-        {"Test that providing invalid arguments in config file results in error", &test_unrecognized_arguments_in_config_file, EXIT_FAILURE},
-        {"Test that command line arguments take precedence over config file ones", &test_command_line_arguments_take_precedence_over_config_file},
-        {"Test that specifying a non existing config files causes program to shut down.", &test_specifying_non_existing_file, EXIT_FAILURE},
+    {"Test single program argument, single argument given, happy path", &test_single_string_argument_in_long_form_happy_path},
+    {"Test two program arguments, two arguments given, happy path", &test_two_string_arguments_in_long_form_happy_path},
+    {"Test parsing an integer argument given in the long form", &test_one_integer_argument_in_long_form_happy_path},
+    {"Test parsing an float argument given in the long form", &test_one_double_argument_in_long_form_happy_path},
+    {"Test parsing a flag argument given in the long form", &test_one_flag_argument_in_long_form_happy_path},
+    {"Test parsing all argument types all in short form", &test_all_argument_types_in_short_form_happy_path},
+    {"Test parsing the same argument twice times", &test_parsing_same_argument_twice},
+    {"Test that trying to parse a non existing argument ends up in error", &test_parsing_non_existent_argument, EXIT_FAILURE},
+    {"Test that trying to parse a string as an integer ends in error", &test_parsing_string_as_integer_throws_error, EXIT_FAILURE},
+    {"Test that trying to parse a float as an integer ends in error", &test_parsing_float_as_integer_throws_error, EXIT_FAILURE},
+    {"Test that trying to parse a string as a float ends in error", &test_parsing_string_as_float_throws_error, EXIT_FAILURE},
+    {"Test that a help message is printed when -h or --help are passed as arguments", &test_help_message_and_clean_exit_on_provided_flag, EXIT_SUCCESS},
+    {"Test that not providing a value for a mandatory argument results in error", &test_not_providing_mandatory_arguments, EXIT_FAILURE},
+    {"Test that it is possible to parse configuration from file", &test_load_config_from_file},
+    {"Test that providing a malformated float value in config file results in error", &test_unparseable_float_in_config_file, EXIT_FAILURE},
+    {"Test that providing a malformated integer value in config file results in error", &test_unparseable_int_in_config_file, EXIT_FAILURE},
+    {"Test that providing invalid arguments in config file results in error", &test_unrecognized_arguments_in_config_file, EXIT_FAILURE},
+    {"Test that command line arguments take precedence over config file ones", &test_command_line_arguments_take_precedence_over_config_file},
+    {"Test that specifying a non existing config files causes program to shut down.", &test_specifying_non_existing_file, EXIT_FAILURE},
 };
 
 int main(int argc, char **argv)

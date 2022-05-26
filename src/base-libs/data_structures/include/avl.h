@@ -74,8 +74,8 @@ void tree_remove(avl_tree *tree, avl_node *node);
  * @return avl_tree* A pointer to the tree that received the elements of the other tree.
  */
 avl_tree *tree_merge(
-        avl_tree *a_tree,
-        avl_tree *another_tree,
-        char overwrite,
-        void *(*merge)(const void *a_tree_data, const void *another_tree_data),
-        int (*compare)(const void *a_tree_data, const void *another_tree_data));
+    avl_tree *a_tree,
+    avl_tree *another_tree,
+    char overwrite,
+    void *(*merge)(const void *a_tree_data, const void *another_tree_data),
+    int (*compare)(const void *a_tree_data, const void *another_tree_data));

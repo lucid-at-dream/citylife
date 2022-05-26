@@ -442,10 +442,10 @@ static const yytype_uint8 yyrline[] = {0,   60,  60,  61,  62,  63,  64,  65,  6
 /* YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] = {
-        "$end",           "error",          "$undefined",  "_POINT_",      "_LINESTRING_",   "_POLYGON_",           "_MULTIPOINT_",     "_MULTILINESTRING_",
-        "_MULTIPOLYGON_", "_COLLECTION_",   "_COMMA_",     "_LPAR_",       "_RPAR_",         "_NUMBERLIT_",         "$accept",          "start",
-        "point_def",      "linestring_def", "polygon_def", "interior_def", "multipoint_def", "multilinestring_def", "multipolygon_def", "atomic",
-        "collection_def", YY_NULLPTR};
+    "$end",           "error",          "$undefined",  "_POINT_",      "_LINESTRING_",   "_POLYGON_",           "_MULTIPOINT_",     "_MULTILINESTRING_",
+    "_MULTIPOLYGON_", "_COLLECTION_",   "_COMMA_",     "_LPAR_",       "_RPAR_",         "_NUMBERLIT_",         "$accept",          "start",
+    "point_def",      "linestring_def", "polygon_def", "interior_def", "multipoint_def", "multilinestring_def", "multipolygon_def", "atomic",
+    "collection_def", YY_NULLPTR};
 #endif
 
 #ifdef YYPRINT
