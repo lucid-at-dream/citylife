@@ -22,8 +22,24 @@ int int_compare(const void *a, const void *b)
     return 0;
 }
 
+int int_compare_ptr(const void *a, const void *b)
+{
+    int int_a = *(int *)a;
+    int int_b = *(int *)b;
+
+    if (int_a < int_b)
+    {
+        return -1;
+    }
+    else if (int_a > int_b)
+    {
+        return 1;
+    }
+    return 0;
+}
+
 TEST_CASE(test_tree_insert_one_find_one, {
-    avl_tree *tree = tree_new(&int_compare);
+    avl_tree *tree = tree_new(int_compare);
 
     tree_insert(tree, 1);
 
@@ -36,7 +52,7 @@ TEST_CASE(test_tree_insert_one_find_one, {
 })
 
 TEST_CASE(test_tree_insert_some_find_some, {
-    avl_tree *tree = tree_new(&int_compare);
+    avl_tree *tree = tree_new(int_compare);
 
     tree_insert(tree, 1);
     tree_insert(tree, 3);
@@ -65,7 +81,7 @@ int int_compare_with_global_counter(const void *a, const void *b)
 }
 
 TEST_CASE(test_tree_insert_random_assert_logarithmic_comparison_count, {
-    avl_tree *tree = tree_new(&int_compare);
+    avl_tree *tree = tree_new(int_compare);
 
     int N = 2047;
 
@@ -98,50 +114,47 @@ TEST_CASE(test_tree_insert_random_assert_logarithmic_comparison_count, {
 })
 
 TEST_CASE(test_tree_insert_remove_random_data_assert_logarithmic_comparisons, {
-    avl_tree *tree = tree_new(&int_compare);
+    avl_tree *tree = tree_new(int_compare);
 
-    int N = 2048;
-    int removals = 1500;
+    int N = 50;
+    int removals = 30;
     int num_finds = 10;
 
     int max_height = (int)(log(N - removals + num_finds + 2) / log(1.618) - 0.3277);
 
-    // Insert N random elements
+    int stuff_to_insert[N + num_finds];
+
+    // Sort a random list of ints for insertion
     srand(0);
-    int stuff_to_remove[N];
-    for (int i = 0; i < N; i++)
+    for (int i = 0; i < N + num_finds; i++)
     {
-        int num = rand();
-        tree_insert(tree, num);
-        stuff_to_remove[i] = num;
+        stuff_to_insert[i] = rand() % 100000000;
     }
 
-    // Insert a few more
-    int stuff_to_find[num_finds];
-    for (int i = 0; i < num_finds; i++)
+    qsort(stuff_to_insert, N + num_finds, sizeof(int), int_compare_ptr);
+
+    // Insert them in order
+    for (int i = 0; i < N + num_finds; i++)
     {
-        stuff_to_find[i] = rand();
-        tree_insert(tree, stuff_to_find[i]);
+        tree_insert(tree, stuff_to_insert[i]);
     }
 
-    qsort(stuff_to_remove, N, sizeof(int), int_compare);
-
-    // Remove a few
+    // Remove a few in order
     for (int i = 0; i < removals; i++)
     {
-        avl_node *node = tree_find(tree, stuff_to_remove[i], int_compare);
-        ASSERT_NOT_NULL("Item inserted in tree is found", node);
+        avl_node *node = tree_find(tree, stuff_to_insert[i], int_compare);
+        ASSERT_NOT_NULL("A node that is inserted can be found", node);
         if (node != NULL)
         {
             tree_remove(tree, node);
-            free(node);
         }
+        free(node);
     }
 
-    for (int i = 0; i < num_finds; i++)
+    for (int i = N; i < N + num_finds; i++)
     {
         global_comparison_counter = 0;
-        tree_find(tree, stuff_to_find[i], int_compare_with_global_counter);
+        tree_find(tree, stuff_to_insert[i], int_compare_with_global_counter);
         ASSERT_INT_LESS_THAN("Number of comparisons should never exceed log2(N)", global_comparison_counter, max_height + 1);
     }
 

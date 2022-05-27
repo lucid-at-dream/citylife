@@ -11,6 +11,9 @@ avl_node *tree_node_find(avl_node *this, void *data, int (*compare)(const void *
 void rotate_left(avl_tree *tree, avl_node *this);
 void rotate_right(avl_tree *tree, avl_node *this);
 void update_height(avl_node *this);
+void tree_remove_leaf_node(avl_tree *tree, avl_node *node);
+void tree_remove_node_with_one_subtree(avl_tree *tree, avl_node *node);
+void tree_remove_node_with_two_subtrees(avl_tree *tree, avl_node *node);
 
 avl_tree *tree_new(int (*compare)(const void *, const void *))
 {
@@ -62,10 +65,6 @@ avl_node *tree_find(avl_tree *this, void *data, int (*compare)(const void *given
     return NULL;
 }
 
-void tree_remove_leaf_node(avl_tree *tree, avl_node *node);
-void tree_remove_node_with_one_subtree(avl_tree *tree, avl_node *node);
-void tree_remove_node_with_two_subtrees(avl_tree *tree, avl_node *node);
-
 void tree_remove(avl_tree *tree, avl_node *node)
 {
     // if there is no offspring, we can delete right away
@@ -83,6 +82,7 @@ void tree_remove(avl_tree *tree, avl_node *node)
     // if we have two children, we need to fetch the leftmost node of the right subtree and replace this node for it.
     else
     {
+        tree_remove_node_with_two_subtrees(tree, node);
     }
 
     // TODO: Rebalance after remove
@@ -171,16 +171,6 @@ void tree_remove_node_with_two_subtrees(avl_tree *tree, avl_node *node)
     {
         leftmost->left->parent = leftmost;
     }
-}
-
-avl_tree *tree_merge(
-    avl_tree *a_tree,
-    avl_tree *another_tree,
-    char overwrite,
-    void *(*merge)(const void *a_tree_data, const void *another_tree_data),
-    int (*compare)(const void *a_tree_data, const void *another_tree_data))
-{
-    // TODO
 }
 
 // Private functions
@@ -325,8 +315,6 @@ void rotate_right(avl_tree *tree, avl_node *this)
     {
         return;
     }
-
-    avl_node *aux = this->left->right;
 
     avl_node *new_parent = this->left;
     avl_node *grandfather = this->parent;
