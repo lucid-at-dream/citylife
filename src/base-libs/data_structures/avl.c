@@ -62,94 +62,115 @@ avl_node *tree_find(avl_tree *this, void *data, int (*compare)(const void *given
     return NULL;
 }
 
+void tree_remove_leaf_node(avl_tree *tree, avl_node *node);
+void tree_remove_node_with_one_subtree(avl_tree *tree, avl_node *node);
+void tree_remove_node_with_two_subtrees(avl_tree *tree, avl_node *node);
+
 void tree_remove(avl_tree *tree, avl_node *node)
 {
     // if there is no offspring, we can delete right away
     if (node->left == NULL && node->right == NULL)
     {
-        if (node->parent != NULL)
-        {
-            if (node == node->parent->left)
-                node->parent->left = NULL;
-            else
-                node->parent->right = NULL;
-        }
+        tree_remove_leaf_node(tree, node);
     }
 
     // if there's only one child, we can just replace node node for it
     else if (node->left == NULL || node->right == NULL)
     {
-        avl_node *child_node = node->left == NULL ? node->right : node->left;
-
-        if (node->parent != NULL)
-        {
-            if (node->parent->right == node)
-                node->parent->right = child_node;
-            else
-                node->parent->left = child_node;
-        }
-        child_node->parent = node->parent;
+        tree_remove_node_with_one_subtree(tree, node);
     }
 
     // if we have two children, we need to fetch the leftmost node of the right subtree and replace this node for it.
     else
     {
-        // find the leftmost node in the right subtree
-        avl_node *leftmost = node->right;
-        while (leftmost->left != NULL)
-        {
-            leftmost = leftmost->left;
-        }
-
-        // remove it
-        if (leftmost->parent->right == leftmost)
-        {
-            leftmost->parent->right = NULL;
-            if (leftmost->right != NULL)
-            {
-                leftmost->parent->right = leftmost->right;
-                leftmost->right->parent = leftmost->parent;
-            }
-        }
-        else
-        {
-            leftmost->parent->left = NULL;
-            if (leftmost->right != NULL)
-            {
-                leftmost->parent->left = leftmost->right;
-                leftmost->right->parent = leftmost->parent;
-            }
-        }
-
-        // replace the node being removed by the leftmost node of the right subtree
-        if (node->parent != NULL)
-        {
-            if (node->parent->right == node)
-            {
-                node->parent->right = leftmost;
-            }
-            else
-            {
-                node->parent->left = leftmost;
-            }
-        }
-
-        leftmost->parent = node->parent;
-
-        leftmost->right = node->right;
-        if (leftmost->right != NULL)
-        {
-            leftmost->right->parent = leftmost;
-        }
-
-        leftmost->left = node->left;
-        if (leftmost->left != NULL)
-        {
-            leftmost->left->parent = leftmost;
-        }
     }
 
     // TODO: Rebalance after remove
+}
+
+void tree_remove_leaf_node(avl_tree *tree, avl_node *node)
+{
+    if (node->parent != NULL)
+    {
+        if (node == node->parent->left)
+        {
+            node->parent->left = NULL;
+        }
+        else
+        {
+            node->parent->right = NULL;
+        }
+    }
+    else
+    {
+        tree->root = NULL;
+    }
+}
+
+void tree_remove_node_with_one_subtree(avl_tree *tree, avl_node *node)
+{
+    avl_node *subtree = node->left == NULL ? node->right : node->left;
+
+    if (node->parent != NULL)
+    {
+        if (node->parent->right == node)
+        {
+            node->parent->right = subtree;
+        }
+        else
+        {
+            node->parent->left = subtree;
+        }
+    }
+    else
+    {
+        tree->root = subtree;
+    }
+    subtree->parent = node->parent;
+}
+
+void tree_remove_node_with_two_subtrees(avl_tree *tree, avl_node *node)
+{
+    // find the leftmost node in the right subtree
+    avl_node *leftmost = node->right;
+    while (leftmost->left != NULL)
+    {
+        leftmost = leftmost->left;
+    }
+
+    // remove it
+    tree_remove(tree, leftmost);
+
+    // replace the node being removed by the leftmost node of the right subtree
+    if (node->parent != NULL)
+    {
+        if (node->parent->right == node)
+        {
+            node->parent->right = leftmost;
+        }
+        else
+        {
+            node->parent->left = leftmost;
+        }
+    }
+    else
+    {
+        tree->root = leftmost;
+    }
+
+    leftmost->parent = node->parent;
+
+    leftmost->right = node->right;
+    if (leftmost->right != NULL)
+    {
+        leftmost->right->parent = leftmost;
+    }
+
+    leftmost->left = node->left;
+    if (leftmost->left != NULL)
+    {
+        leftmost->left->parent = leftmost;
+    }
 }
 
 avl_tree *tree_merge(

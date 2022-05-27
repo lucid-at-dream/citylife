@@ -134,6 +134,7 @@ TEST_CASE(test_tree_insert_remove_random_data_assert_logarithmic_comparisons, {
         if (node != NULL)
         {
             tree_remove(tree, node);
+            free(node);
         }
     }
 
