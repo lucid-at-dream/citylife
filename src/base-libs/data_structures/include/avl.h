@@ -59,23 +59,3 @@ avl_node *tree_find(avl_tree *tree, void *data, int (*compare)(const void *given
  * @param node The node that will be removed.
  */
 void tree_remove(avl_tree *tree, avl_node *node);
-
-/**
- * @brief Merges the contents of the smallest tree given into the other tree. After this operation the
- * smallest tree will be empty and deallocated.
- * 
- * @param a_tree A tree to be subject to the merge operation.
- * @param another_tree Another tree to be subject to the merge operation.
- * @param merge A function that will be called when the two items are equal. It should return the desired
- * merge resolution.
- * @param compare A function capable of comparing the data of a_tree with the data of another_tree. 
- * Returns -1, 0, 1 in case the given item from a_tree is smaller, equal or larger than the item from 
- * another_tree that is being compared, respectively.
- * @return avl_tree* A pointer to the tree that received the elements of the other tree.
- */
-avl_tree *tree_merge(
-    avl_tree *a_tree,
-    avl_tree *another_tree,
-    char overwrite,
-    void *(*merge)(const void *a_tree_data, const void *another_tree_data),
-    int (*compare)(const void *a_tree_data, const void *another_tree_data));
