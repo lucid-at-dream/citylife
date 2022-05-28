@@ -14,6 +14,7 @@ void update_height(avl_node *this);
 void tree_remove_leaf_node(avl_tree *tree, avl_node *node);
 void tree_remove_node_with_one_subtree(avl_tree *tree, avl_node *node);
 void tree_remove_node_with_two_subtrees(avl_tree *tree, avl_node *node);
+void tree_rebalance_node(avl_tree *tree, avl_node *unbalanced_node);
 
 avl_tree *tree_new(int (*compare)(const void *, const void *))
 {
@@ -85,7 +86,19 @@ void tree_remove(avl_tree *tree, avl_node *node)
         tree_remove_node_with_two_subtrees(tree, node);
     }
 
-    // TODO: Rebalance after remove
+    // Starting at the first node that may be unbalanced
+    avl_node *unbalanced_node = node->parent;
+    if (unbalanced_node == NULL)
+    {
+        unbalanced_node = tree->root;
+    }
+
+    // Let's go up checking the balance factor and applying rotations accordingly
+    while (unbalanced_node != NULL)
+    {
+        tree_rebalance_node(tree, unbalanced_node);
+        unbalanced_node = unbalanced_node->parent;
+    }
 }
 
 void tree_remove_leaf_node(avl_tree *tree, avl_node *node)
@@ -127,6 +140,7 @@ void tree_remove_node_with_one_subtree(avl_tree *tree, avl_node *node)
         tree->root = subtree;
     }
     subtree->parent = node->parent;
+    subtree->height = node->height;
 }
 
 void tree_remove_node_with_two_subtrees(avl_tree *tree, avl_node *node)
@@ -138,8 +152,15 @@ void tree_remove_node_with_two_subtrees(avl_tree *tree, avl_node *node)
         leftmost = leftmost->left;
     }
 
-    // remove it
-    tree_remove(tree, leftmost);
+    // remove it, let's not call tree->remove to bypass rebalancing operations
+    if (leftmost->right != NULL)
+    {
+        tree_remove_node_with_one_subtree(tree, leftmost);
+    }
+    else
+    {
+        tree_remove_leaf_node(tree, leftmost);
+    }
 
     // replace the node being removed by the leftmost node of the right subtree
     if (node->parent != NULL)
@@ -158,19 +179,18 @@ void tree_remove_node_with_two_subtrees(avl_tree *tree, avl_node *node)
         tree->root = leftmost;
     }
 
-    leftmost->parent = node->parent;
-
-    leftmost->right = node->right;
+    // A possible right subtree of this leftmost node becomes the son of the leftmost node parent
     if (leftmost->right != NULL)
     {
-        leftmost->right->parent = leftmost;
+        leftmost->parent->left = leftmost->right;
+        leftmost->right->height -= 1;
     }
 
+    // Make leftmost node aware that it is occupying the old node's position
+    leftmost->parent = node->parent;
+    leftmost->height = node->height;
+    leftmost->right = node->right;
     leftmost->left = node->left;
-    if (leftmost->left != NULL)
-    {
-        leftmost->left->parent = leftmost;
-    }
 }
 
 // Private functions
@@ -233,6 +253,12 @@ void tree_node_insert_recurse(avl_tree *tree, avl_node *this, avl_node *new_node
     // Update node height
     update_height(this);
 
+    // Rebalance if need be
+    tree_rebalance_node(tree, this);
+}
+
+void tree_rebalance_node(avl_tree *tree, avl_node *this)
+{
     // Check if this subtree is unbalanced
     int hleft = this->left != NULL ? this->left->height : 0;
     int hright = this->right != NULL ? this->right->height : 0;
@@ -244,26 +270,25 @@ void tree_node_insert_recurse(avl_tree *tree, avl_node *this, avl_node *new_node
         // Left branch is too long
         if (hleft > hright)
         {
-            int relation = compare(new_node->data, this->left->data);
-            if (relation > 0) // Node was inserted in the right subtree of the left node. Rotate subtree left.
+            int lr_height = this->left->right != NULL ? this->left->right->height : 0, ll_height = this->left->left != NULL ? this->left->left->height : 0;
+
+            if (lr_height > ll_height)
             {
-                rotate_left(tree, this->left);
+                rotate_left(tree, this->left); // Left-Right
             }
             rotate_right(tree, this);
         }
         else // Right branch is too long
         {
-            int relation = compare(new_node->data, this->right->data);
-            if (relation < 0)
+            int rl_height = this->right->left != NULL ? this->right->left->height : 0, rr_height = this->right->right != NULL ? this->right->right->height : 0;
+
+            if (rl_height > rr_height)
             {
-                rotate_right(tree, this->right); // Node was inserted in the left subtree of the right node. Rotate it right.
+                rotate_right(tree, this->right); // Right-Left
             }
             rotate_left(tree, this);
         }
     }
-
-    // Update node height
-    update_height(this);
 }
 
 void rotate_left(avl_tree *tree, avl_node *this)
