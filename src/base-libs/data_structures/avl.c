@@ -15,6 +15,7 @@ void tree_remove_leaf_node(avl_tree *tree, avl_node *node);
 void tree_remove_node_with_one_subtree(avl_tree *tree, avl_node *node);
 void tree_remove_node_with_two_subtrees(avl_tree *tree, avl_node *node);
 void tree_rebalance_node(avl_tree *tree, avl_node *unbalanced_node);
+void tree_pre_order_recurse(avl_node *node, void (*callback)(const avl_node *data));
 
 avl_tree *tree_new(int (*compare)(const void *, const void *))
 {
@@ -68,6 +69,11 @@ avl_node *tree_find(avl_tree *this, void *data, int (*compare)(const void *given
 
 void tree_remove(avl_tree *tree, avl_node *node)
 {
+    if (node == NULL)
+    {
+        return;
+    }
+
     // if there is no offspring, we can delete right away
     if (node->left == NULL && node->right == NULL)
     {
@@ -99,6 +105,25 @@ void tree_remove(avl_tree *tree, avl_node *node)
         tree_rebalance_node(tree, unbalanced_node);
         unbalanced_node = unbalanced_node->parent;
     }
+}
+
+void tree_pre_order(avl_tree *tree, void (*callback)(const avl_node *data))
+{
+    tree_pre_order_recurse(tree->root, callback);
+}
+
+// Private functions
+
+void tree_pre_order_recurse(avl_node *node, void (*callback)(const avl_node *data))
+{
+    if (node == NULL)
+    {
+        return;
+    }
+
+    tree_pre_order_recurse(node->left, callback);
+    callback(node);
+    tree_pre_order_recurse(node->right, callback);
 }
 
 void tree_remove_leaf_node(avl_tree *tree, avl_node *node)
@@ -152,14 +177,23 @@ void tree_remove_node_with_two_subtrees(avl_tree *tree, avl_node *node)
         leftmost = leftmost->left;
     }
 
-    // remove it, let's not call tree->remove to bypass rebalancing operations
-    if (leftmost->right != NULL)
+    // Remove that node.
+    // A possible right subtree of this leftmost node becomes the son of the leftmost node parent
+    if (leftmost != node->right)
     {
-        tree_remove_node_with_one_subtree(tree, leftmost);
+        if (leftmost->right != NULL)
+        {
+            leftmost->parent->left = leftmost->right;
+            leftmost->right->parent = leftmost->parent;
+        }
+        else
+        {
+            leftmost->parent->left = NULL;
+        }
+        update_height(leftmost->parent);
     }
     else
     {
-        tree_remove_leaf_node(tree, leftmost);
     }
 
     // replace the node being removed by the leftmost node of the right subtree
@@ -179,21 +213,17 @@ void tree_remove_node_with_two_subtrees(avl_tree *tree, avl_node *node)
         tree->root = leftmost;
     }
 
-    // A possible right subtree of this leftmost node becomes the son of the leftmost node parent
-    if (leftmost->right != NULL)
-    {
-        leftmost->parent->left = leftmost->right;
-        leftmost->right->height -= 1;
-    }
-
     // Make leftmost node aware that it is occupying the old node's position
     leftmost->parent = node->parent;
     leftmost->height = node->height;
-    leftmost->right = node->right;
+    if (leftmost != node->right)
+    {
+        leftmost->right = node->right;
+        node->right->parent = leftmost;
+    }
     leftmost->left = node->left;
+    node->left->parent = leftmost;
 }
-
-// Private functions
 
 avl_node *avl_node_new(void *data)
 {

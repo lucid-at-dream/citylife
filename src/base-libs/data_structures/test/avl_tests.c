@@ -113,7 +113,7 @@ TEST_CASE(test_tree_insert_random_assert_logarithmic_comparison_count, {
     tree_destroy(tree);
 })
 
-TEST_CASE(test_tree_insert_remove_random_data_assert_logarithmic_comparisons, {
+TEST_CASE(test_rebalance_after_remove, {
     avl_tree *tree = tree_new(int_compare);
 
     int N = 50;
@@ -161,8 +161,57 @@ TEST_CASE(test_tree_insert_remove_random_data_assert_logarithmic_comparisons, {
     tree_destroy(tree);
 })
 
+void callback(avl_node *data)
+{
+    int left = data->left != NULL ? (int)(data->left->data) : 0;
+    int right = data->right != NULL ? (int)(data->right->data) : 0;
+    int parent = data->parent != NULL ? (int)(data->parent->data) : 0;
+
+    printf("Node: %d (height: %d) (parent: %d) (left: %d) (right: %d)\n", data->data, data->height, parent, left, right);
+}
+
+TEST_CASE(test_tree_insert_remove_random_data, {
+    avl_tree *tree = tree_new(int_compare);
+
+    int N = 5000;
+    int stuff_to_insert[N];
+
+    // Sort a random list of ints for insertion
+    srand(0);
+    for (int i = 0; i < N; i++)
+    {
+        stuff_to_insert[i] = rand() % 100000000;
+    }
+
+    // Insert and remove randomly
+    int removals = 0;
+    for (int i = 0; i < N; i++)
+    {
+        tree_insert(tree, stuff_to_insert[i]);
+
+        if (rand() % 5 == 0)
+        {
+            avl_node *n = tree_find(tree, stuff_to_insert[removals], int_compare);
+            tree_remove(tree, n);
+            removals++;
+            free(n);
+        }
+    }
+
+    int max_height = (int)(log(N - removals + 2) / log(1.618) - 0.3277);
+    for (int i = removals; i < N; i++)
+    {
+        global_comparison_counter = 0;
+        tree_find(tree, stuff_to_insert[i], int_compare_with_global_counter);
+        ASSERT_INT_LESS_THAN("Number of comparisons should never exceed log2(N)", global_comparison_counter, max_height + 1);
+    }
+
+    tree_destroy(tree);
+})
+
 TEST_SUITE(
     RUN_TEST("Test inserting and retrieving an element.", &test_tree_insert_one_find_one),
     RUN_TEST("Test inserting and retrieving some elements.", &test_tree_insert_some_find_some),
     RUN_TEST("Test comparison count of find operations after inserts.", &test_tree_insert_random_assert_logarithmic_comparison_count),
-    RUN_TEST("Test logarithmic comparison after random inserts and removes.", &test_tree_insert_remove_random_data_assert_logarithmic_comparisons), )
+    RUN_TEST("Test logarithmic comparison after in-order inserts followed by removes.", &test_rebalance_after_remove),
+    RUN_TEST("Test random insertions and remotions", &test_tree_insert_remove_random_data))

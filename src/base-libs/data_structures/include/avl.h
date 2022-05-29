@@ -59,3 +59,5 @@ avl_node *tree_find(avl_tree *tree, void *data, int (*compare)(const void *given
  * @param node The node that will be removed.
  */
 void tree_remove(avl_tree *tree, avl_node *node);
+
+void tree_pre_order(avl_tree *tree, void (*callback)(const avl_node *data));
