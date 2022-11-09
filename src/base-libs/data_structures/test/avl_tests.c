@@ -56,9 +56,16 @@ TEST_CASE(test_tree_insert_some_find_some, {
 
     tree_insert(tree, 1);
     tree_insert(tree, 3);
-    tree_insert(tree, 5);
-    tree_insert(tree, 4);
     tree_insert(tree, 2);
+    tree_insert(tree, 6);
+    tree_insert(tree, 5);
+    tree_insert(tree, 8);
+    tree_insert(tree, 4);
+    tree_insert(tree, 0);
+    tree_insert(tree, 9);
+    tree_insert(tree, 7);
+
+    pretty_print(tree);
 
     avl_node *find_3 = tree_find(tree, 3, int_compare);
     int data_3 = (int)(find_3->data);

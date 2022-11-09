@@ -2,11 +2,14 @@
 
 #include <stdlib.h>
 
+#include <math.h>
+#include <stdio.h>
+
 avl_node *avl_node_new(void *data);
 void avl_node_destroy(avl_node *node);
 
 void tree_node_destroy_recurse(avl_node *node);
-void tree_node_insert_recurse(avl_tree *tree, avl_node *node, avl_node *new_node, int (*compare)(const void *, const void *));
+unsigned char tree_node_insert_recurse(avl_tree *tree, avl_node *node, avl_node *new_node, int (*compare)(const void *, const void *));
 avl_node *tree_node_find(avl_node *this, void *data, int (*compare)(const void *, const void *));
 void rotate_left(avl_tree *tree, avl_node *this);
 void rotate_right(avl_tree *tree, avl_node *this);
@@ -250,7 +253,7 @@ void tree_node_destroy_recurse(avl_node *node)
     avl_node_destroy(node);
 }
 
-void tree_node_insert_recurse(avl_tree *tree, avl_node *this, avl_node *new_node, int (*compare)(const void *, const void *))
+unsigned char tree_node_insert_recurse(avl_tree *tree, avl_node *this, avl_node *new_node, int (*compare)(const void *, const void *))
 {
     int compar = compare(new_node->data, this->data);
 
@@ -261,10 +264,12 @@ void tree_node_insert_recurse(avl_tree *tree, avl_node *this, avl_node *new_node
         {
             this->right = new_node;
             new_node->parent = this;
+            this->balance_factor += 1;
+            return this->balance_factor;
         }
         else
         {
-            tree_node_insert_recurse(tree, this->right, new_node, compare);
+            this->balance_factor += tree_node_insert_recurse(tree, this->right, new_node, compare);
         }
     }
     else if (compar < 0)
@@ -273,10 +278,12 @@ void tree_node_insert_recurse(avl_tree *tree, avl_node *this, avl_node *new_node
         {
             this->left = new_node;
             new_node->parent = this;
+            this->balance_factor -= 1;
+            return this->balance_factor;
         }
         else
         {
-            tree_node_insert_recurse(tree, this->left, new_node, compare);
+            this->balance_factor += tree_node_insert_recurse(tree, this->left, new_node, compare);
         }
     }
 
@@ -285,22 +292,26 @@ void tree_node_insert_recurse(avl_tree *tree, avl_node *this, avl_node *new_node
 
     // Rebalance if need be
     tree_rebalance_node(tree, this);
+
+    return this->balance_factor;
 }
 
 void tree_rebalance_node(avl_tree *tree, avl_node *this)
 {
-    // Check if this subtree is unbalanced
     int hleft = this->left != NULL ? this->left->height : 0;
     int hright = this->right != NULL ? this->right->height : 0;
+
     int balance = hleft - hright;
 
-    // rebalance
+    // rebalance if the balance factor is too high
+    // TODO: if (abs(this->balance_factor) > 1)
     if (abs(balance) > 1)
     {
         // Left branch is too long
         if (hleft > hright)
         {
-            int lr_height = this->left->right != NULL ? this->left->right->height : 0, ll_height = this->left->left != NULL ? this->left->left->height : 0;
+            int lr_height = this->left->right != NULL ? this->left->right->height : 0;
+            int ll_height = this->left->left != NULL ? this->left->left->height : 0;
 
             if (lr_height > ll_height)
             {
@@ -310,7 +321,8 @@ void tree_rebalance_node(avl_tree *tree, avl_node *this)
         }
         else // Right branch is too long
         {
-            int rl_height = this->right->left != NULL ? this->right->left->height : 0, rr_height = this->right->right != NULL ? this->right->right->height : 0;
+            int rl_height = this->right->left != NULL ? this->right->left->height : 0;
+            int rr_height = this->right->right != NULL ? this->right->right->height : 0;
 
             if (rl_height > rr_height)
             {
@@ -413,4 +425,61 @@ void update_height(avl_node *this)
     int hright = this->right != NULL ? this->right->height : 0;
 
     this->height = hleft > hright ? hleft + 1 : hright + 1;
+}
+
+int node_count = 0;
+int node_display_size = 8;
+
+void print_recurse(avl_tree *tree, avl_node *node, int pos, int size, char **out)
+{
+    if (node == NULL)
+    {
+        return;
+    }
+
+    int buffer_size = ceil(pow(2, tree->root->height + 1) * node_display_size);
+    int my_index = buffer_size / (size + 1) * pos;
+
+    char *side = "root";
+    if (node->parent != NULL)
+    {
+        side = node == node->parent->left ? "left" : "right";
+    }
+
+    printf("%d: I'm at height %d at pos %d on the %s of parent with balance factor %d\n", node_count, node->height, pos, side, node->balance_factor);
+
+    char tmp[6];
+    sprintf(tmp, "%d:%d", node_count, node->balance_factor);
+    node_count++;
+
+    // avoid the \0 of snprintf
+    for (int i = 0; i < 6 && tmp[i] != '\0'; i++)
+    {
+        out[node->height + 1][my_index + i] = tmp[i];
+    }
+
+    print_recurse(tree, node->left, pos * 2 - 1, size * 2, out);
+    print_recurse(tree, node->right, pos * 2, size * 2, out);
+}
+
+void pretty_print(avl_tree *tree)
+{
+    char **out = (char **)calloc(tree->root->height, sizeof(char *));
+    for (int i = 0; i <= tree->root->height + 1; i++)
+    {
+        int buffer_size = ceil(pow(2, tree->root->height + 1) * node_display_size);
+        out[i] = (char *)calloc(buffer_size, sizeof(char));
+
+        for (int j = 0; j < buffer_size; j++)
+        {
+            out[i][j] = ' ';
+        }
+    }
+
+    print_recurse(tree, tree->root, 1, 1, out);
+
+    for (int i = tree->root->height + 1; i >= 0; i--)
+    {
+        printf("%s\n", out[i]);
+    }
 }
