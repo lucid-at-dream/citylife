@@ -65,8 +65,6 @@ TEST_CASE(test_tree_insert_some_find_some, {
     tree_insert(tree, 9);
     tree_insert(tree, 7);
 
-    pretty_print(tree);
-
     avl_node *find_3 = tree_find(tree, 3, int_compare);
     int data_3 = (int)(find_3->data);
 
@@ -90,7 +88,7 @@ int int_compare_with_global_counter(const void *a, const void *b)
 TEST_CASE(test_tree_insert_random_assert_logarithmic_comparison_count, {
     avl_tree *tree = tree_new(int_compare);
 
-    int N = 2047;
+    int N = 28;
 
     int num_finds = 10;
     int max_height = (int)(log(N + num_finds + 2) / log(1.618) - 0.3277);
@@ -99,14 +97,14 @@ TEST_CASE(test_tree_insert_random_assert_logarithmic_comparison_count, {
     srand(0);
     for (int i = 0; i < N - num_finds; i++)
     {
-        tree_insert(tree, rand());
+        tree_insert(tree, rand() % 9999);
     }
 
     // Insert a few more
     int stuff_to_find[num_finds];
     for (int i = 0; i < num_finds; i++)
     {
-        stuff_to_find[i] = rand();
+        stuff_to_find[i] = rand() % 9999;
         tree_insert(tree, stuff_to_find[i]);
     }
 
@@ -174,13 +172,13 @@ void callback(avl_node *data)
     int right = data->right != NULL ? (int)(data->right->data) : 0;
     int parent = data->parent != NULL ? (int)(data->parent->data) : 0;
 
-    printf("Node: %d (height: %d) (parent: %d) (left: %d) (right: %d)\n", data->data, data->height, parent, left, right);
+    printf("Node: %d (parent: %d) (left: %d) (right: %d)\n", data->data, parent, left, right);
 }
 
 TEST_CASE(test_tree_insert_remove_random_data, {
     avl_tree *tree = tree_new(int_compare);
 
-    int N = 5000;
+    int N = 100;
     int stuff_to_insert[N];
 
     // Sort a random list of ints for insertion
@@ -205,7 +203,8 @@ TEST_CASE(test_tree_insert_remove_random_data, {
         }
     }
 
-    int max_height = (int)(log(N - removals + 2) / log(1.618) - 0.3277);
+    // int max_height = (int)(log(N - removals + 2) / log(1.618) - 0.3277);
+    int max_height = ceil(log(N - removals) / log(2)) + 1;
     for (int i = removals; i < N; i++)
     {
         global_comparison_counter = 0;
