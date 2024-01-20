@@ -1,7 +1,7 @@
 project('citylife', 'c')
 
 cc = meson.get_compiler('c')
-add_global_arguments('-g', language : 'c')
+add_global_arguments('-g', '-Og', language : 'c')
 
 ### Copy test resources to build directory
 
