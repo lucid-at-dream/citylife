@@ -1,0 +1,4 @@
+
+ * For some reason NeedlemanWunsch is sensitive to the size of the alphabet, whereas Hirschberg is not as much.
+
+
